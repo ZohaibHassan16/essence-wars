@@ -197,6 +197,8 @@ fn bench_mcts_simulations(c: &mut Criterion) {
                 simulations: sims,
                 exploration: 1.414,
                 max_rollout_depth: 50,
+                parallel_trees: 1,
+                leaf_rollouts: 1,
             };
 
             b.iter(|| {

@@ -6,11 +6,11 @@
 ## Architecture
 
 ### Core Rust Engine (`src/`)
-- **Game Loop**: [src/core/engine.rs](src/core/engine.rs) - Effect queue system (FIFO, no recursion), turn structure, `GameEnvironment` trait for AI
-- **State**: [src/core/state.rs](src/core/state.rs) - Uses `ArrayVec` for stack allocation (fast MCTS cloning)
-- **Actions**: [src/core/actions.rs](src/core/actions.rs) - Fixed 256-index action space (0-99: PlayCard, 100-149: Attack, 150-249: UseAbility, 255: EndTurn)
-- **Combat**: [src/core/combat.rs](src/core/combat.rs) - Lane-based, 8 keywords as u8 bitfield (Guard, Rush, Lethal, etc.)
-- **AI Interface**: [src/tensor.rs](src/tensor.rs) - 326-float state tensor, `get_legal_action_mask()` for neural networks
+- **Game Loop**: core/engine module - Effect queue system (FIFO, no recursion), turn structure, `GameEnvironment` trait for AI
+- **State**: core/state module - Uses `ArrayVec` for stack allocation (fast MCTS cloning)
+- **Actions**: core/actions module - Fixed 256-index action space (0-99: PlayCard, 100-149: Attack, 150-249: UseAbility, 255: EndTurn)
+- **Combat**: core/combat module - Lane-based, 8 keywords as u8 bitfield (Guard, Rush, Lethal, etc.)
+- **AI Interface**: tensor module - 326-float state tensor, `get_legal_action_mask()` for neural networks
 
 ### Bot System (`src/bots/`)
 - **RandomBot**: Baseline uniform random
@@ -18,13 +18,13 @@
 - **MctsBot**: UCB1 tree search, uses GreedyBot for rollouts (configurable weights improve search quality)
 
 ### Tuning & Arena (`src/tuning/`, `src/arena/`)
-- **CMA-ES Optimizer**: [src/tuning/cmaes.rs](src/tuning/cmaes.rs) - Parallel fitness evaluation (14x speedup on 16 cores)
+- **CMA-ES Optimizer**: tuning/cmaes module - Parallel fitness evaluation (14x speedup on 16 cores)
 - **Experiment Outputs**: `experiments/{mcts,ppo,alphazero}/YYYY-MM-DD_HHMM_tag/` (gitignored)
-- **GameRunner**: [src/arena/runner.rs](src/arena/runner.rs) - Executes bot matches, optional ActionLogger for replay
+- **GameRunner**: arena/runner module - Executes bot matches, optional ActionLogger for replay
 
 ### Python Tooling (`python/`)
 - **Analysis**: `python/cardgame/analysis/` - Parses tuning logs, generates plots
-- **Entry Script**: [scripts/analyze-tuning.sh](scripts/analyze-tuning.sh) - Wrapper using `uv run` (no venv needed)
+- **Entry Script**: analyze-tuning.sh script - Wrapper using `uv run` (no venv needed)
 
 ## Critical Workflows
 
@@ -70,11 +70,11 @@ cargo run --release --bin tune -- --tag aggro_spec \
 
 ### Test Organization (CRITICAL!)
 **Tests live separately from source code** (not inline `#[cfg(test)]` blocks). This keeps source files token-lean for AI context.
-- Unit tests: `tests/unit/<module>_tests.rs` (e.g., `tests/unit/types_tests.rs` for `src/core/types.rs`)
-- Integration tests: `tests/<feature>_tests.rs` (e.g., `tests/engine_tests.rs`)
-- Shared utilities: `tests/common/mod.rs`
+- Unit tests: tests/unit directory with _tests.rs files (e.g., types_tests.rs for core/types module)
+- Integration tests: tests directory with _tests.rs files (e.g., engine_tests.rs)
+- Shared utilities: tests/common/mod module
 
-When adding tests for a core module, create `tests/unit/<module>_tests.rs` and add it to [tests/unit.rs](tests/unit.rs).
+When adding tests for a core module, create the corresponding _tests.rs file in tests/unit and register it in the unit.rs file.
 
 ### Data & Experiment Strategy
 **NEVER commit to git:**
@@ -93,8 +93,8 @@ Every training run must:
 Use `docs/experiments/` for curated reports worth preserving in git.
 
 ### Card Definitions
-- **YAML format**: [data/cards/sets/starter.yaml](data/cards/sets/starter.yaml) - 43 cards with effects/abilities
-- **Deck format**: [data/decks/](data/decks/) - TOML with card ID arrays (20-30 cards)
+- **YAML format**: starter.yaml in data/cards/sets - 43 cards with effects/abilities
+- **Deck format**: TOML files in data/decks - Card ID arrays (20-30 cards)
 
 ### Python Environment
 Use `uv` for dependency management (no manual venv):
@@ -107,13 +107,13 @@ uv run ruff check python/
 ## Key Design Patterns
 
 ### Effect Queue (Not Recursion)
-Effects trigger other effects without recursion - new effects go to FIFO queue back. See [src/core/engine.rs](src/core/engine.rs) `EffectQueue` for pattern.
+Effects trigger other effects without recursion - new effects go to FIFO queue back. See core/engine module's `EffectQueue` for pattern.
 
 ### ArrayVec for Performance
 Uses `arrayvec::ArrayVec` for fixed-capacity vectors (creatures, hand, deck) - stack allocation means fast cloning for MCTS. Example: `ArrayVec<Creature, 5>` for creature slots.
 
 ### Bot Trait with AI Interface
-Bots receive state as tensor + legal mask, return Action. See [src/bots/mod.rs](src/bots/mod.rs):
+Bots receive state as tensor + legal mask, return Action. See bots/mod module:
 ```rust
 fn select_action(&mut self, state_tensor: &[f32; 326], legal_mask: &[f32; 256], 
                  legal_actions: &[Action]) -> Action;
@@ -131,6 +131,6 @@ Fitness evaluation uses Rayon for parallel game execution - enabled by default i
 5. **Weights are optional** - GreedyBot/MctsBot use defaults if no `--weights` specified
 
 ## Documentation References
-- Game rules: [docs/design-engine.md](docs/design-engine.md) - Complete game specification
-- Full context: [CLAUDE.md](CLAUDE.md) - Detailed project documentation (500 lines)
-- Roadmap: [roadmap.txt](roadmap.txt) - Future work (Python bindings, PPO/AlphaZero, web client)
+- Game rules: design-engine.md in docs - Complete game specification
+- Full context: CLAUDE.md in root - Detailed project documentation (500 lines)
+- Roadmap: roadmap.txt in root - Future work (Python bindings, PPO/AlphaZero, web client)

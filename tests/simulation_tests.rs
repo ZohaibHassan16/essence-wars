@@ -374,8 +374,12 @@ fn verify_comprehensive_invariants(engine: &GameEngine, context: &str) {
         context
     );
 
+    // Collect all creature instance IDs across both players to check uniqueness
+    let mut all_instance_ids: HashSet<u32> = HashSet::new();
+
     for (player_idx, player) in state.players.iter().enumerate() {
         let player_ctx = format!("{} P{}", context, player_idx + 1);
+        let expected_owner = PlayerId(player_idx as u8);
 
         // Life should be at most 30 (can go negative during game over)
         assert!(
@@ -453,6 +457,24 @@ fn verify_comprehensive_invariants(engine: &GameEngine, context: &str) {
                 creature.current_health,
                 creature.max_health
             );
+
+            // Creature owner should match player
+            assert_eq!(
+                creature.owner, expected_owner,
+                "{}: Creature in slot {} has wrong owner {:?} (expected {:?})",
+                player_ctx,
+                creature.slot.0,
+                creature.owner,
+                expected_owner
+            );
+
+            // Check instance ID uniqueness across both players
+            assert!(
+                all_instance_ids.insert(creature.instance_id.0),
+                "{}: Duplicate creature instance_id {:?} detected",
+                player_ctx,
+                creature.instance_id
+            );
         }
 
         // Support slot constraints
@@ -493,6 +515,16 @@ fn verify_comprehensive_invariants(engine: &GameEngine, context: &str) {
                 support.slot.0,
                 support.current_durability
             );
+
+            // Support owner should match player
+            assert_eq!(
+                support.owner, expected_owner,
+                "{}: Support in slot {} has wrong owner {:?} (expected {:?})",
+                player_ctx,
+                support.slot.0,
+                support.owner,
+                expected_owner
+            );
         }
 
         // Hand size
@@ -522,9 +554,115 @@ fn verify_comprehensive_invariants(engine: &GameEngine, context: &str) {
     }
 }
 
+/// Enhanced invariant checker that also validates card IDs against the database
+fn verify_comprehensive_invariants_with_db(
+    engine: &GameEngine,
+    card_db: &CardDatabase,
+    context: &str,
+) {
+    // First run the standard invariant checks
+    verify_comprehensive_invariants(engine, context);
+
+    let state = &engine.state;
+
+    // Validate all card IDs exist in the database
+    for (player_idx, player) in state.players.iter().enumerate() {
+        let player_ctx = format!("{} P{}", context, player_idx + 1);
+
+        // Check hand card IDs
+        for card in &player.hand {
+            assert!(
+                card_db.get(card.card_id).is_some(),
+                "{}: Hand contains invalid card_id {:?}",
+                player_ctx,
+                card.card_id
+            );
+        }
+
+        // Check deck card IDs
+        for card in &player.deck {
+            assert!(
+                card_db.get(card.card_id).is_some(),
+                "{}: Deck contains invalid card_id {:?}",
+                player_ctx,
+                card.card_id
+            );
+        }
+
+        // Check creature card IDs
+        for creature in &player.creatures {
+            assert!(
+                card_db.get(creature.card_id).is_some(),
+                "{}: Creature in slot {} has invalid card_id {:?}",
+                player_ctx,
+                creature.slot.0,
+                creature.card_id
+            );
+        }
+
+        // Check support card IDs
+        for support in &player.supports {
+            assert!(
+                card_db.get(support.card_id).is_some(),
+                "{}: Support in slot {} has invalid card_id {:?}",
+                player_ctx,
+                support.slot.0,
+                support.card_id
+            );
+        }
+    }
+}
+
 // ============================================================================
 // Bot-Driven Fuzzing Tests
 // ============================================================================
+
+/// Test with full database validation (checks all card IDs are valid)
+#[test]
+fn test_database_validated_games() {
+    // Note: load_from_directory adds "sets" internally, so pass "data/cards" not "data/cards/sets"
+    let card_db = CardDatabase::load_from_directory("data/cards")
+        .expect("Failed to load cards");
+
+    // Verify deck card IDs exist in the database first
+    let deck = valid_yaml_deck();
+    for card_id in &deck {
+        assert!(
+            card_db.get(*card_id).is_some(),
+            "valid_yaml_deck contains invalid card_id {:?} - not found in loaded database",
+            card_id
+        );
+    }
+
+    let mut rng = SimpleRng::new(777);
+
+    for seed in 0u64..20 {
+        let mut engine = GameEngine::new(&card_db);
+        let deck1 = valid_yaml_deck();
+        let deck2 = valid_yaml_deck();
+        engine.start_game(deck1, deck2, seed);
+
+        let mut action_count = 0;
+
+        while !engine.is_game_over() && action_count < 100 {
+            // Run enhanced invariant check with database validation
+            let context = format!("DBVal Game {} action {}", seed, action_count);
+            verify_comprehensive_invariants_with_db(&engine, &card_db, &context);
+
+            let actions = engine.get_legal_actions();
+            let action_idx = rng.range(actions.len());
+            engine.apply_action(actions[action_idx]).unwrap();
+            action_count += 1;
+        }
+
+        // Final check
+        verify_comprehensive_invariants_with_db(
+            &engine,
+            &card_db,
+            &format!("DBVal Game {} final", seed),
+        );
+    }
+}
 
 /// Test GreedyBot vs GreedyBot games with comprehensive invariant checking
 #[test]
