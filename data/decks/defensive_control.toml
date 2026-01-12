@@ -1,0 +1,21 @@
+# Defensive Control Deck
+# Strategy: Survive early game with Guards and removal, win with value in late game.
+
+id = "defensive_control"
+name = "Defensive Control"
+description = "Control deck using Guards and removal to survive, winning through attrition."
+
+tags = ["control", "defensive", "starter"]
+
+# 18 cards total (2 copies each for consistency)
+cards = [
+    4, 4,   # Armored Defender (2-cost 1/4 Guard)
+    5, 5,   # Stalwart Guardian (2-cost 2/3 Guard)
+    9, 9,   # Spirit Healer (2-cost 1/3 Lifesteal)
+    10, 10, # Nightblade Assassin (3-cost 2/2 Lethal)
+    14, 14, # War Elephant (4-cost 3/5 Guard)
+    18, 18, # Primal Behemoth (5-cost 5/5)
+    32, 32, # Quick Strike (1-cost spell - 2 damage)
+    33, 33, # Healing Touch (2-cost spell - heal 4)
+    35, 35, # Fireball (4-cost spell - 6 damage)
+]

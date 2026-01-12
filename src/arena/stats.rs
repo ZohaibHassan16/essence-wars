@@ -1,0 +1,215 @@
+//! Statistics collection for matches and matchups.
+
+use std::time::Duration;
+
+use crate::types::PlayerId;
+
+/// Statistics for a single matchup (deck pair).
+#[derive(Clone, Debug, Default)]
+pub struct MatchupStats {
+    /// Number of games played
+    pub games: usize,
+    /// Wins for player 1 (bot 1)
+    pub bot1_wins: usize,
+    /// Wins for player 2 (bot 2)
+    pub bot2_wins: usize,
+    /// Number of draws
+    pub draws: usize,
+    /// Total turns across all games
+    pub total_turns: usize,
+    /// Total time spent
+    pub total_time: Duration,
+}
+
+impl MatchupStats {
+    /// Create new empty stats.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Record a game result.
+    pub fn record_game(&mut self, winner: Option<PlayerId>, turns: u32, time: Duration) {
+        self.games += 1;
+        self.total_turns += turns as usize;
+        self.total_time += time;
+
+        match winner {
+            Some(PlayerId::PLAYER_ONE) => self.bot1_wins += 1,
+            Some(PlayerId::PLAYER_TWO) => self.bot2_wins += 1,
+            None => self.draws += 1,
+            _ => {}
+        }
+    }
+
+    /// Win rate for bot 1 (0.0 to 1.0).
+    pub fn bot1_win_rate(&self) -> f64 {
+        if self.games == 0 {
+            0.5
+        } else {
+            self.bot1_wins as f64 / self.games as f64
+        }
+    }
+
+    /// Win rate for bot 2 (0.0 to 1.0).
+    pub fn bot2_win_rate(&self) -> f64 {
+        if self.games == 0 {
+            0.5
+        } else {
+            self.bot2_wins as f64 / self.games as f64
+        }
+    }
+
+    /// Draw rate (0.0 to 1.0).
+    pub fn draw_rate(&self) -> f64 {
+        if self.games == 0 {
+            0.0
+        } else {
+            self.draws as f64 / self.games as f64
+        }
+    }
+
+    /// Average turns per game.
+    pub fn avg_turns(&self) -> f64 {
+        if self.games == 0 {
+            0.0
+        } else {
+            self.total_turns as f64 / self.games as f64
+        }
+    }
+
+    /// Average time per game in milliseconds.
+    pub fn avg_time_ms(&self) -> f64 {
+        if self.games == 0 {
+            0.0
+        } else {
+            self.total_time.as_millis() as f64 / self.games as f64
+        }
+    }
+
+    /// Merge another stats object into this one.
+    pub fn merge(&mut self, other: &MatchupStats) {
+        self.games += other.games;
+        self.bot1_wins += other.bot1_wins;
+        self.bot2_wins += other.bot2_wins;
+        self.draws += other.draws;
+        self.total_turns += other.total_turns;
+        self.total_time += other.total_time;
+    }
+}
+
+/// Statistics for a match (possibly multiple matchups).
+#[derive(Clone, Debug, Default)]
+pub struct MatchStats {
+    /// Overall statistics (aggregated across all matchups)
+    pub overall: MatchupStats,
+    /// Bot 1 name
+    pub bot1_name: String,
+    /// Bot 2 name
+    pub bot2_name: String,
+}
+
+impl MatchStats {
+    /// Create new match stats.
+    pub fn new(bot1_name: String, bot2_name: String) -> Self {
+        Self {
+            overall: MatchupStats::new(),
+            bot1_name,
+            bot2_name,
+        }
+    }
+
+    /// Record a game result.
+    pub fn record_game(&mut self, winner: Option<PlayerId>, turns: u32, time: Duration) {
+        self.overall.record_game(winner, turns, time);
+    }
+
+    /// Print a summary of the match.
+    pub fn summary(&self) -> String {
+        format!(
+            "Match: {} vs {}\n\
+             Games: {}\n\
+             {} wins: {} ({:.1}%)\n\
+             {} wins: {} ({:.1}%)\n\
+             Draws: {} ({:.1}%)\n\
+             Avg turns: {:.1}\n\
+             Avg time: {:.2}ms/game\n\
+             Total time: {:.2}s",
+            self.bot1_name,
+            self.bot2_name,
+            self.overall.games,
+            self.bot1_name,
+            self.overall.bot1_wins,
+            self.overall.bot1_win_rate() * 100.0,
+            self.bot2_name,
+            self.overall.bot2_wins,
+            self.overall.bot2_win_rate() * 100.0,
+            self.overall.draws,
+            self.overall.draw_rate() * 100.0,
+            self.overall.avg_turns(),
+            self.overall.avg_time_ms(),
+            self.overall.total_time.as_secs_f64(),
+        )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_matchup_stats_recording() {
+        let mut stats = MatchupStats::new();
+
+        stats.record_game(Some(PlayerId::PLAYER_ONE), 10, Duration::from_millis(100));
+        stats.record_game(Some(PlayerId::PLAYER_TWO), 15, Duration::from_millis(150));
+        stats.record_game(Some(PlayerId::PLAYER_ONE), 12, Duration::from_millis(120));
+        stats.record_game(None, 30, Duration::from_millis(300));
+
+        assert_eq!(stats.games, 4);
+        assert_eq!(stats.bot1_wins, 2);
+        assert_eq!(stats.bot2_wins, 1);
+        assert_eq!(stats.draws, 1);
+        assert_eq!(stats.total_turns, 67);
+        assert_eq!(stats.total_time, Duration::from_millis(670));
+    }
+
+    #[test]
+    fn test_win_rates() {
+        let mut stats = MatchupStats::new();
+        stats.record_game(Some(PlayerId::PLAYER_ONE), 10, Duration::from_millis(100));
+        stats.record_game(Some(PlayerId::PLAYER_ONE), 10, Duration::from_millis(100));
+        stats.record_game(Some(PlayerId::PLAYER_TWO), 10, Duration::from_millis(100));
+        stats.record_game(None, 10, Duration::from_millis(100));
+
+        assert!((stats.bot1_win_rate() - 0.5).abs() < 0.001);
+        assert!((stats.bot2_win_rate() - 0.25).abs() < 0.001);
+        assert!((stats.draw_rate() - 0.25).abs() < 0.001);
+    }
+
+    #[test]
+    fn test_stats_merge() {
+        let mut stats1 = MatchupStats::new();
+        stats1.record_game(Some(PlayerId::PLAYER_ONE), 10, Duration::from_millis(100));
+
+        let mut stats2 = MatchupStats::new();
+        stats2.record_game(Some(PlayerId::PLAYER_TWO), 15, Duration::from_millis(150));
+        stats2.record_game(Some(PlayerId::PLAYER_TWO), 12, Duration::from_millis(120));
+
+        stats1.merge(&stats2);
+
+        assert_eq!(stats1.games, 3);
+        assert_eq!(stats1.bot1_wins, 1);
+        assert_eq!(stats1.bot2_wins, 2);
+    }
+
+    #[test]
+    fn test_match_stats_summary() {
+        let mut stats = MatchStats::new("GreedyBot".to_string(), "RandomBot".to_string());
+        stats.record_game(Some(PlayerId::PLAYER_ONE), 10, Duration::from_millis(100));
+
+        let summary = stats.summary();
+        assert!(summary.contains("GreedyBot"));
+        assert!(summary.contains("RandomBot"));
+        assert!(summary.contains("Games: 1"));
+    }
+}

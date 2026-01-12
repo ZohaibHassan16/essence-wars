@@ -1,0 +1,368 @@
+//! Weight configurations for bot evaluation functions.
+//!
+//! This module provides serializable weight structures that control how bots
+//! evaluate game states. Weights can be loaded from TOML files, enabling
+//! easy tuning and the creation of specialist bots for different decks.
+
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::fs;
+use std::path::Path;
+
+/// Complete weight configuration for a bot.
+///
+/// Supports both generalist (default) weights and deck-specific specialist weights.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct BotWeights {
+    /// Name of this weight configuration
+    pub name: String,
+
+    /// Version for compatibility tracking
+    #[serde(default = "default_version")]
+    pub version: u32,
+
+    /// Default weights used for any deck
+    pub default: WeightSet,
+
+    /// Deck-specific weight overrides
+    /// Key is the deck identifier (e.g., "aggressive_assault")
+    #[serde(default)]
+    pub deck_specific: HashMap<String, WeightSet>,
+}
+
+fn default_version() -> u32 { 1 }
+
+impl BotWeights {
+    /// Create new BotWeights with default greedy weights.
+    pub fn new(name: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            version: 1,
+            default: WeightSet::default(),
+            deck_specific: HashMap::new(),
+        }
+    }
+
+    /// Load weights from a TOML file.
+    pub fn load<P: AsRef<Path>>(path: P) -> Result<Self, WeightError> {
+        let content = fs::read_to_string(path.as_ref())
+            .map_err(|e| WeightError::Io(e.to_string()))?;
+        toml::from_str(&content)
+            .map_err(|e| WeightError::Parse(e.to_string()))
+    }
+
+    /// Save weights to a TOML file.
+    pub fn save<P: AsRef<Path>>(&self, path: P) -> Result<(), WeightError> {
+        let content = toml::to_string_pretty(self)
+            .map_err(|e| WeightError::Serialize(e.to_string()))?;
+        fs::write(path.as_ref(), content)
+            .map_err(|e| WeightError::Io(e.to_string()))
+    }
+
+    /// Get weights for a specific deck, falling back to default.
+    pub fn for_deck(&self, deck_id: &str) -> &WeightSet {
+        self.deck_specific.get(deck_id).unwrap_or(&self.default)
+    }
+
+    /// Add deck-specific weights.
+    pub fn with_deck_weights(mut self, deck_id: impl Into<String>, weights: WeightSet) -> Self {
+        self.deck_specific.insert(deck_id.into(), weights);
+        self
+    }
+}
+
+impl Default for BotWeights {
+    fn default() -> Self {
+        Self::new("default")
+    }
+}
+
+/// A complete set of weights for evaluating game states.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct WeightSet {
+    /// Weights for evaluating game state
+    pub greedy: GreedyWeights,
+}
+
+impl Default for WeightSet {
+    fn default() -> Self {
+        Self {
+            greedy: GreedyWeights::default(),
+        }
+    }
+}
+
+/// Weights for the greedy evaluation function.
+///
+/// Higher positive values mean the feature is more desirable.
+/// Negative values would penalize that feature.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct GreedyWeights {
+    // === Life and Damage ===
+    /// Value per point of own life
+    pub own_life: f32,
+    /// Value per point of enemy life lost (negative of enemy life)
+    pub enemy_life_damage: f32,
+
+    // === Creatures ===
+    /// Value per point of own creature attack
+    pub own_creature_attack: f32,
+    /// Value per point of own creature health
+    pub own_creature_health: f32,
+    /// Value per point of enemy creature attack (usually negative)
+    pub enemy_creature_attack: f32,
+    /// Value per point of enemy creature health (usually negative)
+    pub enemy_creature_health: f32,
+
+    // === Board Control ===
+    /// Value for each creature we have on board
+    pub creature_count: f32,
+    /// Value for each creature slot advantage over opponent
+    pub board_advantage: f32,
+
+    // === Hand and Resources ===
+    /// Value per card in hand
+    pub cards_in_hand: f32,
+    /// Value per action point remaining (discourages waste)
+    pub action_points: f32,
+
+    // === Keyword Values ===
+    /// Value for each creature with Guard
+    pub keyword_guard: f32,
+    /// Value for each creature with Lethal
+    pub keyword_lethal: f32,
+    /// Value for each creature with Lifesteal
+    pub keyword_lifesteal: f32,
+    /// Value for each creature with Rush
+    pub keyword_rush: f32,
+    /// Value for each creature with Ranged
+    pub keyword_ranged: f32,
+    /// Value for each creature with Piercing
+    pub keyword_piercing: f32,
+    /// Value for each creature with Shield
+    pub keyword_shield: f32,
+    /// Value for each creature with Quick
+    pub keyword_quick: f32,
+
+    // === Strategic Bonuses ===
+    /// Bonus for winning the game (should be very high)
+    pub win_bonus: f32,
+    /// Penalty for losing the game (should be very negative)
+    pub lose_penalty: f32,
+}
+
+impl GreedyWeights {
+    /// Create a new set of weights with all zeros.
+    pub fn zeros() -> Self {
+        Self {
+            own_life: 0.0,
+            enemy_life_damage: 0.0,
+            own_creature_attack: 0.0,
+            own_creature_health: 0.0,
+            enemy_creature_attack: 0.0,
+            enemy_creature_health: 0.0,
+            creature_count: 0.0,
+            board_advantage: 0.0,
+            cards_in_hand: 0.0,
+            action_points: 0.0,
+            keyword_guard: 0.0,
+            keyword_lethal: 0.0,
+            keyword_lifesteal: 0.0,
+            keyword_rush: 0.0,
+            keyword_ranged: 0.0,
+            keyword_piercing: 0.0,
+            keyword_shield: 0.0,
+            keyword_quick: 0.0,
+            win_bonus: 0.0,
+            lose_penalty: 0.0,
+        }
+    }
+
+    /// Convert weights to a vector for optimization algorithms.
+    pub fn to_vec(&self) -> Vec<f32> {
+        vec![
+            self.own_life,
+            self.enemy_life_damage,
+            self.own_creature_attack,
+            self.own_creature_health,
+            self.enemy_creature_attack,
+            self.enemy_creature_health,
+            self.creature_count,
+            self.board_advantage,
+            self.cards_in_hand,
+            self.action_points,
+            self.keyword_guard,
+            self.keyword_lethal,
+            self.keyword_lifesteal,
+            self.keyword_rush,
+            self.keyword_ranged,
+            self.keyword_piercing,
+            self.keyword_shield,
+            self.keyword_quick,
+            self.win_bonus,
+            self.lose_penalty,
+        ]
+    }
+
+    /// Create weights from a vector (for optimization algorithms).
+    pub fn from_vec(v: &[f32]) -> Option<Self> {
+        if v.len() < 20 {
+            return None;
+        }
+        Some(Self {
+            own_life: v[0],
+            enemy_life_damage: v[1],
+            own_creature_attack: v[2],
+            own_creature_health: v[3],
+            enemy_creature_attack: v[4],
+            enemy_creature_health: v[5],
+            creature_count: v[6],
+            board_advantage: v[7],
+            cards_in_hand: v[8],
+            action_points: v[9],
+            keyword_guard: v[10],
+            keyword_lethal: v[11],
+            keyword_lifesteal: v[12],
+            keyword_rush: v[13],
+            keyword_ranged: v[14],
+            keyword_piercing: v[15],
+            keyword_shield: v[16],
+            keyword_quick: v[17],
+            win_bonus: v[18],
+            lose_penalty: v[19],
+        })
+    }
+
+    /// Get parameter bounds for optimization (min, max).
+    pub fn bounds() -> Vec<(f32, f32)> {
+        vec![
+            (0.0, 5.0),    // own_life
+            (0.0, 5.0),    // enemy_life_damage
+            (0.0, 3.0),    // own_creature_attack
+            (0.0, 3.0),    // own_creature_health
+            (-3.0, 0.0),   // enemy_creature_attack
+            (-3.0, 0.0),   // enemy_creature_health
+            (0.0, 10.0),   // creature_count
+            (0.0, 5.0),    // board_advantage
+            (0.0, 3.0),    // cards_in_hand
+            (-1.0, 1.0),   // action_points
+            (0.0, 5.0),    // keyword_guard
+            (0.0, 5.0),    // keyword_lethal
+            (0.0, 5.0),    // keyword_lifesteal
+            (0.0, 3.0),    // keyword_rush
+            (0.0, 3.0),    // keyword_ranged
+            (0.0, 3.0),    // keyword_piercing
+            (0.0, 5.0),    // keyword_shield
+            (0.0, 3.0),    // keyword_quick
+            (100.0, 10000.0), // win_bonus
+            (-10000.0, -100.0), // lose_penalty
+        ]
+    }
+
+    /// Number of weight parameters.
+    pub const PARAM_COUNT: usize = 20;
+}
+
+impl Default for GreedyWeights {
+    fn default() -> Self {
+        // Hand-tuned default weights as a starting point
+        Self {
+            // Life matters a lot - stay alive!
+            own_life: 1.5,
+            enemy_life_damage: 2.0,
+
+            // Creature stats
+            own_creature_attack: 1.2,
+            own_creature_health: 1.0,
+            enemy_creature_attack: -1.0,
+            enemy_creature_health: -0.8,
+
+            // Board presence
+            creature_count: 3.0,
+            board_advantage: 2.0,
+
+            // Resources
+            cards_in_hand: 0.5,
+            action_points: 0.1,
+
+            // Keywords - offensive keywords slightly less valuable than defensive
+            keyword_guard: 3.0,
+            keyword_lethal: 4.0,
+            keyword_lifesteal: 3.0,
+            keyword_rush: 1.5,
+            keyword_ranged: 2.0,
+            keyword_piercing: 2.0,
+            keyword_shield: 4.0,
+            keyword_quick: 1.0,
+
+            // Win/Lose - must be high to ensure bot prioritizes winning
+            win_bonus: 1000.0,
+            lose_penalty: -1000.0,
+        }
+    }
+}
+
+/// Errors that can occur when loading/saving weights.
+#[derive(Debug)]
+pub enum WeightError {
+    Io(String),
+    Parse(String),
+    Serialize(String),
+}
+
+impl std::fmt::Display for WeightError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            WeightError::Io(e) => write!(f, "IO error: {}", e),
+            WeightError::Parse(e) => write!(f, "Parse error: {}", e),
+            WeightError::Serialize(e) => write!(f, "Serialize error: {}", e),
+        }
+    }
+}
+
+impl std::error::Error for WeightError {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_default_weights() {
+        let weights = GreedyWeights::default();
+        assert!(weights.own_life > 0.0);
+        assert!(weights.win_bonus > 0.0);
+        assert!(weights.lose_penalty < 0.0);
+    }
+
+    #[test]
+    fn test_weight_vec_roundtrip() {
+        let original = GreedyWeights::default();
+        let vec = original.to_vec();
+        let restored = GreedyWeights::from_vec(&vec).unwrap();
+
+        assert!((original.own_life - restored.own_life).abs() < 0.001);
+        assert!((original.win_bonus - restored.win_bonus).abs() < 0.001);
+    }
+
+    #[test]
+    fn test_bot_weights_deck_specific() {
+        let mut weights = BotWeights::default();
+
+        // Add specialist weights for aggressive deck
+        let mut aggressive = WeightSet::default();
+        aggressive.greedy.enemy_life_damage = 3.0; // More aggressive
+        weights.deck_specific.insert("aggressive_assault".to_string(), aggressive);
+
+        // Default should be different
+        assert!((weights.for_deck("unknown").greedy.enemy_life_damage - 2.0).abs() < 0.001);
+        // Specialist should override
+        assert!((weights.for_deck("aggressive_assault").greedy.enemy_life_damage - 3.0).abs() < 0.001);
+    }
+
+    #[test]
+    fn test_param_count() {
+        let weights = GreedyWeights::default();
+        assert_eq!(weights.to_vec().len(), GreedyWeights::PARAM_COUNT);
+        assert_eq!(GreedyWeights::bounds().len(), GreedyWeights::PARAM_COUNT);
+    }
+}

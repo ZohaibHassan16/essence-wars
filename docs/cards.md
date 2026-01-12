@@ -1,6 +1,6 @@
 # Starter Card Set Design Document
 
-This document defines the complete starter set of 43 cards for the ai-cardgame engine. All cards follow the established balance formula: **Vanilla baseline = (Cost × 2) + 1 total stats**, with keywords and abilities adjusting this budget accordingly.
+This document defines the complete starter set of 43 cards for the ESSENCE WARS engine. All cards follow the established balance formula: **Vanilla baseline = (Cost × 2) + 1 total stats**, with keywords and abilities adjusting this budget accordingly.
 
 ---
 
