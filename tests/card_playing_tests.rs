@@ -4,7 +4,6 @@
 
 mod common;
 
-use cardgame::actions::Action;
 use cardgame::effects::{EffectTarget, TargetingRule};
 use cardgame::engine::{resolve_spell_target, GameEngine};
 use cardgame::keywords::Keywords;

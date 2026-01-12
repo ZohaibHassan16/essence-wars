@@ -93,10 +93,9 @@ cards:
     tags: [Cultist]
     abilities:
       - trigger: OnPlay
-        target: YourHero
-        effect:
-          type: damage
-          amount: 2
+        effects:
+          - type: damage
+            amount: 2
 
   - id: 10
     name: "Medic Apprentice"
@@ -109,10 +108,9 @@ cards:
     tags: [Healer]
     abilities:
       - trigger: OnPlay
-        target: YourHero
-        effect:
-          type: heal
-          amount: 2
+        effects:
+          - type: heal
+            amount: 2
 
   # === 3-COST CREATURES ===
   - id: 11
@@ -186,10 +184,9 @@ cards:
     tags: [Healer]
     abilities:
       - trigger: StartOfTurn
-        target: YourHero
-        effect:
-          type: heal
-          amount: 1
+        effects:
+          - type: heal
+            amount: 1
 
   - id: 18
     name: "Ambush Predator"
@@ -253,10 +250,10 @@ cards:
     tags: [Mage]
     abilities:
       - trigger: OnPlay
-        target: TargetCreature
-        effect:
-          type: damage
-          amount: 2
+        targeting: TargetEnemyCreature
+        effects:
+          - type: damage
+            amount: 2
 
   # === 5-COST CREATURES ===
   - id: 24
@@ -290,11 +287,11 @@ cards:
     tags: [Soldier]
     abilities:
       - trigger: OnPlay
-        target: AllOtherAllyCreatures
-        effect:
-          type: buff
-          attack: 1
-          health: 1
+        targeting: TargetAllyCreature
+        effects:
+          - type: buff_stats
+            attack: 1
+            health: 1
 
   - id: 27
     name: "Sniper Marksman"
@@ -348,10 +345,9 @@ cards:
     tags: [Giant]
     abilities:
       - trigger: OnPlay
-        target: AllEnemyCreatures
-        effect:
-          type: damage
-          amount: 3
+        effects:
+          - type: damage
+            amount: 3
 
   # === SPELLS ===
   - id: 32
@@ -378,7 +374,7 @@ cards:
     name: "Lightning Bolt"
     cost: 3
     card_type: spell
-    targeting: TargetEnemyCreatureOrHero
+    targeting: TargetAny
     effects:
       - type: damage
         amount: 4
@@ -390,7 +386,7 @@ cards:
     card_type: spell
     targeting: TargetAllyCreature
     effects:
-      - type: buff
+      - type: buff_stats
         attack: 3
         health: 1
       - type: grant_keyword
@@ -402,8 +398,6 @@ cards:
     cost: 2
     card_type: spell
     targeting: TargetEnemyCreature
-    condition:
-      max_health: 4
     effects:
       - type: destroy
     rarity: Uncommon
@@ -416,17 +410,13 @@ cards:
     effects:
       - type: heal
         amount: 3
-        target: YourHero
-      - type: heal
-        amount: 3
-        target: AllAllyCreatures
     rarity: Uncommon
 
   - id: 38
     name: "Obliterate"
     cost: 5
     card_type: spell
-    targeting: TargetCreature
+    targeting: TargetAny
     effects:
       - type: destroy
     rarity: Rare
@@ -439,7 +429,6 @@ cards:
     effects:
       - type: damage
         amount: 3
-        target: AllEnemyCreatures
     rarity: Rare
 
   # === SUPPORTS ===
@@ -460,10 +449,9 @@ cards:
     durability: 4
     triggered_effects:
       - trigger: StartOfTurn
-        target: YourHero
-        effect:
-          type: heal
-          amount: 2
+        effects:
+          - type: heal
+            amount: 2
     rarity: Uncommon
 
   - id: 42
@@ -472,7 +460,8 @@ cards:
     card_type: support
     durability: 3
     passive_effects:
-      - grant_keyword: Rush
+      - modifier:
+          grant_keyword: Rush
     rarity: Rare
 
   - id: 43

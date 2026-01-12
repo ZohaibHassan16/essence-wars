@@ -1,7 +1,10 @@
 //! Common test utilities and helpers shared across all test files.
 
+// Allow dead_code because each test binary is compiled independently,
+// so functions used by other test files appear "unused" to each binary.
+#![allow(dead_code)]
+
 use cardgame::cards::{CardDatabase, CardDefinition, CardType};
-use cardgame::engine::GameEngine;
 use cardgame::keywords::Keywords;
 use cardgame::state::{Creature, CreatureStatus, GameState};
 use cardgame::types::{CardId, PlayerId, Rarity, Slot};
@@ -233,12 +236,6 @@ pub fn card_playing_test_db() -> CardDatabase {
         },
     ];
     CardDatabase::new(cards)
-}
-
-/// Create a game engine for testing with default setup
-pub fn create_test_engine() -> GameEngine<'static> {
-    let db = Box::leak(Box::new(test_card_db()));
-    GameEngine::new(db)
 }
 
 /// Create a valid deck for integration tests using YAML card IDs

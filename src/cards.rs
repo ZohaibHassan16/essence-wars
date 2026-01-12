@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use crate::types::*;
 use crate::keywords::Keywords;
-use crate::effects::{Trigger, TargetingRule, CreatureFilter};
+use crate::effects::{Trigger, TargetingRule};
 
 /// Definition of a triggered ability on a creature
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -320,6 +320,7 @@ impl CardDatabase {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::effects::CreatureFilter;
 
     fn create_test_creature() -> CardDefinition {
         CardDefinition {
@@ -508,8 +509,8 @@ cards:
         let db = CardDatabase::load_from_directory("data/cards")
             .expect("Failed to load cards from directory");
 
-        // Verify we loaded the starter set (15 cards)
-        assert_eq!(db.len(), 15);
+        // Verify we loaded the starter set (43 cards)
+        assert_eq!(db.len(), 43);
 
         // Verify specific cards exist
         let eager_recruit = db.get(CardId(1)).expect("Card 1 not found");
