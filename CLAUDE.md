@@ -20,11 +20,15 @@ cargo run --release --bin arena -- --deck1 aggressive_assault --deck2 defensive_
 cargo run --release --bin arena -- --list-decks
 cargo run --release --bin arena -- --progress --games 1000  # Show progress bar
 
-# Run weight tuning
-cargo run --release --bin tune -- --mode vs-random --generations 50
-cargo run --release --bin tune -- --mode vs-greedy --generations 50
-cargo run --release --bin tune -- --mode specialist --deck aggressive_assault --opponent defensive_control
-cargo run --release --bin tune -- --output tuned_weights.toml
+# Run weight tuning (NEW: outputs to experiments/ directory)
+cargo run --release --bin tune -- --tag baseline --generations 50
+cargo run --release --bin tune -- --tag vs_greedy --mode vs-greedy --generations 50
+cargo run --release --bin tune -- --tag specialist --mode specialist --deck aggressive_assault --opponent defensive_control
+
+# Analyze tuning results (NEW: unified analysis pipeline)
+./scripts/analyze-tuning.sh --latest                           # Analyze latest experiment
+./scripts/analyze-tuning.sh experiments/mcts/2026-01-12_1430_baseline  # Analyze specific
+./scripts/analyze-tuning.sh --all                              # Analyze all experiments
 
 # Run benchmarks
 cargo bench
@@ -74,6 +78,27 @@ ai-cardgame/
 │   └── decks/
 │       ├── aggressive_assault.toml  # Aggro deck
 │       └── defensive_control.toml   # Control deck
+├── experiments/             # Experiment outputs (gitignored)
+│   ├── mcts/                # MCTS tuning experiments
+│   │   └── YYYY-MM-DD_HHMM_tag/
+│   │       ├── train.log    # Full training log
+│   │       ├── weights.toml # Best weights found
+│   │       ├── stats.csv    # Parsed metrics (generated)
+│   │       ├── summary.txt  # Quick stats
+│   │       └── plots/       # Visualizations (generated)
+│   ├── ppo/                 # Future: PPO training runs
+│   └── alphazero/           # Future: AlphaZero runs
+├── python/
+│   ├── cardgame/
+│   │   ├── infra/           # Experiment management
+│   │   ├── analysis/        # Visualization & stats tools
+│   │   │   ├── parse_log.py
+│   │   │   └── visualize.py
+│   │   └── scripts/         # Test scripts
+│   └── scripts/
+│       └── analyze_tuning.py # Main analysis CLI
+├── scripts/
+│   └── analyze-tuning.sh    # Wrapper script for easy usage
 ├── tests/
 │   ├── engine_tests.rs
 │   ├── effect_queue_tests.rs

@@ -1,5 +1,7 @@
 # Quick Reference: MCTS Tuning Pipeline
 
+**📖 For the complete end-to-end workflow (including how to use the weights), see [mcts-tuning-workflow.md](mcts-tuning-workflow.md)**
+
 ## Directory Structure (New)
 
 ```

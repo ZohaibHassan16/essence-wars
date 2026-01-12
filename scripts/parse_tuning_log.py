@@ -1,4 +1,37 @@
 #!/usr/bin/env python3
+"""
+⚠️  DEPRECATED - This script is obsolete.
+
+Use the new unified analysis pipeline instead:
+    ./scripts/analyze-tuning.sh --latest
+
+Or directly:
+    PYTHONPATH=python uv run --with pandas --with matplotlib --with seaborn --with numpy \
+        python python/scripts/analyze_tuning.py --latest
+
+The functionality has been moved to:
+    python/cardgame/analysis/parse_log.py (module)
+    python/scripts/analyze_tuning.py (CLI)
+"""
+
+import sys
+
+def main():
+    print("⚠️  This script is deprecated!")
+    print("")
+    print("Please use the new unified analysis pipeline:")
+    print("    ./scripts/analyze-tuning.sh --latest")
+    print("")
+    print("See docs/tuning-pipeline-reference.md for details.")
+    sys.exit(1)
+
+if __name__ == '__main__':
+    main()
+
+# ============================================================================
+# OLD CODE BELOW - KEPT FOR REFERENCE
+# ============================================================================
+
 """Parse tuning log output and generate CSV for analysis."""
 
 import re

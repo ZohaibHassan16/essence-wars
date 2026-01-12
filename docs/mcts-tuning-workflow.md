@@ -8,23 +8,35 @@
 ## STEP 1: TUNE WEIGHTS
 
 ```bash
-# ════════════════════
+# Run tuning experiment (outputs to experiments/mcts/)
 $ cargo run --release --bin tune -- \
+    --tag my_experiment \
     --mode vs-greedy \
-    --generations 50 \
-    --output tuned.toml
+    --generations 50
 ```
 
-* Output: tuned.toml with 20 optimized weight parameters
+* Creates: `experiments/mcts/2026-01-12_HHMM_my_experiment/`
+* Output: `weights.toml` with 20 optimized weight parameters
+* Also creates: `train.log`, `summary.txt`, and `plots/` (after analysis)
+
+## STEP 1b: ANALYZE RESULTS
+
+```bash
+# Analyze and visualize the tuning run
+$ ./scripts/analyze-tuning.sh --latest
+```
+
+* Generates: `stats.csv`, `plots/overview.png`, `plots/efficiency.png`, etc.
+* Creates: `plots/summary_report.txt` with detailed metrics
 
 
 ## STEP 2: USE WITH GREEDY BOT
 
 ```bash
-# ═══════════════════════════
+# Use the tuned weights with GreedyBot
 $ cargo run --release --bin arena -- \
     --bot1 greedy --bot2 greedy \
-    --weights1 tuned.toml \
+    --weights1 experiments/mcts/2026-01-12_HHMM_my_experiment/weights.toml \
     --games 100
 ```
 
@@ -32,13 +44,13 @@ $ cargo run --release --bin arena -- \
 * → Wins ~90% against default GreedyBot
 
 
-## STEP 3: USE WITH MCTS BOT  ← NEW!
+## STEP 3: USE WITH MCTS BOT  ← POWERFUL!
 
 ```bash
-# ═════════════════════════════════
+# Use tuned weights to improve MCTS rollouts
 $ cargo run --release --bin arena -- \
     --bot1 mcts --bot2 mcts \
-    --weights1 tuned.toml \
+    --weights1 experiments/mcts/2026-01-12_HHMM_my_experiment/weights.toml \
     --games 20
 ```
 
