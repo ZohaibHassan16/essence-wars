@@ -150,8 +150,8 @@ impl MatchStats {
         format!(
             "Match: {} vs {}\n\
              Games: {}\n\
-             {} wins: {} ({:.1}%)\n\
-             {} wins: {} ({:.1}%)\n\
+             Bot 1 ({}) wins: {} ({:.1}%)\n\
+             Bot 2 ({}) wins: {} ({:.1}%)\n\
              Draws: {} ({:.1}%)\n\
              Avg turns: {:.1}\n\
              Avg time: {:.2}ms/game\n\

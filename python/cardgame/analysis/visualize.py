@@ -473,8 +473,25 @@ def create_markdown_report(df: pd.DataFrame, output_dir: Path, exp_name: str = "
     report.append("### 💡 Recommendations\n")
     recommendations = []
     
-    if sigma_reduction < 30:
-        recommendations.append("🔄 **Continue training** - Run 50-100 more generations for better convergence")
+    # Check for long plateau (more important than sigma alone)
+    plateau_detected = False
+    if len(df) >= 20:
+        recent_window = max(10, len(df) // 4)  # Last 25% or at least 10 gens
+        recent_fitness = df['fitness'].iloc[-recent_window:]
+        fitness_range = recent_fitness.max() - recent_fitness.min()
+        
+        # If fitness barely moved in last 25% of training
+        if fitness_range < 1.0 and len(df) >= 50:
+            plateau_detected = True
+            recommendations.append("🎯 **Plateau reached** - Win rate has stabilized, additional training unlikely to improve")
+            recommendations.append("✅ **Ready for deployment** - Weights are well-tuned for this opponent")
+    
+    # Only recommend more training if NOT plateaued AND sigma still high
+    if not plateau_detected:
+        if sigma_reduction < 30:
+            recommendations.append("🔄 **Continue training** - Run 50-100 more generations for better convergence")
+        elif sigma_reduction < 50 and final_wr < 85:
+            recommendations.append("🔄 **More training recommended** - Performance could still improve")
     
     if final_wr < 70:
         recommendations.append("🎮 **Try different mode** - Test vs-greedy or multi-opponent for different challenges")
@@ -482,9 +499,17 @@ def create_markdown_report(df: pd.DataFrame, output_dir: Path, exp_name: str = "
     if df['gen_time'].std() > df['gen_time'].mean() * 0.3:
         recommendations.append("⏱️ **Inconsistent timing** - Consider adjusting parallel settings or reducing variance")
     
-    if sigma_reduction > 50 and final_wr >= 85:
-        recommendations.append("✅ **Ready for deployment** - Weights are well-tuned and converged")
+    # Deployment recommendations
+    if (sigma_reduction > 40 or plateau_detected) and final_wr >= 85:
+        if not plateau_detected:  # Don't duplicate if already mentioned
+            recommendations.append("✅ **Ready for deployment** - Weights are well-tuned and converged")
         recommendations.append("📊 **Next step** - Test in arena against various opponents")
+        recommendations.append("🧪 **Experiment** - Try these weights with MCTS bot for improved rollouts")
+    
+    # First-player advantage detection
+    if final_wr >= 95:
+        recommendations.append("⚠️ **Very high win rate** - May indicate strong first-player advantage in current decks")
+        recommendations.append("🔍 **Verify balance** - Test with swapped positions or different deck matchups")
     
     if len(recommendations) == 0:
         recommendations.append("✓ Training progressing normally - continue as planned")
@@ -583,6 +608,25 @@ def create_markdown_report(df: pd.DataFrame, output_dir: Path, exp_name: str = "
     else:
         report.append(" - Weak correlation ⚠️")
     report.append("\n")
+    
+    # First-player advantage analysis
+    if final_wr >= 95:
+        report.append("### ⚖️ Balance & First-Player Advantage\n")
+        report.append(f"**Win Rate Analysis:** {final_wr:.1f}% indicates near-perfect performance\n")
+        report.append("\n**Possible explanations:**\n")
+        report.append("1. **Excellent tuning** - Weights are highly optimized for this matchup\n")
+        report.append("2. **First-player advantage** - Starting player may have inherent advantage\n")
+        report.append("3. **Deck imbalance** - Current deck composition may favor aggressive starts\n")
+        report.append("\n**To investigate:**\n")
+        report.append("```bash\n")
+        report.append("# Test with reversed positions\n")
+        report.append("cargo run --release --bin arena -- \\\n")
+        report.append("  --bot1 greedy --bot2 greedy \\\n")
+        report.append("  --weights2 YOUR_WEIGHTS.toml \\\n")
+        report.append("  --games 100\n")
+        report.append("```\n")
+        report.append("If bot2 now wins 95%+, first-player advantage is confirmed.\n")
+        report.append("\n")
     
     # Generation Table (for researchers)
     report.append("---\n")
