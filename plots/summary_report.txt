@@ -1,0 +1,53 @@
+================================================================================
+CMA-ES TUNING SUMMARY REPORT
+================================================================================
+
+📊 OVERALL STATISTICS
+--------------------------------------------------------------------------------
+Total Generations:      19
+Total Training Time:    3.5 minutes (0.06 hours)
+Avg Time per Gen:       11.08 seconds
+
+📈 FITNESS IMPROVEMENT
+--------------------------------------------------------------------------------
+Initial Fitness:        67.58
+Final Fitness:          90.00
+Best Fitness:           90.00 (Gen 16)
+Total Improvement:      +22.42 (+33.2%)
+
+🏆 WIN RATE ANALYSIS
+--------------------------------------------------------------------------------
+Initial Win Rate:       76.3%
+Final Win Rate:         92.4%
+Best Win Rate:          92.4% (Gen 16)
+Improvement:            +16.1 percentage points
+
+🎯 CONVERGENCE STATUS
+--------------------------------------------------------------------------------
+Initial Sigma:          0.2755
+Final Sigma:            0.3615
+Sigma Reduction:        -31.2%
+Status:                 STILL EXPLORING
+Recommendation:         Algorithm still exploring. Recommend continuing tuning.
+
+⚡ EFFICIENCY METRICS
+--------------------------------------------------------------------------------
+Fitness per Minute:     6.3905
+Time to 80% WR:         0.8 minutes
+
+🎖️  KEY MILESTONES
+--------------------------------------------------------------------------------
+25% Win Rate:          Gen 0 (0.2 min)
+50% Win Rate:          Gen 0 (0.2 min)
+75% Win Rate:          Gen 0 (0.2 min)
+90% Win Rate:          Gen 9 (1.9 min)
+
+📚 LEARNING PHASES
+--------------------------------------------------------------------------------
+Early Phase (0-20%):    +7.42 fitness
+Mid Phase (20-80%):     +11.97 fitness
+Late Phase (80-100%):   +3.03 fitness
+
+================================================================================
+END OF REPORT
+================================================================================

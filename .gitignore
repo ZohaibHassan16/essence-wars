@@ -49,3 +49,48 @@ perf.data.old
 # Environment files
 .env
 .env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.manifest
+*.spec
+
+# Python virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# uv
+.python-version
+uv.lock
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ruff
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# maturin build
+python/cardgame/_cardgame*.so
+python/cardgame/_cardgame*.pyd
