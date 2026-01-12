@@ -1,0 +1,156 @@
+name: "Starter Set"
+cards:
+  # === 1-COST CREATURES ===
+  - id: 1
+    name: "Eager Recruit"
+    cost: 1
+    card_type: creature
+    attack: 2
+    health: 1
+    keywords: []
+    rarity: Common
+    tags: [Soldier]
+
+  - id: 2
+    name: "Village Guard"
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 2
+    keywords: []
+    rarity: Common
+    tags: [Soldier]
+
+  - id: 3
+    name: "Nimble Scout"
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 1
+    keywords: [Rush]
+    rarity: Common
+    tags: [Soldier]
+
+  - id: 4
+    name: "Toxic Spider"
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 1
+    keywords: [Lethal]
+    rarity: Common
+    tags: [Beast]
+
+  # === 2-COST CREATURES ===
+  - id: 5
+    name: "Iron Defender"
+    cost: 2
+    card_type: creature
+    attack: 1
+    health: 4
+    keywords: [Guard]
+    rarity: Common
+    tags: [Soldier]
+
+  - id: 6
+    name: "Frontier Ranger"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: [Ranged]
+    rarity: Common
+    tags: [Soldier]
+
+  - id: 7
+    name: "Young Knight"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: []
+    rarity: Common
+    tags: [Soldier]
+
+  - id: 8
+    name: "Shielded Squire"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: [Shield]
+    rarity: Common
+    tags: [Soldier]
+
+  # === 3-COST CREATURES ===
+  - id: 11
+    name: "Centaur Charger"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: [Rush]
+    rarity: Common
+    tags: [Beast]
+
+  - id: 12
+    name: "Blade Dancer"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: [Quick]
+    rarity: Uncommon
+    tags: [Soldier]
+
+  - id: 13
+    name: "Veteran Guardian"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 5
+    keywords: [Guard]
+    rarity: Common
+    tags: [Soldier]
+
+  - id: 15
+    name: "War Elephant"
+    cost: 3
+    card_type: creature
+    attack: 4
+    health: 3
+    keywords: []
+    rarity: Common
+    tags: [Beast]
+
+  # === SPELLS ===
+  - id: 32
+    name: "Quick Strike"
+    cost: 1
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 2
+    rarity: Common
+
+  - id: 33
+    name: "Arcane Intellect"
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: draw
+        count: 2
+    rarity: Common
+
+  # === SUPPORTS ===
+  - id: 40
+    name: "War Drums"
+    cost: 3
+    card_type: support
+    durability: 3
+    passive_effects:
+      - modifier:
+          attack_bonus: 1
+    rarity: Uncommon
