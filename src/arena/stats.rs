@@ -106,6 +106,8 @@ pub struct MatchStats {
     pub bot1_name: String,
     /// Bot 2 name
     pub bot2_name: String,
+    /// Wall-clock time for the entire match (set separately for parallel execution)
+    pub wall_clock_time: Option<Duration>,
 }
 
 impl MatchStats {
@@ -115,7 +117,13 @@ impl MatchStats {
             overall: MatchupStats::new(),
             bot1_name,
             bot2_name,
+            wall_clock_time: None,
         }
+    }
+
+    /// Set the wall-clock time for the match (for parallel execution).
+    pub fn set_wall_clock_time(&mut self, time: Duration) {
+        self.wall_clock_time = Some(time);
     }
 
     /// Record a game result.
@@ -125,6 +133,20 @@ impl MatchStats {
 
     /// Print a summary of the match.
     pub fn summary(&self) -> String {
+        let time_info = match self.wall_clock_time {
+            Some(wall_clock) => {
+                let speedup = self.overall.total_time.as_secs_f64() / wall_clock.as_secs_f64().max(0.001);
+                format!(
+                    "Wall-clock time: {:.2}s ({:.1}x speedup)\n\
+                     CPU time: {:.2}s",
+                    wall_clock.as_secs_f64(),
+                    speedup,
+                    self.overall.total_time.as_secs_f64()
+                )
+            }
+            None => format!("Total time: {:.2}s", self.overall.total_time.as_secs_f64()),
+        };
+
         format!(
             "Match: {} vs {}\n\
              Games: {}\n\
@@ -133,7 +155,7 @@ impl MatchStats {
              Draws: {} ({:.1}%)\n\
              Avg turns: {:.1}\n\
              Avg time: {:.2}ms/game\n\
-             Total time: {:.2}s",
+             {}",
             self.bot1_name,
             self.bot2_name,
             self.overall.games,
@@ -147,7 +169,7 @@ impl MatchStats {
             self.overall.draw_rate() * 100.0,
             self.overall.avg_turns(),
             self.overall.avg_time_ms(),
-            self.overall.total_time.as_secs_f64(),
+            time_info,
         )
     }
 }

@@ -8,9 +8,12 @@
 
 use std::path::PathBuf;
 use std::process;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use clap::Parser;
+use rayon::prelude::*;
 
 use cardgame::arena::{ActionLogger, ActionRecord, MatchStats, StateSnapshot};
 use cardgame::bots::{Bot, BotWeights, GreedyBot, MctsBot, MctsConfig, RandomBot};
@@ -91,6 +94,18 @@ struct Args {
     /// Disable parallel execution (run sequentially)
     #[arg(long)]
     sequential: bool,
+
+    /// Number of parallel trees for MCTS root parallelization (1 = sequential)
+    #[arg(long, default_value = "1")]
+    mcts_trees: u32,
+
+    /// Number of simulations per MCTS tree
+    #[arg(long, default_value = "500")]
+    mcts_sims: u32,
+
+    /// Number of parallel rollouts per MCTS leaf (1 = sequential)
+    #[arg(long, default_value = "1")]
+    mcts_rollouts: u32,
 }
 
 /// Bot types that can participate in arena matches.
@@ -211,6 +226,22 @@ fn main() {
         None
     };
 
+    // Configure thread pool
+    let num_threads = if args.threads == 0 {
+        rayon::current_num_threads()
+    } else {
+        args.threads
+    };
+
+    if args.threads > 0 {
+        rayon::ThreadPoolBuilder::new()
+            .num_threads(args.threads)
+            .build_global()
+            .ok(); // Ignore if already initialized
+    }
+
+    let parallel = !args.sequential && logger.is_none(); // Can't parallelize with logging
+
     // Print match info
     println!("Arena Match");
     println!("===========");
@@ -220,22 +251,59 @@ fn main() {
         weights2.as_ref().map(|w| format!(" [weights: {}]", w.name)).unwrap_or_default());
     println!("Games: {}", args.games);
     println!("Base seed: {}", seed);
+    if parallel {
+        println!("Threads: {} (parallel)", num_threads);
+    } else {
+        println!("Mode: sequential{}", if logger.is_some() { " (logging enabled)" } else { "" });
+    }
     println!();
 
+    // Create MCTS config
+    let mcts_config = MctsConfig {
+        simulations: args.mcts_sims,
+        exploration: 1.414,
+        max_rollout_depth: 100,
+        parallel_trees: args.mcts_trees,
+        leaf_rollouts: args.mcts_rollouts,
+    };
+
+    // Print MCTS config if using MCTS
+    if matches!(bot1_type, BotType::Mcts) || matches!(bot2_type, BotType::Mcts) {
+        println!("MCTS: {} sims x {} trees x {} rollouts/leaf",
+            mcts_config.simulations, mcts_config.parallel_trees, mcts_config.leaf_rollouts);
+    }
+
     // Run the match
-    let stats = run_match(
-        &card_db,
-        &bot1_type,
-        &bot2_type,
-        &deck1,
-        &deck2,
-        args.games,
-        seed,
-        &mut logger,
-        args.progress,
-        weights1.as_ref(),
-        weights2.as_ref(),
-    );
+    let stats = if parallel {
+        run_match_parallel(
+            &card_db,
+            &bot1_type,
+            &bot2_type,
+            &deck1,
+            &deck2,
+            args.games,
+            seed,
+            args.progress,
+            weights1.as_ref(),
+            weights2.as_ref(),
+            &mcts_config,
+        )
+    } else {
+        run_match_sequential(
+            &card_db,
+            &bot1_type,
+            &bot2_type,
+            &deck1,
+            &deck2,
+            args.games,
+            seed,
+            &mut logger,
+            args.progress,
+            weights1.as_ref(),
+            weights2.as_ref(),
+            &mcts_config,
+        )
+    };
 
     // Print results
     println!("{}", stats.summary());
@@ -288,8 +356,98 @@ fn load_weights(path: &Option<PathBuf>, bot_name: &str) -> Option<BotWeights> {
     }
 }
 
-/// Run a match between two bots.
-fn run_match(
+/// Run a match between two bots (parallel version).
+fn run_match_parallel(
+    card_db: &CardDatabase,
+    bot1_type: &BotType,
+    bot2_type: &BotType,
+    deck1: &[CardId],
+    deck2: &[CardId],
+    games: usize,
+    base_seed: u64,
+    show_progress: bool,
+    weights1: Option<&BotWeights>,
+    weights2: Option<&BotWeights>,
+    mcts_config: &MctsConfig,
+) -> MatchStats {
+    let start_time = Instant::now();
+    let completed = Arc::new(AtomicUsize::new(0));
+    let completed_clone = completed.clone();
+
+    // Progress reporting thread
+    let progress_handle = if show_progress {
+        let total = games;
+        Some(std::thread::spawn(move || {
+            let mut last_progress = 0;
+            loop {
+                std::thread::sleep(std::time::Duration::from_millis(100));
+                let done = completed_clone.load(Ordering::Relaxed);
+                if done >= total {
+                    break;
+                }
+                let progress = (done * 100) / total;
+                if progress > last_progress {
+                    let elapsed = start_time.elapsed().as_secs_f64();
+                    let games_per_sec = done as f64 / elapsed.max(0.001);
+                    let eta = if games_per_sec > 0.0 {
+                        (total - done) as f64 / games_per_sec
+                    } else {
+                        0.0
+                    };
+                    eprint!("\rProgress: {:3}% ({}/{}) | {:.0} games/sec | ETA: {:.1}s    ",
+                        progress, done, total, games_per_sec, eta);
+                    last_progress = progress;
+                }
+            }
+        }))
+    } else {
+        None
+    };
+
+    // Run games in parallel
+    let results: Vec<_> = (0..games)
+        .into_par_iter()
+        .map(|i| {
+            let game_seed = base_seed.wrapping_add(i as u64);
+            let result = run_single_game_no_log(
+                card_db,
+                bot1_type,
+                bot2_type,
+                deck1,
+                deck2,
+                game_seed,
+                weights1,
+                weights2,
+                mcts_config,
+            );
+            completed.fetch_add(1, Ordering::Relaxed);
+            result
+        })
+        .collect();
+
+    // Wait for progress thread
+    if let Some(handle) = progress_handle {
+        let _ = handle.join();
+        eprintln!("\rProgress: 100% ({}/{}) | Done!                              ", games, games);
+    }
+
+    let wall_clock_time = start_time.elapsed();
+
+    // Aggregate results
+    let mut stats = MatchStats::new(
+        bot1_type.name().to_string(),
+        bot2_type.name().to_string(),
+    );
+    for (winner, turns, duration) in results {
+        stats.record_game(winner, turns, duration);
+    }
+    stats.set_wall_clock_time(wall_clock_time);
+
+    stats
+}
+
+/// Run a match between two bots (sequential version with logging support).
+fn run_match_sequential(
     card_db: &CardDatabase,
     bot1_type: &BotType,
     bot2_type: &BotType,
@@ -301,6 +459,7 @@ fn run_match(
     show_progress: bool,
     weights1: Option<&BotWeights>,
     weights2: Option<&BotWeights>,
+    mcts_config: &MctsConfig,
 ) -> MatchStats {
     let mut stats = MatchStats::new(
         bot1_type.name().to_string(),
@@ -322,6 +481,7 @@ fn run_match(
             logger,
             weights1,
             weights2,
+            mcts_config,
         );
         stats.record_game(result.0, result.1, result.2);
 
@@ -363,6 +523,7 @@ fn run_single_game(
     logger: &mut Option<ActionLogger>,
     weights1: Option<&BotWeights>,
     weights2: Option<&BotWeights>,
+    mcts_config: &MctsConfig,
 ) -> (Option<PlayerId>, u32, Duration) {
     let start = Instant::now();
 
@@ -384,14 +545,13 @@ fn run_single_game(
     };
 
     // Create MCTS bots with custom rollout weights if provided
-    let mcts_config = MctsConfig { simulations: 500, exploration: 1.414, max_rollout_depth: 100 };
     let mut mcts_bot1 = match weights1 {
         Some(w) => MctsBot::with_config_and_weights(card_db, mcts_config.clone(), w, bot1_seed),
         None => MctsBot::with_config(card_db, mcts_config.clone(), bot1_seed),
     };
     let mut mcts_bot2 = match weights2 {
-        Some(w) => MctsBot::with_config_and_weights(card_db, mcts_config, w, bot2_seed),
-        None => MctsBot::with_config(card_db, mcts_config, bot2_seed),
+        Some(w) => MctsBot::with_config_and_weights(card_db, mcts_config.clone(), w, bot2_seed),
+        None => MctsBot::with_config(card_db, mcts_config.clone(), bot2_seed),
     };
 
     // Reset bots
@@ -482,6 +642,100 @@ fn run_single_game(
             engine.state.players[1].life,
         );
     }
+
+    (winner, turns, duration)
+}
+
+/// Run a single game without logging (for parallel execution).
+/// Returns (winner, turns, duration).
+fn run_single_game_no_log(
+    card_db: &CardDatabase,
+    bot1_type: &BotType,
+    bot2_type: &BotType,
+    deck1: &[CardId],
+    deck2: &[CardId],
+    seed: u64,
+    weights1: Option<&BotWeights>,
+    weights2: Option<&BotWeights>,
+    mcts_config: &MctsConfig,
+) -> (Option<PlayerId>, u32, Duration) {
+    let start = Instant::now();
+
+    // Create bots with appropriate seeds and weights
+    let bot1_seed = seed;
+    let bot2_seed = seed.wrapping_add(1000000);
+
+    let mut random_bot1 = RandomBot::new(bot1_seed);
+    let mut random_bot2 = RandomBot::new(bot2_seed);
+
+    // Create greedy bots with custom weights if provided
+    let mut greedy_bot1 = match weights1 {
+        Some(w) => GreedyBot::from_bot_weights(card_db, w, None, bot1_seed),
+        None => GreedyBot::new(card_db, bot1_seed),
+    };
+    let mut greedy_bot2 = match weights2 {
+        Some(w) => GreedyBot::from_bot_weights(card_db, w, None, bot2_seed),
+        None => GreedyBot::new(card_db, bot2_seed),
+    };
+
+    // Create MCTS bots with custom rollout weights if provided
+    let mut mcts_bot1 = match weights1 {
+        Some(w) => MctsBot::with_config_and_weights(card_db, mcts_config.clone(), w, bot1_seed),
+        None => MctsBot::with_config(card_db, mcts_config.clone(), bot1_seed),
+    };
+    let mut mcts_bot2 = match weights2 {
+        Some(w) => MctsBot::with_config_and_weights(card_db, mcts_config.clone(), w, bot2_seed),
+        None => MctsBot::with_config(card_db, mcts_config.clone(), bot2_seed),
+    };
+
+    // Create and start game engine
+    let mut engine = GameEngine::new(card_db);
+    engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
+
+    // Main game loop
+    let max_actions = 1000;
+    let mut action_count = 0;
+
+    while !engine.is_game_over() && action_count < max_actions {
+        let current_player = engine.current_player();
+
+        // Select action based on current player and bot type
+        let action = if current_player == PlayerId::PLAYER_ONE {
+            match bot1_type {
+                BotType::Random => {
+                    let state_tensor = engine.get_state_tensor();
+                    let legal_mask = engine.get_legal_action_mask();
+                    let legal_actions = engine.get_legal_actions();
+                    random_bot1.select_action(&state_tensor, &legal_mask, &legal_actions)
+                }
+                BotType::Greedy => greedy_bot1.select_action_with_engine(&engine),
+                BotType::Mcts => mcts_bot1.select_action_with_engine(&engine),
+            }
+        } else {
+            match bot2_type {
+                BotType::Random => {
+                    let state_tensor = engine.get_state_tensor();
+                    let legal_mask = engine.get_legal_action_mask();
+                    let legal_actions = engine.get_legal_actions();
+                    random_bot2.select_action(&state_tensor, &legal_mask, &legal_actions)
+                }
+                BotType::Greedy => greedy_bot2.select_action_with_engine(&engine),
+                BotType::Mcts => mcts_bot2.select_action_with_engine(&engine),
+            }
+        };
+
+        // Apply action
+        if engine.apply_action(action).is_err() {
+            break;
+        }
+
+        action_count += 1;
+    }
+
+    // Get final result
+    let winner = engine.winner();
+    let turns = engine.turn_number() as u32;
+    let duration = start.elapsed();
 
     (winner, turns, duration)
 }

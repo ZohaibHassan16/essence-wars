@@ -10,9 +10,15 @@
 2.1 Build ML/AI Training and Inference Infrastructure (Gym Bridge, Python Gymnasium / OpenAI Gym)
 3. Train first PPO and AlphaZero Agents as Proof of Concept
 4. Expand Cards and Engine
+4.1 Develop Lore, Background, Characters, Wordbuilding, create Artwork and Flavor Text, make it fun to play, not just fun to research with. Factions, Champions, Setting. Drawing Inspiration from Hearthstone/Warcraft, MTG and other Fantasy / Steampunk Fantasy Worlds, without blatantly copying IP.
 5. Focus on ML AI Research (Specialist vs Generalist, different PPO Approaches, different AlphaZero Approaches)
 5.1 Transfer Learning: hidden information, randomness, etc
 5.2 adding new sets with new cards and combos, does the agent perform well without retraining?
-6. Build Visualization Web Client
-6.1 AI vs AI (Agents, Bots) Mode with Research focus
-6.2 Human vs AI (Fun Mode to get researchers hooked)
+6. Build Visualization Web Client, host on huggingface.ai space
+6.1 Research Mode: AI vs AI (Agents, Bots) Mode with Research focus
+6.2 Play Mode: Human vs AI (Fun Mode to get researchers hooked)
+6.3 Create essence-wars.ai website that links to hugginface.ai space. Two Fold Scope: Gathering Gaming Data from Players wanting to play against the Agents. Showcasing our ML/AI Research, and getting other Researchers involved, and possibly contributors for Infrastructure Work (Card Expansion, Engine Maintenance, Bug Fixing, Github Issues, etc). All Open Source, no charging, no monetization, maybe a patron or github/huggingface equivalent.
+7. Ongoing Research and Expansion
+7.1 More Cards, maybe a few more keywords (one per expansion at most, capped at 20?)
+7.2 Looking into LLM research. SFT Finetuning via QLoRA Adapters for existing LLMs. Possibly pretraining on gathered data sets. 
+7.3 Building an Orchestrator that enables LLMs to play against PPO and AlphaZero Agents, and captures reasoning output for training data especially for LLMs

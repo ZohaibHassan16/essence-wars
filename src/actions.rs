@@ -17,7 +17,7 @@ use crate::types::Slot;
 /// - 0: no target
 /// - 1-5: enemy slots 0-4
 /// - 6: self (the creature using ability)
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Target {
     /// No target required
     NoTarget,
@@ -53,7 +53,7 @@ impl Target {
 }
 
 /// Represents all possible game actions
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Action {
     /// Play a card from hand to a board slot
     PlayCard {

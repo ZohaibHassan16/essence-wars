@@ -23,9 +23,17 @@ use cardgame::types::CardId;
 #[command(name = "tune")]
 #[command(about = "Optimize bot weights using CMA-ES evolution strategy", long_about = None)]
 struct Args {
-    /// Tuning mode: vs-random, vs-greedy, generalist, specialist
+    /// Tuning mode: vs-random, vs-greedy, multi-opponent, generalist, specialist
     #[arg(long, default_value = "vs-random")]
     mode: String,
+
+    /// Enable parallel game evaluation (uses all CPU cores)
+    #[arg(long, default_value = "true")]
+    parallel: bool,
+
+    /// MCTS simulations for multi-opponent mode
+    #[arg(long, default_value = "200")]
+    mcts_sims: u32,
 
     /// Number of CMA-ES generations
     #[arg(long, short = 'g', default_value = "50")]
@@ -42,6 +50,10 @@ struct Args {
     /// Initial sigma (step size) for CMA-ES
     #[arg(long, default_value = "0.3")]
     sigma: f64,
+
+    /// Minimum sigma to stop (convergence threshold)
+    #[arg(long, default_value = "0.001")]
+    min_sigma: f64,
 
     /// Target win rate to stop early (0.0 to 1.0)
     #[arg(long)]
@@ -108,6 +120,7 @@ fn main() {
     let tuning_mode = match args.mode.as_str() {
         "vs-random" => TuningMode::VsRandom,
         "vs-greedy" => TuningMode::VsGreedy,
+        "multi-opponent" => TuningMode::MultiOpponent,
         "generalist" => {
             // Use all deck combinations
             let matchups = create_generalist_matchups(&deck_registry, &card_db);
@@ -142,7 +155,7 @@ fn main() {
             TuningMode::Specialist { deck, opponent_deck }
         }
         _ => {
-            eprintln!("Unknown mode: {}. Available: vs-random, vs-greedy, generalist, specialist", args.mode);
+            eprintln!("Unknown mode: {}. Available: vs-random, vs-greedy, multi-opponent, generalist, specialist", args.mode);
             process::exit(1);
         }
     };
@@ -153,6 +166,8 @@ fn main() {
         mode: tuning_mode,
         seed: args.seed,
         max_actions: 500,
+        parallel: args.parallel,
+        mcts_sims: args.mcts_sims,
     };
 
     // Create CMA-ES config
@@ -162,6 +177,7 @@ fn main() {
         initial_sigma: args.sigma,
         max_generations: args.generations,
         target_fitness,
+        min_sigma: args.min_sigma,
         seed: args.seed,
     };
 
@@ -188,11 +204,15 @@ fn main() {
     println!("Weight Tuning");
     println!("=============");
     println!("Mode: {}", args.mode);
+    println!("Parallel: {}", args.parallel);
     println!("Generations: {}", args.generations);
     println!("Population: {}", cmaes_config.population_size.unwrap_or(4 + (3.0 * (20.0_f64).ln()).floor() as usize));
     println!("Games/eval: {}", args.games);
     println!("Initial sigma: {:.3}", args.sigma);
     println!("Seed: {}", args.seed);
+    if args.mode == "multi-opponent" {
+        println!("MCTS sims: {}", args.mcts_sims);
+    }
     if let Some(wr) = args.target_win_rate {
         println!("Target win rate: {:.1}%", wr * 100.0);
     }
@@ -251,11 +271,13 @@ fn main() {
     }
 
     let total_time = start_time.elapsed();
+    let stop_reason = cmaes.stop_reason(best_fitness).unwrap_or("unknown");
 
     // Print final results
     println!();
     println!("Optimization Complete");
     println!("=====================");
+    println!("Stop reason: {}", stop_reason);
     println!("Total time: {:.1}s", total_time.as_secs_f64());
     println!("Generations: {}", cmaes.generation());
     println!("Evaluations: {}", evaluator.eval_count());

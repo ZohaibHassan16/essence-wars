@@ -93,6 +93,7 @@ dependencies = [
  "clap",
  "criterion",
  "rand",
+ "rayon",
  "serde",
  "serde_yaml",
  "thiserror",

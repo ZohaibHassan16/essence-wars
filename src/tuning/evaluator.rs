@@ -3,10 +3,14 @@
 //! Supports:
 //! - Generalist mode: Evaluate across multiple deck matchups
 //! - Specialist mode: Optimize for a single deck matchup
+//! - Multi-opponent evaluation for robust weights
+//! - Parallel game execution for fast evaluation
 
 use std::time::{Duration, Instant};
 
-use crate::bots::{Bot, GreedyBot, GreedyWeights, RandomBot};
+use rayon::prelude::*;
+
+use crate::bots::{Bot, GreedyBot, GreedyWeights, MctsBot, MctsConfig, RandomBot};
 use crate::cards::CardDatabase;
 use crate::engine::GameEngine;
 use crate::types::{CardId, PlayerId};
@@ -18,6 +22,8 @@ pub enum TuningMode {
     VsRandom,
     /// Optimize weights to perform well against default Greedy baseline
     VsGreedy,
+    /// Optimize weights against multiple opponents (Random, Greedy, MCTS)
+    MultiOpponent,
     /// Optimize weights across multiple deck matchups (generalist)
     Generalist {
         /// List of (deck1, deck2) matchups to evaluate
@@ -43,6 +49,10 @@ pub struct EvaluatorConfig {
     pub seed: u64,
     /// Maximum actions per game (prevents infinite games)
     pub max_actions: usize,
+    /// Run games in parallel
+    pub parallel: bool,
+    /// MCTS simulations for multi-opponent mode
+    pub mcts_sims: u32,
 }
 
 impl Default for EvaluatorConfig {
@@ -52,6 +62,8 @@ impl Default for EvaluatorConfig {
             mode: TuningMode::VsRandom,
             seed: 42,
             max_actions: 500,
+            parallel: true,
+            mcts_sims: 100, // Fast MCTS for tuning
         }
     }
 }
@@ -124,10 +136,21 @@ impl<'a> Evaluator<'a> {
 
         let result = match &self.config.mode {
             TuningMode::VsRandom => {
-                self.evaluate_vs_random(&greedy_weights)
+                if self.config.parallel {
+                    self.evaluate_vs_random_parallel(&greedy_weights)
+                } else {
+                    self.evaluate_vs_random(&greedy_weights)
+                }
             }
             TuningMode::VsGreedy => {
-                self.evaluate_vs_greedy(&greedy_weights)
+                if self.config.parallel {
+                    self.evaluate_vs_greedy_parallel(&greedy_weights)
+                } else {
+                    self.evaluate_vs_greedy(&greedy_weights)
+                }
+            }
+            TuningMode::MultiOpponent => {
+                self.evaluate_multi_opponent(&greedy_weights)
             }
             TuningMode::Generalist { matchups } => {
                 self.evaluate_generalist(&greedy_weights, matchups)
@@ -196,6 +219,116 @@ impl<'a> Evaluator<'a> {
         let fitness = win_rate * 100.0;
 
         (fitness, win_rate, games, avg_turns)
+    }
+
+    /// Evaluate against RandomBot baseline (parallel version).
+    fn evaluate_vs_random_parallel(&self, weights: &GreedyWeights) -> (f64, f64, usize, f64) {
+        let games = self.config.games_per_eval;
+        let base_seed = self.config.seed.wrapping_add(self.eval_count * 10000);
+        let max_actions = self.config.max_actions;
+        let default_deck = &self.default_deck;
+        let card_db = self.card_db;
+
+        let results: Vec<(bool, u32)> = (0..games)
+            .into_par_iter()
+            .map(|i| {
+                let seed = base_seed.wrapping_add(i as u64);
+                Self::run_game_vs_random_static(card_db, weights, default_deck, seed, max_actions)
+            })
+            .collect();
+
+        let wins: usize = results.iter().filter(|(won, _)| *won).count();
+        let total_turns: u32 = results.iter().map(|(_, turns)| *turns).sum();
+
+        let win_rate = wins as f64 / games as f64;
+        let avg_turns = total_turns as f64 / games as f64;
+        let fitness = win_rate * 100.0 - avg_turns * 0.01;
+
+        (fitness, win_rate, games, avg_turns)
+    }
+
+    /// Evaluate against GreedyBot baseline (parallel version).
+    fn evaluate_vs_greedy_parallel(&self, weights: &GreedyWeights) -> (f64, f64, usize, f64) {
+        let games = self.config.games_per_eval;
+        let base_seed = self.config.seed.wrapping_add(self.eval_count * 10000);
+        let max_actions = self.config.max_actions;
+        let default_deck = &self.default_deck;
+        let card_db = self.card_db;
+
+        let results: Vec<(bool, u32)> = (0..games)
+            .into_par_iter()
+            .map(|i| {
+                let seed = base_seed.wrapping_add(i as u64);
+                Self::run_game_vs_greedy_static(card_db, weights, default_deck, seed, max_actions)
+            })
+            .collect();
+
+        let wins: usize = results.iter().filter(|(won, _)| *won).count();
+        let total_turns: u32 = results.iter().map(|(_, turns)| *turns).sum();
+
+        let win_rate = wins as f64 / games as f64;
+        let avg_turns = total_turns as f64 / games as f64;
+        let fitness = win_rate * 100.0;
+
+        (fitness, win_rate, games, avg_turns)
+    }
+
+    /// Evaluate against multiple opponents (Random, Greedy, MCTS).
+    fn evaluate_multi_opponent(&self, weights: &GreedyWeights) -> (f64, f64, usize, f64) {
+        let games_per_opponent = self.config.games_per_eval / 3;
+        let base_seed = self.config.seed.wrapping_add(self.eval_count * 10000);
+        let max_actions = self.config.max_actions;
+        let default_deck = &self.default_deck;
+        let card_db = self.card_db;
+        let mcts_sims = self.config.mcts_sims;
+
+        // Run games against all three opponents in parallel
+        let vs_random: Vec<(bool, u32)> = (0..games_per_opponent)
+            .into_par_iter()
+            .map(|i| {
+                let seed = base_seed.wrapping_add(i as u64);
+                Self::run_game_vs_random_static(card_db, weights, default_deck, seed, max_actions)
+            })
+            .collect();
+
+        let vs_greedy: Vec<(bool, u32)> = (0..games_per_opponent)
+            .into_par_iter()
+            .map(|i| {
+                let seed = base_seed.wrapping_add(10000 + i as u64);
+                Self::run_game_vs_greedy_static(card_db, weights, default_deck, seed, max_actions)
+            })
+            .collect();
+
+        let vs_mcts: Vec<(bool, u32)> = (0..games_per_opponent)
+            .into_par_iter()
+            .map(|i| {
+                let seed = base_seed.wrapping_add(20000 + i as u64);
+                Self::run_game_vs_mcts_static(card_db, weights, default_deck, seed, max_actions, mcts_sims)
+            })
+            .collect();
+
+        // Compute stats
+        let random_wins: usize = vs_random.iter().filter(|(won, _)| *won).count();
+        let greedy_wins: usize = vs_greedy.iter().filter(|(won, _)| *won).count();
+        let mcts_wins: usize = vs_mcts.iter().filter(|(won, _)| *won).count();
+
+        let total_wins = random_wins + greedy_wins + mcts_wins;
+        let total_games = games_per_opponent * 3;
+        let total_turns: u32 = vs_random.iter().chain(vs_greedy.iter()).chain(vs_mcts.iter())
+            .map(|(_, turns)| *turns).sum();
+
+        let win_rate = total_wins as f64 / total_games as f64;
+        let avg_turns = total_turns as f64 / total_games as f64;
+
+        // Weighted fitness: MCTS wins count more (harder opponent)
+        let random_wr = random_wins as f64 / games_per_opponent as f64;
+        let greedy_wr = greedy_wins as f64 / games_per_opponent as f64;
+        let mcts_wr = mcts_wins as f64 / games_per_opponent as f64;
+
+        // Fitness = weighted average: Random 10%, Greedy 40%, MCTS 50%
+        let fitness = random_wr * 10.0 + greedy_wr * 40.0 + mcts_wr * 50.0;
+
+        (fitness, win_rate, total_games, avg_turns)
     }
 
     /// Evaluate across multiple matchups (generalist).
@@ -340,6 +473,121 @@ impl<'a> Evaluator<'a> {
     pub fn eval_count(&self) -> u64 {
         self.eval_count
     }
+
+    // Static helpers for parallel game execution (no &self needed)
+
+    /// Run a single game vs Random (static version for parallel).
+    fn run_game_vs_random_static(
+        card_db: &CardDatabase,
+        weights: &GreedyWeights,
+        deck: &[CardId],
+        seed: u64,
+        max_actions: usize,
+    ) -> (bool, u32) {
+        let mut greedy_bot = GreedyBot::with_weights(card_db, weights.clone(), seed);
+        let mut random_bot = RandomBot::new(seed.wrapping_add(1000));
+
+        let mut engine = GameEngine::new(card_db);
+        engine.start_game(deck.to_vec(), deck.to_vec(), seed);
+
+        let mut action_count = 0;
+        while !engine.is_game_over() && action_count < max_actions {
+            let current_player = engine.current_player();
+
+            let action = if current_player == PlayerId::PLAYER_ONE {
+                greedy_bot.select_action_with_engine(&engine)
+            } else {
+                let state_tensor = engine.get_state_tensor();
+                let legal_mask = engine.get_legal_action_mask();
+                let legal_actions = engine.get_legal_actions();
+                random_bot.select_action(&state_tensor, &legal_mask, &legal_actions)
+            };
+
+            if engine.apply_action(action).is_err() {
+                break;
+            }
+            action_count += 1;
+        }
+
+        let won = engine.winner() == Some(PlayerId::PLAYER_ONE);
+        (won, engine.turn_number() as u32)
+    }
+
+    /// Run a single game vs Greedy (static version for parallel).
+    fn run_game_vs_greedy_static(
+        card_db: &CardDatabase,
+        weights: &GreedyWeights,
+        deck: &[CardId],
+        seed: u64,
+        max_actions: usize,
+    ) -> (bool, u32) {
+        let mut candidate_bot = GreedyBot::with_weights(card_db, weights.clone(), seed);
+        let mut baseline_bot = GreedyBot::new(card_db, seed.wrapping_add(1000));
+
+        let mut engine = GameEngine::new(card_db);
+        engine.start_game(deck.to_vec(), deck.to_vec(), seed);
+
+        let mut action_count = 0;
+        while !engine.is_game_over() && action_count < max_actions {
+            let current_player = engine.current_player();
+
+            let action = if current_player == PlayerId::PLAYER_ONE {
+                candidate_bot.select_action_with_engine(&engine)
+            } else {
+                baseline_bot.select_action_with_engine(&engine)
+            };
+
+            if engine.apply_action(action).is_err() {
+                break;
+            }
+            action_count += 1;
+        }
+
+        let won = engine.winner() == Some(PlayerId::PLAYER_ONE);
+        (won, engine.turn_number() as u32)
+    }
+
+    /// Run a single game vs MCTS (static version for parallel).
+    fn run_game_vs_mcts_static(
+        card_db: &CardDatabase,
+        weights: &GreedyWeights,
+        deck: &[CardId],
+        seed: u64,
+        max_actions: usize,
+        mcts_sims: u32,
+    ) -> (bool, u32) {
+        let mut candidate_bot = GreedyBot::with_weights(card_db, weights.clone(), seed);
+        let mcts_config = MctsConfig {
+            simulations: mcts_sims,
+            exploration: 1.414,
+            max_rollout_depth: 50,
+            parallel_trees: 1,
+            leaf_rollouts: 1,
+        };
+        let mut mcts_bot = MctsBot::with_config(card_db, mcts_config, seed.wrapping_add(1000));
+
+        let mut engine = GameEngine::new(card_db);
+        engine.start_game(deck.to_vec(), deck.to_vec(), seed);
+
+        let mut action_count = 0;
+        while !engine.is_game_over() && action_count < max_actions {
+            let current_player = engine.current_player();
+
+            let action = if current_player == PlayerId::PLAYER_ONE {
+                candidate_bot.select_action_with_engine(&engine)
+            } else {
+                mcts_bot.select_action_with_engine(&engine)
+            };
+
+            if engine.apply_action(action).is_err() {
+                break;
+            }
+            action_count += 1;
+        }
+
+        let won = engine.winner() == Some(PlayerId::PLAYER_ONE);
+        (won, engine.turn_number() as u32)
+    }
 }
 
 #[cfg(test)]
@@ -356,6 +604,8 @@ mod tests {
             mode: TuningMode::VsRandom,
             seed: 42,
             max_actions: 500,
+            parallel: false, // Sequential for test stability
+            mcts_sims: 100,
         };
 
         let mut evaluator = Evaluator::new(&card_db, config);
@@ -379,6 +629,8 @@ mod tests {
             mode: TuningMode::VsGreedy,
             seed: 42,
             max_actions: 500,
+            parallel: false,
+            mcts_sims: 100,
         };
 
         let mut evaluator = Evaluator::new(&card_db, config);
@@ -402,6 +654,8 @@ mod tests {
             mode: TuningMode::VsGreedy,
             seed: 42,
             max_actions: 500,
+            parallel: false,
+            mcts_sims: 100,
         };
 
         let mut evaluator = Evaluator::new(&card_db, config);

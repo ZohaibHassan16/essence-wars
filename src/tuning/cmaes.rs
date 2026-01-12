@@ -19,6 +19,8 @@ pub struct CmaEsConfig {
     pub max_generations: u32,
     /// Target fitness to stop early (higher is better)
     pub target_fitness: Option<f64>,
+    /// Minimum sigma threshold for convergence (default: 0.001)
+    pub min_sigma: f64,
     /// Random seed
     pub seed: u64,
 }
@@ -30,6 +32,7 @@ impl Default for CmaEsConfig {
             initial_sigma: 0.5,
             max_generations: 100,
             target_fitness: None,
+            min_sigma: 0.001,
             seed: 42,
         }
     }
@@ -186,11 +189,27 @@ impl CmaEs {
                 return true;
             }
         }
-        // Stop if sigma becomes very small
-        if self.sigma < 1e-12 {
+        // Stop if sigma drops below threshold (convergence)
+        if self.sigma < self.config.min_sigma {
             return true;
         }
         false
+    }
+
+    /// Get the reason for stopping.
+    pub fn stop_reason(&self, best_fitness: f64) -> Option<&'static str> {
+        if self.generation >= self.config.max_generations {
+            return Some("max generations reached");
+        }
+        if let Some(target) = self.config.target_fitness {
+            if best_fitness >= target {
+                return Some("target fitness reached");
+            }
+        }
+        if self.sigma < self.config.min_sigma {
+            return Some("sigma converged");
+        }
+        None
     }
 
     /// Sample a population of candidates.
@@ -424,6 +443,7 @@ mod tests {
             initial_sigma: 1.0,
             max_generations: 50,
             target_fitness: Some(-0.01), // Fitness is negative of sphere value
+            min_sigma: 0.001,
             seed: 42,
         };
 

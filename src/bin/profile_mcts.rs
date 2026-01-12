@@ -117,6 +117,8 @@ fn main() {
                 simulations: sims,
                 exploration: 1.414,
                 max_rollout_depth: 100,
+                parallel_trees: 1,
+                leaf_rollouts: 1,
             };
 
             let iterations = 10;
@@ -140,6 +142,8 @@ fn main() {
                 simulations: sims,
                 exploration: 1.414,
                 max_rollout_depth: 100,
+                parallel_trees: 1,
+                leaf_rollouts: 1,
             };
 
             let games = 5;
