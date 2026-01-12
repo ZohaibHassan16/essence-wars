@@ -3,18 +3,13 @@
 //! This module converts game state into tensor format suitable for
 //! machine learning and AI training purposes (PPO/AlphaZero).
 
+use crate::config::{board, game, player, tensor as tensor_config};
 use crate::keywords::Keywords;
 use crate::state::{Creature, GameState, GameResult, PlayerState, Support};
 use crate::types::Slot;
 
-/// Size of the state tensor
-/// Layout:
-/// - Global State: 6 floats
-/// - Player 1 State: 80 floats
-/// - Player 2 State: 80 floats
-/// - Card Embedding IDs: ~160 floats (hands + boards)
-/// Total: 326 floats
-pub const STATE_TENSOR_SIZE: usize = 326;
+// Re-export STATE_TENSOR_SIZE from config for backward compatibility
+pub use tensor_config::STATE_TENSOR_SIZE;
 
 /// Number of floats per creature slot encoding
 const CREATURE_SLOT_SIZE: usize = 10;
@@ -22,23 +17,14 @@ const CREATURE_SLOT_SIZE: usize = 10;
 /// Number of floats per support slot encoding
 const SUPPORT_SLOT_SIZE: usize = 5;
 
-/// Number of creature slots per player
-const CREATURE_SLOTS: usize = 5;
-
-/// Number of support slots per player
-const SUPPORT_SLOTS: usize = 2;
-
-/// Maximum hand size
-const MAX_HAND_SIZE: usize = 10;
-
 /// Convert a GameState to a neural network input tensor
 pub fn state_to_tensor(state: &GameState) -> [f32; STATE_TENSOR_SIZE] {
     let mut tensor = [0.0f32; STATE_TENSOR_SIZE];
     let mut idx = 0;
 
     // Global state (6 floats)
-    // [0]: turn_number / 30.0 (normalized)
-    tensor[idx] = state.current_turn as f32 / 30.0;
+    // [0]: turn_number normalized
+    tensor[idx] = state.current_turn as f32 / game::TURN_LIMIT as f32;
     idx += 1;
 
     // [1]: current_player (0.0 or 1.0)
@@ -80,28 +66,28 @@ fn encode_player_state(
     tensor: &mut [f32],
     idx: &mut usize,
 ) {
-    // [0]: life / 30.0 (normalized, clamped 0-1)
-    tensor[*idx] = (player.life as f32 / 30.0).clamp(0.0, 1.0);
+    // [0]: life normalized (clamped 0-1)
+    tensor[*idx] = (player.life as f32 / player::STARTING_LIFE as f32).clamp(0.0, 1.0);
     *idx += 1;
 
-    // [1]: essence / 10.0 (normalized, clamped 0-1)
-    tensor[*idx] = (player.current_essence as f32 / 10.0).clamp(0.0, 1.0);
+    // [1]: essence normalized (clamped 0-1)
+    tensor[*idx] = (player.current_essence as f32 / player::MAX_ESSENCE as f32).clamp(0.0, 1.0);
     *idx += 1;
 
-    // [2]: ap / 3.0 (normalized)
-    tensor[*idx] = player.action_points as f32 / 3.0;
+    // [2]: ap normalized
+    tensor[*idx] = player.action_points as f32 / player::AP_PER_TURN as f32;
     *idx += 1;
 
-    // [3]: deck_size / 30.0 (normalized)
-    tensor[*idx] = player.deck.len() as f32 / 30.0;
+    // [3]: deck_size normalized
+    tensor[*idx] = player.deck.len() as f32 / game::MAX_DECK_SIZE as f32;
     *idx += 1;
 
-    // [4]: hand_size / 10.0 (normalized)
-    tensor[*idx] = player.hand.len() as f32 / 10.0;
+    // [4]: hand_size normalized
+    tensor[*idx] = player.hand.len() as f32 / player::MAX_HAND_SIZE as f32;
     *idx += 1;
 
-    // [5-14]: hand_cards (10 slots, card IDs as floats, 0 if empty)
-    for i in 0..MAX_HAND_SIZE {
+    // [5-14]: hand_cards (card IDs as floats, 0 if empty)
+    for i in 0..player::MAX_HAND_SIZE {
         tensor[*idx] = player
             .hand
             .get(i)
@@ -110,15 +96,15 @@ fn encode_player_state(
         *idx += 1;
     }
 
-    // [15-64]: board_creatures (5 slots * 10 floats = 50 floats)
-    for slot_idx in 0..CREATURE_SLOTS {
+    // [15-64]: board_creatures (slot * 10 floats)
+    for slot_idx in 0..board::CREATURE_SLOTS {
         let slot = Slot(slot_idx as u8);
         let creature = player.get_creature(slot);
         encode_creature_slot(creature, current_turn, tensor, idx);
     }
 
-    // [65-74]: board_supports (2 slots * 5 floats = 10 floats)
-    for slot_idx in 0..SUPPORT_SLOTS {
+    // [65-74]: board_supports (slot * 5 floats)
+    for slot_idx in 0..board::SUPPORT_SLOTS {
         let slot = Slot(slot_idx as u8);
         let support = player.get_support(slot);
         encode_support_slot(support, tensor, idx);

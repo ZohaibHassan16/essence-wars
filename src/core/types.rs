@@ -4,6 +4,7 @@
 //! primitive types that form the foundation of the game's type system.
 
 use serde::{Deserialize, Serialize};
+use crate::core::config::board;
 
 /// Unique identifier for a card definition (not an instance)
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
@@ -33,8 +34,8 @@ impl PlayerId {
 pub struct Slot(pub u8);
 
 impl Slot {
-    pub const CREATURE_SLOTS: usize = 5;
-    pub const SUPPORT_SLOTS: usize = 2;
+    pub const CREATURE_SLOTS: usize = board::CREATURE_SLOTS;
+    pub const SUPPORT_SLOTS: usize = board::SUPPORT_SLOTS;
 
     /// Get slots that can be attacked from this slot (lane adjacency)
     /// Per DESIGN.md: Slot 0 can attack 0,1; Slot 1 can attack 0,1,2; etc.

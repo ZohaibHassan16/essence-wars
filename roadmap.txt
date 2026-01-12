@@ -7,11 +7,21 @@
 - [x] Built ✅
 
 2. Test Engine with MCTS and Greedy Bots, fully traceable combat
+
+-  [ ] Tested 
+
 2.1 Build ML/AI Training and Inference Infrastructure (Gym Bridge, Python Gymnasium / OpenAI Gym)
-3. Train first PPO and AlphaZero Agents as Proof of Concept
+
+
+3. Train first PPO and AlphaZero Agents as Proof of Concept 
+
 4. Expand Cards and Engine
+
 4.1 Develop Lore, Background, Characters, Wordbuilding, create Artwork and Flavor Text, make it fun to play, not just fun to research with. Factions, Champions, Setting. Drawing Inspiration from Hearthstone/Warcraft, MTG and other Fantasy / Steampunk Fantasy Worlds, without blatantly copying IP.
-5. Focus on ML AI Research (Specialist vs Generalist, different PPO Approaches, different AlphaZero Approaches)
+
+5. Focus on ML AI Research (Specialist vs Generalist, different PPO Approaches, different AlphaZero
+Approaches)
+
 5.1 Transfer Learning: hidden information, randomness, etc
 5.2 adding new sets with new cards and combos, does the agent perform well without retraining?
 6. Build Visualization Web Client, host on huggingface.ai space

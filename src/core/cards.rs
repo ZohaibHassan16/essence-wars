@@ -8,9 +8,9 @@ use std::fs;
 use std::path::Path;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use crate::types::*;
-use crate::keywords::Keywords;
-use crate::effects::{Trigger, TargetingRule};
+use crate::core::types::*;
+use crate::core::keywords::Keywords;
+use crate::core::effects::{Trigger, TargetingRule};
 
 /// Definition of a triggered ability on a creature
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -320,7 +320,7 @@ impl CardDatabase {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::effects::CreatureFilter;
+    use crate::core::effects::CreatureFilter;
 
     fn create_test_creature() -> CardDefinition {
         CardDefinition {

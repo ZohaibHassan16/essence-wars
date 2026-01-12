@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 // Note: We'll use forward declarations here since types.rs defines these.
 // The actual imports will work once types.rs is implemented.
-use crate::types::{PlayerId, Slot, CardId};
+use crate::core::types::{PlayerId, Slot, CardId};
 
 /// Trigger conditions for abilities
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]

@@ -9,7 +9,8 @@
 //! - Index 75-254:  UseAbility(slot, ability_idx, target)
 //! - Index 255:     EndTurn
 
-use crate::types::Slot;
+use crate::core::config::actions as action_config;
+use crate::core::types::Slot;
 
 /// Target for ability effects
 ///
@@ -84,7 +85,7 @@ pub enum Action {
 
 impl Action {
     /// Total number of possible action indices for neural network
-    pub const ACTION_SPACE_SIZE: usize = 256;
+    pub const ACTION_SPACE_SIZE: usize = action_config::ACTION_SPACE_SIZE;
 
     // Index ranges
     const PLAY_CARD_START: u8 = 0;

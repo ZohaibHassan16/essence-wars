@@ -5,7 +5,8 @@
 mod common;
 
 use cardgame::actions::Action;
-use cardgame::engine::{seeded_shuffle, GameEngine, AP_PER_TURN, MAX_TURNS};
+use cardgame::config::{game, player};
+use cardgame::engine::{seeded_shuffle, GameEngine};
 use cardgame::state::{Creature, CreatureStatus, GameResult, WinReason};
 use cardgame::keywords::Keywords;
 use cardgame::types::{CardId, PlayerId, Slot};
@@ -32,21 +33,22 @@ fn test_new_game_setup() {
     assert_eq!(engine.state.current_turn, 1);
 
     // Player 1 should have 3 AP (restored at turn start)
-    assert_eq!(engine.state.players[0].action_points, AP_PER_TURN);
+    assert_eq!(engine.state.players[0].action_points, player::AP_PER_TURN);
 
     // Player 2 should have 0 AP (not their turn yet)
     assert_eq!(engine.state.players[1].action_points, 0);
 
-    // Each player should have 4 cards in hand (3 initial + 1 at turn start for P1)
-    // P1: 3 initial + 1 turn start = 4
-    // P2: 3 initial = 3
-    assert_eq!(engine.state.players[0].hand.len(), 4);
-    assert_eq!(engine.state.players[1].hand.len(), 3);
+    // Each player draws STARTING_HAND_SIZE cards, then P1 draws 1 at turn start
+    // P1: STARTING_HAND_SIZE + 1 turn start draw
+    // P2: STARTING_HAND_SIZE (hasn't had a turn yet)
+    let starting_hand = player::STARTING_HAND_SIZE;
+    assert_eq!(engine.state.players[0].hand.len(), starting_hand + 1);
+    assert_eq!(engine.state.players[1].hand.len(), starting_hand);
 
     // Each player should have remaining cards in deck
-    // P1: 30 - 4 = 26, P2: 30 - 3 = 27
-    assert_eq!(engine.state.players[0].deck.len(), 26);
-    assert_eq!(engine.state.players[1].deck.len(), 27);
+    let deck_size = game::MAX_DECK_SIZE;
+    assert_eq!(engine.state.players[0].deck.len(), deck_size - starting_hand - 1);
+    assert_eq!(engine.state.players[1].deck.len(), deck_size - starting_hand);
 
     // Game should not be terminal
     assert!(!engine.is_terminal());
@@ -67,7 +69,7 @@ fn test_turn_start_ap_restored() {
     engine.apply_action(Action::EndTurn).unwrap();
 
     // P2 should now have 3 AP
-    assert_eq!(engine.state.players[1].action_points, AP_PER_TURN);
+    assert_eq!(engine.state.players[1].action_points, player::AP_PER_TURN);
 
     // P1's AP should still be 0 (not their turn)
     assert_eq!(engine.state.players[0].action_points, 0);
@@ -209,7 +211,7 @@ fn test_win_by_turn_limit_higher_life() {
     engine.state.players[1].life = 15;
 
     // Set turn to just before limit
-    engine.state.current_turn = MAX_TURNS;
+    engine.state.current_turn = game::TURN_LIMIT as u16;
 
     // End turn to trigger turn limit
     engine.apply_action(Action::EndTurn).unwrap();
@@ -237,7 +239,7 @@ fn test_win_by_turn_limit_tie_p1_wins() {
     engine.state.players[1].life = 20;
 
     // Set turn to just before limit
-    engine.state.current_turn = MAX_TURNS;
+    engine.state.current_turn = game::TURN_LIMIT as u16;
 
     // End turn to trigger turn limit
     engine.apply_action(Action::EndTurn).unwrap();

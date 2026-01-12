@@ -6,11 +6,12 @@
 //! - Neural network action masking
 
 use arrayvec::ArrayVec;
-use crate::types::Slot;
-use crate::actions::{Action, Target};
-use crate::state::GameState;
-use crate::cards::{CardDatabase, CardType};
-use crate::effects::{Trigger, TargetingRule};
+use crate::core::config::board;
+use crate::core::types::Slot;
+use crate::core::actions::{Action, Target};
+use crate::core::state::GameState;
+use crate::core::cards::{CardDatabase, CardType};
+use crate::core::effects::{Trigger, TargetingRule};
 
 /// Maximum number of legal actions possible in any game state
 pub const MAX_LEGAL_ACTIONS: usize = 64;
@@ -77,7 +78,7 @@ fn generate_play_card_actions(
         match &card_def.card_type {
             CardType::Creature { .. } => {
                 // For creatures: generate action for each empty creature slot
-                for slot_idx in 0..5u8 {
+                for slot_idx in 0..board::CREATURE_SLOTS as u8 {
                     let slot = Slot(slot_idx);
                     if player.get_creature(slot).is_none() {
                         if actions.len() < MAX_LEGAL_ACTIONS {
@@ -101,7 +102,7 @@ fn generate_play_card_actions(
             }
             CardType::Support { .. } => {
                 // For supports: generate action for each empty support slot
-                for slot_idx in 0..2u8 {
+                for slot_idx in 0..board::SUPPORT_SLOTS as u8 {
                     let slot = Slot(slot_idx);
                     if player.get_support(slot).is_none() {
                         if actions.len() < MAX_LEGAL_ACTIONS {
@@ -142,7 +143,7 @@ fn generate_attack_actions(
         // Determine valid target slots
         if has_ranged {
             // Ranged creatures can target any enemy slot (0-4)
-            for defender_slot_idx in 0..5u8 {
+            for defender_slot_idx in 0..board::CREATURE_SLOTS as u8 {
                 let defender_slot = Slot(defender_slot_idx);
 
                 // Check GUARD enforcement for ranged attacks on creatures
@@ -242,7 +243,7 @@ fn generate_ability_actions(
                 }
                 TargetingRule::TargetCreature(_) | TargetingRule::TargetAny => {
                     // Target any enemy creature slot
-                    for slot_idx in 0..5u8 {
+                    for slot_idx in 0..board::CREATURE_SLOTS as u8 {
                         if actions.len() < MAX_LEGAL_ACTIONS {
                             actions.push(Action::UseAbility {
                                 slot: creature.slot,
@@ -297,7 +298,7 @@ fn generate_ability_actions(
                 }
                 TargetingRule::TargetSlot => {
                     // Target any slot
-                    for slot_idx in 0..5u8 {
+                    for slot_idx in 0..board::CREATURE_SLOTS as u8 {
                         if actions.len() < MAX_LEGAL_ACTIONS {
                             actions.push(Action::UseAbility {
                                 slot: creature.slot,
@@ -315,10 +316,10 @@ fn generate_ability_actions(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::state::{Creature, CreatureStatus};
-    use crate::types::{CreatureInstanceId, PlayerId};
-    use crate::cards::{CardDefinition, CardType};
-    use crate::keywords::Keywords;
+    use crate::core::state::{Creature, CreatureStatus};
+    use crate::core::types::{CreatureInstanceId, PlayerId};
+    use crate::core::cards::{CardDefinition, CardType};
+    use crate::core::keywords::Keywords;
 
     /// Create a test card database with some basic cards
     fn test_card_db() -> CardDatabase {

@@ -11,6 +11,7 @@ use crate::actions::Action;
 use crate::bots::weights::{BotWeights, GreedyWeights};
 use crate::bots::Bot;
 use crate::cards::CardDatabase;
+use crate::config::player as player_config;
 use crate::engine::GameEngine;
 use crate::state::GameState;
 use crate::tensor::STATE_TENSOR_SIZE;
@@ -114,7 +115,7 @@ impl<'a> GreedyBot<'a> {
 
         // Life totals
         score += player_state.life as f32 * w.own_life;
-        score += (30 - opponent_state.life) as f32 * w.enemy_life_damage;
+        score += (player_config::STARTING_LIFE as i16 - opponent_state.life) as f32 * w.enemy_life_damage;
 
         // Own creatures
         for creature in &player_state.creatures {

@@ -16,12 +16,12 @@
 //! 5. LETHAL - Any non-zero damage kills the target
 //! 6. LIFESTEAL - Attacker's controller heals for damage dealt
 
-use crate::cards::CardDatabase;
-use crate::effects::{EffectSource, Trigger};
-use crate::engine::EffectQueue;
-use crate::keywords::Keywords;
-use crate::state::GameState;
-use crate::types::{PlayerId, Slot};
+use crate::core::cards::CardDatabase;
+use crate::core::effects::{EffectSource, Trigger};
+use crate::core::engine::EffectQueue;
+use crate::core::keywords::Keywords;
+use crate::core::state::GameState;
+use crate::core::types::{PlayerId, Slot};
 
 /// Result of combat resolution
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -711,7 +711,7 @@ fn process_creature_death(
 
 /// Check if the game is over due to a player reaching 0 life.
 fn check_game_over(state: &mut GameState) {
-    use crate::state::{GameResult, WinReason};
+    use crate::core::state::{GameResult, WinReason};
 
     let p1_dead = state.players[0].life <= 0;
     let p2_dead = state.players[1].life <= 0;
@@ -735,9 +735,9 @@ fn check_game_over(state: &mut GameState) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cards::{CardDatabase, CardDefinition, CardType};
-    use crate::state::{Creature, CreatureStatus};
-    use crate::types::{CardId, CreatureInstanceId, Rarity};
+    use crate::core::cards::{CardDatabase, CardDefinition, CardType};
+    use crate::core::state::{Creature, CreatureStatus};
+    use crate::core::types::{CardId, CreatureInstanceId, Rarity};
 
     /// Create a minimal test card database
     fn test_card_db() -> CardDatabase {

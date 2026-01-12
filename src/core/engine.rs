@@ -7,22 +7,14 @@
 //! without recursion, enabling clean triggered ability handling.
 
 use std::collections::VecDeque;
-use crate::actions::Action;
-use crate::cards::{CardDatabase, CardType, EffectDefinition, AbilityDefinition};
-use crate::effects::{Effect, EffectTarget, EffectSource, PendingEffect, Trigger, TargetingRule};
-use crate::keywords::Keywords;
-use crate::legal::legal_actions;
-use crate::state::{CardInstance, Creature, CreatureStatus, GamePhase, GameResult, GameState, Support, WinReason};
-use crate::types::{CardId, PlayerId, Slot};
-
-/// Maximum number of turns before the game ends in a tiebreaker
-pub const MAX_TURNS: u16 = 30;
-
-/// Starting action points per turn
-pub const AP_PER_TURN: u8 = 3;
-
-/// Initial hand size (cards drawn before turn 1)
-pub const INITIAL_HAND_SIZE: usize = 3;
+use crate::core::actions::Action;
+use crate::core::cards::{CardDatabase, CardType, EffectDefinition, AbilityDefinition};
+use crate::core::config::{game, player};
+use crate::core::effects::{Effect, EffectTarget, EffectSource, PendingEffect, Trigger, TargetingRule};
+use crate::core::keywords::Keywords;
+use crate::core::legal::legal_actions;
+use crate::core::state::{CardInstance, Creature, CreatureStatus, GamePhase, GameResult, GameState, Support, WinReason};
+use crate::core::types::{CardId, PlayerId, Slot};
 
 // =============================================================================
 // EFFECT QUEUE SYSTEM
@@ -1178,7 +1170,7 @@ impl<'a> GameEngine<'a> {
         let mut deck1_cards: Vec<CardInstance> = deck1.into_iter().map(CardInstance::new).collect();
         seeded_shuffle(&mut deck1_cards, seed);
         for card in deck1_cards {
-            if self.state.players[0].deck.len() < 30 {
+            if self.state.players[0].deck.len() < game::MAX_DECK_SIZE {
                 self.state.players[0].deck.push(card);
             }
         }
@@ -1188,13 +1180,13 @@ impl<'a> GameEngine<'a> {
         let mut deck2_cards: Vec<CardInstance> = deck2.into_iter().map(CardInstance::new).collect();
         seeded_shuffle(&mut deck2_cards, seed2);
         for card in deck2_cards {
-            if self.state.players[1].deck.len() < 30 {
+            if self.state.players[1].deck.len() < game::MAX_DECK_SIZE {
                 self.state.players[1].deck.push(card);
             }
         }
 
-        // Draw initial hands (3 cards each)
-        for _ in 0..INITIAL_HAND_SIZE {
+        // Draw initial hands
+        for _ in 0..player::STARTING_HAND_SIZE {
             self.draw_card(PlayerId::PLAYER_ONE);
             self.draw_card(PlayerId::PLAYER_TWO);
         }
@@ -1234,7 +1226,7 @@ impl<'a> GameEngine<'a> {
         self.state.current_turn += 1;
 
         // Check for turn limit win condition
-        if self.state.current_turn > MAX_TURNS {
+        if self.state.current_turn > game::TURN_LIMIT as u16 {
             self.check_turn_limit_victory();
             return;
         }
@@ -1245,7 +1237,7 @@ impl<'a> GameEngine<'a> {
         self.draw_card(current_player);
 
         // Restore AP to 3
-        self.state.players[current_player.index()].action_points = AP_PER_TURN;
+        self.state.players[current_player.index()].action_points = player::AP_PER_TURN;
 
         // Reset creature attack flags (clear exhausted status)
         // Creatures that survived a full round can now attack
@@ -1600,7 +1592,7 @@ impl<'a> GameEngine<'a> {
             if attacker_has_lifesteal && attacker_damage > 0 {
                 let heal_amount = attacker_damage as i16;
                 self.state.players[current_player.index()].life =
-                    (self.state.players[current_player.index()].life + heal_amount).min(30);
+                    (self.state.players[current_player.index()].life + heal_amount).min(player::MAX_LIFE as i16);
             }
 
             // Track damage dealt
@@ -1622,7 +1614,7 @@ impl<'a> GameEngine<'a> {
             // Lifesteal: heal attacker's owner
             if attacker_has_lifesteal && damage > 0 {
                 self.state.players[current_player.index()].life =
-                    (self.state.players[current_player.index()].life + damage).min(30);
+                    (self.state.players[current_player.index()].life + damage).min(player::MAX_LIFE as i16);
             }
 
             // Track damage dealt
@@ -1648,7 +1640,7 @@ impl<'a> GameEngine<'a> {
         ability_index: u8,
         target: crate::actions::Target,
     ) -> Result<(), String> {
-        use crate::actions::Target;
+        use crate::core::actions::Target;
 
         let current_player = self.state.active_player;
 

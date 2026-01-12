@@ -4,8 +4,9 @@
 //! It uses ArrayVec for stack allocation to enable fast cloning (critical for MCTS).
 
 use arrayvec::ArrayVec;
-use crate::types::*;
-use crate::keywords::Keywords;
+use crate::core::config::{board, game, player};
+use crate::core::types::*;
+use crate::core::keywords::Keywords;
 
 /// Status flags for creatures (packed bitfield)
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -98,17 +99,17 @@ pub struct PlayerState {
     pub max_essence: u8,
     pub current_essence: u8,
     pub action_points: u8,
-    pub hand: ArrayVec<CardInstance, 10>,      // Max hand size 10
-    pub deck: ArrayVec<CardInstance, 30>,      // Max deck size 30
-    pub creatures: ArrayVec<Creature, 5>,      // Max 5 creature slots
-    pub supports: ArrayVec<Support, 2>,        // Max 2 support slots
+    pub hand: ArrayVec<CardInstance, {player::MAX_HAND_SIZE}>,
+    pub deck: ArrayVec<CardInstance, {game::MAX_DECK_SIZE}>,
+    pub creatures: ArrayVec<Creature, {board::CREATURE_SLOTS}>,
+    pub supports: ArrayVec<Support, {board::SUPPORT_SLOTS}>,
     pub total_damage_dealt: u16,               // For victory points tracking
 }
 
 impl PlayerState {
     pub fn new() -> Self {
         Self {
-            life: 30,
+            life: player::STARTING_LIFE as i16,
             max_essence: 0,
             current_essence: 0,
             action_points: 0,
@@ -137,7 +138,7 @@ impl PlayerState {
 
     /// Find first empty creature slot
     pub fn find_empty_creature_slot(&self) -> Option<Slot> {
-        for i in 0..5u8 {
+        for i in 0..board::CREATURE_SLOTS as u8 {
             let slot = Slot(i);
             if self.get_creature(slot).is_none() {
                 return Some(slot);
@@ -148,7 +149,7 @@ impl PlayerState {
 
     /// Find first empty support slot
     pub fn find_empty_support_slot(&self) -> Option<Slot> {
-        for i in 0..2u8 {
+        for i in 0..board::SUPPORT_SLOTS as u8 {
             let slot = Slot(i);
             if self.get_support(slot).is_none() {
                 return Some(slot);
@@ -159,7 +160,7 @@ impl PlayerState {
 
     /// Check if hand is full
     pub fn is_hand_full(&self) -> bool {
-        self.hand.len() >= 10
+        self.hand.len() >= player::MAX_HAND_SIZE
     }
 }
 

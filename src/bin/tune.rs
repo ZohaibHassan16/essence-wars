@@ -4,11 +4,13 @@
 //!   cargo run --release --bin tune -- --generations 50 --population 20
 //!   cargo run --release --bin tune -- --mode vs-greedy --games 100
 //!   cargo run --release --bin tune -- --mode specialist --deck aggressive_assault --opponent defensive_control
-//!   cargo run --release --bin tune -- --output tuned_weights.toml
+//!   cargo run --release --bin tune -- --tag baseline
 
 use std::path::PathBuf;
 use std::process;
 use std::time::Instant;
+use std::fs;
+use std::io::Write;
 
 use clap::Parser;
 
@@ -71,9 +73,13 @@ struct Args {
     #[arg(long)]
     opponent: Option<String>,
 
-    /// Output file for tuned weights (TOML format)
-    #[arg(long, short = 'o')]
-    output: Option<PathBuf>,
+    /// Experiment tag (descriptive name for this run)
+    #[arg(long, short = 't', default_value = "default")]
+    tag: String,
+
+    /// Base output directory for experiments
+    #[arg(long, default_value = "experiments")]
+    experiment_dir: PathBuf,
 
     /// Path to card database
     #[arg(long, default_value = "data/cards")]
@@ -94,6 +100,25 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
+
+    // Create experiment directory with timestamp
+    let timestamp = chrono::Local::now().format("%Y-%m-%d_%H%M").to_string();
+    let exp_id = format!("{}_{}", timestamp, args.tag);
+    let exp_dir = args.experiment_dir.join("mcts").join(&exp_id);
+    
+    fs::create_dir_all(&exp_dir).unwrap_or_else(|e| {
+        eprintln!("Error creating experiment directory {:?}: {}", exp_dir, e);
+        process::exit(1);
+    });
+
+    let plots_dir = exp_dir.join("plots");
+    fs::create_dir_all(&plots_dir).unwrap_or_else(|e| {
+        eprintln!("Error creating plots directory: {}", e);
+        process::exit(1);
+    });
+
+    println!("📁 Experiment directory: {:?}", exp_dir);
+    println!();
 
     // Load card database
     let card_db = match CardDatabase::load_from_directory(&args.cards) {
@@ -218,6 +243,29 @@ fn main() {
     }
     println!();
 
+    // Create log file
+    let log_path = exp_dir.join("train.log");
+    let mut log_file = fs::File::create(&log_path).unwrap_or_else(|e| {
+        eprintln!("Error creating log file: {}", e);
+        process::exit(1);
+    });
+
+    // Write config to log
+    writeln!(log_file, "Weight Tuning Configuration").unwrap();
+    writeln!(log_file, "===========================").unwrap();
+    writeln!(log_file, "Experiment ID: {}", exp_id).unwrap();
+    writeln!(log_file, "Mode: {}", args.mode).unwrap();
+    writeln!(log_file, "Parallel: {}", args.parallel).unwrap();
+    writeln!(log_file, "Generations: {}", args.generations).unwrap();
+    writeln!(log_file, "Population: {}", cmaes_config.population_size.unwrap_or(4 + (3.0 * (20.0_f64).ln()).floor() as usize)).unwrap();
+    writeln!(log_file, "Games/eval: {}", args.games).unwrap();
+    writeln!(log_file, "Initial sigma: {:.3}", args.sigma).unwrap();
+    writeln!(log_file, "Seed: {}", args.seed).unwrap();
+    if args.mode == "multi-opponent" {
+        writeln!(log_file, "MCTS sims: {}", args.mcts_sims).unwrap();
+    }
+    writeln!(log_file, "").unwrap();
+
     // Create optimizer and evaluator
     let mut cmaes = CmaEs::new(initial_weights, bounds, cmaes_config);
     let mut evaluator = Evaluator::new(&card_db, eval_config);
@@ -258,32 +306,46 @@ fn main() {
         let gen_time = gen_start.elapsed();
 
         // Print progress
+        let progress_msg = format!(
+            "Gen {:3}: best_fit={:6.2}, best_wr={:5.1}%, sigma={:.4}, time={:.1}s",
+            gen,
+            best_fitness,
+            best_win_rate * 100.0,
+            cmaes.sigma(),
+            gen_time.as_secs_f64()
+        );
+        
         if args.verbose || gen % 5 == 0 || gen == 0 {
-            println!(
-                "Gen {:3}: best_fit={:6.2}, best_wr={:5.1}%, sigma={:.4}, time={:.1}s",
-                gen,
-                best_fitness,
-                best_win_rate * 100.0,
-                cmaes.sigma(),
-                gen_time.as_secs_f64()
-            );
+            println!("{}", progress_msg);
         }
+        
+        // Always log to file
+        writeln!(log_file, "{}", progress_msg).unwrap();
     }
 
     let total_time = start_time.elapsed();
     let stop_reason = cmaes.stop_reason(best_fitness).unwrap_or("unknown");
 
     // Print final results
-    println!();
-    println!("Optimization Complete");
-    println!("=====================");
-    println!("Stop reason: {}", stop_reason);
-    println!("Total time: {:.1}s", total_time.as_secs_f64());
-    println!("Generations: {}", cmaes.generation());
-    println!("Evaluations: {}", evaluator.eval_count());
-    println!("Best fitness: {:.2}", best_fitness);
-    println!("Best win rate: {:.1}%", best_win_rate * 100.0);
-    println!();
+    let summary = format!("\n\
+Optimization Complete\n\
+=====================\n\
+Stop reason: {}\n\
+Total time: {:.1}s\n\
+Generations: {}\n\
+Evaluations: {}\n\
+Best fitness: {:.2}\n\
+Best win rate: {:.1}%\n",
+        stop_reason,
+        total_time.as_secs_f64(),
+        cmaes.generation(),
+        evaluator.eval_count(),
+        best_fitness,
+        best_win_rate * 100.0
+    );
+    
+    println!("{}", summary);
+    writeln!(log_file, "{}", summary).unwrap();
 
     // Convert best weights to GreedyWeights
     let weights_f32: Vec<f32> = best_weights.iter().map(|&x| x as f32).collect();
@@ -292,23 +354,41 @@ fn main() {
         println!("--------------");
         print_weights(&tuned_weights);
 
-        // Save to file if requested
-        if let Some(output_path) = args.output {
-            let bot_weights = BotWeights {
-                name: format!("tuned_{}", args.mode),
-                version: 1,
-                default: WeightSet { greedy: tuned_weights },
-                deck_specific: std::collections::HashMap::new(),
-            };
+        // Save weights to experiment directory
+        let weights_path = exp_dir.join("weights.toml");
+        let bot_weights = BotWeights {
+            name: format!("tuned_{}", args.mode),
+            version: 1,
+            default: WeightSet { greedy: tuned_weights },
+            deck_specific: std::collections::HashMap::new(),
+        };
 
-            match bot_weights.save(&output_path) {
-                Ok(_) => println!("\nWeights saved to {:?}", output_path),
-                Err(e) => eprintln!("\nError saving weights: {}", e),
+        match bot_weights.save(&weights_path) {
+            Ok(_) => {
+                println!("\n✓ Weights saved to {:?}", weights_path);
+                writeln!(log_file, "\nWeights saved to {:?}", weights_path).unwrap();
+            }
+            Err(e) => {
+                eprintln!("\n❌ Error saving weights: {}", e);
+                writeln!(log_file, "\nError saving weights: {}", e).unwrap();
             }
         }
     } else {
         eprintln!("Error: Could not reconstruct weights from vector");
     }
+
+    // Save summary metadata
+    let summary_path = exp_dir.join("summary.txt");
+    let mut summary_file = fs::File::create(&summary_path).unwrap();
+    writeln!(summary_file, "Experiment: {}", exp_id).unwrap();
+    writeln!(summary_file, "Mode: {}", args.mode).unwrap();
+    writeln!(summary_file, "Best Fitness: {:.2}", best_fitness).unwrap();
+    writeln!(summary_file, "Best Win Rate: {:.1}%", best_win_rate * 100.0).unwrap();
+    writeln!(summary_file, "Total Time: {:.1}s", total_time.as_secs_f64()).unwrap();
+    writeln!(summary_file, "Generations: {}", cmaes.generation()).unwrap();
+    
+    println!("\n📁 All results saved to: {:?}", exp_dir);
+    println!("   Run 'python python/scripts/analyze_tuning.py {:?}' to generate visualizations", exp_dir);
 }
 
 /// Create matchups for generalist mode using all available decks.
