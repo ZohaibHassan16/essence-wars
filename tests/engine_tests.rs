@@ -466,3 +466,289 @@ fn test_game_over_no_more_actions() {
     let result = engine.apply_action(Action::EndTurn);
     assert!(result.is_err());
 }
+
+// =============================================================================
+// UseAbility Tests
+// =============================================================================
+
+use cardgame::actions::Target;
+use cardgame::cards::{AbilityDefinition, CardDefinition, CardType, EffectDefinition};
+use cardgame::effects::{TargetingRule, Trigger};
+use cardgame::types::Rarity;
+
+/// Create a card database with a creature that has an activated ability (damage effect)
+fn ability_test_db() -> cardgame::cards::CardDatabase {
+    let cards = vec![
+        // Basic creature with no abilities
+        CardDefinition {
+            id: 1,
+            name: "Basic Creature".to_string(),
+            cost: 2,
+            card_type: CardType::Creature {
+                attack: 2,
+                health: 3,
+                keywords: vec![],
+                abilities: vec![],
+            },
+            rarity: Rarity::Common,
+            tags: vec![],
+        },
+        // Creature with an ability that deals 2 damage to target enemy creature
+        CardDefinition {
+            id: 2,
+            name: "Damage Creature".to_string(),
+            cost: 2,
+            card_type: CardType::Creature {
+                attack: 2,
+                health: 2,
+                keywords: vec![],
+                abilities: vec![AbilityDefinition {
+                    trigger: Trigger::OnPlay, // Using OnPlay as trigger for manual activation
+                    targeting: TargetingRule::TargetEnemyCreature,
+                    effects: vec![EffectDefinition::Damage { amount: 2 }],
+                }],
+            },
+            rarity: Rarity::Uncommon,
+            tags: vec![],
+        },
+        // Creature with a self-buff ability
+        CardDefinition {
+            id: 3,
+            name: "Self Buffer".to_string(),
+            cost: 2,
+            card_type: CardType::Creature {
+                attack: 1,
+                health: 3,
+                keywords: vec![],
+                abilities: vec![AbilityDefinition {
+                    trigger: Trigger::OnPlay,
+                    targeting: TargetingRule::NoTarget,
+                    effects: vec![EffectDefinition::BuffStats { attack: 1, health: 1 }],
+                }],
+            },
+            rarity: Rarity::Uncommon,
+            tags: vec![],
+        },
+    ];
+    cardgame::cards::CardDatabase::new(cards)
+}
+
+/// Create a deck for ability tests
+fn ability_deck() -> Vec<CardId> {
+    let mut deck = Vec::new();
+    for _ in 0..10 {
+        deck.push(CardId(1));
+        deck.push(CardId(2));
+        deck.push(CardId(3));
+    }
+    deck
+}
+
+#[test]
+fn test_use_ability_basic() {
+    let card_db = ability_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    engine.start_game(ability_deck(), ability_deck(), 12345);
+
+    // Add a creature with ability to P1's board
+    let creature = Creature {
+        instance_id: engine.state.next_creature_instance_id(),
+        card_id: CardId(2), // Damage Creature
+        owner: PlayerId::PLAYER_ONE,
+        slot: Slot(0),
+        attack: 2,
+        current_health: 2,
+        max_health: 2,
+        base_attack: 2,
+        base_health: 2,
+        keywords: Keywords::none(),
+        status: CreatureStatus::default(),
+        turn_played: 0,
+    };
+    engine.state.players[0].creatures.push(creature);
+
+    // Add a target creature to P2's board
+    let target_creature = Creature {
+        instance_id: engine.state.next_creature_instance_id(),
+        card_id: CardId(1), // Basic Creature
+        owner: PlayerId::PLAYER_TWO,
+        slot: Slot(0),
+        attack: 2,
+        current_health: 3,
+        max_health: 3,
+        base_attack: 2,
+        base_health: 3,
+        keywords: Keywords::none(),
+        status: CreatureStatus::default(),
+        turn_played: 0,
+    };
+    engine.state.players[1].creatures.push(target_creature);
+
+    // Use the ability targeting enemy creature at slot 0
+    let result = engine.apply_action(Action::UseAbility {
+        slot: Slot(0),
+        ability_index: 0,
+        target: Target::EnemySlot(Slot(0)),
+    });
+
+    assert!(result.is_ok(), "Use ability should succeed: {:?}", result);
+
+    // Target creature should have taken 2 damage (3 - 2 = 1 health remaining)
+    let target = engine.state.players[1].get_creature(Slot(0));
+    assert!(target.is_some(), "Target creature should still exist");
+    assert_eq!(target.unwrap().current_health, 1, "Target should have 1 health remaining");
+}
+
+#[test]
+fn test_use_ability_silenced_fails() {
+    let card_db = ability_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    engine.start_game(ability_deck(), ability_deck(), 12345);
+
+    // Add a silenced creature with ability to P1's board
+    let mut creature = Creature {
+        instance_id: engine.state.next_creature_instance_id(),
+        card_id: CardId(2), // Damage Creature
+        owner: PlayerId::PLAYER_ONE,
+        slot: Slot(0),
+        attack: 2,
+        current_health: 2,
+        max_health: 2,
+        base_attack: 2,
+        base_health: 2,
+        keywords: Keywords::none(),
+        status: CreatureStatus::default(),
+        turn_played: 0,
+    };
+    // Silence the creature
+    creature.status.set_silenced(true);
+    engine.state.players[0].creatures.push(creature);
+
+    // Add a target creature to P2's board
+    let target_creature = Creature {
+        instance_id: engine.state.next_creature_instance_id(),
+        card_id: CardId(1),
+        owner: PlayerId::PLAYER_TWO,
+        slot: Slot(0),
+        attack: 2,
+        current_health: 3,
+        max_health: 3,
+        base_attack: 2,
+        base_health: 3,
+        keywords: Keywords::none(),
+        status: CreatureStatus::default(),
+        turn_played: 0,
+    };
+    engine.state.players[1].creatures.push(target_creature);
+
+    // Try to use the ability - should fail because creature is silenced
+    let result = engine.apply_action(Action::UseAbility {
+        slot: Slot(0),
+        ability_index: 0,
+        target: Target::EnemySlot(Slot(0)),
+    });
+
+    // The action should be rejected (not in legal actions because silenced)
+    assert!(result.is_err(), "Use ability should fail when silenced");
+
+    // Target creature health should be unchanged
+    let target = engine.state.players[1].get_creature(Slot(0));
+    assert!(target.is_some(), "Target creature should exist");
+    assert_eq!(target.unwrap().current_health, 3, "Target health should be unchanged");
+}
+
+#[test]
+fn test_use_ability_invalid_slot() {
+    let card_db = ability_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    engine.start_game(ability_deck(), ability_deck(), 12345);
+
+    // Don't add any creatures - slot 0 is empty
+
+    // Try to use ability on empty slot - should fail
+    let result = engine.apply_action(Action::UseAbility {
+        slot: Slot(0),
+        ability_index: 0,
+        target: Target::NoTarget,
+    });
+
+    assert!(result.is_err(), "Use ability should fail on empty slot");
+}
+
+#[test]
+fn test_use_ability_invalid_ability_index() {
+    let card_db = ability_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    engine.start_game(ability_deck(), ability_deck(), 12345);
+
+    // Add a creature with only 1 ability
+    let creature = Creature {
+        instance_id: engine.state.next_creature_instance_id(),
+        card_id: CardId(2), // Has 1 ability at index 0
+        owner: PlayerId::PLAYER_ONE,
+        slot: Slot(0),
+        attack: 2,
+        current_health: 2,
+        max_health: 2,
+        base_attack: 2,
+        base_health: 2,
+        keywords: Keywords::none(),
+        status: CreatureStatus::default(),
+        turn_played: 0,
+    };
+    engine.state.players[0].creatures.push(creature);
+
+    // Try to use ability index 5 - which doesn't exist
+    let result = engine.apply_action(Action::UseAbility {
+        slot: Slot(0),
+        ability_index: 5,
+        target: Target::NoTarget,
+    });
+
+    assert!(result.is_err(), "Use ability should fail with invalid ability index");
+}
+
+#[test]
+fn test_use_ability_self_target() {
+    let card_db = ability_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    engine.start_game(ability_deck(), ability_deck(), 12345);
+
+    // Add a creature with self-buff ability
+    let creature = Creature {
+        instance_id: engine.state.next_creature_instance_id(),
+        card_id: CardId(3), // Self Buffer
+        owner: PlayerId::PLAYER_ONE,
+        slot: Slot(0),
+        attack: 1,
+        current_health: 3,
+        max_health: 3,
+        base_attack: 1,
+        base_health: 3,
+        keywords: Keywords::none(),
+        status: CreatureStatus::default(),
+        turn_played: 0,
+    };
+    engine.state.players[0].creatures.push(creature);
+
+    // Use the self-buff ability
+    let result = engine.apply_action(Action::UseAbility {
+        slot: Slot(0),
+        ability_index: 0,
+        target: Target::Self_,
+    });
+
+    assert!(result.is_ok(), "Use ability with self target should succeed: {:?}", result);
+
+    // Creature should be buffed (+1/+1)
+    let creature = engine.state.players[0].get_creature(Slot(0));
+    assert!(creature.is_some(), "Creature should still exist");
+    let creature = creature.unwrap();
+    assert_eq!(creature.attack, 2, "Attack should be buffed to 2");
+    assert_eq!(creature.current_health, 4, "Health should be buffed to 4");
+}

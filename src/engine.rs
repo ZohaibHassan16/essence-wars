@@ -1633,15 +1633,79 @@ impl<'a> GameEngine<'a> {
     }
 
     /// Execute a UseAbility action.
+    ///
+    /// Uses a creature's ability at the specified slot with the given target.
+    /// The ability is identified by ability_index (0-based).
+    ///
+    /// # Errors
+    /// - Returns error if no creature exists at the slot
+    /// - Returns error if creature is silenced
+    /// - Returns error if ability_index is out of bounds
+    /// - Returns error if the card definition is not found
     fn execute_use_ability(
         &mut self,
-        _slot: Slot,
-        _ability_index: u8,
-        _target: crate::actions::Target,
+        slot: Slot,
+        ability_index: u8,
+        target: crate::actions::Target,
     ) -> Result<(), String> {
-        // TODO: Implement ability execution
-        // This is a placeholder for future implementation
-        Err("Abilities not yet implemented".to_string())
+        use crate::actions::Target;
+
+        let current_player = self.state.active_player;
+
+        // Get creature at slot
+        let creature = self.state.players[current_player.index()]
+            .get_creature(slot)
+            .ok_or("No creature at slot")?;
+
+        // Silenced creatures can't use abilities
+        if creature.status.is_silenced() {
+            return Err("Creature is silenced".to_string());
+        }
+
+        let card_id = creature.card_id;
+
+        // Get card definition
+        let card_def = self.card_db.get(card_id)
+            .ok_or("Card not found")?;
+
+        // Get abilities from card type
+        let abilities = match &card_def.card_type {
+            CardType::Creature { abilities, .. } => abilities,
+            _ => return Err("Not a creature card".to_string()),
+        };
+
+        // Get the specific ability
+        let ability = abilities.get(ability_index as usize)
+            .ok_or("Invalid ability index")?;
+
+        // Convert target to EffectTarget
+        let effect_target = match target {
+            Target::NoTarget => EffectTarget::None,
+            Target::EnemySlot(s) => EffectTarget::Creature {
+                owner: current_player.opponent(),
+                slot: s
+            },
+            Target::Self_ => EffectTarget::Creature {
+                owner: current_player,
+                slot
+            },
+        };
+
+        // Create effect queue and queue ability effects
+        let mut effect_queue = EffectQueue::new();
+        let source = EffectSource::Creature { owner: current_player, slot };
+
+        for effect_def in &ability.effects {
+            // Convert EffectDefinition to Effect with the resolved target
+            if let Some(effect) = effect_def_to_effect_with_target(effect_def, effect_target, current_player) {
+                effect_queue.push(effect, source);
+            }
+        }
+
+        // Process all effects
+        effect_queue.process_all(&mut self.state, self.card_db);
+
+        Ok(())
     }
 
     /// Remove all dead creatures from the board.

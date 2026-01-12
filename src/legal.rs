@@ -203,6 +203,11 @@ fn generate_ability_actions(
 
     // For each of our creatures with abilities
     for creature in &player_state.creatures {
+        // Silenced creatures cannot use abilities
+        if creature.status.is_silenced() {
+            continue;
+        }
+
         // Look up the card definition to get abilities
         let Some(card_def) = card_db.get(creature.card_id) else {
             continue;
@@ -226,11 +231,12 @@ fn generate_ability_actions(
             // Generate actions based on targeting rule
             match &ability.targeting {
                 TargetingRule::NoTarget => {
+                    // NoTarget abilities can target self
                     if actions.len() < MAX_LEGAL_ACTIONS {
                         actions.push(Action::UseAbility {
                             slot: creature.slot,
                             ability_index: ability_idx as u8,
-                            target: Target::NoTarget,
+                            target: Target::Self_,
                         });
                     }
                 }
@@ -242,6 +248,16 @@ fn generate_ability_actions(
                                 slot: creature.slot,
                                 ability_index: ability_idx as u8,
                                 target: Target::EnemySlot(Slot(slot_idx)),
+                            });
+                        }
+                    }
+                    // Also allow targeting self for TargetAny
+                    if matches!(ability.targeting, TargetingRule::TargetAny) {
+                        if actions.len() < MAX_LEGAL_ACTIONS {
+                            actions.push(Action::UseAbility {
+                                slot: creature.slot,
+                                ability_index: ability_idx as u8,
+                                target: Target::Self_,
                             });
                         }
                     }
@@ -260,15 +276,13 @@ fn generate_ability_actions(
                     }
                 }
                 TargetingRule::TargetAllyCreature => {
-                    // Target friendly creature slots that have creatures
-                    for ally_creature in &player_state.creatures {
-                        if actions.len() < MAX_LEGAL_ACTIONS {
-                            actions.push(Action::UseAbility {
-                                slot: creature.slot,
-                                ability_index: ability_idx as u8,
-                                target: Target::EnemySlot(ally_creature.slot), // Using EnemySlot for ally too
-                            });
-                        }
+                    // Target self (the creature using the ability)
+                    if actions.len() < MAX_LEGAL_ACTIONS {
+                        actions.push(Action::UseAbility {
+                            slot: creature.slot,
+                            ability_index: ability_idx as u8,
+                            target: Target::Self_,
+                        });
                     }
                 }
                 TargetingRule::TargetPlayer | TargetingRule::TargetEnemyPlayer => {
