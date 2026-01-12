@@ -4,7 +4,11 @@
 // so functions used by other test files appear "unused" to each binary.
 #![allow(dead_code)]
 
-use cardgame::cards::{CardDatabase, CardDefinition, CardType};
+use cardgame::cards::{
+    AbilityDefinition, CardDatabase, CardDefinition, CardType, EffectDefinition,
+    PassiveEffectDefinition, PassiveModifier,
+};
+use cardgame::effects::{TargetingRule, Trigger};
 use cardgame::keywords::Keywords;
 use cardgame::state::{Creature, CreatureStatus, GameState};
 use cardgame::types::{CardId, PlayerId, Rarity, Slot};
@@ -232,6 +236,68 @@ pub fn card_playing_test_db() -> CardDatabase {
                 abilities: vec![],
             },
             rarity: Rarity::Rare,
+            tags: vec![],
+        },
+        // Support with attack bonus passive effect
+        CardDefinition {
+            id: 10,
+            name: "War Banner".to_string(),
+            cost: 2,
+            card_type: CardType::Support {
+                durability: 3,
+                passive_effects: vec![PassiveEffectDefinition {
+                    modifier: PassiveModifier::AttackBonus(1),
+                }],
+                triggered_effects: vec![],
+            },
+            rarity: Rarity::Uncommon,
+            tags: vec![],
+        },
+        // Support with health bonus passive effect
+        CardDefinition {
+            id: 11,
+            name: "Barrier Shield".to_string(),
+            cost: 2,
+            card_type: CardType::Support {
+                durability: 3,
+                passive_effects: vec![PassiveEffectDefinition {
+                    modifier: PassiveModifier::HealthBonus(2),
+                }],
+                triggered_effects: vec![],
+            },
+            rarity: Rarity::Uncommon,
+            tags: vec![],
+        },
+        // Support that grants Rush keyword
+        CardDefinition {
+            id: 12,
+            name: "Haste Totem".to_string(),
+            cost: 3,
+            card_type: CardType::Support {
+                durability: 2,
+                passive_effects: vec![PassiveEffectDefinition {
+                    modifier: PassiveModifier::GrantKeyword("Rush".to_string()),
+                }],
+                triggered_effects: vec![],
+            },
+            rarity: Rarity::Rare,
+            tags: vec![],
+        },
+        // Support with StartOfTurn heal effect
+        CardDefinition {
+            id: 13,
+            name: "Healing Shrine".to_string(),
+            cost: 3,
+            card_type: CardType::Support {
+                durability: 4,
+                passive_effects: vec![],
+                triggered_effects: vec![AbilityDefinition {
+                    trigger: Trigger::StartOfTurn,
+                    targeting: TargetingRule::NoTarget,
+                    effects: vec![EffectDefinition::Heal { amount: 2 }],
+                }],
+            },
+            rarity: Rarity::Uncommon,
             tags: vec![],
         },
     ];

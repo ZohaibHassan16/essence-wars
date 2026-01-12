@@ -8,7 +8,7 @@
 
 use std::collections::VecDeque;
 use crate::core::actions::Action;
-use crate::core::cards::{CardDatabase, CardType, EffectDefinition, AbilityDefinition};
+use crate::core::cards::{CardDatabase, CardType, EffectDefinition, AbilityDefinition, PassiveModifier};
 use crate::core::combat;
 use crate::core::config::{game, player};
 use crate::core::effects::{Effect, EffectTarget, EffectSource, PendingEffect, Trigger, TargetingRule};
@@ -1129,6 +1129,165 @@ pub fn effect_def_to_triggered_effect(
 }
 
 // =============================================================================
+// SUPPORT PASSIVE EFFECT HELPERS
+// =============================================================================
+
+/// Apply a single passive modifier to a creature.
+fn apply_passive_to_creature(creature: &mut Creature, modifier: &PassiveModifier) {
+    match modifier {
+        PassiveModifier::AttackBonus(amount) => {
+            creature.attack += *amount as i8;
+        }
+        PassiveModifier::HealthBonus(amount) => {
+            creature.current_health += *amount as i8;
+            creature.max_health += *amount as i8;
+        }
+        PassiveModifier::GrantKeyword(keyword_name) => {
+            let kw = Keywords::from_names(&[keyword_name.as_str()]);
+            creature.keywords.add(kw.0);
+        }
+    }
+}
+
+/// Remove a single passive modifier from a creature.
+fn remove_passive_from_creature(creature: &mut Creature, modifier: &PassiveModifier) {
+    match modifier {
+        PassiveModifier::AttackBonus(amount) => {
+            creature.attack -= *amount as i8;
+        }
+        PassiveModifier::HealthBonus(amount) => {
+            creature.current_health -= *amount as i8;
+            creature.max_health -= *amount as i8;
+            // Ensure health doesn't go below 1 from passive removal
+            // (damage should kill, not passive loss)
+            if creature.current_health < 1 {
+                creature.current_health = 1;
+            }
+        }
+        PassiveModifier::GrantKeyword(keyword_name) => {
+            let kw = Keywords::from_names(&[keyword_name.as_str()]);
+            creature.keywords.remove(kw.0);
+        }
+    }
+}
+
+/// Apply all passive effects from a player's supports to a specific creature.
+fn apply_all_support_passives_to_creature(
+    creature: &mut Creature,
+    supports: &[Support],
+    card_db: &CardDatabase,
+) {
+    for support in supports {
+        if let Some(card_def) = card_db.get(support.card_id) {
+            if let CardType::Support { passive_effects, .. } = &card_def.card_type {
+                for passive in passive_effects {
+                    apply_passive_to_creature(creature, &passive.modifier);
+                }
+            }
+        }
+    }
+}
+
+/// Apply passive effects from a newly placed support to all existing creatures.
+fn apply_support_passives_to_all_creatures(
+    support_card_id: CardId,
+    creatures: &mut [Creature],
+    card_db: &CardDatabase,
+) {
+    if let Some(card_def) = card_db.get(support_card_id) {
+        if let CardType::Support { passive_effects, .. } = &card_def.card_type {
+            for creature in creatures {
+                for passive in passive_effects {
+                    apply_passive_to_creature(creature, &passive.modifier);
+                }
+            }
+        }
+    }
+}
+
+/// Remove passive effects from a support being removed from all creatures.
+fn remove_support_passives_from_all_creatures(
+    support_card_id: CardId,
+    creatures: &mut [Creature],
+    card_db: &CardDatabase,
+) {
+    if let Some(card_def) = card_db.get(support_card_id) {
+        if let CardType::Support { passive_effects, .. } = &card_def.card_type {
+            for creature in creatures {
+                for passive in passive_effects {
+                    remove_passive_from_creature(creature, &passive.modifier);
+                }
+            }
+        }
+    }
+}
+
+/// Convert an EffectDefinition to an Effect for support-triggered abilities.
+/// This handles supports differently from creatures - e.g., NoTarget heals target the player.
+pub fn support_effect_def_to_effect(
+    def: &EffectDefinition,
+    source_owner: PlayerId,
+    ability: &AbilityDefinition,
+) -> Option<Effect> {
+    match def {
+        EffectDefinition::Damage { amount } => {
+            let target = match &ability.targeting {
+                TargetingRule::NoTarget => EffectTarget::AllEnemyCreatures(source_owner),
+                TargetingRule::TargetEnemyCreature => EffectTarget::AllEnemyCreatures(source_owner),
+                TargetingRule::TargetEnemyPlayer => EffectTarget::Player(source_owner.opponent()),
+                _ => EffectTarget::AllEnemyCreatures(source_owner),
+            };
+            Some(Effect::Damage { target, amount: *amount })
+        }
+        EffectDefinition::Heal { amount } => {
+            // For supports, NoTarget heals should heal the player
+            let target = match &ability.targeting {
+                TargetingRule::NoTarget => EffectTarget::Player(source_owner),
+                TargetingRule::TargetPlayer => EffectTarget::Player(source_owner),
+                TargetingRule::TargetAllyCreature => EffectTarget::AllAllyCreatures(source_owner),
+                _ => EffectTarget::Player(source_owner),
+            };
+            Some(Effect::Heal { target, amount: *amount })
+        }
+        EffectDefinition::Draw { count } => {
+            Some(Effect::Draw { player: source_owner, count: *count })
+        }
+        EffectDefinition::BuffStats { attack, health } => {
+            // Buff all friendly creatures
+            Some(Effect::BuffStats {
+                target: EffectTarget::AllAllyCreatures(source_owner),
+                attack: *attack,
+                health: *health,
+            })
+        }
+        EffectDefinition::Destroy => None, // Needs specific targeting
+        EffectDefinition::GrantKeyword { keyword } => {
+            let kw = Keywords::from_names(&[keyword.as_str()]);
+            Some(Effect::GrantKeyword {
+                target: EffectTarget::AllAllyCreatures(source_owner),
+                keyword: kw.0,
+            })
+        }
+        EffectDefinition::RemoveKeyword { keyword } => {
+            let kw = Keywords::from_names(&[keyword.as_str()]);
+            Some(Effect::RemoveKeyword {
+                target: EffectTarget::AllEnemyCreatures(source_owner),
+                keyword: kw.0,
+            })
+        }
+        EffectDefinition::Silence => None, // Needs specific targeting
+        EffectDefinition::GainEssence { amount } => {
+            Some(Effect::GainEssence { player: source_owner, amount: *amount })
+        }
+        EffectDefinition::RefreshCreature => {
+            Some(Effect::RefreshCreature {
+                target: EffectTarget::AllAllyCreatures(source_owner),
+            })
+        }
+    }
+}
+
+// =============================================================================
 // GAME ENGINE
 // =============================================================================
 
@@ -1199,6 +1358,9 @@ impl<'a> GameEngine<'a> {
 
         // Start Player 1's first turn
         self.start_turn();
+
+        // Validate initial state in debug builds
+        self.state.debug_validate();
     }
 
     /// Draw a card for the specified player.
@@ -1245,15 +1407,84 @@ impl<'a> GameEngine<'a> {
         for creature in &mut self.state.players[current_player.index()].creatures {
             creature.status.set_exhausted(false);
         }
+
+        // Process StartOfTurn triggered effects for supports
+        self.process_support_start_of_turn_triggers(current_player);
+    }
+
+    /// Process StartOfTurn triggered effects for a player's supports.
+    fn process_support_start_of_turn_triggers(&mut self, player: PlayerId) {
+        // Collect support info to avoid borrow conflicts
+        let support_info: Vec<(Slot, CardId)> = self.state.players[player.index()]
+            .supports
+            .iter()
+            .map(|s| (s.slot, s.card_id))
+            .collect();
+
+        let mut effect_queue = EffectQueue::new();
+
+        for (slot, card_id) in support_info {
+            if let Some(card_def) = self.card_db.get(card_id) {
+                if let CardType::Support { triggered_effects, .. } = &card_def.card_type {
+                    for ability in triggered_effects {
+                        if ability.trigger == Trigger::StartOfTurn {
+                            let source = EffectSource::Support { owner: player, slot };
+                            for effect_def in &ability.effects {
+                                // Use support-specific effect conversion
+                                if let Some(effect) = support_effect_def_to_effect(
+                                    effect_def,
+                                    player,
+                                    ability,
+                                ) {
+                                    effect_queue.push(effect, source);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Process all queued effects
+        effect_queue.process_all(&mut self.state, self.card_db);
     }
 
     /// End the current player's turn.
-    /// - Process end-of-turn effects (placeholder for now)
+    /// - Decrement support durability and remove depleted supports
     /// - Switch to other player
     /// - Call start_turn for new player
     fn end_turn(&mut self) {
-        // Process end-of-turn effects (placeholder for future implementation)
-        // self.process_end_of_turn_effects();
+        let current_player = self.state.active_player;
+
+        // Decrement support durability and collect supports to remove
+        let supports_to_remove: Vec<(Slot, CardId)> = {
+            let player_state = &mut self.state.players[current_player.index()];
+            let mut to_remove = Vec::new();
+
+            for support in &mut player_state.supports {
+                support.current_durability = support.current_durability.saturating_sub(1);
+                if support.current_durability == 0 {
+                    to_remove.push((support.slot, support.card_id));
+                }
+            }
+
+            to_remove
+        };
+
+        // Remove depleted supports and their passive effects
+        for (slot, card_id) in supports_to_remove {
+            // Remove passive effects from creatures before removing support
+            remove_support_passives_from_all_creatures(
+                card_id,
+                &mut self.state.players[current_player.index()].creatures,
+                self.card_db,
+            );
+
+            // Remove the support from the board
+            self.state.players[current_player.index()]
+                .supports
+                .retain(|s| s.slot != slot);
+        }
 
         // Switch to opponent
         self.state.active_player = self.state.active_player.opponent();
@@ -1333,6 +1564,9 @@ impl<'a> GameEngine<'a> {
         // Check for victory after each action
         self.check_life_victory();
 
+        // Validate state invariants in debug builds
+        self.state.debug_validate();
+
         Ok(())
     }
 
@@ -1391,6 +1625,14 @@ impl<'a> GameEngine<'a> {
 
                 // Add creature to board
                 self.state.players[current_player.index()].creatures.push(creature);
+
+                // Apply passive effects from existing supports to the new creature
+                let supports: Vec<Support> = self.state.players[current_player.index()]
+                    .supports.iter().cloned().collect();
+                if let Some(new_creature) = self.state.players[current_player.index()]
+                    .get_creature_mut(slot) {
+                    apply_all_support_passives_to_creature(new_creature, &supports, self.card_db);
+                }
 
                 // Queue OnPlay triggered effects
                 for ability in abilities {
@@ -1472,15 +1714,22 @@ impl<'a> GameEngine<'a> {
                 // Add support to board
                 self.state.players[current_player.index()].supports.push(support);
 
+                // Apply passive effects from this support to all existing creatures
+                apply_support_passives_to_all_creatures(
+                    card_id,
+                    &mut self.state.players[current_player.index()].creatures,
+                    self.card_db,
+                );
+
                 // Queue OnPlay triggered effects for support
                 for ability in triggered_effects {
                     if ability.trigger == Trigger::OnPlay {
                         let source = EffectSource::Support { owner: current_player, slot };
                         for effect_def in &ability.effects {
-                            if let Some(effect) = effect_def_to_triggered_effect(
+                            // Use support-specific effect conversion
+                            if let Some(effect) = support_effect_def_to_effect(
                                 effect_def,
                                 current_player,
-                                slot,
                                 ability,
                             ) {
                                 effect_queue.push(effect, source);
@@ -1488,10 +1737,6 @@ impl<'a> GameEngine<'a> {
                         }
                     }
                 }
-
-                // Note: Passive effects from supports are applied continuously and
-                // handled elsewhere (e.g., during stat calculations). They are not
-                // queued effects that resolve once.
             }
         }
 
@@ -1613,6 +1858,33 @@ impl<'a> GameEngine<'a> {
         effect_queue.process_all(&mut self.state, self.card_db);
 
         Ok(())
+    }
+
+    /// Remove a support from the board, properly cleaning up its passive effects.
+    ///
+    /// This should be used instead of directly manipulating state.supports
+    /// to ensure passive effects are properly removed from creatures.
+    pub fn remove_support(&mut self, player: PlayerId, slot: Slot) {
+        // Find the support's card_id
+        let card_id = self.state.players[player.index()]
+            .supports
+            .iter()
+            .find(|s| s.slot == slot)
+            .map(|s| s.card_id);
+
+        if let Some(card_id) = card_id {
+            // Remove passive effects from creatures
+            remove_support_passives_from_all_creatures(
+                card_id,
+                &mut self.state.players[player.index()].creatures,
+                self.card_db,
+            );
+
+            // Remove the support from the board
+            self.state.players[player.index()]
+                .supports
+                .retain(|s| s.slot != slot);
+        }
     }
 
     /// Check if game is over.

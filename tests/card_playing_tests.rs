@@ -4,6 +4,7 @@
 
 mod common;
 
+use cardgame::actions::Action;
 use cardgame::effects::{EffectTarget, TargetingRule};
 use cardgame::engine::{resolve_spell_target, GameEngine};
 use cardgame::keywords::Keywords;
@@ -433,4 +434,333 @@ fn test_resolve_spell_target_player_self() {
     ).unwrap();
 
     assert_eq!(target, EffectTarget::Player(PlayerId::PLAYER_ONE));
+}
+
+// =============================================================================
+// SUPPORT CARD PASSIVE EFFECT TESTS
+// =============================================================================
+
+/// Test that attack bonus passive effect from support increases creature attack
+#[test]
+fn test_support_attack_bonus_passive_effect() {
+    let card_db = card_playing_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    // Set up game state
+    engine.state.current_turn = 1;
+    engine.state.active_player = PlayerId::PLAYER_ONE;
+    engine.state.players[0].action_points = 10;
+
+    // First play a creature (CardId 1: 2/3 stats)
+    engine.state.players[0].hand.push(CardInstance::new(CardId(1)));
+    engine.execute_play_card(0, Slot(0)).unwrap();
+
+    // Verify creature has base attack
+    let creature = engine.state.players[0].get_creature(Slot(0)).unwrap();
+    assert_eq!(creature.attack, 2, "Creature should have base attack of 2");
+
+    // Now play the attack bonus support (CardId 10: War Banner, +1 attack)
+    engine.state.players[0].hand.push(CardInstance::new(CardId(10)));
+    engine.execute_play_card(0, Slot(0)).unwrap();
+
+    // Verify support is on board
+    let support = engine.state.get_support(PlayerId::PLAYER_ONE, Slot(0));
+    assert!(support.is_some(), "Support should be on board");
+
+    // Verify creature now has buffed attack
+    let creature = engine.state.players[0].get_creature(Slot(0)).unwrap();
+    assert_eq!(
+        creature.attack, 3,
+        "Creature attack should be buffed to 3 (2 base + 1 from War Banner)"
+    );
+}
+
+/// Test that health bonus passive effect from support increases creature health
+#[test]
+fn test_support_health_bonus_passive_effect() {
+    let card_db = card_playing_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    // Set up game state
+    engine.state.current_turn = 1;
+    engine.state.active_player = PlayerId::PLAYER_ONE;
+    engine.state.players[0].action_points = 10;
+
+    // First play a creature (CardId 1: 2/3 stats)
+    engine.state.players[0].hand.push(CardInstance::new(CardId(1)));
+    engine.execute_play_card(0, Slot(0)).unwrap();
+
+    // Verify creature has base health
+    let creature = engine.state.players[0].get_creature(Slot(0)).unwrap();
+    assert_eq!(creature.current_health, 3, "Creature should have base health of 3");
+    assert_eq!(creature.max_health, 3, "Creature should have max health of 3");
+
+    // Now play the health bonus support (CardId 11: Barrier Shield, +2 health)
+    engine.state.players[0].hand.push(CardInstance::new(CardId(11)));
+    engine.execute_play_card(0, Slot(0)).unwrap();
+
+    // Verify creature now has buffed health
+    let creature = engine.state.players[0].get_creature(Slot(0)).unwrap();
+    assert_eq!(
+        creature.current_health, 5,
+        "Creature current health should be buffed to 5 (3 base + 2 from Barrier Shield)"
+    );
+    assert_eq!(
+        creature.max_health, 5,
+        "Creature max health should be buffed to 5 (3 base + 2 from Barrier Shield)"
+    );
+}
+
+/// Test that grant keyword passive effect gives creatures the keyword
+#[test]
+fn test_support_grant_keyword_passive_effect() {
+    let card_db = card_playing_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    // Set up game state
+    engine.state.current_turn = 1;
+    engine.state.active_player = PlayerId::PLAYER_ONE;
+    engine.state.players[0].action_points = 10;
+
+    // First play a creature without Rush (CardId 1: basic 2/3)
+    engine.state.players[0].hand.push(CardInstance::new(CardId(1)));
+    engine.execute_play_card(0, Slot(0)).unwrap();
+
+    // Verify creature does NOT have Rush
+    let creature = engine.state.players[0].get_creature(Slot(0)).unwrap();
+    assert!(
+        !creature.keywords.has_rush(),
+        "Creature should not have Rush before support is played"
+    );
+
+    // Now play the Rush grant support (CardId 12: Haste Totem, grants Rush)
+    engine.state.players[0].hand.push(CardInstance::new(CardId(12)));
+    engine.execute_play_card(0, Slot(0)).unwrap();
+
+    // Verify creature now has Rush keyword
+    let creature = engine.state.players[0].get_creature(Slot(0)).unwrap();
+    assert!(
+        creature.keywords.has_rush(),
+        "Creature should have Rush after Haste Totem is played"
+    );
+}
+
+/// Test that passive effects apply to newly played creatures too
+#[test]
+fn test_support_passive_effect_applies_to_new_creatures() {
+    let card_db = card_playing_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    // Set up game state
+    engine.state.current_turn = 1;
+    engine.state.active_player = PlayerId::PLAYER_ONE;
+    engine.state.players[0].action_points = 15;
+
+    // First play the attack bonus support (CardId 10: War Banner, +1 attack)
+    engine.state.players[0].hand.push(CardInstance::new(CardId(10)));
+    engine.execute_play_card(0, Slot(0)).unwrap();
+
+    // Now play a creature AFTER the support is already on board
+    engine.state.players[0].hand.push(CardInstance::new(CardId(1)));
+    engine.execute_play_card(0, Slot(0)).unwrap();
+
+    // Verify new creature has buffed attack immediately
+    let creature = engine.state.players[0].get_creature(Slot(0)).unwrap();
+    assert_eq!(
+        creature.attack, 3,
+        "Newly played creature should have buffed attack of 3 (2 base + 1 from War Banner)"
+    );
+}
+
+/// Test that passive effects are removed when support is destroyed
+#[test]
+fn test_support_passive_effect_removed_when_support_destroyed() {
+    let card_db = card_playing_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    // Set up game state
+    engine.state.current_turn = 1;
+    engine.state.active_player = PlayerId::PLAYER_ONE;
+    engine.state.players[0].action_points = 10;
+
+    // Play a creature
+    engine.state.players[0].hand.push(CardInstance::new(CardId(1)));
+    engine.execute_play_card(0, Slot(0)).unwrap();
+
+    // Play the attack bonus support
+    engine.state.players[0].hand.push(CardInstance::new(CardId(10)));
+    engine.execute_play_card(0, Slot(0)).unwrap();
+
+    // Verify creature has buffed attack
+    let creature = engine.state.players[0].get_creature(Slot(0)).unwrap();
+    assert_eq!(creature.attack, 3, "Creature should have buffed attack");
+
+    // Remove the support properly (simulating destruction)
+    engine.remove_support(PlayerId::PLAYER_ONE, Slot(0));
+
+    // Verify creature's attack returns to base
+    let creature = engine.state.players[0].get_creature(Slot(0)).unwrap();
+    assert_eq!(
+        creature.attack, 2,
+        "Creature attack should return to base 2 after support is removed"
+    );
+}
+
+// =============================================================================
+// SUPPORT CARD TRIGGERED EFFECT TESTS
+// =============================================================================
+
+/// Test that StartOfTurn triggered effect fires at the start of owner's turn
+#[test]
+fn test_support_start_of_turn_triggered_effect() {
+    let card_db = card_playing_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    // Set up game state
+    engine.state.current_turn = 1;
+    engine.state.active_player = PlayerId::PLAYER_ONE;
+    engine.state.players[0].action_points = 10;
+    engine.state.players[0].life = 25; // Reduced life to see healing
+
+    // Play the StartOfTurn heal support (CardId 13: Healing Shrine, heal 2)
+    engine.state.players[0].hand.push(CardInstance::new(CardId(13)));
+    engine.execute_play_card(0, Slot(0)).unwrap();
+
+    // Verify support is on board
+    let support = engine.state.get_support(PlayerId::PLAYER_ONE, Slot(0));
+    assert!(support.is_some(), "Support should be on board");
+
+    // Life should still be 25 (no healing on play)
+    assert_eq!(engine.state.players[0].life, 25, "Life should be 25 before turn start");
+
+    // End turn (P1 -> P2)
+    engine.apply_action(Action::EndTurn).unwrap();
+
+    // End P2's turn (P2 -> P1)
+    engine.apply_action(Action::EndTurn).unwrap();
+
+    // Now it's P1's turn again - StartOfTurn should have triggered
+    assert_eq!(
+        engine.state.players[0].life, 27,
+        "Life should be 27 after StartOfTurn heal (25 + 2)"
+    );
+}
+
+/// Test that StartOfTurn only triggers for the support owner
+#[test]
+fn test_support_start_of_turn_only_triggers_for_owner() {
+    let card_db = card_playing_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    // Set up game state
+    engine.state.current_turn = 1;
+    engine.state.active_player = PlayerId::PLAYER_ONE;
+    engine.state.players[0].action_points = 10;
+    engine.state.players[0].life = 25;
+    engine.state.players[1].life = 25;
+
+    // P1 plays the heal support
+    engine.state.players[0].hand.push(CardInstance::new(CardId(13)));
+    engine.execute_play_card(0, Slot(0)).unwrap();
+
+    // End P1's turn (P1 -> P2)
+    engine.apply_action(Action::EndTurn).unwrap();
+
+    // P2's turn starts - P1's support should NOT trigger
+    assert_eq!(
+        engine.state.players[0].life, 25,
+        "P1's life should still be 25 (not their turn)"
+    );
+    assert_eq!(
+        engine.state.players[1].life, 25,
+        "P2's life should still be 25 (not their support)"
+    );
+}
+
+// =============================================================================
+// SUPPORT CARD DURABILITY TESTS
+// =============================================================================
+
+/// Test that support durability is tracked correctly
+#[test]
+fn test_support_durability_initial_value() {
+    let card_db = card_playing_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    // Set up game state
+    engine.state.current_turn = 1;
+    engine.state.active_player = PlayerId::PLAYER_ONE;
+    engine.state.players[0].action_points = 10;
+
+    // Play a support with durability 3 (CardId 10: War Banner)
+    engine.state.players[0].hand.push(CardInstance::new(CardId(10)));
+    engine.execute_play_card(0, Slot(0)).unwrap();
+
+    // Verify durability is set correctly
+    let support = engine.state.get_support(PlayerId::PLAYER_ONE, Slot(0)).unwrap();
+    assert_eq!(support.current_durability, 3, "Support should have 3 durability");
+}
+
+/// Test that support durability decrements each turn
+#[test]
+fn test_support_durability_decrements_each_turn() {
+    let card_db = card_playing_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    // Set up game state
+    engine.state.current_turn = 1;
+    engine.state.active_player = PlayerId::PLAYER_ONE;
+    engine.state.players[0].action_points = 10;
+
+    // Play a support with durability 3 (CardId 10: War Banner)
+    engine.state.players[0].hand.push(CardInstance::new(CardId(10)));
+    engine.execute_play_card(0, Slot(0)).unwrap();
+
+    // Verify initial durability
+    let support = engine.state.get_support(PlayerId::PLAYER_ONE, Slot(0)).unwrap();
+    assert_eq!(support.current_durability, 3, "Initial durability should be 3");
+
+    // End turn twice (full round)
+    engine.apply_action(Action::EndTurn).unwrap(); // P1 -> P2
+    engine.apply_action(Action::EndTurn).unwrap(); // P2 -> P1
+
+    // Durability should have decremented at end of P1's turn
+    let support = engine.state.get_support(PlayerId::PLAYER_ONE, Slot(0)).unwrap();
+    assert_eq!(
+        support.current_durability, 2,
+        "Durability should be 2 after one round"
+    );
+}
+
+/// Test that support is removed when durability reaches 0
+#[test]
+fn test_support_removed_when_durability_depleted() {
+    let card_db = card_playing_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    // Set up game state
+    engine.state.current_turn = 1;
+    engine.state.active_player = PlayerId::PLAYER_ONE;
+    engine.state.players[0].action_points = 10;
+
+    // Play a support with durability 2 (CardId 12: Haste Totem)
+    engine.state.players[0].hand.push(CardInstance::new(CardId(12)));
+    engine.execute_play_card(0, Slot(0)).unwrap();
+
+    // Verify support is on board
+    assert!(
+        engine.state.get_support(PlayerId::PLAYER_ONE, Slot(0)).is_some(),
+        "Support should be on board initially"
+    );
+
+    // Complete 2 full rounds (4 end turns)
+    for _ in 0..4 {
+        engine.apply_action(Action::EndTurn).unwrap();
+    }
+
+    // Support should be removed after durability hits 0
+    assert!(
+        engine.state.get_support(PlayerId::PLAYER_ONE, Slot(0)).is_none(),
+        "Support should be removed after durability depleted"
+    );
 }

@@ -1,4 +1,4 @@
-"""AI Card Game - Python bindings for the card game engine."""
+"""AI Card Game - Python bindings for the Essence Wars engine."""
 
 from __future__ import annotations
 

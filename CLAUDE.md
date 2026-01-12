@@ -11,7 +11,7 @@
 cargo build --release
 
 # Run all tests
-cargo test  # 224 tests
+cargo test  # 243 tests
 
 # Run arena matches
 cargo run --release --bin arena -- --bot1 greedy --bot2 random --games 100
@@ -100,6 +100,19 @@ ai-cardgame/
 ├── scripts/
 │   └── analyze-tuning.sh    # Wrapper script for easy usage
 ├── tests/
+│   ├── common/             # Shared test utilities
+│   │   └── mod.rs
+│   ├── unit/               # Unit tests for src/core/ modules
+│   │   ├── types_tests.rs
+│   │   ├── keywords_tests.rs
+│   │   ├── config_tests.rs
+│   │   ├── effects_tests.rs
+│   │   ├── state_tests.rs
+│   │   ├── cards_tests.rs
+│   │   ├── actions_tests.rs
+│   │   ├── legal_tests.rs
+│   │   └── combat_tests.rs
+│   ├── unit.rs             # Unit test entry point
 │   ├── engine_tests.rs
 │   ├── effect_queue_tests.rs
 │   ├── card_playing_tests.rs
@@ -111,6 +124,16 @@ ai-cardgame/
     ├── design-engine.md
     └── implementation-plan.md
 ```
+
+## Test Organization
+
+**IMPORTANT**: This project keeps unit tests **separate from source code**, not inline with `#[cfg(test)] mod tests` blocks as is common in Rust. This reduces token usage when AI assistants read source files.
+
+- **Unit tests**: Go in `tests/unit/<module>_tests.rs` (e.g., `tests/unit/types_tests.rs` for `src/core/types.rs`)
+- **Integration tests**: Go directly in `tests/*.rs` (e.g., `tests/engine_tests.rs`)
+- **Shared test utilities**: Go in `tests/common/mod.rs`
+
+When adding new tests for core modules, create them in `tests/unit/` and add the module to `tests/unit.rs`.
 
 ## Bot System
 
@@ -405,7 +428,7 @@ cargo bench  # Run all benchmarks
 - Deck system with TOML definitions
 - Weight tuning pipeline with CMA-ES optimizer
 - Criterion benchmarks for performance testing
-- 224 tests passing
+- 243 tests passing
 
 **Future work:**
 - Python bindings (PyO3) for ML training

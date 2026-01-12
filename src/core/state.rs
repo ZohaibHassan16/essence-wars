@@ -269,112 +269,142 @@ impl Default for GameState {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+// =============================================================================
+// DEBUG VALIDATION
+// =============================================================================
 
-    #[test]
-    fn test_creature_status() {
-        let mut status = CreatureStatus::default();
-        assert!(!status.is_exhausted());
-        assert!(!status.is_silenced());
+impl PlayerState {
+    /// Validate player state invariants (debug builds only).
+    /// Panics if any invariant is violated.
+    #[cfg(debug_assertions)]
+    pub fn debug_validate(&self, player_id: PlayerId) {
+        // Note: We don't validate action_points since tests may set arbitrary values
+        // and bonus AP effects could exist in future card designs.
 
-        status.set_exhausted(true);
-        assert!(status.is_exhausted());
-        assert!(!status.is_silenced());
+        // Validate creatures
+        let mut seen_slots: Vec<u8> = Vec::new();
+        for creature in &self.creatures {
+            // Creature slot should be valid
+            debug_assert!(
+                (creature.slot.0 as usize) < board::CREATURE_SLOTS,
+                "Creature at invalid slot {} (max {})",
+                creature.slot.0, board::CREATURE_SLOTS - 1
+            );
 
-        status.set_silenced(true);
-        assert!(status.is_exhausted());
-        assert!(status.is_silenced());
+            // Creature owner should match the player
+            debug_assert!(
+                creature.owner == player_id,
+                "Creature owner {:?} doesn't match player {:?}",
+                creature.owner, player_id
+            );
 
-        status.set_exhausted(false);
-        assert!(!status.is_exhausted());
-        assert!(status.is_silenced());
+            // No duplicate slots
+            debug_assert!(
+                !seen_slots.contains(&creature.slot.0),
+                "Duplicate creature at slot {}",
+                creature.slot.0
+            );
+            seen_slots.push(creature.slot.0);
+
+            // Creatures on board should be alive
+            debug_assert!(
+                creature.current_health > 0,
+                "Dead creature (health={}) still on board at slot {}",
+                creature.current_health, creature.slot.0
+            );
+        }
+
+        // Validate supports
+        let mut seen_support_slots: Vec<u8> = Vec::new();
+        for support in &self.supports {
+            // Support slot should be valid
+            debug_assert!(
+                (support.slot.0 as usize) < board::SUPPORT_SLOTS,
+                "Support at invalid slot {} (max {})",
+                support.slot.0, board::SUPPORT_SLOTS - 1
+            );
+
+            // Support owner should match the player
+            debug_assert!(
+                support.owner == player_id,
+                "Support owner {:?} doesn't match player {:?}",
+                support.owner, player_id
+            );
+
+            // No duplicate slots
+            debug_assert!(
+                !seen_support_slots.contains(&support.slot.0),
+                "Duplicate support at slot {}",
+                support.slot.0
+            );
+            seen_support_slots.push(support.slot.0);
+
+            // Supports on board should have durability > 0
+            debug_assert!(
+                support.current_durability > 0,
+                "Support with 0 durability still on board at slot {}",
+                support.slot.0
+            );
+        }
     }
 
-    #[test]
-    fn test_player_state_creature_slots() {
-        let mut player = PlayerState::new();
+    /// No-op in release builds
+    #[cfg(not(debug_assertions))]
+    #[inline(always)]
+    pub fn debug_validate(&self, _player_id: PlayerId) {}
+}
 
-        // All slots should be empty initially
-        assert!(player.find_empty_creature_slot().is_some());
-        assert_eq!(player.find_empty_creature_slot(), Some(Slot(0)));
+impl GameState {
+    /// Validate game state invariants (debug builds only).
+    /// Panics if any invariant is violated.
+    #[cfg(debug_assertions)]
+    pub fn debug_validate(&self) {
+        // Active player should be valid
+        debug_assert!(
+            self.active_player.0 < 2,
+            "Invalid active player: {}",
+            self.active_player.0
+        );
 
-        // Add a creature to slot 0
-        player.creatures.push(Creature {
-            instance_id: CreatureInstanceId(0),
-            card_id: CardId(1),
-            owner: PlayerId::PLAYER_ONE,
-            slot: Slot(0),
-            attack: 2,
-            current_health: 3,
-            max_health: 3,
-            base_attack: 2,
-            base_health: 3,
-            keywords: Keywords::none(),
-            status: CreatureStatus::default(),
-            turn_played: 1,
-        });
+        // Turn counter should be reasonable
+        debug_assert!(
+            self.current_turn <= (game::TURN_LIMIT as u16) + 10,
+            "Turn counter {} exceeds reasonable limit",
+            self.current_turn
+        );
 
-        // Next empty slot should be 1
-        assert_eq!(player.find_empty_creature_slot(), Some(Slot(1)));
-        assert!(player.get_creature(Slot(0)).is_some());
-        assert!(player.get_creature(Slot(1)).is_none());
+        // If game has a result, phase should be Ended (or transitioning)
+        if self.result.is_some() {
+            debug_assert!(
+                self.phase == GamePhase::Ended,
+                "Game has result but phase is {:?}, expected Ended",
+                self.phase
+            );
+        }
+
+        // Validate both players
+        self.players[0].debug_validate(PlayerId::PLAYER_ONE);
+        self.players[1].debug_validate(PlayerId::PLAYER_TWO);
+
+        // Validate creature instance IDs are unique across both players
+        #[cfg(debug_assertions)]
+        {
+            let mut all_ids: Vec<u32> = Vec::new();
+            for player in &self.players {
+                for creature in &player.creatures {
+                    debug_assert!(
+                        !all_ids.contains(&creature.instance_id.0),
+                        "Duplicate creature instance ID: {}",
+                        creature.instance_id.0
+                    );
+                    all_ids.push(creature.instance_id.0);
+                }
+            }
+        }
     }
 
-    #[test]
-    fn test_game_state_helpers() {
-        let mut state = GameState::new();
-
-        assert!(!state.is_terminal());
-        assert_eq!(state.active_player, PlayerId::PLAYER_ONE);
-
-        // Test creature ID generation
-        let id1 = state.next_creature_instance_id();
-        let id2 = state.next_creature_instance_id();
-        assert_eq!(id1, CreatureInstanceId(0));
-        assert_eq!(id2, CreatureInstanceId(1));
-    }
-
-    #[test]
-    fn test_creature_can_attack() {
-        let mut creature = Creature {
-            instance_id: CreatureInstanceId(0),
-            card_id: CardId(1),
-            owner: PlayerId::PLAYER_ONE,
-            slot: Slot(0),
-            attack: 2,
-            current_health: 3,
-            max_health: 3,
-            base_attack: 2,
-            base_health: 3,
-            keywords: Keywords::none(),
-            status: CreatureStatus::default(),
-            turn_played: 1,
-        };
-
-        // Can attack on turn 2 (no summoning sickness)
-        assert!(creature.can_attack(2));
-
-        // Cannot attack on turn 1 (summoning sickness)
-        assert!(!creature.can_attack(1));
-
-        // Can attack on turn 1 with Rush
-        creature.keywords = Keywords::none().with_rush();
-        assert!(creature.can_attack(1));
-
-        // Cannot attack when exhausted
-        creature.status.set_exhausted(true);
-        assert!(!creature.can_attack(1));
-        assert!(!creature.can_attack(2));
-    }
-
-    #[test]
-    fn test_game_state_size() {
-        // GameState should be reasonably small for fast cloning
-        let size = std::mem::size_of::<GameState>();
-        println!("GameState size: {} bytes", size);
-        // Should be under 2KB for efficient MCTS cloning
-        assert!(size < 2048, "GameState too large: {} bytes", size);
-    }
+    /// No-op in release builds
+    #[cfg(not(debug_assertions))]
+    #[inline(always)]
+    pub fn debug_validate(&self) {}
 }
