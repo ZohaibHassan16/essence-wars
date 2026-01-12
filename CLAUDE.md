@@ -175,8 +175,15 @@ CmaEsConfig {
 |------|-------------|
 | `vs-random` | Optimize to beat RandomBot (easy baseline) |
 | `vs-greedy` | Optimize to beat default GreedyBot |
+| `multi-opponent` | Optimize vs Random (10%), Greedy (40%), MCTS (50%) |
 | `generalist` | Optimize across all deck matchups |
 | `specialist` | Optimize for specific deck vs opponent |
+
+### Parallel Evaluation
+
+Tuning now uses parallel game evaluation across all CPU cores (enabled by default).
+- 14x speedup on 16-core machines
+- Use `--parallel false` to disable
 
 ### Tune CLI
 
@@ -186,6 +193,9 @@ cargo run --release --bin tune -- --generations 50 --games 50
 
 # Tune against greedy baseline
 cargo run --release --bin tune -- --mode vs-greedy --generations 100
+
+# Multi-opponent tuning (most robust)
+cargo run --release --bin tune -- --mode multi-opponent --generations 100 --games 200
 
 # Specialist tuning for a specific matchup
 cargo run --release --bin tune -- \
@@ -376,3 +386,66 @@ cargo bench  # Run all benchmarks
 - Python bindings (PyO3) for ML training
 - Additional card sets
 - Web-based game viewer
+
+## Python Tooling
+
+### Setup with uv
+```bash
+# Sync all dependencies
+uv sync --all-groups
+
+# Run tests
+uv run pytest python/tests -v
+
+# Linting & type checking
+uv run ruff check python/
+uv run mypy python/
+```
+
+### Python Package Structure
+```
+python/
+├── cardgame/
+│   ├── __init__.py      # Package root
+│   ├── infra/           # Experiment management
+│   ├── analysis/        # Visualization tools
+│   ├── env/             # Gym environments (future)
+│   └── algo/            # RL algorithms (future)
+└── tests/
+    └── test_*.py
+```
+
+## Data & Experiment Strategy
+
+> **Important**: Follow these guidelines for all training runs and experiments.
+
+### Directory Structure (Strictly Enforced)
+```
+ai-cardgame/
+├── experiments/           # ALL run artifacts (GITIGNORED)
+│   ├── tuning/           # Weight tuning runs
+│   ├── training/         # RL training runs
+│   └── eval/             # Benchmarking runs
+├── data/                  # Large binary data (GITIGNORED)
+│   ├── weights/          # Tuned weight files
+│   ├── replays/          # Game replays for offline RL
+│   └── datasets/         # Pre-processed datasets
+└── docs/experiments/      # Curated experiment reports (committed)
+```
+
+### Experiment ID Convention
+Every run gets: `{YYYY-MM-DD_HHMM}_{tag}`
+
+Example: `2026-01-12_1430_mcts_baseline`
+
+### Experiment Workflow
+1. **Launch**: Script creates timestamped folder, saves config.yaml
+2. **Run**: Logs metrics to stats.csv, saves checkpoints
+3. **Analyze**: Parse logs, generate plots
+4. **Archive**: Keep important runs, delete failures
+
+### Rules for Claude
+- **ALWAYS** create experiment folders for training/tuning runs
+- **ALWAYS** save config.yaml at start of experiment
+- **NEVER** commit experiments/ or data/ to git
+- **USE** `docs/experiments/` for curated reports worth preserving

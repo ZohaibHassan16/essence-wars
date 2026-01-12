@@ -94,3 +94,7 @@ dmypy.json
 # maturin build
 python/cardgame/_cardgame*.so
 python/cardgame/_cardgame*.pyd
+
+# Experiments and Data
+experiments/
+data/
