@@ -9,6 +9,7 @@
 use std::collections::VecDeque;
 use crate::core::actions::Action;
 use crate::core::cards::{CardDatabase, CardType, EffectDefinition, AbilityDefinition};
+use crate::core::combat;
 use crate::core::config::{game, player};
 use crate::core::effects::{Effect, EffectTarget, EffectSource, PendingEffect, Trigger, TargetingRule};
 use crate::core::keywords::Keywords;
@@ -1501,11 +1502,13 @@ impl<'a> GameEngine<'a> {
     }
 
     /// Execute an Attack action.
+    ///
+    /// Delegates to the combat module for full keyword resolution including:
+    /// Quick, Ranged, Shield, Piercing, Lethal, and Lifesteal.
     fn execute_attack(&mut self, attacker_slot: Slot, defender_slot: Slot) -> Result<(), String> {
         let current_player = self.state.active_player;
-        let opponent = current_player.opponent();
 
-        // Get attacker
+        // Validate attacker exists
         let attacker = self
             .state
             .players[current_player.index()]
@@ -1517,109 +1520,21 @@ impl<'a> GameEngine<'a> {
             return Err("Creature cannot attack".to_string());
         }
 
-        let attacker_damage = attacker.attack.max(0) as u8;
-        let attacker_has_piercing = attacker.keywords.has_piercing();
-        let attacker_has_lifesteal = attacker.keywords.has_lifesteal();
-        let attacker_has_lethal = attacker.keywords.has_lethal();
+        // Create effect queue for triggered effects (OnAttack, OnKill, OnDeath, etc.)
+        let mut effect_queue = EffectQueue::new();
 
-        // Check if there's a defender creature
-        let defender_exists = self.state.players[opponent.index()]
-            .get_creature(defender_slot)
-            .is_some();
+        // Delegate to combat module for full keyword resolution
+        let _result = combat::resolve_combat(
+            &mut self.state,
+            self.card_db,
+            &mut effect_queue,
+            current_player,
+            attacker_slot,
+            defender_slot,
+        );
 
-        if defender_exists {
-            // Combat between creatures
-            let defender = self.state.players[opponent.index()]
-                .get_creature(defender_slot)
-                .unwrap();
-
-            let defender_damage = defender.attack.max(0) as u8;
-            let defender_has_lethal = defender.keywords.has_lethal();
-            let defender_has_shield = defender.keywords.has_shield();
-            let attacker_has_shield = self.state.players[current_player.index()]
-                .get_creature(attacker_slot)
-                .unwrap()
-                .keywords
-                .has_shield();
-
-            // Apply damage to defender
-            let defender = self.state.players[opponent.index()]
-                .get_creature_mut(defender_slot)
-                .unwrap();
-
-            if defender_has_shield && attacker_damage > 0 {
-                // Shield absorbs damage and is consumed
-                defender.keywords.remove(crate::keywords::Keywords::SHIELD);
-            } else {
-                defender.current_health -= attacker_damage as i8;
-                // Apply lethal keyword
-                if attacker_has_lethal && attacker_damage > 0 {
-                    defender.current_health = 0;
-                }
-            }
-
-            // Apply damage to attacker (from defender)
-            let attacker = self.state.players[current_player.index()]
-                .get_creature_mut(attacker_slot)
-                .unwrap();
-
-            if attacker_has_shield && defender_damage > 0 {
-                // Shield absorbs damage and is consumed
-                attacker.keywords.remove(crate::keywords::Keywords::SHIELD);
-            } else {
-                attacker.current_health -= defender_damage as i8;
-                // Apply lethal keyword
-                if defender_has_lethal && defender_damage > 0 {
-                    attacker.current_health = 0;
-                }
-            }
-
-            // Mark attacker as exhausted
-            attacker.status.set_exhausted(true);
-
-            // Piercing: excess damage goes to opponent face
-            if attacker_has_piercing {
-                let defender = self.state.players[opponent.index()]
-                    .get_creature(defender_slot)
-                    .unwrap();
-                if defender.current_health < 0 {
-                    let excess = (-defender.current_health) as i16;
-                    self.state.players[opponent.index()].life -= excess;
-                }
-            }
-
-            // Lifesteal: heal attacker's owner
-            if attacker_has_lifesteal && attacker_damage > 0 {
-                let heal_amount = attacker_damage as i16;
-                self.state.players[current_player.index()].life =
-                    (self.state.players[current_player.index()].life + heal_amount).min(player::MAX_LIFE as i16);
-            }
-
-            // Track damage dealt
-            self.state.players[current_player.index()].total_damage_dealt += attacker_damage as u16;
-
-            // Remove dead creatures
-            self.remove_dead_creatures();
-        } else {
-            // Direct attack to opponent's face
-            let damage = attacker_damage as i16;
-            self.state.players[opponent.index()].life -= damage;
-
-            // Mark attacker as exhausted
-            let attacker = self.state.players[current_player.index()]
-                .get_creature_mut(attacker_slot)
-                .unwrap();
-            attacker.status.set_exhausted(true);
-
-            // Lifesteal: heal attacker's owner
-            if attacker_has_lifesteal && damage > 0 {
-                self.state.players[current_player.index()].life =
-                    (self.state.players[current_player.index()].life + damage).min(player::MAX_LIFE as i16);
-            }
-
-            // Track damage dealt
-            self.state.players[current_player.index()].total_damage_dealt += damage as u16;
-        }
+        // Process any triggered effects from combat
+        effect_queue.process_all(&mut self.state, self.card_db);
 
         Ok(())
     }
@@ -1698,15 +1613,6 @@ impl<'a> GameEngine<'a> {
         effect_queue.process_all(&mut self.state, self.card_db);
 
         Ok(())
-    }
-
-    /// Remove all dead creatures from the board.
-    fn remove_dead_creatures(&mut self) {
-        for player_idx in 0..2 {
-            self.state.players[player_idx]
-                .creatures
-                .retain(|c| c.is_alive());
-        }
     }
 
     /// Check if game is over.
