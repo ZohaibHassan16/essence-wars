@@ -1,4 +1,5 @@
-"""
-Infrastructure for managing ML/AI experiments.
-"""
-from .experiment import Experiment
+"""Infrastructure module for experiment management."""
+
+from cardgame.infra.experiment import Experiment
+
+__all__ = ["Experiment"]
