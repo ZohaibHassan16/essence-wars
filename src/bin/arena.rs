@@ -13,7 +13,7 @@ use std::time::{Duration, Instant};
 use clap::Parser;
 
 use cardgame::arena::{ActionLogger, ActionRecord, MatchStats, StateSnapshot};
-use cardgame::bots::{Bot, GreedyBot, MctsBot, MctsConfig, RandomBot};
+use cardgame::bots::{Bot, BotWeights, GreedyBot, MctsBot, MctsConfig, RandomBot};
 use cardgame::cards::CardDatabase;
 use cardgame::decks::DeckRegistry;
 use cardgame::engine::GameEngine;
@@ -71,6 +71,26 @@ struct Args {
     /// List available decks and exit
     #[arg(long)]
     list_decks: bool,
+
+    /// Show progress bar during match
+    #[arg(long)]
+    progress: bool,
+
+    /// Custom weights file for bot 1 (TOML format, only for greedy/mcts)
+    #[arg(long)]
+    weights1: Option<PathBuf>,
+
+    /// Custom weights file for bot 2 (TOML format, only for greedy/mcts)
+    #[arg(long)]
+    weights2: Option<PathBuf>,
+
+    /// Number of threads for parallel execution (0 = use all cores)
+    #[arg(long, short = 'j', default_value = "0")]
+    threads: usize,
+
+    /// Disable parallel execution (run sequentially)
+    #[arg(long)]
+    sequential: bool,
 }
 
 /// Bot types that can participate in arena matches.
@@ -169,6 +189,10 @@ fn main() {
     let (deck1, deck1_name) = load_deck(&args.deck1, &deck_registry, &card_db, "1");
     let (deck2, deck2_name) = load_deck(&args.deck2, &deck_registry, &card_db, "2");
 
+    // Load custom weights if specified
+    let weights1 = load_weights(&args.weights1, "bot1");
+    let weights2 = load_weights(&args.weights2, "bot2");
+
     // Create logger if needed
     let mut logger = if args.debug || args.verbose {
         let l = if let Some(ref path) = args.log_file {
@@ -190,8 +214,10 @@ fn main() {
     // Print match info
     println!("Arena Match");
     println!("===========");
-    println!("Bot 1: {} ({})", bot1_type.name(), deck1_name);
-    println!("Bot 2: {} ({})", bot2_type.name(), deck2_name);
+    println!("Bot 1: {} ({}){}", bot1_type.name(), deck1_name,
+        weights1.as_ref().map(|w| format!(" [weights: {}]", w.name)).unwrap_or_default());
+    println!("Bot 2: {} ({}){}", bot2_type.name(), deck2_name,
+        weights2.as_ref().map(|w| format!(" [weights: {}]", w.name)).unwrap_or_default());
     println!("Games: {}", args.games);
     println!("Base seed: {}", seed);
     println!();
@@ -206,6 +232,9 @@ fn main() {
         args.games,
         seed,
         &mut logger,
+        args.progress,
+        weights1.as_ref(),
+        weights2.as_ref(),
     );
 
     // Print results
@@ -239,6 +268,26 @@ fn load_deck(
     }
 }
 
+/// Load custom weights from a TOML file.
+fn load_weights(path: &Option<PathBuf>, bot_name: &str) -> Option<BotWeights> {
+    match path {
+        Some(p) => {
+            match BotWeights::load(p) {
+                Ok(w) => {
+                    println!("Loaded weights for {}: {} ({} deck-specific)",
+                        bot_name, w.name, w.deck_specific.len());
+                    Some(w)
+                }
+                Err(e) => {
+                    eprintln!("Error loading weights from {:?}: {}", p, e);
+                    process::exit(1);
+                }
+            }
+        }
+        None => None,
+    }
+}
+
 /// Run a match between two bots.
 fn run_match(
     card_db: &CardDatabase,
@@ -249,11 +298,17 @@ fn run_match(
     games: usize,
     base_seed: u64,
     logger: &mut Option<ActionLogger>,
+    show_progress: bool,
+    weights1: Option<&BotWeights>,
+    weights2: Option<&BotWeights>,
 ) -> MatchStats {
     let mut stats = MatchStats::new(
         bot1_type.name().to_string(),
         bot2_type.name().to_string(),
     );
+
+    let start_time = Instant::now();
+    let mut last_progress = 0;
 
     for i in 0..games {
         let game_seed = base_seed.wrapping_add(i as u64);
@@ -265,8 +320,32 @@ fn run_match(
             deck2,
             game_seed,
             logger,
+            weights1,
+            weights2,
         );
         stats.record_game(result.0, result.1, result.2);
+
+        // Show progress every 10%
+        if show_progress {
+            let progress = ((i + 1) * 100) / games;
+            if progress >= last_progress + 10 || i + 1 == games {
+                let elapsed = start_time.elapsed().as_secs_f64();
+                let games_per_sec = (i + 1) as f64 / elapsed.max(0.001);
+                let eta = if games_per_sec > 0.0 {
+                    (games - i - 1) as f64 / games_per_sec
+                } else {
+                    0.0
+                };
+
+                eprint!("\rProgress: {:3}% ({}/{}) | {:.0} games/sec | ETA: {:.1}s    ",
+                    progress, i + 1, games, games_per_sec, eta);
+                last_progress = progress;
+            }
+        }
+    }
+
+    if show_progress {
+        eprintln!(); // New line after progress
     }
 
     stats
@@ -282,20 +361,38 @@ fn run_single_game(
     deck2: &[CardId],
     seed: u64,
     logger: &mut Option<ActionLogger>,
+    weights1: Option<&BotWeights>,
+    weights2: Option<&BotWeights>,
 ) -> (Option<PlayerId>, u32, Duration) {
     let start = Instant::now();
 
-    // Create bots with appropriate seeds
+    // Create bots with appropriate seeds and weights
     let bot1_seed = seed;
     let bot2_seed = seed.wrapping_add(1000000);
 
     let mut random_bot1 = RandomBot::new(bot1_seed);
     let mut random_bot2 = RandomBot::new(bot2_seed);
-    let mut greedy_bot1 = GreedyBot::new(card_db, bot1_seed);
-    let mut greedy_bot2 = GreedyBot::new(card_db, bot2_seed);
+
+    // Create greedy bots with custom weights if provided
+    let mut greedy_bot1 = match weights1 {
+        Some(w) => GreedyBot::from_bot_weights(card_db, w, None, bot1_seed),
+        None => GreedyBot::new(card_db, bot1_seed),
+    };
+    let mut greedy_bot2 = match weights2 {
+        Some(w) => GreedyBot::from_bot_weights(card_db, w, None, bot2_seed),
+        None => GreedyBot::new(card_db, bot2_seed),
+    };
+
+    // Create MCTS bots with custom rollout weights if provided
     let mcts_config = MctsConfig { simulations: 500, exploration: 1.414, max_rollout_depth: 100 };
-    let mut mcts_bot1 = MctsBot::with_config(card_db, mcts_config.clone(), bot1_seed);
-    let mut mcts_bot2 = MctsBot::with_config(card_db, mcts_config, bot2_seed);
+    let mut mcts_bot1 = match weights1 {
+        Some(w) => MctsBot::with_config_and_weights(card_db, mcts_config.clone(), w, bot1_seed),
+        None => MctsBot::with_config(card_db, mcts_config.clone(), bot1_seed),
+    };
+    let mut mcts_bot2 = match weights2 {
+        Some(w) => MctsBot::with_config_and_weights(card_db, mcts_config, w, bot2_seed),
+        None => MctsBot::with_config(card_db, mcts_config, bot2_seed),
+    };
 
     // Reset bots
     random_bot1.reset();

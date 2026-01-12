@@ -13,6 +13,7 @@ use rand::{Rng, SeedableRng};
 
 use crate::actions::Action;
 use crate::bots::greedy::GreedyBot;
+use crate::bots::weights::{BotWeights, GreedyWeights};
 use crate::bots::Bot;
 use crate::cards::CardDatabase;
 use crate::engine::GameEngine;
@@ -153,6 +154,8 @@ pub struct MctsBot<'a> {
     config: MctsConfig,
     rng: SmallRng,
     seed: u64,
+    /// Optional custom weights for rollout evaluation
+    rollout_weights: Option<GreedyWeights>,
 }
 
 impl<'a> MctsBot<'a> {
@@ -164,6 +167,7 @@ impl<'a> MctsBot<'a> {
             config: MctsConfig::default(),
             rng: SmallRng::seed_from_u64(seed),
             seed,
+            rollout_weights: None,
         }
     }
 
@@ -175,7 +179,31 @@ impl<'a> MctsBot<'a> {
             config,
             rng: SmallRng::seed_from_u64(seed),
             seed,
+            rollout_weights: None,
         }
+    }
+
+    /// Create an MCTS bot with custom configuration and rollout weights.
+    pub fn with_config_and_weights(
+        card_db: &'a CardDatabase,
+        config: MctsConfig,
+        weights: &BotWeights,
+        seed: u64,
+    ) -> Self {
+        Self {
+            name: format!("MctsBot({}, {})", config.simulations, weights.name),
+            card_db,
+            config,
+            rng: SmallRng::seed_from_u64(seed),
+            seed,
+            rollout_weights: Some(weights.default.greedy.clone()),
+        }
+    }
+
+    /// Set custom rollout weights.
+    pub fn with_rollout_weights(mut self, weights: GreedyWeights) -> Self {
+        self.rollout_weights = Some(weights);
+        self
     }
 
     /// Set a custom name for this bot.
@@ -261,7 +289,11 @@ impl<'a> MctsBot<'a> {
 
     /// Perform a rollout from the current state using GreedyBot.
     fn rollout(&mut self, engine: &mut GameEngine, perspective: PlayerId) -> bool {
-        let mut greedy = GreedyBot::new(self.card_db, self.rng.gen());
+        // Create GreedyBot with custom weights if provided
+        let mut greedy = match &self.rollout_weights {
+            Some(weights) => GreedyBot::with_weights(self.card_db, weights.clone(), self.rng.gen()),
+            None => GreedyBot::new(self.card_db, self.rng.gen()),
+        };
         let mut depth = 0;
 
         while !engine.is_game_over() && depth < self.config.max_rollout_depth {

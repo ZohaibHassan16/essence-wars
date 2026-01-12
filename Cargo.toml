@@ -11,6 +11,7 @@ toml = "0.8"
 thiserror = "1.0"
 rand = { version = "0.8", features = ["small_rng"] }
 clap = { version = "4.4", features = ["derive"] }
+rayon = "1.10"
 
 [dev-dependencies]
 criterion = "0.5"
@@ -22,3 +23,11 @@ path = "src/bin/arena.rs"
 [[bin]]
 name = "tune"
 path = "src/bin/tune.rs"
+
+[[bin]]
+name = "profile_mcts"
+path = "src/bin/profile_mcts.rs"
+
+[[bench]]
+name = "game_benchmarks"
+harness = false

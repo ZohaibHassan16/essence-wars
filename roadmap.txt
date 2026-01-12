@@ -1,5 +1,11 @@
-1. Build Engine
+1.  Build Engine
+
+- [x] Built ✅
+
 1.1 Build GreedyBot and MCTS Bot implementataion in Rust, Tuning Pipeline for both, must be able to run simulated games very fast. Each single game must be seeded and tracable, with the option of having a --debug flag that fully logs each action of each bot for full tracability for debugging
+
+- [x] Built ✅
+
 2. Test Engine with MCTS and Greedy Bots, fully traceable combat
 2.1 Build ML/AI Training and Inference Infrastructure (Gym Bridge, Python Gymnasium / OpenAI Gym)
 3. Train first PPO and AlphaZero Agents as Proof of Concept

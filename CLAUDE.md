@@ -11,13 +11,23 @@
 cargo build --release
 
 # Run all tests
-cargo test  # 218 tests
+cargo test  # 224 tests
 
 # Run arena matches
 cargo run --release --bin arena -- --bot1 greedy --bot2 random --games 100
 cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --games 10
 cargo run --release --bin arena -- --deck1 aggressive_assault --deck2 defensive_control
 cargo run --release --bin arena -- --list-decks
+cargo run --release --bin arena -- --progress --games 1000  # Show progress bar
+
+# Run weight tuning
+cargo run --release --bin tune -- --mode vs-random --generations 50
+cargo run --release --bin tune -- --mode vs-greedy --generations 50
+cargo run --release --bin tune -- --mode specialist --deck aggressive_assault --opponent defensive_control
+cargo run --release --bin tune -- --output tuned_weights.toml
+
+# Run benchmarks
+cargo bench
 ```
 
 ## Project Structure
@@ -43,14 +53,21 @@ ai-cardgame/
 │   │   ├── random.rs   # RandomBot - uniform random selection
 │   │   ├── greedy.rs   # GreedyBot - heuristic evaluation, action simulation
 │   │   ├── mcts.rs     # MctsBot - Monte Carlo Tree Search with UCB1
-│   │   └── weights.rs  # Configurable weights for GreedyBot
+│   │   └── weights.rs  # Configurable weights for GreedyBot (20 params)
 │   ├── arena/
 │   │   ├── mod.rs      # Arena module exports
 │   │   ├── runner.rs   # GameRunner for executing matches
 │   │   ├── logger.rs   # ActionLogger for debug tracing
 │   │   └── stats.rs    # MatchStats for win rate tracking
+│   ├── tuning/
+│   │   ├── mod.rs      # Tuning module exports
+│   │   ├── cmaes.rs    # CMA-ES optimizer implementation
+│   │   └── evaluator.rs # Fitness evaluation via game matches
 │   └── bin/
-│       └── arena.rs    # CLI for running bot matches
+│       ├── arena.rs    # CLI for running bot matches
+│       └── tune.rs     # CLI for weight optimization
+├── benches/
+│   └── game_benchmarks.rs  # Criterion benchmarks
 ├── data/
 │   ├── cards/sets/
 │   │   └── starter.yaml  # 43 card definitions
@@ -96,16 +113,30 @@ pub trait Bot: Send {
 }
 ```
 
-### GreedyBot Weights
+### GreedyBot Weights (20 parameters)
 
 GreedyBot uses configurable weights for state evaluation:
-- Life values (own_life, enemy_life_damage)
-- Creature stats (attack, health)
-- Board control (creature_count, board_advantage)
-- Keywords (guard, lethal, shield, etc.)
-- Win/lose bonuses
 
-Weights can be saved/loaded as TOML for tuning.
+| Category | Parameters |
+|----------|------------|
+| Life | own_life, enemy_life_damage |
+| Creatures | own_creature_attack, own_creature_health, enemy_creature_attack, enemy_creature_health |
+| Board | creature_count, board_advantage |
+| Resources | cards_in_hand, action_points |
+| Keywords | guard, lethal, lifesteal, rush, ranged, piercing, shield, quick |
+| Terminal | win_bonus, lose_penalty |
+
+Weights can be saved/loaded as TOML for tuning:
+
+```toml
+name = "tuned_vs_greedy"
+version = 1
+
+[default.greedy]
+own_life = 1.5
+enemy_life_damage = 2.0
+# ... etc
+```
 
 ### MCTS Configuration
 
@@ -115,6 +146,70 @@ MctsConfig {
     exploration: 1.414,    // UCB1 exploration constant (sqrt(2))
     max_rollout_depth: 100,
 }
+
+// MCTS with custom rollout weights
+let mcts = MctsBot::with_config_and_weights(&card_db, config, &weights, seed);
+```
+
+MCTS uses GreedyBot for rollout evaluation. Custom weights improve rollout quality, leading to better move selection.
+
+## Weight Tuning Pipeline
+
+### CMA-ES Optimizer
+
+The tuning system uses CMA-ES (Covariance Matrix Adaptation Evolution Strategy) to optimize GreedyBot weights.
+
+```rust
+CmaEsConfig {
+    population_size: None,  // Default: 4 + floor(3 * ln(dim))
+    initial_sigma: 0.5,     // Initial step size
+    max_generations: 100,   // Max iterations
+    target_fitness: None,   // Early stop threshold
+    seed: 42,
+}
+```
+
+### Tuning Modes
+
+| Mode | Description |
+|------|-------------|
+| `vs-random` | Optimize to beat RandomBot (easy baseline) |
+| `vs-greedy` | Optimize to beat default GreedyBot |
+| `generalist` | Optimize across all deck matchups |
+| `specialist` | Optimize for specific deck vs opponent |
+
+### Tune CLI
+
+```bash
+# Basic tuning against random
+cargo run --release --bin tune -- --generations 50 --games 50
+
+# Tune against greedy baseline
+cargo run --release --bin tune -- --mode vs-greedy --generations 100
+
+# Specialist tuning for a specific matchup
+cargo run --release --bin tune -- \
+  --mode specialist \
+  --deck aggressive_assault \
+  --opponent defensive_control \
+  --generations 50 \
+  --output aggro_specialist.toml
+
+# Generalist tuning across all decks
+cargo run --release --bin tune -- --mode generalist --generations 100
+
+# Full options
+cargo run --release --bin tune -- \
+  --mode vs-greedy \
+  --generations 100 \
+  --population 20 \
+  --games 100 \
+  --sigma 0.3 \
+  --target-win-rate 0.95 \
+  --seed 12345 \
+  --initial-weights existing.toml \
+  --output optimized.toml \
+  --verbose
 ```
 
 ## Deck System
@@ -143,21 +238,52 @@ cargo run --bin arena -- --list-decks
 # Run match with specific decks
 cargo run --bin arena -- --deck1 aggressive_assault --deck2 defensive_control
 
+# Use tuned weights for greedy or MCTS bots
+cargo run --bin arena -- \
+  --bot1 greedy --bot2 greedy \
+  --weights1 tuned_weights.toml \
+  --games 100
+
+# MCTS with tuned rollout weights vs default MCTS
+cargo run --bin arena -- \
+  --bot1 mcts --bot2 mcts \
+  --weights1 tuned_weights.toml \
+  --games 20
+
 # Full options
 cargo run --bin arena -- \
   --bot1 mcts --bot2 greedy \
   --deck1 aggressive_assault --deck2 defensive_control \
+  --weights1 tuned.toml --weights2 default.toml \
   --games 100 --seed 12345 \
-  --debug  # or --verbose for state snapshots
+  --debug  # or --verbose for state snapshots \
+  --progress  # show progress bar
 ```
 
-## Key Design Decisions
+## Performance
 
-### Performance Optimizations
+### Benchmarks
+
+```bash
+cargo bench  # Run all benchmarks
+```
+
+| Benchmark | Time | Throughput |
+|-----------|------|------------|
+| Random game | ~12 µs | ~80,000 games/sec |
+| Greedy game | ~58 µs | ~17,000 games/sec |
+| State tensor | ~138 ns | - |
+| Legal actions | ~29 ns | - |
+| Engine fork | ~99 ns | - |
+
+### Key Optimizations
+
 - **ArrayVec** for fixed-size collections - stack allocation, fast cloning for MCTS
 - **u8 bitfield** for keywords - compact representation
 - **Indexed action space** (256 actions) - fixed-size for neural networks
 - **Engine fork()** - efficient state cloning for tree search
+
+## Key Design Decisions
 
 ### Game Rules
 - 5 creature slots, 2 support slots per player
@@ -240,12 +366,13 @@ cargo run --bin arena -- \
 - AI interface (tensor, action mask, rewards)
 - 43-card starter set
 - Bot system (RandomBot, GreedyBot, MctsBot)
-- Arena for running matches
+- Arena for running matches with progress indicator
 - Deck system with TOML definitions
-- 218 tests passing
+- Weight tuning pipeline with CMA-ES optimizer
+- Criterion benchmarks for performance testing
+- 224 tests passing
 
 **Future work:**
-- Phase 5: Tuning Pipeline (CMA-ES optimizer)
-- Phase 6: Polish & Performance (benchmarks, progress bars)
 - Python bindings (PyO3) for ML training
 - Additional card sets
+- Web-based game viewer
