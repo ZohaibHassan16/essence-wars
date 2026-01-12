@@ -82,6 +82,38 @@ cards:
     rarity: Common
     tags: [Soldier]
 
+  - id: 9
+    name: "Blood Cultist"
+    cost: 2
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: []
+    rarity: Uncommon
+    tags: [Cultist]
+    abilities:
+      - trigger: OnPlay
+        target: YourHero
+        effect:
+          type: damage
+          amount: 2
+
+  - id: 10
+    name: "Medic Apprentice"
+    cost: 2
+    card_type: creature
+    attack: 1
+    health: 3
+    keywords: []
+    rarity: Common
+    tags: [Healer]
+    abilities:
+      - trigger: OnPlay
+        target: YourHero
+        effect:
+          type: heal
+          amount: 2
+
   # === 3-COST CREATURES ===
   - id: 11
     name: "Centaur Charger"
@@ -113,6 +145,16 @@ cards:
     rarity: Common
     tags: [Soldier]
 
+  - id: 14
+    name: "Highland Archer"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: [Ranged]
+    rarity: Common
+    tags: [Soldier]
+
   - id: 15
     name: "War Elephant"
     cost: 3
@@ -122,6 +164,194 @@ cards:
     keywords: []
     rarity: Common
     tags: [Beast]
+
+  - id: 16
+    name: "Piercing Striker"
+    cost: 3
+    card_type: creature
+    attack: 4
+    health: 2
+    keywords: [Piercing]
+    rarity: Common
+    tags: [Soldier]
+
+  - id: 17
+    name: "Battle Priest"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags: [Healer]
+    abilities:
+      - trigger: StartOfTurn
+        target: YourHero
+        effect:
+          type: heal
+          amount: 1
+
+  - id: 18
+    name: "Ambush Predator"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: [Rush, Lethal]
+    rarity: Rare
+    tags: [Beast]
+
+  # === 4-COST CREATURES ===
+  - id: 19
+    name: "Armored Knight"
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 5
+    keywords: []
+    rarity: Common
+    tags: [Soldier]
+
+  - id: 20
+    name: "Siege Breaker"
+    cost: 4
+    card_type: creature
+    attack: 5
+    health: 3
+    keywords: [Piercing]
+    rarity: Uncommon
+    tags: [Soldier]
+
+  - id: 21
+    name: "Vampire Lord"
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 3
+    keywords: [Lifesteal]
+    rarity: Rare
+    tags: [Undead]
+
+  - id: 22
+    name: "Fortress Golem"
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 7
+    keywords: [Guard]
+    rarity: Uncommon
+    tags: [Construct]
+
+  - id: 23
+    name: "Storm Mage"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: []
+    rarity: Uncommon
+    tags: [Mage]
+    abilities:
+      - trigger: OnPlay
+        target: TargetCreature
+        effect:
+          type: damage
+          amount: 2
+
+  # === 5-COST CREATURES ===
+  - id: 24
+    name: "Royal Champion"
+    cost: 5
+    card_type: creature
+    attack: 5
+    health: 6
+    keywords: []
+    rarity: Uncommon
+    tags: [Soldier]
+
+  - id: 25
+    name: "Assassin Queen"
+    cost: 5
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: [Quick, Lethal]
+    rarity: Rare
+    tags: [Assassin]
+
+  - id: 26
+    name: "Warhost Captain"
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords: []
+    rarity: Rare
+    tags: [Soldier]
+    abilities:
+      - trigger: OnPlay
+        target: AllOtherAllyCreatures
+        effect:
+          type: buff
+          attack: 1
+          health: 1
+
+  - id: 27
+    name: "Sniper Marksman"
+    cost: 5
+    card_type: creature
+    attack: 5
+    health: 3
+    keywords: [Ranged]
+    rarity: Uncommon
+    tags: [Soldier]
+
+  # === 6+ COST CREATURES ===
+  - id: 28
+    name: "Guardian Angel"
+    cost: 6
+    card_type: creature
+    attack: 4
+    health: 6
+    keywords: [Lifesteal, Shield]
+    rarity: Rare
+    tags: [Divine]
+
+  - id: 29
+    name: "Siege Commander"
+    cost: 6
+    card_type: creature
+    attack: 5
+    health: 5
+    keywords: [Rush, Piercing]
+    rarity: Rare
+    tags: [Soldier]
+
+  - id: 30
+    name: "Tower Sentinel"
+    cost: 7
+    card_type: creature
+    attack: 5
+    health: 9
+    keywords: [Guard]
+    rarity: Rare
+    tags: [Construct]
+
+  - id: 31
+    name: "Warlord Titan"
+    cost: 8
+    card_type: creature
+    attack: 8
+    health: 8
+    keywords: []
+    rarity: Legendary
+    tags: [Giant]
+    abilities:
+      - trigger: OnPlay
+        target: AllEnemyCreatures
+        effect:
+          type: damage
+          amount: 3
 
   # === SPELLS ===
   - id: 32
@@ -144,6 +374,74 @@ cards:
         count: 2
     rarity: Common
 
+  - id: 34
+    name: "Lightning Bolt"
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreatureOrHero
+    effects:
+      - type: damage
+        amount: 4
+    rarity: Common
+
+  - id: 35
+    name: "Battle Rage"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: buff
+        attack: 3
+        health: 1
+      - type: grant_keyword
+        keyword: Rush
+    rarity: Uncommon
+
+  - id: 36
+    name: "Execute"
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    condition:
+      max_health: 4
+    effects:
+      - type: destroy
+    rarity: Uncommon
+
+  - id: 37
+    name: "Mass Heal"
+    cost: 4
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: heal
+        amount: 3
+        target: YourHero
+      - type: heal
+        amount: 3
+        target: AllAllyCreatures
+    rarity: Uncommon
+
+  - id: 38
+    name: "Obliterate"
+    cost: 5
+    card_type: spell
+    targeting: TargetCreature
+    effects:
+      - type: destroy
+    rarity: Rare
+
+  - id: 39
+    name: "Flame Wave"
+    cost: 6
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: damage
+        amount: 3
+        target: AllEnemyCreatures
+    rarity: Rare
+
   # === SUPPORTS ===
   - id: 40
     name: "War Drums"
@@ -153,4 +451,36 @@ cards:
     passive_effects:
       - modifier:
           attack_bonus: 1
+    rarity: Uncommon
+
+  - id: 41
+    name: "Healing Fountain"
+    cost: 4
+    card_type: support
+    durability: 4
+    triggered_effects:
+      - trigger: StartOfTurn
+        target: YourHero
+        effect:
+          type: heal
+          amount: 2
+    rarity: Uncommon
+
+  - id: 42
+    name: "Tactical Command"
+    cost: 5
+    card_type: support
+    durability: 3
+    passive_effects:
+      - grant_keyword: Rush
+    rarity: Rare
+
+  - id: 43
+    name: "Barrier Field"
+    cost: 4
+    card_type: support
+    durability: 3
+    passive_effects:
+      - modifier:
+          health_bonus: 2
     rarity: Uncommon
