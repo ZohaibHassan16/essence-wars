@@ -20,3 +20,5 @@ mod actions_tests;
 mod legal_tests;
 #[path = "unit/combat_tests.rs"]
 mod combat_tests;
+#[path = "unit/keyword_matrix_tests.rs"]
+mod keyword_matrix_tests;

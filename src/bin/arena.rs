@@ -106,6 +106,10 @@ struct Args {
     /// Number of parallel rollouts per MCTS leaf (1 = sequential)
     #[arg(long, default_value = "1")]
     mcts_rollouts: u32,
+
+    /// Enable invariant checking after every action (forces sequential mode, slower)
+    #[arg(long)]
+    invariants: bool,
 }
 
 /// Bot types that can participate in arena matches.
@@ -240,7 +244,8 @@ fn main() {
             .ok(); // Ignore if already initialized
     }
 
-    let parallel = !args.sequential && logger.is_none(); // Can't parallelize with logging
+    // Can't parallelize with logging or invariant checking
+    let parallel = !args.sequential && logger.is_none() && !args.invariants;
 
     // Print match info
     println!("Arena Match");
@@ -254,7 +259,15 @@ fn main() {
     if parallel {
         println!("Threads: {} (parallel)", num_threads);
     } else {
-        println!("Mode: sequential{}", if logger.is_some() { " (logging enabled)" } else { "" });
+        let mut mode_notes = Vec::new();
+        if logger.is_some() { mode_notes.push("logging"); }
+        if args.invariants { mode_notes.push("invariants"); }
+        let note = if mode_notes.is_empty() {
+            String::new()
+        } else {
+            format!(" ({})", mode_notes.join(", "))
+        };
+        println!("Mode: sequential{}", note);
     }
     println!();
 
@@ -302,6 +315,7 @@ fn main() {
             weights1.as_ref(),
             weights2.as_ref(),
             &mcts_config,
+            args.invariants,
         )
     };
 
@@ -460,6 +474,7 @@ fn run_match_sequential(
     weights1: Option<&BotWeights>,
     weights2: Option<&BotWeights>,
     mcts_config: &MctsConfig,
+    check_invariants: bool,
 ) -> MatchStats {
     let mut stats = MatchStats::new(
         bot1_type.name().to_string(),
@@ -482,6 +497,7 @@ fn run_match_sequential(
             weights1,
             weights2,
             mcts_config,
+            check_invariants,
         );
         stats.record_game(result.0, result.1, result.2);
 
@@ -524,6 +540,7 @@ fn run_single_game(
     weights1: Option<&BotWeights>,
     weights2: Option<&BotWeights>,
     mcts_config: &MctsConfig,
+    check_invariants: bool,
 ) -> (Option<PlayerId>, u32, Duration) {
     let start = Instant::now();
 
@@ -625,6 +642,11 @@ fn run_single_game(
             break;
         }
 
+        // Check invariants if enabled
+        if check_invariants {
+            verify_invariants(&engine, seed, action_count, action);
+        }
+
         action_count += 1;
     }
 
@@ -644,6 +666,108 @@ fn run_single_game(
     }
 
     (winner, turns, duration)
+}
+
+/// Verify game state invariants. Panics on violation.
+fn verify_invariants(engine: &GameEngine, seed: u64, action_num: usize, last_action: cardgame::actions::Action) {
+    let state = &engine.state;
+    let context = format!("seed={}, action #{}, last={:?}", seed, action_num, last_action);
+
+    for (player_idx, player) in state.players.iter().enumerate() {
+        let player_name = if player_idx == 0 { "P1" } else { "P2" };
+
+        // Life should be in valid range (can go negative but not excessively)
+        assert!(
+            player.life <= 30,
+            "[{}] {}: Life {} exceeds 30",
+            context, player_name, player.life
+        );
+
+        // AP should be in valid range
+        assert!(
+            player.action_points <= 10,
+            "[{}] {}: AP {} exceeds 10",
+            context, player_name, player.action_points
+        );
+
+        // Creature count should not exceed slots
+        assert!(
+            player.creatures.len() <= 5,
+            "[{}] {}: {} creatures exceeds 5 slots",
+            context, player_name, player.creatures.len()
+        );
+
+        // Support count should not exceed slots
+        assert!(
+            player.supports.len() <= 2,
+            "[{}] {}: {} supports exceeds 2 slots",
+            context, player_name, player.supports.len()
+        );
+
+        // No duplicate creature slots
+        let mut seen_slots = [false; 5];
+        for creature in &player.creatures {
+            let slot = creature.slot.0 as usize;
+            assert!(
+                slot < 5,
+                "[{}] {}: Creature in invalid slot {}",
+                context, player_name, slot
+            );
+            assert!(
+                !seen_slots[slot],
+                "[{}] {}: Duplicate creature in slot {}",
+                context, player_name, slot
+            );
+            seen_slots[slot] = true;
+
+            // Creatures should have positive health (dead ones removed)
+            assert!(
+                creature.current_health > 0,
+                "[{}] {}: Creature in slot {} has {} health (should be dead)",
+                context, player_name, slot, creature.current_health
+            );
+        }
+
+        // No duplicate support slots
+        let mut seen_support_slots = [false; 2];
+        for support in &player.supports {
+            let slot = support.slot.0 as usize;
+            assert!(
+                slot < 2,
+                "[{}] {}: Support in invalid slot {}",
+                context, player_name, slot
+            );
+            assert!(
+                !seen_support_slots[slot],
+                "[{}] {}: Duplicate support in slot {}",
+                context, player_name, slot
+            );
+            seen_support_slots[slot] = true;
+
+            // Supports should have positive durability
+            assert!(
+                support.current_durability > 0,
+                "[{}] {}: Support in slot {} has 0 durability (should be removed)",
+                context, player_name, slot
+            );
+        }
+
+        // Hand size should not exceed maximum
+        assert!(
+            player.hand.len() <= 20,
+            "[{}] {}: Hand size {} exceeds 20",
+            context, player_name, player.hand.len()
+        );
+    }
+
+    // If game is over, result should be set
+    if state.players[0].life <= 0 || state.players[1].life <= 0 {
+        assert!(
+            state.result.is_some(),
+            "[{}] Player dead but game result not set (P1: {}, P2: {})",
+            context, state.players[0].life, state.players[1].life
+        );
+    }
 }
 
 /// Run a single game without logging (for parallel execution).

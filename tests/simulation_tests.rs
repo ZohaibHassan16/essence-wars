@@ -1,13 +1,18 @@
-//! Full game simulation tests with random action selection.
+//! Full game simulation tests with random action selection and bot-driven fuzzing.
 //!
 //! These tests verify:
 //! - Games with random actions complete without panics
 //! - Games terminate within the turn limit (30 turns)
 //! - No invalid states occur during random play
+//! - GreedyBot games maintain state invariants
+//! - Comprehensive invariant checking after every action
 
 mod common;
 
+use std::collections::HashSet;
+
 use cardgame::actions::Action;
+use cardgame::bots::GreedyBot;
 use cardgame::cards::CardDatabase;
 use cardgame::engine::GameEngine;
 use cardgame::types::PlayerId;
@@ -342,5 +347,492 @@ fn test_rapid_game_stress() {
         avg_actions > 20 && avg_actions < 200,
         "Unusual average actions per game: {}",
         avg_actions
+    );
+}
+
+// ============================================================================
+// Enhanced Invariant Checking
+// ============================================================================
+
+/// Comprehensive state invariant checker
+fn verify_comprehensive_invariants(engine: &GameEngine, context: &str) {
+    let state = &engine.state;
+
+    // Turn number should be positive
+    assert!(
+        state.current_turn >= 1,
+        "{}: Invalid turn number {}",
+        context,
+        state.current_turn
+    );
+
+    // Active player should be valid
+    assert!(
+        state.active_player == PlayerId::PLAYER_ONE
+            || state.active_player == PlayerId::PLAYER_TWO,
+        "{}: Invalid active player",
+        context
+    );
+
+    for (player_idx, player) in state.players.iter().enumerate() {
+        let player_ctx = format!("{} P{}", context, player_idx + 1);
+
+        // Life should be at most 30 (can go negative during game over)
+        assert!(
+            player.life <= 30,
+            "{}: Life {} exceeds max 30",
+            player_ctx,
+            player.life
+        );
+
+        // Essence constraints
+        assert!(
+            player.current_essence <= player.max_essence,
+            "{}: Current essence {} > max {}",
+            player_ctx,
+            player.current_essence,
+            player.max_essence
+        );
+        assert!(
+            player.max_essence <= 10,
+            "{}: Max essence {} > cap 10",
+            player_ctx,
+            player.max_essence
+        );
+
+        // AP constraints
+        assert!(
+            player.action_points <= 5,
+            "{}: AP {} unreasonably high",
+            player_ctx,
+            player.action_points
+        );
+
+        // Creature slot constraints
+        assert!(
+            player.creatures.len() <= 5,
+            "{}: {} creatures exceeds 5 slots",
+            player_ctx,
+            player.creatures.len()
+        );
+
+        // No duplicate creature slots
+        let creature_slots: Vec<u8> = player.creatures.iter().map(|c| c.slot.0).collect();
+        let unique_slots: HashSet<u8> = creature_slots.iter().copied().collect();
+        assert_eq!(
+            creature_slots.len(),
+            unique_slots.len(),
+            "{}: Duplicate creature slots detected: {:?}",
+            player_ctx,
+            creature_slots
+        );
+
+        // All creature slots should be valid (0-4)
+        for slot in &creature_slots {
+            assert!(
+                *slot < 5,
+                "{}: Invalid creature slot {}",
+                player_ctx,
+                slot
+            );
+        }
+
+        // Creatures should have positive health (dead ones should be removed)
+        for creature in &player.creatures {
+            assert!(
+                creature.current_health > 0,
+                "{}: Creature in slot {} has {} health (should be removed)",
+                player_ctx,
+                creature.slot.0,
+                creature.current_health
+            );
+            assert!(
+                creature.current_health <= creature.max_health + 20, // Allow for buffs
+                "{}: Creature health {} unreasonably high (max {})",
+                player_ctx,
+                creature.current_health,
+                creature.max_health
+            );
+        }
+
+        // Support slot constraints
+        assert!(
+            player.supports.len() <= 2,
+            "{}: {} supports exceeds 2 slots",
+            player_ctx,
+            player.supports.len()
+        );
+
+        // No duplicate support slots
+        let support_slots: Vec<u8> = player.supports.iter().map(|s| s.slot.0).collect();
+        let unique_support_slots: HashSet<u8> = support_slots.iter().copied().collect();
+        assert_eq!(
+            support_slots.len(),
+            unique_support_slots.len(),
+            "{}: Duplicate support slots detected: {:?}",
+            player_ctx,
+            support_slots
+        );
+
+        // All support slots should be valid (0-1)
+        for slot in &support_slots {
+            assert!(
+                *slot < 2,
+                "{}: Invalid support slot {}",
+                player_ctx,
+                slot
+            );
+        }
+
+        // Supports should have positive durability
+        for support in &player.supports {
+            assert!(
+                support.current_durability > 0,
+                "{}: Support in slot {} has {} durability (should be removed)",
+                player_ctx,
+                support.slot.0,
+                support.current_durability
+            );
+        }
+
+        // Hand size
+        assert!(
+            player.hand.len() <= 10,
+            "{}: Hand size {} exceeds max 10",
+            player_ctx,
+            player.hand.len()
+        );
+    }
+
+    // Game result consistency
+    if state.players[0].life <= 0 || state.players[1].life <= 0 {
+        assert!(
+            state.is_terminal(),
+            "{}: Player has <= 0 life but game not terminal",
+            context
+        );
+    }
+
+    if state.is_terminal() {
+        assert!(
+            state.result.is_some(),
+            "{}: Game is terminal but no result set",
+            context
+        );
+    }
+}
+
+// ============================================================================
+// Bot-Driven Fuzzing Tests
+// ============================================================================
+
+/// Test GreedyBot vs GreedyBot games with comprehensive invariant checking
+#[test]
+fn test_greedy_vs_greedy_with_invariants() {
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+        .expect("Failed to load cards");
+
+    let mut games_completed = 0;
+    let mut total_actions = 0;
+
+    for seed in 0u64..100 {
+        let mut engine = GameEngine::new(&card_db);
+        let deck1 = valid_yaml_deck();
+        let deck2 = valid_yaml_deck();
+        engine.start_game(deck1, deck2, seed);
+
+        let mut bot1 = GreedyBot::new(&card_db, seed);
+        let mut bot2 = GreedyBot::new(&card_db, seed + 1000);
+
+        let mut action_count = 0;
+        let max_actions = 500;
+
+        while !engine.is_game_over() && action_count < max_actions {
+            let context = format!("Game {} turn {} action {}", seed, engine.turn_number(), action_count);
+
+            // Verify invariants before action
+            verify_comprehensive_invariants(&engine, &context);
+
+            // Select action based on active player
+            let action = if engine.state.active_player == PlayerId::PLAYER_ONE {
+                bot1.select_action_with_engine(&engine)
+            } else {
+                bot2.select_action_with_engine(&engine)
+            };
+
+            // Apply action
+            let result = engine.apply_action(action);
+            assert!(
+                result.is_ok(),
+                "{}: Action {:?} failed: {:?}",
+                context,
+                action,
+                result
+            );
+
+            action_count += 1;
+        }
+
+        // Final invariant check
+        let final_context = format!("Game {} final", seed);
+        verify_comprehensive_invariants(&engine, &final_context);
+
+        if engine.is_game_over() {
+            games_completed += 1;
+        }
+        total_actions += action_count;
+    }
+
+    // All games should complete
+    assert!(
+        games_completed >= 95,
+        "Only {} of 100 GreedyBot games completed",
+        games_completed
+    );
+
+    println!(
+        "GreedyBot fuzzing: {} games, {} total actions, {:.1} avg actions/game",
+        games_completed,
+        total_actions,
+        total_actions as f64 / 100.0
+    );
+}
+
+/// Extended stress test with 500 random games
+#[test]
+fn test_extended_random_stress() {
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+        .expect("Failed to load cards");
+
+    let mut games_completed = 0;
+    let mut invariant_violations = 0;
+
+    for seed in 0u64..500 {
+        let mut engine = GameEngine::new(&card_db);
+        let deck1 = valid_yaml_deck();
+        let deck2 = valid_yaml_deck();
+        engine.start_game(deck1, deck2, seed);
+
+        let mut rng = SimpleRng::new(seed);
+        let mut action_count = 0;
+
+        while !engine.is_game_over() && action_count < 300 {
+            // Quick invariant check (every 10 actions for performance)
+            if action_count % 10 == 0 {
+                let context = format!("Game {} action {}", seed, action_count);
+                // Use a closure to catch panics
+                let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    verify_comprehensive_invariants(&engine, &context);
+                }));
+                if result.is_err() {
+                    invariant_violations += 1;
+                }
+            }
+
+            let actions = engine.get_legal_actions();
+            if actions.is_empty() {
+                break;
+            }
+            let action_idx = rng.range(actions.len());
+            engine.apply_action(actions[action_idx]).unwrap();
+            action_count += 1;
+        }
+
+        if engine.is_game_over() {
+            games_completed += 1;
+        }
+    }
+
+    assert_eq!(
+        invariant_violations, 0,
+        "{} invariant violations in 500 games",
+        invariant_violations
+    );
+
+    assert!(
+        games_completed >= 490,
+        "Only {} of 500 games completed",
+        games_completed
+    );
+}
+
+/// Test that engine fork produces valid states
+#[test]
+fn test_fork_state_validity() {
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+        .expect("Failed to load cards");
+
+    for seed in [42u64, 12345, 99999] {
+        let mut engine = GameEngine::new(&card_db);
+        let deck1 = valid_yaml_deck();
+        let deck2 = valid_yaml_deck();
+        engine.start_game(deck1, deck2, seed);
+
+        let mut rng = SimpleRng::new(seed);
+
+        // Play some actions
+        for i in 0..20 {
+            if engine.is_game_over() {
+                break;
+            }
+
+            let actions = engine.get_legal_actions();
+            let action_idx = rng.range(actions.len());
+            engine.apply_action(actions[action_idx]).unwrap();
+
+            // Fork at action 10 and verify fork state
+            if i == 10 {
+                let fork = engine.fork();
+                verify_comprehensive_invariants(&fork, &format!("Fork from seed {}", seed));
+
+                // Fork should have same state
+                assert_eq!(
+                    engine.state.current_turn,
+                    fork.state.current_turn,
+                    "Fork turn mismatch"
+                );
+                assert_eq!(
+                    engine.state.players[0].life,
+                    fork.state.players[0].life,
+                    "Fork P1 life mismatch"
+                );
+            }
+        }
+    }
+}
+
+// ============================================================================
+// Long-Running Stress Tests (use --ignored to run)
+// ============================================================================
+
+/// Stress test: 100,000 random games with invariant checking after every action.
+///
+/// Run with: cargo test --release stress_test_100k_random -- --ignored --nocapture
+///
+/// This test is ignored by default because it takes ~10-15 minutes to run.
+/// Use this for overnight or CI stress testing.
+#[test]
+#[ignore]
+fn stress_test_100k_random() {
+    const NUM_GAMES: u64 = 100_000;
+
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+        .expect("Failed to load cards");
+
+    let mut games_completed = 0u64;
+    let mut total_actions = 0u64;
+
+    for seed in 0..NUM_GAMES {
+        let mut engine = GameEngine::new(&card_db);
+        let deck1 = valid_yaml_deck();
+        let deck2 = valid_yaml_deck();
+        engine.start_game(deck1, deck2, seed);
+
+        let mut rng = SimpleRng::new(seed);
+        let mut action_count = 0;
+
+        while !engine.is_game_over() && action_count < 500 {
+            let actions = engine.get_legal_actions();
+            if actions.is_empty() {
+                break;
+            }
+
+            let action_idx = rng.range(actions.len());
+            let action = actions[action_idx];
+            engine.apply_action(action).unwrap();
+
+            // Verify invariants after every action
+            verify_comprehensive_invariants(
+                &engine,
+                &format!("seed={}, action #{}", seed, action_count),
+            );
+
+            action_count += 1;
+            total_actions += 1;
+        }
+
+        games_completed += 1;
+
+        // Progress every 10k games
+        if games_completed % 10_000 == 0 {
+            eprintln!(
+                "Progress: {}/{} games ({:.1}%), {} total actions",
+                games_completed,
+                NUM_GAMES,
+                (games_completed as f64 / NUM_GAMES as f64) * 100.0,
+                total_actions
+            );
+        }
+    }
+
+    eprintln!(
+        "\nStress test complete: {} games, {} total actions, no invariant violations",
+        games_completed, total_actions
+    );
+}
+
+/// Stress test: 100,000 GreedyBot vs GreedyBot games with invariant checking.
+///
+/// Run with: cargo test --release stress_test_100k_greedy -- --ignored --nocapture
+///
+/// This exercises smarter play patterns and catches bugs that random play misses.
+#[test]
+#[ignore]
+fn stress_test_100k_greedy() {
+    const NUM_GAMES: u64 = 100_000;
+
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+        .expect("Failed to load cards");
+
+    let mut games_completed = 0u64;
+    let mut total_actions = 0u64;
+
+    for seed in 0..NUM_GAMES {
+        let mut engine = GameEngine::new(&card_db);
+        let deck1 = valid_yaml_deck();
+        let deck2 = valid_yaml_deck();
+        engine.start_game(deck1, deck2, seed);
+
+        let mut bot1 = GreedyBot::new(&card_db, seed);
+        let mut bot2 = GreedyBot::new(&card_db, seed.wrapping_add(1_000_000));
+
+        let mut action_count = 0;
+
+        while !engine.is_game_over() && action_count < 500 {
+            let action = if engine.current_player() == PlayerId::PLAYER_ONE {
+                bot1.select_action_with_engine(&engine)
+            } else {
+                bot2.select_action_with_engine(&engine)
+            };
+
+            engine.apply_action(action).unwrap();
+
+            // Verify invariants after every action
+            verify_comprehensive_invariants(
+                &engine,
+                &format!("greedy seed={}, action #{}", seed, action_count),
+            );
+
+            action_count += 1;
+            total_actions += 1;
+        }
+
+        games_completed += 1;
+
+        // Progress every 10k games
+        if games_completed % 10_000 == 0 {
+            eprintln!(
+                "Progress: {}/{} games ({:.1}%), {} total actions",
+                games_completed,
+                NUM_GAMES,
+                (games_completed as f64 / NUM_GAMES as f64) * 100.0,
+                total_actions
+            );
+        }
+    }
+
+    eprintln!(
+        "\nStress test complete: {} games, {} total actions, no invariant violations",
+        games_completed, total_actions
     );
 }
