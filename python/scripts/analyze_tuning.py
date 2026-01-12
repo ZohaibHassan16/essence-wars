@@ -18,6 +18,7 @@ from cardgame.analysis.visualize import (
     create_convergence_analysis,
     create_comparison_plot,
     create_summary_report,
+    create_markdown_report,
 )
 from cardgame.infra.experiment import Experiment
 
@@ -82,6 +83,10 @@ def analyze_experiment(exp_dir: Path, force: bool = False) -> None:
         create_comparison_plot(df, plots_dir)
         create_summary_report(df, plots_dir)
         
+        # Generate markdown report with insights
+        exp_name = exp_dir.name
+        create_markdown_report(df, plots_dir, exp_name)
+        
         print(f"\n✅ Analysis complete!")
     else:
         print(f"\n✓ Visualizations already exist (use --force to regenerate)")
@@ -89,13 +94,16 @@ def analyze_experiment(exp_dir: Path, force: bool = False) -> None:
     # Summary
     print(f"\n{'='*80}")
     print(f"📊 Results saved in: {exp_dir}")
-    print(f"  - stats.csv           : Parsed metrics")
-    print(f"  - plots/overview.png  : Main dashboard")
-    print(f"  - plots/efficiency.png: Training efficiency")
-    print(f"  - plots/convergence.png: Convergence analysis")
-    print(f"  - plots/comparison.png: Dual-axis comparison")
-    print(f"  - plots/summary_report.txt: Text summary")
-    print(f"{'='*80}\n")
+    print(f"  - stats.csv                 : Parsed metrics")
+    print(f"  - plots/overview.png        : Main dashboard")
+    print(f"  - plots/efficiency.png      : Training efficiency")
+    print(f"  - plots/convergence.png     : Convergence analysis")
+    print(f"  - plots/comparison.png      : Dual-axis comparison")
+    print(f"  - plots/summary_report.txt  : Text summary")
+    print(f"  - plots/REPORT.md           : 📄 Comprehensive markdown report")
+    print(f"{'='*80}")
+    print(f"\n💡 Open the markdown report for detailed insights:")
+    print(f"   {exp_dir / 'plots' / 'REPORT.md'}\n")
 
 
 def find_experiments(base_dir: Path, pattern: str = "*") -> list[Path]:

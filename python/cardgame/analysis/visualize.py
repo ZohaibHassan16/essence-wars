@@ -368,6 +368,289 @@ def create_comparison_plot(df: pd.DataFrame, output_dir: Path):
     print(f"✓ Saved comparison plot: {output_path}")
     plt.close()
 
+def create_markdown_report(df: pd.DataFrame, output_dir: Path, exp_name: str = "MCTS Tuning") -> None:
+    """
+    Create comprehensive markdown report with embedded plots and insights.
+    
+    Args:
+        df: Training data DataFrame
+        output_dir: Directory containing plots
+        exp_name: Name of the experiment
+    """
+    report = []
+    
+    # Header
+    report.append(f"# {exp_name} - Analysis Report")
+    report.append(f"\n**Generated:** {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    report.append(f"\n**Experiment Duration:** {df['cumulative_minutes'].iloc[-1]:.1f} minutes ({df['cumulative_minutes'].iloc[-1]/60:.2f} hours)")
+    report.append(f"\n**Total Generations:** {len(df)}")
+    report.append("\n---\n")
+    
+    # Executive Summary
+    report.append("## 📊 Executive Summary\n")
+    
+    initial_fitness = df['fitness'].iloc[0]
+    final_fitness = df['fitness'].iloc[-1]
+    best_fitness = df['fitness'].max()
+    improvement = final_fitness - initial_fitness
+    improvement_pct = (improvement / initial_fitness) * 100 if initial_fitness != 0 else 0
+    
+    initial_wr = df['win_rate'].iloc[0]
+    final_wr = df['win_rate'].iloc[-1]
+    
+    sigma_reduction = ((df['sigma'].iloc[0] - df['sigma'].iloc[-1]) / df['sigma'].iloc[0]) * 100
+    
+    # Status badges
+    if final_wr >= 90:
+        wr_badge = "🟢 Excellent"
+    elif final_wr >= 75:
+        wr_badge = "🟡 Good"
+    elif final_wr >= 60:
+        wr_badge = "🟠 Moderate"
+    else:
+        wr_badge = "🔴 Poor"
+    
+    if sigma_reduction > 50:
+        conv_badge = "🟢 Highly Converged"
+    elif sigma_reduction > 30:
+        conv_badge = "🟡 Moderately Converged"
+    else:
+        conv_badge = "🔴 Still Exploring"
+    
+    report.append("| Metric | Value | Status |")
+    report.append("|--------|-------|--------|")
+    report.append(f"| **Final Fitness** | {final_fitness:.2f} | +{improvement:.2f} ({improvement_pct:+.1f}%) |")
+    report.append(f"| **Win Rate** | {final_wr:.1f}% | {wr_badge} |")
+    report.append(f"| **Convergence** | {sigma_reduction:.1f}% sigma reduction | {conv_badge} |")
+    report.append(f"| **Time per Gen** | {df['gen_time'].mean():.2f}s | Avg of {len(df)} gens |")
+    report.append("\n")
+    
+    # Key Insights
+    report.append("### 🎯 Key Insights\n")
+    
+    insights = []
+    
+    # Improvement rate insight
+    if improvement_pct > 30:
+        insights.append(f"✅ **Strong improvement** of {improvement_pct:.1f}% demonstrates effective optimization")
+    elif improvement_pct > 10:
+        insights.append(f"✓ **Moderate improvement** of {improvement_pct:.1f}% shows progress")
+    else:
+        insights.append(f"⚠️ **Limited improvement** of {improvement_pct:.1f}% - consider longer training or different hyperparameters")
+    
+    # Win rate insight
+    if final_wr >= 90:
+        insights.append(f"✅ **Dominant performance** at {final_wr:.1f}% win rate indicates strong policy")
+    elif final_wr >= 75:
+        insights.append(f"✓ **Strong performance** at {final_wr:.1f}% win rate")
+    elif final_wr >= 60:
+        insights.append(f"⚠️ **Moderate performance** at {final_wr:.1f}% - may benefit from more generations")
+    else:
+        insights.append(f"❌ **Weak performance** at {final_wr:.1f}% - tuning may not be effective for this opponent")
+    
+    # Convergence insight
+    if sigma_reduction > 50:
+        insights.append(f"✅ **Well converged** ({sigma_reduction:.1f}% sigma reduction) - good stopping point")
+    elif sigma_reduction > 30:
+        insights.append(f"⚠️ **Partially converged** ({sigma_reduction:.1f}%) - could benefit from 50-100 more generations")
+    else:
+        insights.append(f"❌ **Still exploring** ({sigma_reduction:.1f}%) - algorithm needs more time to converge")
+    
+    # Plateau detection
+    window = min(10, len(df) // 2)
+    if len(df) >= window * 2:
+        recent_improvement = df['fitness'].iloc[-window:].max() - df['fitness'].iloc[-window:].min()
+        early_improvement = df['fitness'].iloc[:window].max() - df['fitness'].iloc[:window].min()
+        
+        if recent_improvement < early_improvement * 0.2:
+            insights.append(f"⚠️ **Plateau detected** - last {window} generations show minimal improvement")
+    
+    for insight in insights:
+        report.append(f"- {insight}")
+    report.append("\n")
+    
+    # Recommendations
+    report.append("### 💡 Recommendations\n")
+    recommendations = []
+    
+    if sigma_reduction < 30:
+        recommendations.append("🔄 **Continue training** - Run 50-100 more generations for better convergence")
+    
+    if final_wr < 70:
+        recommendations.append("🎮 **Try different mode** - Test vs-greedy or multi-opponent for different challenges")
+    
+    if df['gen_time'].std() > df['gen_time'].mean() * 0.3:
+        recommendations.append("⏱️ **Inconsistent timing** - Consider adjusting parallel settings or reducing variance")
+    
+    if sigma_reduction > 50 and final_wr >= 85:
+        recommendations.append("✅ **Ready for deployment** - Weights are well-tuned and converged")
+        recommendations.append("📊 **Next step** - Test in arena against various opponents")
+    
+    if len(recommendations) == 0:
+        recommendations.append("✓ Training progressing normally - continue as planned")
+    
+    for rec in recommendations:
+        report.append(f"- {rec}")
+    report.append("\n---\n")
+    
+    # Overview Plot
+    report.append("## 📈 Training Overview\n")
+    report.append("![Training Overview](overview.png)\n")
+    report.append("**Interpretation:**")
+    report.append("- **Top-Left (Fitness):** Shows cumulative improvement over generations")
+    report.append("- **Top-Right (Win Rate):** Performance against opponent (target: >70%)")
+    report.append("- **Bottom-Left (Sigma):** Exploration parameter (lower = more converged)")
+    report.append("- **Bottom-Right (Learning Rate):** Smoothed improvement per generation")
+    report.append("\n")
+    
+    # Detailed Analysis for Researchers
+    report.append("---\n")
+    report.append("## 🔬 Detailed Analysis (For Researchers)\n")
+    
+    # Statistical Summary
+    report.append("### Statistical Summary\n")
+    report.append("```")
+    report.append(f"Fitness Statistics:")
+    report.append(f"  Mean:   {df['fitness'].mean():.2f}")
+    report.append(f"  Median: {df['fitness'].median():.2f}")
+    report.append(f"  Std:    {df['fitness'].std():.2f}")
+    report.append(f"  Min:    {df['fitness'].min():.2f}")
+    report.append(f"  Max:    {df['fitness'].max():.2f}")
+    report.append(f"")
+    report.append(f"Win Rate Statistics:")
+    report.append(f"  Mean:   {df['win_rate'].mean():.1f}%")
+    report.append(f"  Median: {df['win_rate'].median():.1f}%")
+    report.append(f"  Std:    {df['win_rate'].std():.1f}%")
+    report.append(f"")
+    report.append(f"Time Statistics:")
+    report.append(f"  Total:  {df['cumulative_minutes'].iloc[-1]:.1f} min")
+    report.append(f"  Mean:   {df['gen_time'].mean():.2f}s per generation")
+    report.append(f"  Median: {df['gen_time'].median():.2f}s per generation")
+    report.append("```\n")
+    
+    # Efficiency Analysis
+    report.append("### ⚡ Efficiency Analysis\n")
+    report.append("![Efficiency](efficiency.png)\n")
+    
+    total_time = df['cumulative_minutes'].iloc[-1]
+    fitness_per_min = improvement / total_time if total_time > 0 else 0
+    report.append(f"**Optimization Efficiency:** {fitness_per_min:.4f} fitness points per minute\n")
+    
+    # Identify best improvement period
+    if len(df) >= 10:
+        df_copy = df.copy()
+        df_copy['improvement_rate'] = df_copy['fitness'].diff() / df_copy['gen_time']
+        best_gen = df_copy['improvement_rate'].idxmax()
+        if not pd.isna(best_gen):
+            report.append(f"**Peak Learning:** Generation {best_gen} (fastest improvement)\n")
+    
+    # Convergence Analysis
+    report.append("### 🎯 Convergence Analysis\n")
+    report.append("![Convergence](convergence.png)\n")
+    
+    # Phase breakdown
+    phases = []
+    phase_size = len(df) // 3
+    if phase_size > 0:
+        for i, phase_name in enumerate(["Early", "Mid", "Late"]):
+            start_idx = i * phase_size
+            end_idx = (i + 1) * phase_size if i < 2 else len(df)
+            phase_data = df.iloc[start_idx:end_idx]
+            phase_improvement = phase_data['fitness'].iloc[-1] - phase_data['fitness'].iloc[0]
+            phases.append((phase_name, phase_improvement, len(phase_data)))
+        
+        report.append("**Learning Phases:**\n")
+        report.append("| Phase | Generations | Fitness Gain | Avg Gain/Gen |")
+        report.append("|-------|-------------|--------------|--------------|")
+        for phase_name, improvement, count in phases:
+            avg_gain = improvement / count if count > 0 else 0
+            report.append(f"| {phase_name} | {count} | +{improvement:.2f} | {avg_gain:.3f} |")
+        report.append("\n")
+    
+    # Comparison Plot
+    report.append("### 📊 Fitness vs Win Rate Comparison\n")
+    report.append("![Comparison](comparison.png)\n")
+    
+    # Correlation analysis
+    correlation = df['fitness'].corr(df['win_rate'])
+    report.append(f"**Correlation:** {correlation:.3f} (fitness vs win rate)")
+    if correlation > 0.9:
+        report.append(" - Very strong positive correlation ✓")
+    elif correlation > 0.7:
+        report.append(" - Strong positive correlation")
+    elif correlation > 0.5:
+        report.append(" - Moderate positive correlation")
+    else:
+        report.append(" - Weak correlation ⚠️")
+    report.append("\n")
+    
+    # Generation Table (for researchers)
+    report.append("---\n")
+    report.append("## 📋 Generation-by-Generation Log\n")
+    report.append("<details>")
+    report.append("<summary>Click to expand full generation log</summary>\n")
+    report.append("| Gen | Fitness | Win Rate | Sigma | Time (s) | Cumulative (min) |")
+    report.append("|-----|---------|----------|-------|----------|------------------|")
+    
+    # Show every generation, or sample if too many
+    step = max(1, len(df) // 50)  # Max 50 rows
+    for idx in range(0, len(df), step):
+        row = df.iloc[idx]
+        report.append(f"| {row['generation']:<3} | {row['fitness']:>7.2f} | {row['win_rate']:>6.1f}% | {row['sigma']:>5.4f} | {row['gen_time']:>8.2f} | {row['cumulative_minutes']:>16.2f} |")
+    
+    # Always show last generation if not included
+    if (len(df) - 1) % step != 0:
+        row = df.iloc[-1]
+        report.append(f"| {row['generation']:<3} | {row['fitness']:>7.2f} | {row['win_rate']:>6.1f}% | {row['sigma']:>5.4f} | {row['gen_time']:>8.2f} | {row['cumulative_minutes']:>16.2f} |")
+    
+    report.append("\n</details>\n")
+    
+    # Milestones
+    report.append("---\n")
+    report.append("## 🏆 Milestones Achieved\n")
+    
+    milestones = [
+        (50, "50%"),
+        (60, "60%"),
+        (70, "70%"),
+        (80, "80%"),
+        (85, "85%"),
+        (90, "90%"),
+        (95, "95%"),
+    ]
+    
+    report.append("| Milestone | Generation | Time | Status |")
+    report.append("|-----------|------------|------|--------|")
+    
+    for threshold, label in milestones:
+        matching = df[df['win_rate'] >= threshold]
+        if not matching.empty:
+            first = matching.iloc[0]
+            report.append(f"| {label} Win Rate | {first['generation']} | {first['cumulative_minutes']:.1f} min | ✅ |")
+        else:
+            report.append(f"| {label} Win Rate | - | - | ⏳ |")
+    
+    report.append("\n")
+    
+    # Footer
+    report.append("---\n")
+    report.append("## 🔧 Technical Details\n")
+    report.append(f"- **Experiment ID:** {exp_name}")
+    report.append(f"- **Total Evaluations:** {len(df)} generations")
+    report.append(f"- **Analysis Tool:** MCTS Tuning Pipeline v1.0")
+    report.append(f"- **Report Generated:** {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    report.append("\n")
+    report.append("For more information, see:")
+    report.append("- [MCTS Tuning Workflow](../../docs/mcts-tuning-workflow.md)")
+    report.append("- [Data Strategy](../../docs/data-strategy.md)")
+    
+    # Save report
+    report_path = output_dir / 'REPORT.md'
+    with open(report_path, 'w') as f:
+        f.write('\n'.join(report))
+    
+    print(f"✓ Saved markdown report: {report_path}")
+
 def main():
     """Main execution function."""
     # Parse arguments
@@ -406,6 +689,10 @@ def main():
     create_comparison_plot(df, output_dir)
     create_summary_report(df, output_dir)
     
+    # Generate markdown report with insights
+    exp_name = csv_path.parent.name if csv_path.parent.name else "MCTS Tuning"
+    create_markdown_report(df, output_dir, exp_name)
+    
     print("\n" + "="*80)
     print("✅ ALL VISUALIZATIONS COMPLETE!")
     print("="*80)
@@ -414,7 +701,9 @@ def main():
     print("  - efficiency.png        : Training time and efficiency analysis")
     print("  - convergence.png       : Convergence dynamics and phases")
     print("  - comparison.png        : Dual-axis fitness vs win rate")
-    print("  - summary_report.txt    : Detailed text summary\n")
+    print("  - summary_report.txt    : Detailed text summary")
+    print("  - REPORT.md             : Comprehensive markdown report with insights\n")
+    print(f"💡 View the report: {output_dir.absolute() / 'REPORT.md'}\n")
 
 if __name__ == '__main__':
     main()
