@@ -1,45 +1,30 @@
-# Argentum Combine Specialist Weights
-# "The Wall" - Defense-focused with Guard, Piercing, Shield
-# Emphasizes survival and board control over aggression
-
 name = "agent_argentum"
 version = 1
 
 [default.greedy]
-# Life - Argentum values survival highly
-own_life = 1.5
-enemy_life_damage = 1.0
+own_life = 1.9096155166625977
+enemy_life_damage = 1.8685917854309082
+own_creature_attack = 0.16254660487174988
+own_creature_health = 0.4454748332500458
+enemy_creature_attack = -2.474496603012085
+enemy_creature_health = -0.676521897315979
+creature_count = 1.964471697807312
+board_advantage = 1.560945749282837
+cards_in_hand = 1.6656168699264526
+action_points = 0.22148887813091278
+keyword_guard = 0.9453948736190796
+keyword_lethal = 4.302577018737793
+keyword_lifesteal = 3.078695774078369
+keyword_rush = 1.4288676977157593
+keyword_ranged = 3.0
+keyword_piercing = 1.6613140106201172
+keyword_shield = 2.3362863063812256
+keyword_quick = 0.3963472545146942
+keyword_ephemeral = -1.965741515159607
+keyword_regenerate = 3.2288882732391357
+keyword_stealth = 3.103790760040283
+keyword_charge = 0.9896829724311829
+win_bonus = 999.47802734375
+lose_penalty = -999.740234375
 
-# Creatures - High health creatures are preferred
-own_creature_attack = 0.8
-own_creature_health = 1.5
-enemy_creature_attack = -0.8
-enemy_creature_health = -0.6
-
-# Board Control - Strong board presence is key
-creature_count = 2.5
-board_advantage = 1.5
-
-# Resources - Efficient card usage
-cards_in_hand = 0.3
-action_points = 0.1
-
-# Keywords - Argentum specialty
-keyword_guard = 4.0      # PRIMARY: Wall builders
-keyword_piercing = 2.5   # PRIMARY: Bypass shields
-keyword_shield = 3.0     # PRIMARY: Extra protection
-keyword_lethal = 1.0
-keyword_lifesteal = 1.5
-keyword_rush = 0.5       # Not their style
-keyword_ranged = 1.5
-keyword_quick = 1.0
-
-# New Keywords
-keyword_ephemeral = -2.0
-keyword_regenerate = 2.5 # Synergizes with high health
-keyword_stealth = 0.5
-keyword_charge = 0.5
-
-# Terminal
-win_bonus = 1000.0
-lose_penalty = -1000.0
+[deck_specific]

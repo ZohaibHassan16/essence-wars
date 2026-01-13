@@ -356,19 +356,19 @@ impl<'a> Evaluator<'a> {
                 let matchup_seed = base_seed.wrapping_add((matchup_idx * 10000) as u64);
                 
                 // vs Random
-                let random_results: Vec<(bool, u32)> = (0..games_per_opponent).map(|i| {
+                let random_results: Vec<(bool, u32)> = (0..games_per_opponent).into_par_iter().map(|i| {
                     let seed = matchup_seed.wrapping_add(i as u64);
                     Self::run_game_vs_random_with_decks_static(card_db, weights, deck1, deck2, seed, max_actions)
                 }).collect();
 
                 // vs Greedy
-                let greedy_results: Vec<(bool, u32)> = (0..games_per_opponent).map(|i| {
+                let greedy_results: Vec<(bool, u32)> = (0..games_per_opponent).into_par_iter().map(|i| {
                     let seed = matchup_seed.wrapping_add(1000 + i as u64);
                     Self::run_game_vs_greedy_with_decks_static(card_db, weights, deck1, deck2, seed, max_actions)
                 }).collect();
 
                 // vs MCTS
-                let mcts_results: Vec<(bool, u32)> = (0..games_per_opponent).map(|i| {
+                let mcts_results: Vec<(bool, u32)> = (0..games_per_opponent).into_par_iter().map(|i| {
                     let seed = matchup_seed.wrapping_add(2000 + i as u64);
                     Self::run_game_vs_mcts_with_decks_static(card_db, weights, deck1, deck2, seed, max_actions, mcts_sims)
                 }).collect();
