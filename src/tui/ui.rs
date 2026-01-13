@@ -21,7 +21,10 @@ pub fn render(frame: &mut Frame, app: &App) {
 
     // Render current screen
     match app.screen() {
-        Screen::Home(screen) => screen.render(frame, area, &theme),
+        Screen::Home(screen) => {
+            // Home screen gets access to experiments for recent activity
+            screen.render_with_state(frame, area, &theme, &app.state.experiments);
+        }
         Screen::Arena(screen) => screen.render(frame, area, &theme),
         Screen::Tuning(screen) => screen.render(frame, area, &theme),
         Screen::Analysis(screen) => screen.render(frame, area, &theme),

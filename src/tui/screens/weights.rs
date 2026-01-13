@@ -7,6 +7,7 @@ use ratatui::widgets::{Block, Borders, Paragraph};
 use super::ScreenWidget;
 use crate::tui::app::Message;
 use crate::tui::theme::Theme;
+use crate::tui::widgets::{KeyHint, StatusBar};
 
 /// Weights screen state
 #[derive(Debug, Clone)]
@@ -49,24 +50,46 @@ impl ScreenWidget for WeightsScreen {
         frame.render_widget(header, chunks[0]);
 
         // Content placeholder
-        let content = Paragraph::new("Weight browser coming in Phase 5...")
-            .style(Style::default().fg(theme.fg_dim))
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(theme.border)),
-            );
+        let content = Paragraph::new(vec![
+            Line::from(""),
+            Line::from("  Weight browser coming in Phase 5..."),
+            Line::from(""),
+            Line::from(vec![
+                Span::styled("  Features planned:", Style::default().fg(theme.fg)),
+            ]),
+            Line::from(vec![
+                Span::styled("    - Browse data/weights/ directory", Style::default().fg(theme.fg_dim)),
+            ]),
+            Line::from(vec![
+                Span::styled("    - Preview weight parameters", Style::default().fg(theme.fg_dim)),
+            ]),
+            Line::from(vec![
+                Span::styled("    - Compare two weight files", Style::default().fg(theme.fg_dim)),
+            ]),
+            Line::from(vec![
+                Span::styled("    - Promote weights to default", Style::default().fg(theme.fg_dim)),
+            ]),
+            Line::from(vec![
+                Span::styled("    - Delete weight files", Style::default().fg(theme.fg_dim)),
+            ]),
+        ])
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(theme.border)),
+        );
         frame.render_widget(content, chunks[1]);
 
         // Footer
-        let footer = Paragraph::new(" [Esc] Back  [P] Promote  [C] Compare  [?] Help")
-            .style(Style::default().fg(theme.fg_dim))
-            .block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_style(Style::default().fg(theme.border)),
-            );
-        frame.render_widget(footer, chunks[2]);
+        let hints = vec![
+            KeyHint::new("Esc", "Back"),
+            KeyHint::new("↑↓", "Navigate"),
+            KeyHint::new("P", "Promote"),
+            KeyHint::new("C", "Compare"),
+            KeyHint::new("?", "Help"),
+        ];
+        let status_bar = StatusBar::new(&hints, theme);
+        frame.render_widget(status_bar, chunks[2]);
     }
 
     fn handle_key(&mut self, _key: &KeyEvent) -> Option<Message> {

@@ -51,6 +51,8 @@ impl App {
     pub fn update(&mut self, msg: Message) {
         match msg {
             Message::Navigate(screen) => {
+                // Initialize screen with app state if needed
+                let screen = self.initialize_screen(screen);
                 let old = std::mem::replace(&mut self.screen, screen);
                 self.history.push(old);
             }
@@ -103,6 +105,18 @@ impl App {
     /// Check if we can go back
     pub fn can_go_back(&self) -> bool {
         !self.history.is_empty()
+    }
+
+    /// Initialize a screen with app state data
+    fn initialize_screen(&self, screen: Screen) -> Screen {
+        match screen {
+            Screen::Arena(arena) => {
+                let deck_ids: Vec<String> = self.state.decks.iter().map(|d| d.id.clone()).collect();
+                Screen::Arena(arena.with_decks(&deck_ids))
+            }
+            // Other screens that need initialization can be added here
+            other => other,
+        }
     }
 }
 
