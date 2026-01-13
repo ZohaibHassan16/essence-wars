@@ -7,7 +7,7 @@
 //! - Buff/debuff accumulation leading to death
 //! - Terminal state halting effect queue
 //!
-//! NOTE: The engine's `effect_def_to_effect` function ignores the `TargetingRule`
+//! TODO NOTE: The engine's `effect_def_to_effect` function ignores the `TargetingRule`
 //! in ability definitions. For triggered abilities:
 //! - Damage defaults to AllEnemyCreatures (not the enemy player)
 //! - Heal/Buff defaults to self (source creature)

@@ -15,7 +15,9 @@ use std::time::{Duration, Instant};
 use clap::Parser;
 use rayon::prelude::*;
 
-use cardgame::arena::{ActionLogger, ActionRecord, MatchStats, StateSnapshot};
+use cardgame::arena::{
+    ActionLogger, ActionRecord, CombatTracer, EffectTracer, MatchStats, StateSnapshot,
+};
 use cardgame::bots::{Bot, BotWeights, GreedyBot, MctsBot, MctsConfig, RandomBot};
 use cardgame::cards::CardDatabase;
 use cardgame::decks::DeckRegistry;
@@ -110,6 +112,18 @@ struct Args {
     /// Enable invariant checking after every action (forces sequential mode, slower)
     #[arg(long)]
     invariants: bool,
+
+    /// Enable combat keyword resolution tracing (forces sequential mode)
+    #[arg(long)]
+    trace_combat: bool,
+
+    /// Enable effect queue tracing (forces sequential mode)
+    #[arg(long)]
+    trace_effects: bool,
+
+    /// Enable all tracing (combat + effects, forces sequential mode)
+    #[arg(long)]
+    trace_all: bool,
 }
 
 /// Bot types that can participate in arena matches.
@@ -244,8 +258,13 @@ fn main() {
             .ok(); // Ignore if already initialized
     }
 
-    // Can't parallelize with logging or invariant checking
-    let parallel = !args.sequential && logger.is_none() && !args.invariants;
+    // Determine tracing options
+    let trace_combat = args.trace_combat || args.trace_all;
+    let trace_effects = args.trace_effects || args.trace_all;
+    let tracing_enabled = trace_combat || trace_effects;
+
+    // Can't parallelize with logging, invariant checking, or tracing
+    let parallel = !args.sequential && logger.is_none() && !args.invariants && !tracing_enabled;
 
     // Print match info
     println!("Arena Match");
@@ -262,6 +281,8 @@ fn main() {
         let mut mode_notes = Vec::new();
         if logger.is_some() { mode_notes.push("logging"); }
         if args.invariants { mode_notes.push("invariants"); }
+        if trace_combat { mode_notes.push("combat-trace"); }
+        if trace_effects { mode_notes.push("effect-trace"); }
         let note = if mode_notes.is_empty() {
             String::new()
         } else {
@@ -316,6 +337,8 @@ fn main() {
             weights2.as_ref(),
             &mcts_config,
             args.invariants,
+            trace_combat,
+            trace_effects,
         )
     };
 
@@ -475,6 +498,8 @@ fn run_match_sequential(
     weights2: Option<&BotWeights>,
     mcts_config: &MctsConfig,
     check_invariants: bool,
+    trace_combat: bool,
+    trace_effects: bool,
 ) -> MatchStats {
     let mut stats = MatchStats::new(
         bot1_type.name().to_string(),
@@ -498,6 +523,8 @@ fn run_match_sequential(
             weights2,
             mcts_config,
             check_invariants,
+            trace_combat,
+            trace_effects,
         );
         stats.record_game(result.0, result.1, result.2);
 
@@ -541,8 +568,14 @@ fn run_single_game(
     weights2: Option<&BotWeights>,
     mcts_config: &MctsConfig,
     check_invariants: bool,
+    trace_combat: bool,
+    trace_effects: bool,
 ) -> (Option<PlayerId>, u32, Duration) {
     let start = Instant::now();
+
+    // Create tracers if enabled (mutable for future engine integration)
+    let combat_tracer = CombatTracer::new(trace_combat);
+    let effect_tracer = EffectTracer::new(trace_effects);
 
     // Create bots with appropriate seeds and weights
     let bot1_seed = seed;
@@ -664,6 +697,21 @@ fn run_single_game(
             engine.state.players[1].life,
         );
     }
+
+    // Print trace output if enabled
+    // Note: The tracers need to be called during combat/effect resolution.
+    // Currently this prints empty traces as a placeholder - full integration
+    // requires passing tracers to engine.resolve_combat() and engine.process_effect_queue().
+    if trace_combat && !combat_tracer.traces.is_empty() {
+        println!("{}", combat_tracer.format_all());
+    }
+    if trace_effects && !effect_tracer.events.is_empty() {
+        println!("{}", effect_tracer.format());
+    }
+
+    // Suppress unused variable warnings when tracing is disabled
+    let _ = &combat_tracer;
+    let _ = &effect_tracer;
 
     (winner, turns, duration)
 }

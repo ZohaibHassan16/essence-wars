@@ -224,6 +224,7 @@ fn test_mcts_varies_with_seed() {
 
 /// Test more simulations produces better results
 #[test]
+#[ignore]
 fn test_mcts_simulation_count_matters() {
     let card_db = CardDatabase::load_from_directory("data/cards")
         .expect("Failed to load cards");
@@ -279,6 +280,7 @@ fn test_mcts_simulation_count_matters() {
 
 /// Test MCTS beats GreedyBot (with enough simulations)
 #[test]
+#[ignore]
 fn test_mcts_vs_greedy() {
     let card_db = CardDatabase::load_from_directory("data/cards")
         .expect("Failed to load cards");

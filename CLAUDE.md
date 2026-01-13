@@ -11,7 +11,11 @@
 cargo build --release
 
 # Run all tests
-cargo test  # 243 tests
+cargo nextest run --status-level=fail  # 409 tests (only shows failures)
+cargo test                              # Alternative: use standard cargo test
+
+# Run slow/ignored tests (stress tests, performance validation)
+cargo nextest run --status-level=fail -- --ignored  # 10 ignored tests
 
 # Run arena matches
 cargo run --release --bin arena -- --bot1 greedy --bot2 random --games 100

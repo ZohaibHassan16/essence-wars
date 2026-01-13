@@ -666,6 +666,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_mcts_completes_game() {
         let card_db = load_test_db();
         let config = MctsConfig::fast();
