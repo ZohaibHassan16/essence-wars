@@ -101,6 +101,27 @@ impl HelpScreen {
             ]),
             Line::from(""),
             Line::from(vec![
+                Span::styled("  TUNING (After Completion)", Style::default().fg(theme.success).bold()),
+            ]),
+            Line::from(""),
+            Line::from(vec![
+                Span::styled("    A           ", Style::default().fg(theme.fg)),
+                Span::styled("View Analysis - open experiment results", Style::default().fg(theme.fg_dim)),
+            ]),
+            Line::from(vec![
+                Span::styled("    W           ", Style::default().fg(theme.fg)),
+                Span::styled("Compare Weights - diff new vs default", Style::default().fg(theme.fg_dim)),
+            ]),
+            Line::from(vec![
+                Span::styled("    P           ", Style::default().fg(theme.fg)),
+                Span::styled("Promote Weights - set as new default", Style::default().fg(theme.fg_dim)),
+            ]),
+            Line::from(vec![
+                Span::styled("    R           ", Style::default().fg(theme.fg)),
+                Span::styled("Run new tuning session", Style::default().fg(theme.fg_dim)),
+            ]),
+            Line::from(""),
+            Line::from(vec![
                 Span::styled("  ANALYSIS", Style::default().fg(theme.primary).bold()),
             ]),
             Line::from(""),

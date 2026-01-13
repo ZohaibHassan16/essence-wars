@@ -6,7 +6,7 @@ use std::sync::Arc;
 use std::thread::{self, JoinHandle};
 use std::time::Instant;
 
-use crate::bots::{Bot, BotWeights, GreedyBot, GreedyWeights, MctsBot, MctsConfig, RandomBot};
+use crate::bots::{BotWeights, GreedyBot, GreedyWeights, MctsBot, MctsConfig, RandomBot, Bot};
 use crate::cards::CardDatabase;
 use crate::decks::DeckRegistry;
 use crate::engine::GameEngine;
@@ -130,14 +130,16 @@ pub fn spawn_arena_task(config: ArenaConfig) -> ArenaTaskHandle {
 fn run_arena_task(config: ArenaConfig, sender: Sender<ArenaProgress>) {
     let _ = sender.send(ArenaProgress::Started);
 
-    // Load card database
-    let card_db = match CardDatabase::load_from_directory("data/cards/sets") {
+    // Load card database (path should be "data/cards" - the function appends "/sets" internally)
+    let card_db: Arc<CardDatabase> = match CardDatabase::load_from_directory("data/cards") {
         Ok(db) => Arc::new(db),
         Err(e) => {
             let _ = sender.send(ArenaProgress::Error(format!("Failed to load cards: {}", e)));
             return;
         }
     };
+    // Get a reference to the inner CardDatabase for bot creation
+    let card_db_ref: &CardDatabase = &*card_db;
 
     // Load deck registry
     let deck_registry = match DeckRegistry::load_from_directory("data/decks") {
@@ -202,83 +204,84 @@ fn run_arena_task(config: ArenaConfig, sender: Sender<ArenaProgress>) {
     let mut player2_wins = 0u32;
     let mut draws = 0u32;
 
+    // MCTS config for MCTS bots
+    let mcts_config = MctsConfig {
+        simulations: 500,
+        exploration: 1.414,
+        max_rollout_depth: 100,
+        parallel_trees: 1,
+        leaf_rollouts: 1,
+    };
+
     for i in 0..config.games {
         let game_seed = base_seed.wrapping_add(i as u64);
+        let bot1_seed = game_seed;
+        let bot2_seed = game_seed.wrapping_add(1_000_000);
 
-        // Create bots for this game
-        let mut bot1: Box<dyn Bot> = match config.bot1_type {
-            BotType::Random => Box::new(RandomBot::new(game_seed)),
-            BotType::Greedy => {
-                if let Some(ref w) = greedy_weights1 {
-                    Box::new(GreedyBot::with_weights(&card_db, w.clone(), game_seed))
-                } else {
-                    Box::new(GreedyBot::new(&card_db, game_seed))
-                }
-            }
-            BotType::Mcts => {
-                let mcts_config = MctsConfig {
-                    simulations: 200,
-                    exploration: 1.414,
-                    max_rollout_depth: 50,
-                    parallel_trees: 1,
-                    leaf_rollouts: 1,
-                };
-                if let Some(ref w) = bot_weights1 {
-                    Box::new(MctsBot::with_config_and_weights(&card_db, mcts_config, w, game_seed))
-                } else {
-                    Box::new(MctsBot::with_config(&card_db, mcts_config, game_seed))
-                }
-            }
+        // Create concrete bots - we need to keep them as concrete types
+        // to call select_action_with_engine()
+        let mut random_bot1 = RandomBot::new(bot1_seed);
+        let mut random_bot2 = RandomBot::new(bot2_seed);
+
+        let mut greedy_bot1 = match &greedy_weights1 {
+            Some(w) => GreedyBot::with_weights(card_db_ref, w.clone(), bot1_seed),
+            None => GreedyBot::new(card_db_ref, bot1_seed),
+        };
+        let mut greedy_bot2 = match &greedy_weights2 {
+            Some(w) => GreedyBot::with_weights(card_db_ref, w.clone(), bot2_seed),
+            None => GreedyBot::new(card_db_ref, bot2_seed),
         };
 
-        let mut bot2: Box<dyn Bot> = match config.bot2_type {
-            BotType::Random => Box::new(RandomBot::new(game_seed.wrapping_add(1))),
-            BotType::Greedy => {
-                if let Some(ref w) = greedy_weights2 {
-                    Box::new(GreedyBot::with_weights(&card_db, w.clone(), game_seed.wrapping_add(1)))
-                } else {
-                    Box::new(GreedyBot::new(&card_db, game_seed.wrapping_add(1)))
-                }
-            }
-            BotType::Mcts => {
-                let mcts_config = MctsConfig {
-                    simulations: 200,
-                    exploration: 1.414,
-                    max_rollout_depth: 50,
-                    parallel_trees: 1,
-                    leaf_rollouts: 1,
-                };
-                if let Some(ref w) = bot_weights2 {
-                    Box::new(MctsBot::with_config_and_weights(&card_db, mcts_config, w, game_seed.wrapping_add(1)))
-                } else {
-                    Box::new(MctsBot::with_config(&card_db, mcts_config, game_seed.wrapping_add(1)))
-                }
-            }
+        let mut mcts_bot1 = match &bot_weights1 {
+            Some(w) => MctsBot::with_config_and_weights(card_db_ref, mcts_config.clone(), w, bot1_seed),
+            None => MctsBot::with_config(card_db_ref, mcts_config.clone(), bot1_seed),
+        };
+        let mut mcts_bot2 = match &bot_weights2 {
+            Some(w) => MctsBot::with_config_and_weights(card_db_ref, mcts_config.clone(), w, bot2_seed),
+            None => MctsBot::with_config(card_db_ref, mcts_config.clone(), bot2_seed),
         };
 
         // Create game engine - convert u16 card ids to CardId
         let deck1_cards: Vec<CardId> = deck1.cards.iter().map(|&id| CardId(id)).collect();
         let deck2_cards: Vec<CardId> = deck2.cards.iter().map(|&id| CardId(id)).collect();
-        let mut engine = GameEngine::new(&card_db);
+
+        let mut engine = GameEngine::new(card_db_ref);
         engine.start_game(deck1_cards, deck2_cards, game_seed);
 
         // Run game
-        loop {
-            if engine.is_game_over() {
-                break;
-            }
+        let max_actions = 1000;
+        let mut action_count = 0;
 
-            let state_tensor = engine.get_state_tensor();
-            let legal_mask = engine.get_legal_action_mask();
-            let legal_actions = engine.get_legal_actions();
+        while !engine.is_game_over() && action_count < max_actions {
+            let current_player = engine.state.active_player;
 
-            let action = if engine.state.active_player.0 == 0 {
-                bot1.select_action(&state_tensor, &legal_mask, &legal_actions)
+            // Select action using the proper method for each bot type
+            let action = if current_player.0 == 0 {
+                match config.bot1_type {
+                    BotType::Random => {
+                        let state_tensor = engine.get_state_tensor();
+                        let legal_mask = engine.get_legal_action_mask();
+                        let legal_actions = engine.get_legal_actions();
+                        random_bot1.select_action(&state_tensor, &legal_mask, &legal_actions)
+                    }
+                    BotType::Greedy => greedy_bot1.select_action_with_engine(&engine),
+                    BotType::Mcts => mcts_bot1.select_action_with_engine(&engine),
+                }
             } else {
-                bot2.select_action(&state_tensor, &legal_mask, &legal_actions)
+                match config.bot2_type {
+                    BotType::Random => {
+                        let state_tensor = engine.get_state_tensor();
+                        let legal_mask = engine.get_legal_action_mask();
+                        let legal_actions = engine.get_legal_actions();
+                        random_bot2.select_action(&state_tensor, &legal_mask, &legal_actions)
+                    }
+                    BotType::Greedy => greedy_bot2.select_action_with_engine(&engine),
+                    BotType::Mcts => mcts_bot2.select_action_with_engine(&engine),
+                }
             };
 
             let _ = engine.apply_action(action);
+            action_count += 1;
         }
 
         // Record result

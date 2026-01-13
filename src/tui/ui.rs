@@ -32,4 +32,7 @@ pub fn render(frame: &mut Frame, app: &App) {
         Screen::Weights(screen) => screen.render(frame, area, &theme),
         Screen::Help(screen) => screen.render(frame, area, &theme),
     }
+
+    // Render toast notifications on top
+    app.toasts.render(frame, area, &theme);
 }

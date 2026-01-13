@@ -4,9 +4,13 @@
 
 use crossterm::event::KeyEvent;
 
+use crossterm::event::KeyCode;
+
+use super::config::TuiConfig;
 use super::events::{is_back_key, is_quit_key};
-use super::screens::{HomeScreen, Screen};
+use super::screens::{HelpScreen, HomeScreen, Screen};
 use super::state::AppState;
+use super::widgets::{Toast, ToastContainer};
 
 /// Application messages for state updates
 #[derive(Debug, Clone)]
@@ -19,6 +23,9 @@ pub enum Message {
     // Input events
     KeyPress(KeyEvent),
     Tick,
+
+    // Toast notifications
+    ShowToast(Toast),
 }
 
 /// Main application state
@@ -32,6 +39,12 @@ pub struct App {
     /// Shared application state
     pub state: AppState,
 
+    /// User configuration (persisted)
+    pub config: TuiConfig,
+
+    /// Toast notifications
+    pub toasts: ToastContainer,
+
     /// Should quit?
     quit: bool,
 }
@@ -43,7 +56,16 @@ impl App {
             screen: Screen::Home(HomeScreen::new()),
             history: Vec::new(),
             state: AppState::new(),
+            config: TuiConfig::load(),
+            toasts: ToastContainer::new(),
             quit: false,
+        }
+    }
+
+    /// Save configuration to disk
+    pub fn save_config(&self) {
+        if let Err(e) = self.config.save() {
+            eprintln!("Warning: Failed to save config: {}", e);
         }
     }
 
@@ -75,6 +97,14 @@ impl App {
                     return;
                 }
 
+                // Global '?' for help (unless already on help screen)
+                if key.code == KeyCode::Char('?') {
+                    if !matches!(self.screen, Screen::Help(_)) {
+                        self.update(Message::Navigate(Screen::Help(HelpScreen::new())));
+                        return;
+                    }
+                }
+
                 // Delegate to current screen
                 if let Some(msg) = self.screen.handle_key(&key) {
                     self.update(msg);
@@ -82,7 +112,14 @@ impl App {
             }
             Message::Tick => {
                 // Handle background task updates, etc.
-                self.screen.tick();
+                if let Some(msg) = self.screen.tick() {
+                    self.update(msg);
+                }
+                // Cleanup expired toasts
+                self.toasts.cleanup();
+            }
+            Message::ShowToast(toast) => {
+                self.toasts.push(toast);
             }
         }
     }
@@ -109,10 +146,13 @@ impl App {
 
     /// Initialize a screen with app state data
     fn initialize_screen(&self, screen: Screen) -> Screen {
+        let deck_ids: Vec<String> = self.state.decks.iter().map(|d| d.id.clone()).collect();
         match screen {
             Screen::Arena(arena) => {
-                let deck_ids: Vec<String> = self.state.decks.iter().map(|d| d.id.clone()).collect();
                 Screen::Arena(arena.with_decks(&deck_ids))
+            }
+            Screen::Tuning(tuning) => {
+                Screen::Tuning(tuning.with_decks(&deck_ids))
             }
             // Other screens that need initialization can be added here
             other => other,

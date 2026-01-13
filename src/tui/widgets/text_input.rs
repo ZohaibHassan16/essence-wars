@@ -34,6 +34,11 @@ impl TextInput {
         self
     }
 
+    pub fn with_value(mut self, text: impl Into<String>) -> Self {
+        self.input = self.input.clone().with_value(text.into());
+        self
+    }
+
     pub fn value(&self) -> &str {
         self.input.value()
     }

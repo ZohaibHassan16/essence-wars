@@ -8,6 +8,7 @@
 //! - Weight file management
 
 mod app;
+mod config;
 mod events;
 mod state;
 mod theme;
@@ -18,6 +19,7 @@ pub mod tasks;
 pub mod widgets;
 
 pub use app::{App, Message};
+pub use config::TuiConfig;
 pub use events::EventHandler;
 pub use state::AppState;
 pub use theme::Theme;
@@ -74,6 +76,8 @@ fn run_app(
 
         // Check for quit
         if app.should_quit() {
+            // Save config on exit
+            app.save_config();
             return Ok(());
         }
     }

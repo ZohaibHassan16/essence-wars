@@ -11,7 +11,7 @@ use crate::tui::tasks::{
     spawn_arena_task, ArenaConfig, ArenaProgress, ArenaResult, ArenaTaskHandle, BotType,
 };
 use crate::tui::theme::Theme;
-use crate::tui::widgets::{Checkbox, KeyHint, ProgressDisplay, Select, StatusBar, TextInput};
+use crate::tui::widgets::{Checkbox, KeyHint, ProgressDisplay, Select, StatusBar, TextInput, Toast};
 
 /// Arena screen state
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -344,7 +344,11 @@ impl ArenaScreen {
                 Line::from(vec![
                     Span::styled("  Throughput:     ", Style::default().fg(theme.fg_dim)),
                     Span::styled(
-                        format!("{:.0} games/sec", result.games_per_sec),
+                        if result.games_per_sec >= 1.0 {
+                            format!("{:.0} games/sec", result.games_per_sec)
+                        } else {
+                            format!("{:.2} games/sec", result.games_per_sec)
+                        },
                         Style::default().fg(theme.info),
                     ),
                 ]),
@@ -477,13 +481,15 @@ impl ScreenWidget for ArenaScreen {
         }
     }
 
-    fn tick(&mut self) {
+    fn tick(&mut self) -> Option<Message> {
         // Poll for task updates - collect messages first to avoid borrow issues
         let messages: Vec<_> = if let Some(ref handle) = self.task_handle {
             std::iter::from_fn(|| handle.try_recv()).collect()
         } else {
             Vec::new()
         };
+
+        let mut toast: Option<Toast> = None;
 
         // Process collected messages
         for progress in messages {
@@ -493,17 +499,23 @@ impl ScreenWidget for ArenaScreen {
                     self.progress.set_current(current);
                 }
                 ArenaProgress::Completed(result) => {
+                    let p1_wins = result.player1_wins;
+                    let total = result.total_games;
                     self.result = Some(result);
                     self.state = ArenaState::Results;
                     self.task_handle = None;
+                    toast = Some(Toast::success(format!("Match complete! P1: {}/{} wins", p1_wins, total)));
                 }
                 ArenaProgress::Error(err) => {
-                    self.error = Some(err);
+                    self.error = Some(err.clone());
                     self.state = ArenaState::Results;
                     self.task_handle = None;
+                    toast = Some(Toast::error(format!("Arena error: {}", err)));
                 }
             }
         }
+
+        toast.map(Message::ShowToast)
     }
 }
 

@@ -49,7 +49,7 @@ impl Screen {
     }
 
     /// Handle a tick event (for animations, background tasks, etc.)
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self) -> Option<Message> {
         match self {
             Screen::Home(s) => s.tick(),
             Screen::Arena(s) => s.tick(),
@@ -66,5 +66,5 @@ impl Screen {
 pub trait ScreenWidget {
     fn render(&self, frame: &mut Frame, area: Rect, theme: &Theme);
     fn handle_key(&mut self, key: &KeyEvent) -> Option<Message>;
-    fn tick(&mut self) {}
+    fn tick(&mut self) -> Option<Message> { None }
 }
