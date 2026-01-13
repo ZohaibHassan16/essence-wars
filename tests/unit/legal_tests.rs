@@ -120,6 +120,13 @@ fn make_creature(
     }
 }
 
+/// Helper to set up resources for a player in test scenarios.
+fn setup_resources(state: &mut GameState, player_idx: usize, ap: u8, essence: u8) {
+    state.players[player_idx].action_points = ap;
+    state.players[player_idx].max_essence = essence;
+    state.players[player_idx].current_essence = essence;
+}
+
 #[test]
 fn test_empty_board_only_end_turn() {
     let state = GameState::new();
@@ -137,8 +144,8 @@ fn test_hand_with_playable_card() {
     let card_db = test_card_db();
     let mut state = GameState::new();
 
-    // Give player 3 AP and a card in hand (cost 2)
-    state.players[0].action_points = 3;
+    // Give player 3 AP, enough essence, and a card in hand (cost 2)
+    setup_resources(&mut state, 0, 3, 10);
     state.players[0].hand.push(CardInstance::new(CardId(1)));
 
     let actions = legal_actions(&state, &card_db);
@@ -361,8 +368,8 @@ fn test_legal_action_mask() {
     let card_db = test_card_db();
     let mut state = GameState::new();
 
-    // Give player 3 AP and a card in hand
-    state.players[0].action_points = 3;
+    // Give player 3 AP, essence, and a card in hand
+    setup_resources(&mut state, 0, 3, 10);
     state.players[0].hand.push(CardInstance::new(CardId(1)));
 
     let mask = legal_action_mask(&state, &card_db);
@@ -385,8 +392,8 @@ fn test_spell_play_action() {
     let card_db = test_card_db();
     let mut state = GameState::new();
 
-    // Give player AP and a spell in hand
-    state.players[0].action_points = 5;
+    // Give player AP, essence, and a spell in hand
+    setup_resources(&mut state, 0, 5, 10);
     state.players[0].hand.push(CardInstance::new(CardId(5))); // Spell
 
     let actions = legal_actions(&state, &card_db);
@@ -409,8 +416,8 @@ fn test_support_play_action() {
     let card_db = test_card_db();
     let mut state = GameState::new();
 
-    // Give player AP and a support in hand
-    state.players[0].action_points = 5;
+    // Give player AP, essence, and a support in hand
+    setup_resources(&mut state, 0, 5, 10);
     state.players[0].hand.push(CardInstance::new(CardId(6))); // Support
 
     let actions = legal_actions(&state, &card_db);
@@ -437,8 +444,8 @@ fn test_occupied_creature_slot() {
     let card_db = test_card_db();
     let mut state = GameState::new();
 
-    // Give player AP and a creature card in hand
-    state.players[0].action_points = 5;
+    // Give player AP, essence, and a creature card in hand
+    setup_resources(&mut state, 0, 5, 10);
     state.players[0].hand.push(CardInstance::new(CardId(1))); // Creature
 
     // Occupy slots 0 and 2
@@ -504,14 +511,14 @@ fn test_multiple_cards_in_hand() {
     let card_db = test_card_db();
     let mut state = GameState::new();
 
-    // Give player 5 AP and two cards in hand
-    state.players[0].action_points = 5;
+    // Give player 5 AP, 10 essence, and two cards in hand
+    setup_resources(&mut state, 0, 5, 10);
     state.players[0].hand.push(CardInstance::new(CardId(1))); // cost 2 creature
     state.players[0].hand.push(CardInstance::new(CardId(2))); // cost 5 creature
 
     let actions = legal_actions(&state, &card_db);
 
-    // Both cards can be played (5 AP available)
+    // Both cards can be played (5 AP available, 10 essence covers both costs)
     // Card 0: 5 slots, Card 1: 5 slots = 10 PlayCard + EndTurn
     let play_count = actions
         .iter()

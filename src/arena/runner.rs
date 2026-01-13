@@ -6,6 +6,7 @@ use crate::arena::logger::{ActionLogger, ActionRecord, StateSnapshot};
 use crate::arena::stats::MatchStats;
 use crate::bots::Bot;
 use crate::cards::CardDatabase;
+use crate::core::tracing::{CombatTrace, CombatTracer, EffectEvent, EffectTracer};
 use crate::engine::GameEngine;
 use crate::types::{CardId, PlayerId};
 
@@ -22,12 +23,18 @@ pub struct GameResult {
     pub duration: Duration,
     /// Action records (only if logging was enabled)
     pub actions: Vec<ActionRecord>,
+    /// Combat traces (only if tracing was enabled)
+    pub combat_traces: Vec<CombatTrace>,
+    /// Effect events (only if tracing was enabled)
+    pub effect_events: Vec<EffectEvent>,
 }
 
 /// Runs games between bots.
 pub struct GameRunner<'a> {
     card_db: &'a CardDatabase,
     logger: Option<ActionLogger>,
+    trace_combat: bool,
+    trace_effects: bool,
 }
 
 impl<'a> GameRunner<'a> {
@@ -36,12 +43,24 @@ impl<'a> GameRunner<'a> {
         Self {
             card_db,
             logger: None,
+            trace_combat: false,
+            trace_effects: false,
         }
     }
 
     /// Enable logging with the given logger.
     pub fn with_logger(mut self, logger: ActionLogger) -> Self {
         self.logger = Some(logger);
+        self
+    }
+
+    /// Enable combat and/or effect tracing.
+    ///
+    /// When enabled, the `GameResult` will include detailed traces of
+    /// combat resolution and effect queue processing for debugging.
+    pub fn with_tracing(mut self, combat: bool, effects: bool) -> Self {
+        self.trace_combat = combat;
+        self.trace_effects = effects;
         self
     }
 
@@ -66,6 +85,11 @@ impl<'a> GameRunner<'a> {
     ) -> GameResult {
         let start = Instant::now();
         let mut actions = Vec::new();
+
+        // Create tracers if enabled
+        let mut combat_tracer = CombatTracer::new(self.trace_combat);
+        let mut effect_tracer = EffectTracer::new(self.trace_effects);
+        let tracing_enabled = self.trace_combat || self.trace_effects;
 
         // Reset bots for new game
         bot1.reset();
@@ -122,8 +146,26 @@ impl<'a> GameRunner<'a> {
             }
             actions.push(record);
 
-            // Apply action
-            if let Err(e) = engine.apply_action(action) {
+            // Apply action - use traced version when tracing is enabled
+            let result = if tracing_enabled {
+                engine.apply_action_with_tracers(
+                    action,
+                    if self.trace_combat {
+                        Some(&mut combat_tracer)
+                    } else {
+                        None
+                    },
+                    if self.trace_effects {
+                        Some(&mut effect_tracer)
+                    } else {
+                        None
+                    },
+                )
+            } else {
+                engine.apply_action(action)
+            };
+
+            if let Err(e) = result {
                 eprintln!("Error applying action {:?}: {:?}", action, e);
                 break;
             }
@@ -152,6 +194,8 @@ impl<'a> GameRunner<'a> {
             seed,
             duration,
             actions,
+            combat_traces: combat_tracer.traces,
+            effect_events: effect_tracer.events,
         }
     }
 

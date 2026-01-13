@@ -102,6 +102,8 @@ impl<'a> GameEngine<'a> {
 
     /// Start the current player's turn.
     /// - Increment turn counter
+    /// - Increase max essence by 1 (cap at 10)
+    /// - Refill current essence to max
     /// - Draw a card
     /// - Restore AP to 3
     /// - Reset creature attack flags (clear exhausted status)
@@ -116,6 +118,15 @@ impl<'a> GameEngine<'a> {
         }
 
         let current_player = self.state.active_player;
+        let player_state = &mut self.state.players[current_player.index()];
+
+        // Increase max essence by 1 (capped at MAX_ESSENCE)
+        if player_state.max_essence < player::MAX_ESSENCE {
+            player_state.max_essence += player::ESSENCE_PER_TURN;
+        }
+
+        // Refill current essence to max
+        player_state.current_essence = player_state.max_essence;
 
         // Draw a card
         self.draw_card(current_player);
@@ -364,12 +375,25 @@ impl<'a> GameEngine<'a> {
             .get(card_id)
             .ok_or_else(|| "Card not found in database".to_string())?;
 
-        // Deduct AP cost
+        // Check and deduct costs
+        // Per design: playing a card costs 1 AP + card's Essence cost
         let player_state = &mut self.state.players[current_player.index()];
-        if card_def.cost > player_state.action_points {
+
+        // Check AP (1 AP per card play)
+        if player_state.action_points < 1 {
             return Err("Not enough AP".to_string());
         }
-        player_state.action_points -= card_def.cost;
+
+        // Check Essence (card's cost)
+        if card_def.cost > player_state.current_essence {
+            return Err("Not enough Essence".to_string());
+        }
+
+        // Deduct 1 AP for the action
+        player_state.action_points -= 1;
+
+        // Deduct Essence equal to card cost
+        player_state.current_essence -= card_def.cost;
 
         // Create effect queue for triggered effects
         let mut effect_queue = EffectQueue::new();

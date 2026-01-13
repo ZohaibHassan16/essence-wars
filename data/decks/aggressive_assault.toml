@@ -10,12 +10,12 @@ tags = ["aggro", "creature-focused", "starter"]
 # 18 cards total (2 copies each for consistency)
 cards = [
     1, 1,   # Eager Recruit (1-cost 2/1)
-    3, 3,   # Nimble Scout (1-cost 1/2 Rush)
-    6, 6,   # Frontier Ranger (2-cost 2/3 Ranged)
+    3, 3,   # Nimble Scout (1-cost 1/1 Rush)
+    6, 6,   # Frontier Ranger (2-cost 2/2 Ranged)
     8, 8,   # Shielded Squire (2-cost 2/2 Shield)
-    11, 11, # Centaur Charger (3-cost 3/2 Rush)
-    12, 12, # Blade Dancer (3-cost 2/3 Quick)
-    16, 16, # Piercing Striker (3-cost 3/3 Piercing)
-    20, 20, # Siege Breaker (4-cost 4/4 Piercing)
+    11, 11, # Centaur Charger (3-cost 3/3 Rush)
+    12, 12, # Blade Dancer (3-cost 3/2 Quick)
+    16, 16, # Piercing Striker (3-cost 4/2 Piercing)
+    20, 20, # Siege Breaker (4-cost 5/3 Piercing)
     34, 34, # Lightning Bolt (3-cost spell - 4 damage)
 ]

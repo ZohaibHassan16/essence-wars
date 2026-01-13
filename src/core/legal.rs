@@ -62,7 +62,6 @@ fn generate_play_card_actions(
     actions: &mut ArrayVec<Action, MAX_LEGAL_ACTIONS>,
 ) {
     let player = state.active_player_state();
-    let ap = player.action_points;
 
     for (hand_idx, card_instance) in player.hand.iter().enumerate() {
         // Look up the card definition
@@ -70,8 +69,10 @@ fn generate_play_card_actions(
             continue;
         };
 
-        // Check if player can afford the card
-        if card_def.cost > ap {
+        // Check if player can afford the card:
+        // - 1 AP per action (playing a card is an action)
+        // - Essence equal to card's cost
+        if player.action_points < 1 || card_def.cost > player.current_essence {
             continue;
         }
 

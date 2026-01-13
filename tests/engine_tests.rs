@@ -291,6 +291,10 @@ fn test_play_creature_card() {
 
     engine.start_game(simple_deck(), simple_deck(), 12345);
 
+    // Give player essence to play cards
+    engine.state.players[0].max_essence = 10;
+    engine.state.players[0].current_essence = 10;
+
     // Find a creature card in hand
     let creature_card_idx = engine.state.players[0]
         .hand
@@ -299,6 +303,7 @@ fn test_play_creature_card() {
 
     if let Some(idx) = creature_card_idx {
         let initial_ap = engine.state.players[0].action_points;
+        let initial_essence = engine.state.players[0].current_essence;
         let card_id = engine.state.players[0].hand[idx].card_id;
         let card_cost = card_db.get(card_id).unwrap().cost;
 
@@ -313,10 +318,16 @@ fn test_play_creature_card() {
         assert_eq!(engine.state.players[0].creatures.len(), 1);
         assert_eq!(engine.state.players[0].creatures[0].slot, Slot(0));
 
-        // AP should be reduced
+        // AP should be reduced by 1 (action cost, not card cost)
         assert_eq!(
             engine.state.players[0].action_points,
-            initial_ap - card_cost
+            initial_ap - 1
+        );
+
+        // Essence should be reduced by card cost
+        assert_eq!(
+            engine.state.players[0].current_essence,
+            initial_essence - card_cost
         );
 
         // Card should be removed from hand

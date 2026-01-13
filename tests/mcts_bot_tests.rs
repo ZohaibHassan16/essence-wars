@@ -71,6 +71,11 @@ fn test_mcts_finds_lethal() {
     // P1 should attack face for lethal
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 3;
+    // Set up essence for proper simulation
+    engine.state.players[0].max_essence = 10;
+    engine.state.players[0].current_essence = 10;
+    engine.state.players[1].max_essence = 10;
+    engine.state.players[1].current_essence = 10;
 
     // Clear hand to simplify legal actions (only attack and end turn)
     engine.state.players[0].hand.clear();

@@ -12,16 +12,18 @@
 
 2.1 Expand Cards and Engine
 
-- [ ] Expanded to 300 Cards
+- [ ] Expanded to 300 Cards , First Edition (`Legends`)
+- [ ] Update `docs/essence-wars-design.md` and `/home/chris/ai-cardgame/docs/design-engine.md`
+- [ ] Create new `cards-First-Edition.md` File as Database
 
-2.1 Build ML/AI Training and Inference Infrastructure (Gym Bridge, Python Gymnasium / OpenAI Gym)
+2.2 Build ML/AI Training and Inference Infrastructure (Gym Bridge, Python Gymnasium / OpenAI Gym)
 
 
 3. Train first PPO and AlphaZero Agents as Proof of Concept 
 
 3.1 Once it works, explore cloud compute solutions (both mcts and ppo/alphazero training), document and use for ongoing experiments, local pc only for small testing/development batches
 
-4.1 Develop Lore, Background, Characters, Wordbuilding, create Artwork and Flavor Text, make it fun to play, not just fun to research with. Factions, Champions, Setting. Drawing Inspiration from Hearthstone/Warcraft, MTG and other Fantasy / Steampunk Fantasy Worlds, without blatantly copying IP.
+4.1 Develop and expand Lore, Background, Characters, Wordbuilding, create Artwork and Flavor Text, make it fun to play, not just fun to research with. Factions, Champions, Setting. Drawing Inspiration from Hearthstone/Warcraft, MTG and other Fantasy / Steampunk Fantasy Worlds, without blatantly copying IP.
 
 4.2 Implement the full first Card Edition, properly tune Greedy/MCTSBot, properly train PPO and AlphaZero agents, in a systematic and structured way, keeping records, data, analysis, all streamlined and reproducable with scripts etc, document everythin properly
 

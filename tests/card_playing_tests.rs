@@ -21,6 +21,7 @@ fn test_play_creature_placed_on_board_with_correct_stats() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 3;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 5); // Enough essence for cost-2 card
     engine.state.players[0].hand.push(CardInstance::new(CardId(1))); // Test Creature (2/3)
 
     // Play the creature at slot 2
@@ -49,6 +50,7 @@ fn test_play_creature_with_rush_can_attack_immediately() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 3;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 5);
     engine.state.players[0].hand.push(CardInstance::new(CardId(2))); // Rush Creature
 
     // Play the rush creature
@@ -69,6 +71,7 @@ fn test_play_creature_without_rush_has_summoning_sickness() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 3;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 5);
     engine.state.players[0].hand.push(CardInstance::new(CardId(1))); // Test Creature (no Rush)
 
     // Play the creature
@@ -89,6 +92,7 @@ fn test_play_creature_with_onplay_effect_triggers() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 3;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 5);
     engine.state.players[0].hand.push(CardInstance::new(CardId(3))); // Draw Creature (OnPlay: draw 1)
 
     // Add cards to deck for drawing
@@ -125,6 +129,7 @@ fn test_play_spell_with_notarget_effects_apply() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 3;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
     engine.state.players[0].hand.push(CardInstance::new(CardId(5))); // Draw Spell (draw 2)
 
     // Add cards to deck for drawing
@@ -162,6 +167,7 @@ fn test_play_spell_targeting_enemy_creature() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 3;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
     engine.state.players[0].hand.push(CardInstance::new(CardId(4))); // Damage Spell (3 damage)
 
     // Create an enemy creature with 5 health
@@ -191,6 +197,7 @@ fn test_play_spell_targeting_ally_creature() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 5;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
     engine.state.players[0].hand.push(CardInstance::new(CardId(8))); // Buff Spell (+2/+2)
 
     // Create a friendly creature
@@ -221,6 +228,7 @@ fn test_play_support_placed_in_support_slot() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 5;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
     engine.state.players[0].hand.push(CardInstance::new(CardId(6))); // Test Support
 
     // Play the support at slot 0
@@ -244,6 +252,7 @@ fn test_play_support_with_onplay_effect() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 5;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
     engine.state.players[0].hand.push(CardInstance::new(CardId(7))); // Draw Support (OnPlay: draw 1)
 
     // Add cards to deck for drawing
@@ -274,16 +283,24 @@ fn test_ap_correctly_deducted() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 5;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
     engine.state.players[0].hand.push(CardInstance::new(CardId(1))); // Cost 2 creature
 
     // Play the creature
     engine.execute_play_card(0, Slot(0)).unwrap();
 
-    // Verify AP was deducted
+    // Verify AP was deducted (1 AP per action, not card cost)
     assert_eq!(
         engine.state.players[0].action_points,
-        3, // 5 - 2 = 3
-        "AP should be 3 after playing cost 2 card"
+        4, // 5 - 1 = 4 (1 AP per action)
+        "AP should be 4 after playing a card (1 AP per action)"
+    );
+
+    // Verify Essence was deducted (card's cost)
+    assert_eq!(
+        engine.state.players[0].current_essence,
+        8, // 10 - 2 = 8 (card cost)
+        "Essence should be 8 after playing cost 2 card"
     );
 }
 
@@ -292,16 +309,35 @@ fn test_invalid_play_not_enough_ap_fails() {
     let card_db = card_playing_test_db();
     let mut engine = GameEngine::new(&card_db);
 
-    // Set up game state with not enough AP
+    // Set up game state with not enough AP (0 AP, but have Essence)
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
-    engine.state.players[0].action_points = 1; // Only 1 AP
+    engine.state.players[0].action_points = 0; // No AP
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10); // Plenty of Essence
     engine.state.players[0].hand.push(CardInstance::new(CardId(1))); // Cost 2 creature
 
-    // Attempt to play should fail
+    // Attempt to play should fail due to no AP
     let result = engine.execute_play_card(0, Slot(0));
     assert!(result.is_err(), "Play should fail with not enough AP");
     assert!(result.unwrap_err().contains("Not enough AP"));
+}
+
+#[test]
+fn test_invalid_play_not_enough_essence_fails() {
+    let card_db = card_playing_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    // Set up game state with enough AP but not enough Essence
+    engine.state.current_turn = 1;
+    engine.state.active_player = PlayerId::PLAYER_ONE;
+    engine.state.players[0].action_points = 3; // Plenty of AP
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 1); // Only 1 Essence
+    engine.state.players[0].hand.push(CardInstance::new(CardId(1))); // Cost 2 creature
+
+    // Attempt to play should fail due to insufficient Essence
+    let result = engine.execute_play_card(0, Slot(0));
+    assert!(result.is_err(), "Play should fail with not enough Essence");
+    assert!(result.unwrap_err().contains("Not enough Essence"));
 }
 
 #[test]
@@ -313,6 +349,7 @@ fn test_card_removed_from_hand_on_play() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 5;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
     engine.state.players[0].hand.push(CardInstance::new(CardId(1)));
     engine.state.players[0].hand.push(CardInstance::new(CardId(2)));
 
@@ -338,6 +375,7 @@ fn test_spell_kills_creature() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 3;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
     engine.state.players[0].hand.push(CardInstance::new(CardId(4))); // Damage Spell (3 damage)
 
     // Create an enemy creature with only 2 health (less than damage)
@@ -450,6 +488,7 @@ fn test_support_attack_bonus_passive_effect() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 10;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
 
     // First play a creature (CardId 1: 2/3 stats)
     engine.state.players[0].hand.push(CardInstance::new(CardId(1)));
@@ -485,6 +524,7 @@ fn test_support_health_bonus_passive_effect() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 10;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
 
     // First play a creature (CardId 1: 2/3 stats)
     engine.state.players[0].hand.push(CardInstance::new(CardId(1)));
@@ -521,6 +561,7 @@ fn test_support_grant_keyword_passive_effect() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 10;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
 
     // First play a creature without Rush (CardId 1: basic 2/3)
     engine.state.players[0].hand.push(CardInstance::new(CardId(1)));
@@ -555,6 +596,7 @@ fn test_support_passive_effect_applies_to_new_creatures() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 15;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
 
     // First play the attack bonus support (CardId 10: War Banner, +1 attack)
     engine.state.players[0].hand.push(CardInstance::new(CardId(10)));
@@ -582,6 +624,7 @@ fn test_support_passive_effect_removed_when_support_destroyed() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 10;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
 
     // Play a creature
     engine.state.players[0].hand.push(CardInstance::new(CardId(1)));
@@ -620,6 +663,7 @@ fn test_support_start_of_turn_triggered_effect() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 10;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
     engine.state.players[0].life = 25; // Reduced life to see healing
 
     // Play the StartOfTurn heal support (CardId 13: Healing Shrine, heal 2)
@@ -656,6 +700,7 @@ fn test_support_start_of_turn_only_triggers_for_owner() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 10;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
     engine.state.players[0].life = 25;
     engine.state.players[1].life = 25;
 
@@ -691,6 +736,7 @@ fn test_support_durability_initial_value() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 10;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
 
     // Play a support with durability 3 (CardId 10: War Banner)
     engine.state.players[0].hand.push(CardInstance::new(CardId(10)));
@@ -711,6 +757,7 @@ fn test_support_durability_decrements_each_turn() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 10;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
 
     // Play a support with durability 3 (CardId 10: War Banner)
     engine.state.players[0].hand.push(CardInstance::new(CardId(10)));
@@ -742,6 +789,7 @@ fn test_support_removed_when_durability_depleted() {
     engine.state.current_turn = 1;
     engine.state.active_player = PlayerId::PLAYER_ONE;
     engine.state.players[0].action_points = 10;
+    setup_test_essence(&mut engine.state, PlayerId::PLAYER_ONE, 10);
 
     // Play a support with durability 2 (CardId 12: Haste Totem)
     engine.state.players[0].hand.push(CardInstance::new(CardId(12)));

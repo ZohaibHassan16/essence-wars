@@ -309,3 +309,11 @@ pub fn valid_yaml_deck() -> Vec<CardId> {
     let valid_ids = [1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 15, 32, 33, 40];
     (0..20).map(|i| CardId(valid_ids[i % valid_ids.len()] as u16)).collect()
 }
+
+/// Helper to set up essence for a player in test scenarios.
+/// This simulates having reached the specified turn with normal essence growth.
+pub fn setup_test_essence(state: &mut GameState, player: PlayerId, essence: u8) {
+    let player_state = &mut state.players[player.index()];
+    player_state.max_essence = essence;
+    player_state.current_essence = essence;
+}

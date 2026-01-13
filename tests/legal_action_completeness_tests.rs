@@ -18,6 +18,13 @@ use cardgame::legal::legal_actions;
 use cardgame::state::{CardInstance, Creature, CreatureStatus, GameState, Support};
 use cardgame::types::{CardId, CreatureInstanceId, PlayerId, Rarity, Slot};
 
+/// Helper to set up resources for a player in test scenarios.
+fn setup_resources(state: &mut GameState, player_idx: usize, ap: u8, essence: u8) {
+    state.players[player_idx].action_points = ap;
+    state.players[player_idx].max_essence = essence;
+    state.players[player_idx].current_essence = essence;
+}
+
 // ============================================================================
 // Test Card Database Builder
 // ============================================================================
@@ -330,8 +337,8 @@ fn test_full_creature_board_no_creature_play() {
         state.players[0].creatures.push(creature);
     }
 
-    // Give player AP and a creature card
-    state.players[0].action_points = 5;
+    // Give player AP, essence, and a creature card
+    setup_resources(&mut state, 0, 5, 10);
     state.players[0].hand.push(CardInstance::new(CardId(1))); // Creature
 
     let actions = legal_actions(&state, &card_db);
@@ -359,8 +366,8 @@ fn test_full_support_slots_no_support_play() {
     state.players[0].supports.push(support1);
     state.players[0].supports.push(support2);
 
-    // Give player AP and a support card
-    state.players[0].action_points = 5;
+    // Give player AP, essence, and a support card
+    setup_resources(&mut state, 0, 5, 10);
     state.players[0].hand.push(CardInstance::new(CardId(8))); // Support
 
     let actions = legal_actions(&state, &card_db);
@@ -385,8 +392,8 @@ fn test_full_creatures_support_playable() {
         state.players[0].creatures.push(creature);
     }
 
-    // Give player AP and a support card
-    state.players[0].action_points = 5;
+    // Give player AP, essence, and a support card
+    setup_resources(&mut state, 0, 5, 10);
     state.players[0].hand.push(CardInstance::new(CardId(8))); // Support
 
     let actions = legal_actions(&state, &card_db);
@@ -411,8 +418,8 @@ fn test_full_supports_creatures_playable() {
     state.players[0].supports.push(support1);
     state.players[0].supports.push(support2);
 
-    // Give player AP and a creature card
-    state.players[0].action_points = 5;
+    // Give player AP, essence, and a creature card
+    setup_resources(&mut state, 0, 5, 10);
     state.players[0].hand.push(CardInstance::new(CardId(1))); // Creature
 
     let actions = legal_actions(&state, &card_db);
@@ -438,8 +445,8 @@ fn test_spell_generates_one_action() {
     let card_db = extended_card_db();
     let mut state = GameState::new();
 
-    // Give player AP and a targeted spell
-    state.players[0].action_points = 5;
+    // Give player AP, essence, and a targeted spell
+    setup_resources(&mut state, 0, 5, 10);
     state.players[0].hand.push(CardInstance::new(CardId(5))); // Enemy spell
 
     let actions = legal_actions(&state, &card_db);
@@ -468,8 +475,8 @@ fn test_multiple_spells_multiple_actions() {
     let card_db = extended_card_db();
     let mut state = GameState::new();
 
-    // Give player AP and multiple spells
-    state.players[0].action_points = 10;
+    // Give player AP, essence, and multiple spells
+    setup_resources(&mut state, 0, 10, 10);
     state.players[0].hand.push(CardInstance::new(CardId(4))); // Any creature spell
     state.players[0].hand.push(CardInstance::new(CardId(5))); // Enemy spell
     state.players[0].hand.push(CardInstance::new(CardId(7))); // NoTarget spell
@@ -490,8 +497,8 @@ fn test_no_target_spell_always_playable() {
     let card_db = extended_card_db();
     let mut state = GameState::new();
 
-    // Give player AP and no-target spell
-    state.players[0].action_points = 5;
+    // Give player AP, essence, and no-target spell
+    setup_resources(&mut state, 0, 5, 10);
     state.players[0].hand.push(CardInstance::new(CardId(7))); // NoTarget spell
 
     // Empty board
@@ -512,8 +519,8 @@ fn test_spell_with_targets_available() {
     let card_db = extended_card_db();
     let mut state = GameState::new();
 
-    // Give player AP and enemy-target spell
-    state.players[0].action_points = 5;
+    // Give player AP, essence, and enemy-target spell
+    setup_resources(&mut state, 0, 5, 10);
     state.players[0].hand.push(CardInstance::new(CardId(5))); // Enemy spell
 
     // Place enemy creatures
@@ -542,8 +549,8 @@ fn test_zero_ap_no_plays() {
     let card_db = extended_card_db();
     let mut state = GameState::new();
 
-    // Give player 0 AP and cards
-    state.players[0].action_points = 0;
+    // Give player 0 AP (but essence) and cards - should still not be playable due to 0 AP
+    setup_resources(&mut state, 0, 0, 10);
     state.players[0].hand.push(CardInstance::new(CardId(1))); // cost 2
     state.players[0].hand.push(CardInstance::new(CardId(7))); // cost 2
 
@@ -566,8 +573,8 @@ fn test_empty_hand_no_plays() {
     let card_db = extended_card_db();
     let mut state = GameState::new();
 
-    // Give player AP but no cards
-    state.players[0].action_points = 10;
+    // Give player AP and essence but no cards
+    setup_resources(&mut state, 0, 10, 10);
 
     let actions = legal_actions(&state, &card_db);
 
@@ -579,44 +586,64 @@ fn test_empty_hand_no_plays() {
     assert_eq!(play_count, 0, "Empty hand = no plays");
 }
 
-/// Test AP exactly matching card cost
+/// Test essence exactly matching card cost (1 AP is enough)
+#[test]
+fn test_exact_essence_for_card() {
+    let card_db = extended_card_db();
+    let mut state = GameState::new();
+
+    // Give player 1 AP and exactly 2 essence for a cost-2 card
+    setup_resources(&mut state, 0, 1, 2);
+    state.players[0].hand.push(CardInstance::new(CardId(1))); // cost 2
+
+    let actions = legal_actions(&state, &card_db);
+
+    // Should be playable (1 AP is enough, 2 essence covers cost)
+    let play_count = actions
+        .iter()
+        .filter(|a| matches!(a, Action::PlayCard { .. }))
+        .count();
+    assert_eq!(play_count, 5, "1 AP + exact essence = playable in all 5 slots");
+}
+
+/// Test one-less essence than card cost
+#[test]
+fn test_one_less_essence_than_cost() {
+    let card_db = extended_card_db();
+    let mut state = GameState::new();
+
+    // Give player 3 AP but only 1 essence for a cost-2 card
+    setup_resources(&mut state, 0, 3, 1);
+    state.players[0].hand.push(CardInstance::new(CardId(1))); // cost 2
+
+    let actions = legal_actions(&state, &card_db);
+
+    // Should NOT be playable (not enough essence)
+    let play_count = actions
+        .iter()
+        .filter(|a| matches!(a, Action::PlayCard { .. }))
+        .count();
+    assert_eq!(play_count, 0, "One less essence than cost = not playable");
+}
+
+/// Test AP exactly matching 1 (minimum needed for an action)
 #[test]
 fn test_exact_ap_for_card() {
     let card_db = extended_card_db();
     let mut state = GameState::new();
 
-    // Give player exactly 2 AP and a cost-2 card
-    state.players[0].action_points = 2;
+    // Give player exactly 1 AP and enough essence
+    setup_resources(&mut state, 0, 1, 10);
     state.players[0].hand.push(CardInstance::new(CardId(1))); // cost 2
 
     let actions = legal_actions(&state, &card_db);
 
-    // Should be playable
+    // Should be playable (1 AP is minimum needed)
     let play_count = actions
         .iter()
         .filter(|a| matches!(a, Action::PlayCard { .. }))
         .count();
-    assert_eq!(play_count, 5, "Exact AP = playable in all 5 slots");
-}
-
-/// Test one-less AP than card cost
-#[test]
-fn test_one_less_ap_than_cost() {
-    let card_db = extended_card_db();
-    let mut state = GameState::new();
-
-    // Give player 1 AP and a cost-2 card
-    state.players[0].action_points = 1;
-    state.players[0].hand.push(CardInstance::new(CardId(1))); // cost 2
-
-    let actions = legal_actions(&state, &card_db);
-
-    // Should NOT be playable
-    let play_count = actions
-        .iter()
-        .filter(|a| matches!(a, Action::PlayCard { .. }))
-        .count();
-    assert_eq!(play_count, 0, "One less AP than cost = not playable");
+    assert_eq!(play_count, 5, "Exactly 1 AP + essence = playable");
 }
 
 /// Test multiple attackers with different ranges
