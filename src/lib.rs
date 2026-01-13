@@ -23,6 +23,9 @@ pub mod arena;
 pub mod decks;
 pub mod tuning;
 
+// Terminal User Interface
+pub mod tui;
+
 // Re-export modules from core at crate root for backward compatibility
 pub use core::types;
 pub use core::keywords;
