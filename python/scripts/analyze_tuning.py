@@ -9,6 +9,12 @@ following the data strategy documented in docs/data-strategy.md
 import argparse
 import sys
 from pathlib import Path
+from typing import Optional
+
+try:
+    import tomllib  # Python 3.11+
+except ImportError:
+    import tomli as tomllib  # Fallback for older Python
 
 from cardgame.analysis.parse_log import parse_tuning_log, print_summary, export_csv
 from cardgame.analysis.visualize import (
@@ -23,10 +29,22 @@ from cardgame.analysis.visualize import (
 from cardgame.infra.experiment import Experiment
 
 
+def load_version_info(exp_dir: Path) -> Optional[dict]:
+    """Load version info from experiment directory."""
+    version_path = exp_dir / "version.toml"
+    if version_path.exists():
+        try:
+            with open(version_path, "rb") as f:
+                return tomllib.load(f)
+        except Exception as e:
+            print(f"⚠️  Could not read version.toml: {e}")
+    return None
+
+
 def analyze_experiment(exp_dir: Path, force: bool = False) -> None:
     """
     Analyze a single tuning experiment.
-    
+
     Args:
         exp_dir: Path to experiment directory
         force: Force re-analysis even if outputs exist
@@ -34,6 +52,16 @@ def analyze_experiment(exp_dir: Path, force: bool = False) -> None:
     print(f"\n{'='*80}")
     print(f"Analyzing Experiment: {exp_dir.name}")
     print(f"{'='*80}\n")
+
+    # Load version info for reproducibility
+    version_info = load_version_info(exp_dir)
+    if version_info:
+        version_str = f"{version_info.get('name', 'cardgame')} v{version_info.get('version', '?')}"
+        if git_hash := version_info.get('git_hash'):
+            version_str += f" ({git_hash[:8]})"
+        print(f"🔖 Engine Version: {version_str}")
+    else:
+        print("⚠️  No version.toml found (experiment may predate version tracking)")
     
     # Check for required files
     log_file = exp_dir / "train.log"
@@ -85,7 +113,7 @@ def analyze_experiment(exp_dir: Path, force: bool = False) -> None:
         
         # Generate markdown report with insights
         exp_name = exp_dir.name
-        create_markdown_report(df, plots_dir, exp_name)
+        create_markdown_report(df, plots_dir, exp_name, version_info)
         
         print(f"\n✅ Analysis complete!")
     else:

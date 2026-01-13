@@ -19,6 +19,7 @@ use cardgame::cards::CardDatabase;
 use cardgame::decks::DeckRegistry;
 use cardgame::tuning::{CmaEs, CmaEsConfig, Evaluator, EvaluatorConfig, TuningMode};
 use cardgame::types::CardId;
+use cardgame::version::{self, VersionInfo};
 
 /// Weight tuning CLI using CMA-ES optimization
 #[derive(Parser, Debug)]
@@ -118,7 +119,15 @@ fn main() {
     });
 
     println!("📁 Experiment directory: {:?}", exp_dir);
+    println!("🔖 Engine version: {}", version::version_string());
     println!();
+
+    // Save version info for reproducibility
+    let version_info = VersionInfo::current();
+    let version_path = exp_dir.join("version.toml");
+    if let Ok(toml_str) = toml::to_string_pretty(&version_info) {
+        let _ = fs::write(&version_path, toml_str);
+    }
 
     // Load card database
     let card_db = match CardDatabase::load_from_directory(&args.cards) {

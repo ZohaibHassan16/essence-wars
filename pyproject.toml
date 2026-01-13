@@ -1,6 +1,6 @@
 [project]
 name = "ai-cardgame"
-version = "0.1.0"
+version = "0.2.0"
 description = "AI Card Game - A card game engine with RL training support"
 readme = "README.md"
 requires-python = ">=3.11"

@@ -368,20 +368,34 @@ def create_comparison_plot(df: pd.DataFrame, output_dir: Path):
     print(f"✓ Saved comparison plot: {output_path}")
     plt.close()
 
-def create_markdown_report(df: pd.DataFrame, output_dir: Path, exp_name: str = "MCTS Tuning") -> None:
+def create_markdown_report(
+    df: pd.DataFrame,
+    output_dir: Path,
+    exp_name: str = "MCTS Tuning",
+    version_info: dict = None,
+) -> None:
     """
     Create comprehensive markdown report with embedded plots and insights.
-    
+
     Args:
         df: Training data DataFrame
         output_dir: Directory containing plots
         exp_name: Name of the experiment
+        version_info: Engine version info dict (name, version, git_hash)
     """
     report = []
-    
+
     # Header
     report.append(f"# {exp_name} - Analysis Report")
     report.append(f"\n**Generated:** {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+    # Version info for reproducibility
+    if version_info:
+        version_str = f"{version_info.get('name', 'cardgame')} v{version_info.get('version', '?')}"
+        if git_hash := version_info.get('git_hash'):
+            version_str += f" ([{git_hash[:8]}](https://github.com/your-repo/commit/{git_hash}))"
+        report.append(f"\n**Engine Version:** {version_str}")
+
     report.append(f"\n**Experiment Duration:** {df['cumulative_minutes'].iloc[-1]:.1f} minutes ({df['cumulative_minutes'].iloc[-1]/60:.2f} hours)")
     report.append(f"\n**Total Generations:** {len(df)}")
     report.append("\n---\n")
@@ -681,6 +695,15 @@ def create_markdown_report(df: pd.DataFrame, output_dir: Path, exp_name: str = "
     report.append("## 🔧 Technical Details\n")
     report.append(f"- **Experiment ID:** {exp_name}")
     report.append(f"- **Total Evaluations:** {len(df)} generations")
+
+    # Version info for reproducibility
+    if version_info:
+        report.append(f"- **Engine Version:** {version_info.get('version', 'unknown')}")
+        if git_hash := version_info.get('git_hash'):
+            report.append(f"- **Git Commit:** `{git_hash}`")
+    else:
+        report.append("- **Engine Version:** unknown (pre-versioning experiment)")
+
     report.append(f"- **Analysis Tool:** MCTS Tuning Pipeline v1.0")
     report.append(f"- **Report Generated:** {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}")
     report.append("\n")

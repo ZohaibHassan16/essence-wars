@@ -8,6 +8,9 @@
 //! - AI tensor representation
 //! - Bot implementations and arena for running matches
 
+// Version info for reproducibility
+pub mod version;
+
 // Core engine module (contains all game logic)
 pub mod core;
 

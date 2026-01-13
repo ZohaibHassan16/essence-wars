@@ -11,7 +11,7 @@
 cargo build --release
 
 # Run all tests
-cargo nextest run --status-level=fail  # 477 tests (only shows failures)
+cargo nextest run --status-level=fail  # ~480 tests (only shows failures)
 cargo test                              # Alternative: use standard cargo test
 
 # Run slow/ignored tests (stress tests, performance validation)
@@ -44,6 +44,7 @@ cargo bench
 ai-cardgame/
 ├── src/
 │   ├── lib.rs          # Module exports
+│   ├── version.rs      # Version info for reproducibility
 │   ├── types.rs        # Core types: CardId, PlayerId, Slot, etc.
 │   ├── keywords.rs     # 8 keywords as u8 bitfield
 │   ├── effects.rs      # Trigger, Effect, EffectTarget, TargetingRule
@@ -425,14 +426,16 @@ cargo bench  # Run all benchmarks
 
 **Complete:**
 - All core game rules and 8 keywords
+- Essence/mana system (grows +1/turn, caps at 10)
 - AI interface (tensor, action mask, rewards)
 - 43-card starter set
 - Bot system (RandomBot, GreedyBot, MctsBot)
 - Arena for running matches with progress indicator
 - Deck system with TOML definitions
 - Weight tuning pipeline with CMA-ES optimizer
+- Version tracking for ML reproducibility
 - Criterion benchmarks for performance testing
-- 243 tests passing
+- ~480 tests passing
 
 **Future work:**
 - Python bindings (PyO3) for ML training
@@ -501,3 +504,41 @@ Example: `2026-01-12_1430_mcts_baseline`
 - **ALWAYS** save config.yaml at start of experiment
 - **NEVER** commit experiments/ or data/ to git
 - **USE** `docs/experiments/` for curated reports worth preserving
+
+## Versioning
+
+Version is in `Cargo.toml` line 3. Uses Semantic Versioning: `MAJOR.MINOR.PATCH`
+
+### When to Bump Version
+
+| Change Type | Version Bump | Examples |
+|-------------|--------------|----------|
+| Game rules/mechanics change | MINOR | Essence system fix, combat changes |
+| API breaking changes | MINOR (pre-1.0) | Tensor layout change, action space change |
+| New features | MINOR | New bot type, new card effects |
+| Bug fixes (no behavior change) | PATCH | Fix crash, fix test |
+| Refactoring/cleanup | PATCH | Code cleanup, perf optimization |
+
+### Version Update Checklist
+
+When making changes that warrant a version bump:
+
+1. **Update `Cargo.toml`**: Change `version = "X.Y.Z"`
+2. **Update `src/version.rs`**: Update the test assertion for VERSION
+3. **Update `CHANGELOG.md`**: Add entry under new version header
+4. **Run tests**: `cargo nextest run --status-level=fail`
+
+### Reproducibility
+
+Experiments save `version.toml` with engine version + git hash. This ensures ML experiments are reproducible:
+
+```rust
+use cardgame::version::{self, VersionInfo};
+
+// Log version at experiment start
+println!("Engine: {}", version::version_string());
+// Output: "cardgame v0.2.0 (d03a75c1)"
+
+// Save for reproducibility
+let info = VersionInfo::current();
+```
