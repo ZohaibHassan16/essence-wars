@@ -13,6 +13,10 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+permissions:
+  issues: write
+  contents: read
+
 jobs:
   exhaustive-tests:
     name: Exhaustive Tests (100k games)
