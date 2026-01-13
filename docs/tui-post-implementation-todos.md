@@ -59,3 +59,25 @@ let db = CardDatabase::load_from_directory("data/cards/sets")?;
 // - "Path is not a directory: ..."
 // - "No cards found in directory: ..."
 ```
+
+---
+
+## 3. Stress Test Deck Consistency ✅ FIXED
+
+**Files:** `tests/stress_mcts_tests.rs`, `tests/bot_validation_tests.rs`, `tests/common/mod.rs`
+
+**Original Problem:** MCTS stress tests were using `valid_yaml_deck()` which created a test deck with arbitrary card IDs, while the arena binary used `create_default_deck()` with a well-designed "Aggressive Assault" deck. This caused MCTS to appear to perform poorly in tests (2% win rate) while performing well in arena (75% win rate).
+
+Additionally, stress tests used `max_rollout_depth: 50` while arena used `max_rollout_depth: 100`, further degrading MCTS performance in tests.
+
+**Resolution:**
+1. Added `arena_test_deck()` function to `tests/common/mod.rs` matching the arena's default deck
+2. Updated `stress_mcts_tests.rs` to use `arena_test_deck()` instead of `valid_yaml_deck()`
+3. Updated `bot_validation_tests.rs` to use `arena_test_deck()` for bot comparison tests
+4. Changed `max_rollout_depth` from 50 to 100 to match arena defaults
+
+**Results:**
+- Before: MCTS vs Random = 2% win rate (broken)
+- After: MCTS vs Random = 82% win rate (matches arena's ~78%)
+- All 17 slow tests now pass
+- All 485 normal tests still pass

@@ -11,7 +11,7 @@ use cardgame::decks::DeckRegistry;
 use cardgame::engine::GameEngine;
 use cardgame::types::{CardId, PlayerId};
 
-use common::valid_yaml_deck;
+use common::arena_test_deck;
 
 // =============================================================================
 // Helper functions
@@ -110,7 +110,7 @@ fn calculate_win_rate(results: &[cardgame::arena::GameResult]) -> f64 {
 #[test]
 fn test_greedy_vs_greedy_100_games() {
     let card_db = load_card_db();
-    let deck = valid_yaml_deck();
+    let deck = arena_test_deck();
 
     let mut bot1 = GreedyBot::new(&card_db, 12345);
     let mut bot2 = GreedyBot::new(&card_db, 54321);
@@ -159,7 +159,7 @@ fn test_greedy_vs_greedy_100_games() {
 #[ignore] // Slow: runs real MCTS search
 fn test_mcts_vs_mcts_20_games() {
     let card_db = load_card_db();
-    let deck = valid_yaml_deck();
+    let deck = arena_test_deck();
 
     // Use fast MCTS config for testing
     let config = MctsConfig::fast();
@@ -192,7 +192,7 @@ fn test_mcts_vs_mcts_20_games() {
 #[ignore] // Slow: runs real MCTS search
 fn test_mcts_vs_greedy_50_games() {
     let card_db = load_card_db();
-    let deck = valid_yaml_deck();
+    let deck = arena_test_deck();
 
     let config = MctsConfig::fast();
     let mut mcts = MctsBot::with_config(&card_db, config, 12345);
@@ -229,7 +229,7 @@ fn test_mcts_vs_greedy_50_games() {
 #[test]
 fn test_greedy_vs_random_100_games() {
     let card_db = load_card_db();
-    let deck = valid_yaml_deck();
+    let deck = arena_test_deck();
 
     let mut greedy = GreedyBot::new(&card_db, 12345);
     let mut random = RandomBot::new(54321);
@@ -323,7 +323,7 @@ fn test_edge_case_quick_lethal_vs_shield() {
 
     // Create a game and manually set up the edge case
     let mut engine = GameEngine::new(&card_db);
-    let deck = valid_yaml_deck();
+    let deck = arena_test_deck();
     engine.start_game(deck.clone(), deck, 12345);
 
     // Find cards with specific keywords to create the scenario
@@ -336,8 +336,8 @@ fn test_edge_case_quick_lethal_vs_shield() {
         &card_db,
         &mut bot1,
         &mut bot2,
-        valid_yaml_deck(),
-        valid_yaml_deck(),
+        arena_test_deck(),
+        arena_test_deck(),
         50,
         5000,
     );
@@ -382,8 +382,8 @@ fn test_edge_case_turn_limit() {
         &card_db,
         &mut bot1,
         &mut bot2,
-        valid_yaml_deck(),
-        valid_yaml_deck(),
+        arena_test_deck(),
+        arena_test_deck(),
         100,
         6000,
     );
@@ -414,8 +414,8 @@ fn test_edge_case_piercing_damage() {
         &card_db,
         &mut GreedyBot::new(&card_db, 55555),
         &mut GreedyBot::new(&card_db, 44444),
-        valid_yaml_deck(),
-        valid_yaml_deck(),
+        arena_test_deck(),
+        arena_test_deck(),
         50,
         7000,
     );
@@ -444,8 +444,8 @@ fn test_edge_case_mutual_destruction() {
         &card_db,
         &mut GreedyBot::new(&card_db, 33333),
         &mut GreedyBot::new(&card_db, 22222),
-        valid_yaml_deck(),
-        valid_yaml_deck(),
+        arena_test_deck(),
+        arena_test_deck(),
         50,
         8000,
     );
@@ -472,7 +472,7 @@ fn test_edge_case_guard_enforcement() {
 
     // Create game engine to check legal actions
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(valid_yaml_deck(), valid_yaml_deck(), 99000);
+    engine.start_game(arena_test_deck(), arena_test_deck(), 99000);
 
     // Play until we have creatures on board
     let mut guard_scenarios_checked = 0;
@@ -482,8 +482,8 @@ fn test_edge_case_guard_enforcement() {
         &card_db,
         &mut GreedyBot::new(&card_db, 11111),
         &mut GreedyBot::new(&card_db, 10000),
-        valid_yaml_deck(),
-        valid_yaml_deck(),
+        arena_test_deck(),
+        arena_test_deck(),
         50,
         9000,
     );
@@ -512,13 +512,13 @@ fn test_edge_case_guard_enforcement() {
 #[ignore]
 fn stress_test_mcts_vs_mcts_100_games() {
     let card_db = load_card_db();
-    let deck = valid_yaml_deck();
+    let deck = arena_test_deck();
 
     // Use stronger MCTS config for stress test
     let config = MctsConfig {
         simulations: 200,
         exploration: 1.414,
-        max_rollout_depth: 50,
+        max_rollout_depth: 100, // Match arena default
         ..Default::default()
     };
 
@@ -548,12 +548,17 @@ fn stress_test_mcts_vs_mcts_100_games() {
 #[ignore]
 fn stress_test_bot_hierarchy() {
     let card_db = load_card_db();
-    let deck = valid_yaml_deck();
+    let deck = arena_test_deck();
 
     // Test that bot hierarchy is maintained: MCTS > Greedy > Random
 
-    // MCTS vs Greedy
-    let config = MctsConfig::fast();
+    // MCTS vs Greedy - use moderate config (300 sims) for reliable wins
+    let config = MctsConfig {
+        simulations: 300,
+        exploration: 1.414,
+        max_rollout_depth: 100, // Match arena default
+        ..Default::default()
+    };
     let mut mcts = MctsBot::with_config(&card_db, config, 12345);
     let mut greedy = GreedyBot::new(&card_db, 54321);
 

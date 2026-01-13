@@ -17,18 +17,24 @@ use cardgame::bots::{Bot, GreedyBot, MctsBot, MctsConfig, RandomBot};
 use cardgame::cards::CardDatabase;
 use cardgame::engine::GameEngine;
 use cardgame::types::PlayerId;
-use common::*;
+use common::arena_test_deck;
 
-/// Helper to create an MCTS config
+/// Helper to create an MCTS config matching arena defaults.
+///
+/// Note: MCTS needs at least 100 simulations to be effective.
+/// With fewer simulations, it may play worse than random.
 fn mcts_config(simulations: u32) -> MctsConfig {
     MctsConfig {
         simulations,
         exploration: 1.414,
-        max_rollout_depth: 50,
+        max_rollout_depth: 100, // Match arena default
         parallel_trees: 1,
         leaf_rollouts: 1,
     }
 }
+
+/// Minimum simulations for MCTS to be effective
+const MIN_EFFECTIVE_SIMS: u32 = 100;
 
 /// Comprehensive state invariant checker (copied from simulation_tests for independence)
 fn verify_invariants(engine: &GameEngine, context: &str) {
@@ -134,7 +140,8 @@ fn verify_invariants(engine: &GameEngine, context: &str) {
     }
 }
 
-/// Run a single game between two bots with invariant checking
+/// Run a single game between two bots with invariant checking.
+/// Uses the standard arena test deck for consistent bot performance comparisons.
 fn run_bot_game(
     card_db: &CardDatabase,
     bot1: &mut dyn Bot,
@@ -143,7 +150,8 @@ fn run_bot_game(
     check_invariants: bool,
 ) -> Option<PlayerId> {
     let mut engine = GameEngine::new(card_db);
-    engine.start_game(valid_yaml_deck(), valid_yaml_deck(), seed);
+    let deck = arena_test_deck();
+    engine.start_game(deck.clone(), deck, seed);
 
     let mut action_count = 0;
     let max_actions = 500;
@@ -153,14 +161,11 @@ fn run_bot_game(
             verify_invariants(&engine, &format!("seed={} action={}", seed, action_count));
         }
 
-        let state_tensor = engine.get_state_tensor();
-        let legal_mask = engine.get_legal_action_mask();
-        let legal_actions = engine.get_legal_actions();
-
+        // Use engine-aware method to support MCTS bots
         let action = if engine.current_player() == PlayerId::PLAYER_ONE {
-            bot1.select_action(&state_tensor, &legal_mask, &legal_actions)
+            bot1.select_action_with_engine(&engine)
         } else {
-            bot2.select_action(&state_tensor, &legal_mask, &legal_actions)
+            bot2.select_action_with_engine(&engine)
         };
 
         engine.apply_action(action).unwrap();
@@ -192,8 +197,8 @@ fn stress_test_mcts_vs_mcts_100_games() {
     eprintln!("Running {} MCTS vs MCTS games...", NUM_GAMES);
 
     for seed in 0..NUM_GAMES {
-        let mut bot1 = MctsBot::with_config(&card_db, mcts_config(50), seed);
-        let mut bot2 = MctsBot::with_config(&card_db, mcts_config(50), seed + 10000);
+        let mut bot1 = MctsBot::with_config(&card_db, mcts_config(MIN_EFFECTIVE_SIMS), seed);
+        let mut bot2 = MctsBot::with_config(&card_db, mcts_config(MIN_EFFECTIVE_SIMS), seed + 10000);
 
         match run_bot_game(&card_db, &mut bot1, &mut bot2, seed, true) {
             Some(PlayerId::PLAYER_ONE) => p1_wins += 1,
@@ -328,19 +333,20 @@ fn stress_test_all_bot_combinations() {
         eprintln!("Random vs MCTS (50 games)...");
         let mut random_wins = 0;
         let mut mcts_wins = 0;
+        let mut draws = 0;
 
         for seed in 0u64..50 {
             let mut random_bot = RandomBot::new(seed);
-            let mut mcts_bot = MctsBot::with_config(&card_db, mcts_config(50), seed + 1000);
+            let mut mcts_bot = MctsBot::with_config(&card_db, mcts_config(MIN_EFFECTIVE_SIMS), seed + 1000);
 
             match run_bot_game(&card_db, &mut random_bot, &mut mcts_bot, seed, true) {
                 Some(PlayerId::PLAYER_ONE) => random_wins += 1,
                 Some(PlayerId::PLAYER_TWO) => mcts_wins += 1,
-                _ => {}
+                _ => draws += 1,
             }
         }
 
-        eprintln!("  Random: {}, MCTS: {}", random_wins, mcts_wins);
+        eprintln!("  Random: {}, MCTS: {}, Draws: {}", random_wins, mcts_wins, draws);
         assert!(
             mcts_wins > random_wins,
             "MCTS should beat Random most of the time"
@@ -380,8 +386,8 @@ fn stress_test_all_bot_combinations() {
         let mut p2_wins = 0;
 
         for seed in 0u64..50 {
-            let mut mcts1 = MctsBot::with_config(&card_db, mcts_config(50), seed);
-            let mut mcts2 = MctsBot::with_config(&card_db, mcts_config(50), seed + 1000);
+            let mut mcts1 = MctsBot::with_config(&card_db, mcts_config(MIN_EFFECTIVE_SIMS), seed);
+            let mut mcts2 = MctsBot::with_config(&card_db, mcts_config(MIN_EFFECTIVE_SIMS), seed + 1000);
 
             match run_bot_game(&card_db, &mut mcts1, &mut mcts2, seed, true) {
                 Some(PlayerId::PLAYER_ONE) => p1_wins += 1,
@@ -415,7 +421,8 @@ fn stress_test_mcts_fork_integrity() {
 
     for seed in 0..NUM_GAMES {
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(valid_yaml_deck(), valid_yaml_deck(), seed);
+        let deck = arena_test_deck();
+        engine.start_game(deck.clone(), deck, seed);
 
         let mut mcts_bot = MctsBot::with_config(&card_db, mcts_config(100), seed);
 
@@ -429,10 +436,7 @@ fn stress_test_mcts_fork_integrity() {
             let p2_creatures_before = engine.state.players[1].creatures.len();
 
             // Run MCTS (which forks internally)
-            let state_tensor = engine.get_state_tensor();
-            let legal_mask = engine.get_legal_action_mask();
-            let legal_actions = engine.get_legal_actions();
-            let action = mcts_bot.select_action(&state_tensor, &legal_mask, &legal_actions);
+            let action = mcts_bot.select_action_with_engine(&engine);
 
             // Verify state unchanged after MCTS selection
             assert_eq!(

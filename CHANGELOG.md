@@ -4,6 +4,24 @@ All notable changes to the Essence Wars engine.
 
 Format: `[version] - YYYY-MM-DD` with categories: Added, Changed, Fixed, Removed.
 
+## [0.2.1] - 2026-01-13
+
+### Added
+- `select_action_with_engine()` method to Bot trait for engine-aware bots
+- `requires_engine()` method to Bot trait to indicate bots needing simulation access
+- `arena_test_deck()` helper in test utilities matching arena's default deck
+- Validation in `CardDatabase::load_from_directory()` for missing/empty directories
+
+### Changed
+- `GameRunner` now uses `select_action_with_engine()` for all bots
+- MCTS stress tests use arena-compatible deck and rollout depth (100)
+- Bot validation tests use consistent deck for fair comparisons
+
+### Fixed
+- **Critical**: MctsBot now panics with clear message if `select_action()` called without engine
+- **Critical**: MCTS stress tests now properly test real tree search (was using wrong deck)
+- `CardDatabase::load_from_directory()` no longer silently returns empty database on invalid paths
+
 ## [0.2.0] - 2026-01-13
 
 ### Added

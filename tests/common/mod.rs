@@ -308,6 +308,25 @@ pub fn valid_yaml_deck() -> Vec<CardId> {
     (0..20).map(|i| CardId(valid_ids[i % valid_ids.len()] as u16)).collect()
 }
 
+/// Create the standard arena deck for bot testing.
+/// This is the same deck used by the arena binary's default deck.
+/// It's a well-balanced "Aggressive Assault" style deck that works
+/// well for testing bot performance comparisons.
+pub fn arena_test_deck() -> Vec<CardId> {
+    let card_ids = [
+        1, 1,   // Eager Recruit x2
+        3, 3,   // Nimble Scout x2
+        6, 6,   // Frontier Ranger x2
+        8, 8,   // Shielded Squire x2
+        11, 11, // Centaur Charger x2
+        12, 12, // Blade Dancer x2
+        16, 16, // Piercing Striker x2
+        20, 20, // Siege Breaker x2
+        34, 34, // Lightning Bolt x2
+    ];
+    card_ids.iter().map(|&id| CardId(id)).collect()
+}
+
 /// Helper to set up essence for a player in test scenarios.
 /// This simulates having reached the specified turn with normal essence growth.
 pub fn setup_test_essence(state: &mut GameState, player: PlayerId, essence: u8) {
