@@ -35,14 +35,31 @@ pub struct GreedyBot<'a> {
 
 impl<'a> GreedyBot<'a> {
     /// Create a new GreedyBot with default weights.
+    /// Tries to load from data/weights/default.toml, falls back to hardcoded defaults.
     pub fn new(card_db: &'a CardDatabase, seed: u64) -> Self {
+        let weights = Self::load_default_weights();
         Self {
             name: "GreedyBot".to_string(),
             card_db,
-            weights: GreedyWeights::default(),
+            weights,
             rng: SmallRng::seed_from_u64(seed),
             seed,
             deck_id: None,
+        }
+    }
+
+    /// Load default weights from file, or use hardcoded defaults.
+    fn load_default_weights() -> GreedyWeights {
+        const DEFAULT_PATH: &str = "data/weights/default.toml";
+        match BotWeights::load(DEFAULT_PATH) {
+            Ok(bot_weights) => {
+                eprintln!("Loaded default weights from {}", DEFAULT_PATH);
+                bot_weights.default.greedy.clone()
+            }
+            Err(_) => {
+                eprintln!("Using hardcoded default weights ({}not found)", DEFAULT_PATH);
+                GreedyWeights::default()
+            }
         }
     }
 

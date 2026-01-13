@@ -215,14 +215,31 @@ pub struct MctsBot<'a> {
 
 impl<'a> MctsBot<'a> {
     /// Create a new MCTS bot with default configuration.
+    /// Tries to load rollout weights from data/weights/default.toml, falls back to hardcoded defaults.
     pub fn new(card_db: &'a CardDatabase, seed: u64) -> Self {
+        let rollout_weights = Self::load_default_weights();
         Self {
             name: "MctsBot".to_string(),
             card_db,
             config: MctsConfig::default(),
             rng: SmallRng::seed_from_u64(seed),
             seed,
-            rollout_weights: None,
+            rollout_weights,
+        }
+    }
+
+    /// Load default rollout weights from file, or use hardcoded defaults.
+    fn load_default_weights() -> Option<GreedyWeights> {
+        const DEFAULT_PATH: &str = "data/weights/default.toml";
+        match BotWeights::load(DEFAULT_PATH) {
+            Ok(bot_weights) => {
+                eprintln!("Loaded default rollout weights from {}", DEFAULT_PATH);
+                Some(bot_weights.default.greedy.clone())
+            }
+            Err(_) => {
+                eprintln!("Using hardcoded default rollout weights ({} not found)", DEFAULT_PATH);
+                None
+            }
         }
     }
 
