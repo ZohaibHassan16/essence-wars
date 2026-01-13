@@ -1,10 +1,13 @@
-//! Debug test to investigate why Lifesteal never appears in combat
+//! Lifesteal verification tests.
+//!
+//! These tests verify that Lifesteal creatures are properly played and enter combat.
+//! Originally created to debug an issue where Lifesteal never appeared in combat
+//! (which was caused by the Essence system not being implemented, fixed 2026-01-12).
 
 use cardgame::arena::GameRunner;
 use cardgame::bots::{GreedyBot, RandomBot};
 use cardgame::cards::CardDatabase;
 use cardgame::decks::DeckRegistry;
-use cardgame::keywords::Keywords;
 use cardgame::types::{CardId, PlayerId};
 
 #[test]
@@ -39,8 +42,7 @@ fn debug_lifesteal_investigation() {
 
     let mut total_combats = 0;
     let mut lifesteal_combats = 0;
-    let mut lifesteal_played = 0;
-    let mut games_with_lifesteal_played = 0;
+    let mut games_with_lifesteal_in_combat = 0;
 
     for game_num in 0..100 {
         let seed = game_num as u64;
@@ -59,16 +61,8 @@ fn debug_lifesteal_investigation() {
             seed,
         );
 
-        // Check if Lifesteal cards were played
-        let mut this_game_lifesteal = false;
-        for record in &result.actions {
-            if let cardgame::actions::Action::PlayCard { hand_index, .. } = record.action {
-                // We can't easily track which card was played without state snapshots
-                // but we can check combat traces
-            }
-        }
-
         // Check combat traces for Lifesteal
+        let mut this_game_lifesteal = false;
         for trace in &result.combat_traces {
             total_combats += 1;
 
@@ -90,7 +84,7 @@ fn debug_lifesteal_investigation() {
         }
 
         if this_game_lifesteal {
-            games_with_lifesteal_played += 1;
+            games_with_lifesteal_in_combat += 1;
         }
 
         // Print first few games' details
@@ -103,7 +97,17 @@ fn debug_lifesteal_investigation() {
     println!("\n=== SUMMARY ===");
     println!("Total combats across 100 games: {}", total_combats);
     println!("Combats involving Lifesteal: {}", lifesteal_combats);
-    println!("Games where Lifesteal entered combat: {}", games_with_lifesteal_played);
+    println!("Games where Lifesteal entered combat: {}", games_with_lifesteal_in_combat);
+
+    // After the Essence fix, we should see Lifesteal in combat
+    assert!(
+        games_with_lifesteal_in_combat > 0,
+        "With proper Essence system, Lifesteal creatures should enter combat"
+    );
+    assert!(
+        lifesteal_combats > 0,
+        "Should have some combats involving Lifesteal"
+    );
 
     // The real question: why aren't 4-cost Lifesteal creatures entering combat?
     println!("\n=== POSSIBLE CAUSES ===");
@@ -129,10 +133,10 @@ fn debug_game_length_and_mana() {
     println!("\n=== GAME LENGTH ANALYSIS ===");
 
     let mut turn_histogram = vec![0u32; 35];
-    let mut total_games = 0;
     let mut p1_wins = 0;
+    let num_games = 100;
 
-    for seed in 0..100 {
+    for seed in 0..num_games {
         let mut bot1 = GreedyBot::new(&card_db, seed);
         let mut bot2 = GreedyBot::new(&card_db, seed + 1);
 
@@ -146,7 +150,6 @@ fn debug_game_length_and_mana() {
             seed,
         );
 
-        total_games += 1;
         if result.winner == Some(PlayerId::PLAYER_ONE) {
             p1_wins += 1;
         }
@@ -157,7 +160,7 @@ fn debug_game_length_and_mana() {
         }
     }
 
-    println!("Turn distribution (Defensive vs Aggressive, 100 games):");
+    println!("Turn distribution (Defensive vs Aggressive, {} games):", num_games);
     for (turn, count) in turn_histogram.iter().enumerate() {
         if *count > 0 {
             println!("  Turn {}: {} games", turn, count);

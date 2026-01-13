@@ -46,3 +46,5 @@ mod logger_tests;
 mod runner_tests;
 #[path = "unit/stats_tests.rs"]
 mod stats_tests;
+#[path = "unit/resource_system_tests.rs"]
+mod resource_system_tests;

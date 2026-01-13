@@ -11,7 +11,7 @@ use cardgame::cards::CardDatabase;
 use cardgame::config::{game, player};
 use cardgame::engine::GameEngine;
 use cardgame::state::GameState;
-use cardgame::types::{CardId, PlayerId, Slot};
+use cardgame::types::{CardId, Slot};
 
 use common::{test_card_db, valid_yaml_deck};
 
@@ -24,17 +24,7 @@ fn card_id_strategy() -> impl Strategy<Value = CardId> {
     (1u16..=43).prop_map(CardId)
 }
 
-/// Strategy to generate a valid slot (0-4)
-fn slot_strategy() -> impl Strategy<Value = Slot> {
-    (0u8..5).prop_map(Slot)
-}
-
-/// Strategy to generate a valid player ID
-fn player_id_strategy() -> impl Strategy<Value = PlayerId> {
-    prop_oneof![Just(PlayerId::PLAYER_ONE), Just(PlayerId::PLAYER_TWO)]
-}
-
-/// Strategy to generate a valid deck (20 cards)
+/// Strategy to generate a valid deck (20 cards from starter set)
 fn deck_strategy() -> impl Strategy<Value = Vec<CardId>> {
     prop::collection::vec(card_id_strategy(), 20..=20)
 }
@@ -42,24 +32,6 @@ fn deck_strategy() -> impl Strategy<Value = Vec<CardId>> {
 /// Strategy to generate a random seed
 fn seed_strategy() -> impl Strategy<Value = u64> {
     0u64..1_000_000
-}
-
-/// Strategy to generate a random action
-fn action_strategy() -> impl Strategy<Value = Action> {
-    prop_oneof![
-        // PlayCard: hand_index (0-9), slot (0-4 for creatures, 0 for spells, 0-1 for supports)
-        (0u8..10, 0u8..5).prop_map(|(hand, slot)| Action::PlayCard {
-            hand_index: hand,
-            slot: Slot(slot),
-        }),
-        // Attack: attacker slot (0-4), defender slot (0-4)
-        (0u8..5, 0u8..5).prop_map(|(att, def)| Action::Attack {
-            attacker: Slot(att),
-            defender: Slot(def),
-        }),
-        // EndTurn
-        Just(Action::EndTurn),
-    ]
 }
 
 // =============================================================================
@@ -513,6 +485,38 @@ proptest! {
                 break;
             }
             let _ = engine.apply_action(legal[0]);
+        }
+    }
+
+    /// Property 9: Random deck compositions don't crash the engine
+    /// This tests a wider variety of deck combinations than the fixed valid_yaml_deck()
+    #[test]
+    fn prop_random_decks_playable(
+        seed in seed_strategy(),
+        deck1 in deck_strategy(),
+        deck2 in deck_strategy(),
+    ) {
+        let card_db = load_full_card_db();
+
+        let mut engine = GameEngine::new(&card_db);
+        engine.start_game(deck1, deck2, seed);
+
+        // Verify game started correctly
+        prop_assert!(!engine.is_game_over(), "Game should not be over at start");
+        prop_assert!(engine.turn_number() >= 1, "Turn should be at least 1");
+
+        // Run random game to completion - should not panic
+        let (finished, steps) = run_random_game(&mut engine, seed, 200);
+
+        // Verify invariants held throughout
+        verify_state_invariants(&engine.state, &format!("After {} steps", steps));
+
+        // If game finished, verify it has a proper result
+        if finished {
+            prop_assert!(
+                engine.state.result.is_some(),
+                "Finished game should have a result"
+            );
         }
     }
 }

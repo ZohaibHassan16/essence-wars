@@ -190,24 +190,35 @@ fn test_edge_case_ranged_bypasses_guard() {
     let legal_actions = engine.get_legal_actions();
 
     // Count valid attack targets
-    let mut can_attack_guard = false;
-    let mut can_attack_any = false;
+    let mut can_attack_guard_slot = false;
+    let mut can_attack_behind_guard = false;
 
     for action in &legal_actions {
         if let Action::Attack { attacker, defender } = action {
             if attacker.0 == 0 {
-                can_attack_any = true;
+                // Slot 0 has the Guard creature
                 if defender.0 == 0 {
-                    can_attack_guard = true;
+                    can_attack_guard_slot = true;
+                }
+                // Slot 1 has the regular creature (behind Guard)
+                if defender.0 == 1 {
+                    can_attack_behind_guard = true;
                 }
             }
         }
     }
 
     // Ranged should be able to attack any creature (bypass guard)
+    // The key property is that Ranged can attack creatures behind Guard
     assert!(
-        can_attack_any || !engine.state.players[0].creatures.is_empty(),
-        "Ranged creature should have attack options"
+        can_attack_behind_guard || engine.state.players[1].creatures.len() < 2,
+        "Ranged creature should be able to attack non-Guard creatures even when Guard is present"
+    );
+
+    // Ranged can also attack the Guard itself if it chooses
+    assert!(
+        can_attack_guard_slot || engine.state.players[1].creatures.is_empty(),
+        "Ranged creature should be able to attack the Guard as well"
     );
 }
 

@@ -108,9 +108,7 @@ pub fn create_test_creature(
 
 /// Create a card database with cards for testing card playing logic
 pub fn card_playing_test_db() -> CardDatabase {
-    use cardgame::cards::{AbilityDefinition, EffectDefinition};
-    use cardgame::effects::{TargetingRule, Trigger};
-
+    // Uses AbilityDefinition, EffectDefinition, TargetingRule, Trigger from module-level imports
     let cards = vec![
         // Basic creature: cost 2, 2/3
         CardDefinition {

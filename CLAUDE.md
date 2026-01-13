@@ -11,7 +11,7 @@
 cargo build --release
 
 # Run all tests
-cargo nextest run --status-level=fail  # 409 tests (only shows failures)
+cargo nextest run --status-level=fail  # 477 tests (only shows failures)
 cargo test                              # Alternative: use standard cargo test
 
 # Run slow/ignored tests (stress tests, performance validation)

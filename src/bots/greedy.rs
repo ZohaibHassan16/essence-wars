@@ -53,7 +53,7 @@ impl<'a> GreedyBot<'a> {
         const DEFAULT_PATH: &str = "data/weights/default.toml";
         match BotWeights::load(DEFAULT_PATH) {
             Ok(bot_weights) => {
-                eprintln!("Loaded default weights from {}", DEFAULT_PATH);
+                // eprintln!("Loaded default weights from {}", DEFAULT_PATH);
                 bot_weights.default.greedy.clone()
             }
             Err(_) => {

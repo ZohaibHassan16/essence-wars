@@ -326,9 +326,6 @@ fn test_edge_case_quick_lethal_vs_shield() {
 
     // Find cards with specific keywords to create the scenario
     // For now, just verify we can run games that might encounter this
-    let mut runner = GameRunner::new(&card_db)
-        .with_tracing(true, true);
-
     let mut bot1 = GreedyBot::new(&card_db, 99999);
     let mut bot2 = GreedyBot::new(&card_db, 88888);
 
@@ -376,9 +373,6 @@ fn test_edge_case_turn_limit() {
     let card_db = load_card_db();
 
     // Run many games to try to hit turn limit
-    let mut runner = GameRunner::new(&card_db)
-        .with_tracing(true, true);
-
     let mut bot1 = GreedyBot::new(&card_db, 77777);
     let mut bot2 = GreedyBot::new(&card_db, 66666);
 
