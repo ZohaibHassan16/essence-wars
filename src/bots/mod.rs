@@ -11,7 +11,7 @@ pub mod weights;
 
 pub use random::RandomBot;
 pub use greedy::GreedyBot;
-pub use mcts::{MctsBot, MctsConfig};
+pub use mcts::{MctsBot, MctsConfig, MctsNode};
 pub use weights::{BotWeights, GreedyWeights, WeightSet};
 
 use crate::actions::Action;

@@ -24,3 +24,25 @@ mod combat_tests;
 mod keyword_matrix_tests;
 #[path = "unit/keyword_exhaustive_tests.rs"]
 mod keyword_exhaustive_tests;
+#[path = "unit/tensor_tests.rs"]
+mod tensor_tests;
+#[path = "unit/decks_tests.rs"]
+mod decks_tests;
+#[path = "unit/cmaes_tests.rs"]
+mod cmaes_tests;
+#[path = "unit/evaluator_tests.rs"]
+mod evaluator_tests;
+#[path = "unit/greedy_tests.rs"]
+mod greedy_tests;
+#[path = "unit/mcts_tests.rs"]
+mod mcts_tests;
+#[path = "unit/random_tests.rs"]
+mod random_tests;
+#[path = "unit/weights_tests.rs"]
+mod weights_tests;
+#[path = "unit/logger_tests.rs"]
+mod logger_tests;
+#[path = "unit/runner_tests.rs"]
+mod runner_tests;
+#[path = "unit/stats_tests.rs"]
+mod stats_tests;

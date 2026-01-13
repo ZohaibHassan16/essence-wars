@@ -6,9 +6,13 @@
 
 - [x] Built ✅
 
-2. Test Engine with MCTS and Greedy Bots, fully traceable combat
+2. Test Engine with MCTS and Greedy Bots, fully traceable combat (ongoing)
 
 -  [ ] Tested 
+
+2.1 Expand Cards and Engine
+
+- [ ] Expanded to 300 Cards
 
 2.1 Build ML/AI Training and Inference Infrastructure (Gym Bridge, Python Gymnasium / OpenAI Gym)
 
@@ -16,8 +20,6 @@
 3. Train first PPO and AlphaZero Agents as Proof of Concept 
 
 3.1 Once it works, explore cloud compute solutions (both mcts and ppo/alphazero training), document and use for ongoing experiments, local pc only for small testing/development batches
-
-4. Expand Cards and Engine
 
 4.1 Develop Lore, Background, Characters, Wordbuilding, create Artwork and Flavor Text, make it fun to play, not just fun to research with. Factions, Champions, Setting. Drawing Inspiration from Hearthstone/Warcraft, MTG and other Fantasy / Steampunk Fantasy Worlds, without blatantly copying IP.
 

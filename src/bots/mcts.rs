@@ -96,7 +96,7 @@ impl MctsConfig {
 }
 
 /// A node in the MCTS tree.
-struct MctsNode {
+pub struct MctsNode {
     /// Action that led to this node (None for root)
     action: Option<Action>,
     /// Total visits to this node
@@ -111,7 +111,7 @@ struct MctsNode {
 
 impl MctsNode {
     /// Create a new node for the given action.
-    fn new(action: Option<Action>) -> Self {
+    pub fn new(action: Option<Action>) -> Self {
         Self {
             action,
             visits: 0,
@@ -122,12 +122,12 @@ impl MctsNode {
     }
 
     /// Create a root node.
-    fn root() -> Self {
+    pub fn root() -> Self {
         Self::new(None)
     }
 
     /// Get the UCB1 score for this node.
-    fn ucb1(&self, parent_visits: u32, exploration: f32) -> f32 {
+    pub fn ucb1(&self, parent_visits: u32, exploration: f32) -> f32 {
         if self.visits == 0 {
             return f32::MAX;
         }
@@ -161,7 +161,7 @@ impl MctsNode {
     }
 
     /// Expand this node with the given legal actions.
-    fn expand(&mut self, actions: &[Action]) {
+    pub fn expand(&mut self, actions: &[Action]) {
         if self.expanded {
             return;
         }
@@ -184,6 +184,21 @@ impl MctsNode {
     fn update_batch(&mut self, num_visits: u32, num_wins: u32) {
         self.visits += num_visits;
         self.wins += num_wins as i32;
+    }
+
+    /// Set visits (for testing).
+    pub fn set_visits(&mut self, visits: u32) {
+        self.visits = visits;
+    }
+
+    /// Set wins (for testing).
+    pub fn set_wins(&mut self, wins: i32) {
+        self.wins = wins;
+    }
+
+    /// Get number of children (for testing).
+    pub fn children_len(&self) -> usize {
+        self.children.len()
     }
 }
 
@@ -594,150 +609,5 @@ impl<'a> MctsBot<'a> {
     /// Select an action using full MCTS search.
     pub fn select_action_with_engine(&mut self, engine: &GameEngine) -> Action {
         self.search(engine)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::types::CardId;
-
-    fn load_test_db() -> CardDatabase {
-        CardDatabase::load_from_directory("data/cards").expect("Failed to load cards")
-    }
-
-    fn test_deck() -> Vec<CardId> {
-        let valid_ids = [1, 3, 6, 8, 11, 12, 16, 20, 34];
-        (0..18)
-            .map(|i| CardId(valid_ids[i % valid_ids.len()] as u16))
-            .collect()
-    }
-
-    #[test]
-    fn test_mcts_bot_creation() {
-        let card_db = load_test_db();
-        let bot = MctsBot::new(&card_db, 42);
-        assert_eq!(bot.name(), "MctsBot");
-    }
-
-    #[test]
-    fn test_mcts_config() {
-        let fast = MctsConfig::fast();
-        assert_eq!(fast.simulations, 100);
-
-        let strong = MctsConfig::strong();
-        assert!(strong.simulations > fast.simulations);
-    }
-
-    #[test]
-    fn test_mcts_node_ucb1() {
-        let mut node = MctsNode::new(Some(Action::EndTurn));
-        node.visits = 10;
-        node.wins = 5;
-
-        let ucb = node.ucb1(100, 1.414);
-        assert!(ucb > 0.0, "UCB1 should be positive");
-        assert!(ucb < 100.0, "UCB1 should be reasonable");
-    }
-
-    #[test]
-    fn test_mcts_node_expand() {
-        let mut node = MctsNode::root();
-        let actions = vec![Action::EndTurn, Action::PlayCard { hand_index: 0, slot: crate::types::Slot(0) }];
-
-        node.expand(&actions);
-
-        assert_eq!(node.children.len(), 2);
-    }
-
-    #[test]
-    fn test_mcts_search_returns_valid_action() {
-        let card_db = load_test_db();
-        let config = MctsConfig::fast();
-        let mut bot = MctsBot::with_config(&card_db, config, 42);
-
-        let mut engine = GameEngine::new(&card_db);
-        engine.start_game(test_deck(), test_deck(), 12345);
-
-        let action = bot.search(&engine);
-        let legal = engine.get_legal_actions();
-
-        assert!(legal.contains(&action), "MCTS should return a legal action");
-    }
-
-    #[test]
-    #[ignore]
-    fn test_mcts_completes_game() {
-        let card_db = load_test_db();
-        let config = MctsConfig::fast();
-        let mut bot = MctsBot::with_config(&card_db, config, 42);
-
-        let mut engine = GameEngine::new(&card_db);
-        engine.start_game(test_deck(), test_deck(), 12345);
-
-        let mut actions = 0;
-        while !engine.is_game_over() && actions < 200 {
-            let action = bot.select_action_with_engine(&engine);
-            engine.apply_action(action).expect("Legal action should work");
-            actions += 1;
-        }
-
-        assert!(engine.is_game_over() || actions >= 200);
-    }
-
-    #[test]
-    fn test_mcts_parallel_search() {
-        let card_db = load_test_db();
-        let config = MctsConfig {
-            simulations: 50,
-            exploration: 1.414,
-            max_rollout_depth: 50,
-            parallel_trees: 4, // 4 parallel trees
-            leaf_rollouts: 1,
-        };
-        let mut bot = MctsBot::with_config(&card_db, config, 42);
-
-        let mut engine = GameEngine::new(&card_db);
-        engine.start_game(test_deck(), test_deck(), 12345);
-
-        let action = bot.search(&engine);
-        let legal = engine.get_legal_actions();
-
-        assert!(legal.contains(&action), "Parallel MCTS should return a legal action");
-    }
-
-    #[test]
-    fn test_mcts_parallel_config() {
-        let config = MctsConfig::parallel(8);
-        assert_eq!(config.parallel_trees, 8);
-        assert_eq!(config.simulations, 500);
-    }
-
-    #[test]
-    fn test_mcts_leaf_parallel_config() {
-        let config = MctsConfig::leaf_parallel(4);
-        assert_eq!(config.leaf_rollouts, 4);
-        assert_eq!(config.parallel_trees, 1);
-    }
-
-    #[test]
-    fn test_mcts_leaf_parallel_search() {
-        let card_db = load_test_db();
-        let config = MctsConfig {
-            simulations: 50,
-            exploration: 1.414,
-            max_rollout_depth: 50,
-            parallel_trees: 1,
-            leaf_rollouts: 4, // 4 parallel rollouts per leaf
-        };
-        let mut bot = MctsBot::with_config(&card_db, config, 42);
-
-        let mut engine = GameEngine::new(&card_db);
-        engine.start_game(test_deck(), test_deck(), 12345);
-
-        let action = bot.search(&engine);
-        let legal = engine.get_legal_actions();
-
-        assert!(legal.contains(&action), "Leaf-parallel MCTS should return a legal action");
     }
 }

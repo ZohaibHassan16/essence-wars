@@ -16,6 +16,6 @@ pub use crate::core::tracing::{
     CombatPhase, CombatStep, CombatTrace, CombatTracer,
     EffectEvent, EffectEventType, EffectTracer,
 };
-pub use logger::{ActionLogger, ActionRecord, LogOutput, StateSnapshot};
+pub use logger::{ActionLogger, ActionRecord, CombatTrace as LoggerCombatTrace, CreatureSnapshot, LogOutput, StateSnapshot};
 pub use runner::{GameRunner, GameResult};
 pub use stats::{MatchStats, MatchupStats};
