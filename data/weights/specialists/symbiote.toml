@@ -1,0 +1,45 @@
+# Symbiote Circles Specialist Weights
+# "The Swarm" - Aggressive tempo with Rush, Lethal, Regenerate
+# Emphasizes trading efficiently and overwhelming opponents
+
+name = "agent_symbiote"
+version = 1
+
+[default.greedy]
+# Life - Willing to trade life for board
+own_life = 1.0
+enemy_life_damage = 1.8
+
+# Creatures - Attack matters more for Symbiote
+own_creature_attack = 1.2
+own_creature_health = 0.8
+enemy_creature_attack = -1.0
+enemy_creature_health = -1.0
+
+# Board Control - Swarm tactics
+creature_count = 3.0
+board_advantage = 2.0
+
+# Resources
+cards_in_hand = 0.4
+action_points = 0.2
+
+# Keywords - Symbiote specialty
+keyword_guard = 1.0      # Only Hive Guardian
+keyword_piercing = 1.0
+keyword_shield = 0.5
+keyword_lethal = 4.0     # PRIMARY: Efficient trades
+keyword_lifesteal = 1.5
+keyword_rush = 3.5       # PRIMARY: Immediate pressure
+keyword_ranged = 1.5
+keyword_quick = 1.5
+
+# New Keywords
+keyword_ephemeral = -1.5
+keyword_regenerate = 3.5 # PRIMARY: Sustain over time
+keyword_stealth = 1.0
+keyword_charge = 2.0
+
+# Terminal
+win_bonus = 1000.0
+lose_penalty = -1000.0

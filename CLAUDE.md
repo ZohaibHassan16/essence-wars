@@ -280,6 +280,8 @@ CmaEsConfig {
 | `multi-opponent` | Optimize vs Random (10%), Greedy (40%), MCTS (50%) |
 | `generalist` | Optimize across all deck matchups |
 | `specialist` | Optimize for specific deck vs opponent |
+| `faction-specialist` | Train specialist for a faction (requires `--faction`) |
+| `agent-generalist` | Train generalist against all faction specialists + mirror |
 
 ### Parallel Evaluation
 
@@ -309,6 +311,28 @@ cargo run --release --bin tune -- \
 
 # Generalist tuning across all decks
 cargo run --release --bin tune -- --mode generalist --generations 100
+
+# === Faction-based Agent Training ===
+
+# Train Argentum specialist (saves to data/weights/specialists/argentum.toml)
+cargo run --release --bin tune -- \
+  --mode faction-specialist --faction argentum \
+  --tag argentum_v1 --generations 100
+
+# Train Symbiote specialist
+cargo run --release --bin tune -- \
+  --mode faction-specialist --faction symbiote \
+  --tag symbiote_v1 --generations 100
+
+# Train Obsidion specialist
+cargo run --release --bin tune -- \
+  --mode faction-specialist --faction obsidion \
+  --tag obsidion_v1 --generations 100
+
+# Train generalist (saves to data/weights/generalist.toml)
+cargo run --release --bin tune -- \
+  --mode agent-generalist \
+  --tag generalist_v1 --generations 100
 
 # Full options
 cargo run --release --bin tune -- \
@@ -361,6 +385,25 @@ cargo run --bin arena -- \
   --bot1 mcts --bot2 mcts \
   --weights1 tuned_weights.toml \
   --games 20
+
+# === Agent Types (with auto-loaded specialist weights) ===
+
+# Faction specialist vs specialist match
+cargo run --release --bin arena -- \
+  --bot1 agent-argentum --deck1 argentum_control \
+  --bot2 agent-symbiote --deck2 symbiote_aggro \
+  --games 100
+
+# Generalist vs all specialists
+cargo run --release --bin arena -- \
+  --bot1 agent-generalist --bot2 agent-obsidion \
+  --deck2 obsidion_burst --games 100
+
+# Available Agent bot types:
+#   agent-argentum    - Argentum Combine specialist
+#   agent-symbiote    - Symbiote Circles specialist
+#   agent-obsidion    - Obsidion Syndicate specialist
+#   agent-generalist  - Works with all factions
 
 # Full options
 cargo run --bin arena -- \

@@ -4,15 +4,118 @@
 //! - TOML-based deck definitions
 //! - Deck validation against card database
 //! - DeckRegistry for loading and managing multiple decks
+//! - Faction system for organizing decks by faction identity
 
 use std::collections::HashMap;
+use std::fmt;
 use std::fs;
 use std::path::Path;
+use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
 
 use crate::cards::CardDatabase;
 use crate::types::CardId;
+
+/// The three true factions plus neutral (Free-Walkers).
+///
+/// Faction decks contain a core of faction cards (typically 14) plus
+/// a splash of neutral Free-Walker cards (typically 6).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Faction {
+    /// Argentum Combine - "The Wall"
+    /// Defense-focused with Guard, Piercing, Shield
+    Argentum,
+    /// Symbiote Circles - "The Swarm"
+    /// Aggressive tempo with Rush, Lethal, Regenerate
+    Symbiote,
+    /// Obsidion Syndicate - "The Glass Cannon"
+    /// Burst damage with Lifesteal, Stealth, Ephemeral, Quick
+    Obsidion,
+    /// Free-Walkers / Neutral - "The Toolbox"
+    /// Flexible neutrals with Ranged, Charge (not a true faction)
+    Neutral,
+}
+
+impl Faction {
+    /// Returns all true factions (excluding Neutral).
+    pub fn all_factions() -> &'static [Faction] {
+        &[Faction::Argentum, Faction::Symbiote, Faction::Obsidion]
+    }
+
+    /// Returns all factions including Neutral.
+    pub fn all() -> &'static [Faction] {
+        &[Faction::Argentum, Faction::Symbiote, Faction::Obsidion, Faction::Neutral]
+    }
+
+    /// Check if this is a true faction (not neutral).
+    pub fn is_true_faction(&self) -> bool {
+        !matches!(self, Faction::Neutral)
+    }
+
+    /// Get the faction's tag name (lowercase).
+    pub fn as_tag(&self) -> &'static str {
+        match self {
+            Faction::Argentum => "argentum",
+            Faction::Symbiote => "symbiote",
+            Faction::Obsidion => "obsidion",
+            Faction::Neutral => "neutral",
+        }
+    }
+
+    /// Get the faction's display name.
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            Faction::Argentum => "Argentum Combine",
+            Faction::Symbiote => "Symbiote Circles",
+            Faction::Obsidion => "Obsidion Syndicate",
+            Faction::Neutral => "Free-Walkers",
+        }
+    }
+
+    /// Get the faction's short description.
+    pub fn description(&self) -> &'static str {
+        match self {
+            Faction::Argentum => "The Wall - Defense and durability",
+            Faction::Symbiote => "The Swarm - Aggressive tempo",
+            Faction::Obsidion => "The Glass Cannon - Burst damage",
+            Faction::Neutral => "The Toolbox - Flexible neutrals",
+        }
+    }
+}
+
+impl fmt::Display for Faction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.display_name())
+    }
+}
+
+impl FromStr for Faction {
+    type Err = FactionParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "argentum" => Ok(Faction::Argentum),
+            "symbiote" => Ok(Faction::Symbiote),
+            "obsidion" => Ok(Faction::Obsidion),
+            "neutral" | "freewalker" | "free-walker" | "freewalkers" | "free-walkers" => Ok(Faction::Neutral),
+            _ => Err(FactionParseError(s.to_string())),
+        }
+    }
+}
+
+/// Error when parsing a faction from string.
+#[derive(Debug, Clone)]
+pub struct FactionParseError(pub String);
+
+impl fmt::Display for FactionParseError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Unknown faction: '{}'. Valid factions: argentum, symbiote, obsidion, neutral", self.0)
+    }
+}
+
+impl std::error::Error for FactionParseError {}
 
 /// A deck definition loaded from a TOML file.
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -58,6 +161,39 @@ impl DeckDefinition {
     /// Check if deck has a specific tag.
     pub fn has_tag(&self, tag: &str) -> bool {
         self.tags.iter().any(|t| t.eq_ignore_ascii_case(tag))
+    }
+
+    /// Determine the faction of this deck based on tags.
+    ///
+    /// Returns the first matching faction tag found, or None if no faction tag.
+    /// Faction decks should have exactly one faction tag (argentum, symbiote, or obsidion).
+    pub fn faction(&self) -> Option<Faction> {
+        for tag in &self.tags {
+            if let Ok(faction) = tag.parse::<Faction>() {
+                // Only return true factions, not neutral
+                if faction.is_true_faction() {
+                    return Some(faction);
+                }
+            }
+        }
+        None
+    }
+
+    /// Check if this deck belongs to a specific faction.
+    pub fn is_faction(&self, faction: Faction) -> bool {
+        self.faction() == Some(faction)
+    }
+
+    /// Check if this deck is a faction deck (has a faction tag).
+    pub fn is_faction_deck(&self) -> bool {
+        self.faction().is_some()
+    }
+
+    /// Check if this deck is compatible with a specialist agent for the given faction.
+    ///
+    /// A specialist agent can only play decks of its own faction.
+    pub fn is_compatible_with_specialist(&self, faction: Faction) -> bool {
+        self.faction() == Some(faction)
     }
 }
 
@@ -147,6 +283,28 @@ impl DeckRegistry {
     /// Get decks filtered by tag.
     pub fn decks_with_tag(&self, tag: &str) -> Vec<&DeckDefinition> {
         self.decks.values().filter(|d| d.has_tag(tag)).collect()
+    }
+
+    /// Get all decks belonging to a specific faction.
+    pub fn decks_for_faction(&self, faction: Faction) -> Vec<&DeckDefinition> {
+        self.decks.values().filter(|d| d.is_faction(faction)).collect()
+    }
+
+    /// Get all faction decks (decks with a faction tag).
+    pub fn faction_decks(&self) -> Vec<&DeckDefinition> {
+        self.decks.values().filter(|d| d.is_faction_deck()).collect()
+    }
+
+    /// Get all non-faction decks (neutral/mixed decks).
+    pub fn neutral_decks(&self) -> Vec<&DeckDefinition> {
+        self.decks.values().filter(|d| !d.is_faction_deck()).collect()
+    }
+
+    /// Get all decks compatible with a specialist agent.
+    pub fn decks_for_specialist(&self, faction: Faction) -> Vec<&DeckDefinition> {
+        self.decks.values()
+            .filter(|d| d.is_compatible_with_specialist(faction))
+            .collect()
     }
 
     /// Validate all decks against the card database.

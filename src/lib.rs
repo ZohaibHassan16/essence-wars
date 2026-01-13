@@ -45,3 +45,6 @@ pub use core::state::*;
 pub use core::cards::*;
 pub use core::actions::*;
 pub use core::engine::*;
+
+// Re-export deck types
+pub use decks::{DeckDefinition, DeckRegistry, DeckError, Faction, FactionParseError};

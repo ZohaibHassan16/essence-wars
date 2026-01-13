@@ -1,0 +1,45 @@
+# Generalist Agent Weights
+# Balanced approach that works reasonably well against all factions
+# Trained against all specialists + mirror play
+
+name = "agent_generalist"
+version = 1
+
+[default.greedy]
+# Life - Balanced approach
+own_life = 1.2
+enemy_life_damage = 1.5
+
+# Creatures - Balanced valuation
+own_creature_attack = 1.0
+own_creature_health = 1.0
+enemy_creature_attack = -0.9
+enemy_creature_health = -0.8
+
+# Board Control - Important but not dominant
+creature_count = 2.0
+board_advantage = 1.5
+
+# Resources
+cards_in_hand = 0.35
+action_points = 0.15
+
+# Keywords - Balanced across all keywords
+keyword_guard = 2.0
+keyword_piercing = 1.5
+keyword_shield = 1.5
+keyword_lethal = 2.5
+keyword_lifesteal = 2.0
+keyword_rush = 2.0
+keyword_ranged = 1.5
+keyword_quick = 2.0
+
+# New Keywords
+keyword_ephemeral = -1.0
+keyword_regenerate = 2.0
+keyword_stealth = 2.0
+keyword_charge = 1.5
+
+# Terminal
+win_bonus = 1000.0
+lose_penalty = -1000.0

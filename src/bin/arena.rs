@@ -5,6 +5,10 @@
 //!   cargo run --release --bin arena -- --bot1 greedy --bot2 greedy --games 100
 //!   cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --seed 12345 --debug
 //!   cargo run --release --bin arena -- --deck1 aggressive_assault --deck2 defensive_control
+//!
+//! Agent types (with auto-loaded specialist weights):
+//!   cargo run --release --bin arena -- --bot1 agent-argentum --bot2 agent-symbiote
+//!   cargo run --release --bin arena -- --bot1 agent-generalist --bot2 agent-obsidion
 
 use std::path::PathBuf;
 use std::process;
@@ -20,7 +24,7 @@ use cardgame::arena::{
 };
 use cardgame::bots::{Bot, BotWeights, GreedyBot, MctsBot, MctsConfig, RandomBot};
 use cardgame::cards::CardDatabase;
-use cardgame::decks::DeckRegistry;
+use cardgame::decks::{DeckRegistry, Faction};
 use cardgame::engine::GameEngine;
 use cardgame::types::{CardId, PlayerId};
 
@@ -131,6 +135,10 @@ enum BotType {
     Random,
     Greedy,
     Mcts,
+    /// Agent specialist for a faction (uses MCTS with specialist weights)
+    AgentSpecialist(Faction),
+    /// Agent generalist (uses MCTS with generalist weights)
+    AgentGeneralist,
 }
 
 impl BotType {
@@ -139,6 +147,10 @@ impl BotType {
             "random" => Some(BotType::Random),
             "greedy" => Some(BotType::Greedy),
             "mcts" => Some(BotType::Mcts),
+            "agent-argentum" => Some(BotType::AgentSpecialist(Faction::Argentum)),
+            "agent-symbiote" => Some(BotType::AgentSpecialist(Faction::Symbiote)),
+            "agent-obsidion" => Some(BotType::AgentSpecialist(Faction::Obsidion)),
+            "agent-generalist" => Some(BotType::AgentGeneralist),
             _ => None,
         }
     }
@@ -148,8 +160,27 @@ impl BotType {
             BotType::Random => "RandomBot",
             BotType::Greedy => "GreedyBot",
             BotType::Mcts => "MctsBot",
+            BotType::AgentSpecialist(Faction::Argentum) => "Agent-Argentum",
+            BotType::AgentSpecialist(Faction::Symbiote) => "Agent-Symbiote",
+            BotType::AgentSpecialist(Faction::Obsidion) => "Agent-Obsidion",
+            BotType::AgentSpecialist(Faction::Neutral) => "Agent-Neutral",
+            BotType::AgentGeneralist => "Agent-Generalist",
         }
     }
+
+    /// Returns the weights file path for Agent bot types, if applicable.
+    fn agent_weights_path(&self) -> Option<PathBuf> {
+        match self {
+            BotType::AgentSpecialist(faction) => {
+                Some(PathBuf::from(format!("data/weights/specialists/{}.toml", faction.as_tag())))
+            }
+            BotType::AgentGeneralist => {
+                Some(PathBuf::from("data/weights/generalist.toml"))
+            }
+            _ => None,
+        }
+    }
+
 }
 
 fn main() {
@@ -197,7 +228,7 @@ fn main() {
     let bot1_type = match BotType::from_str(&args.bot1) {
         Some(t) => t,
         None => {
-            eprintln!("Unknown bot type: {}. Available: random, greedy, mcts", args.bot1);
+            eprintln!("Unknown bot type: {}. Available: random, greedy, mcts, agent-argentum, agent-symbiote, agent-obsidion, agent-generalist", args.bot1);
             process::exit(1);
         }
     };
@@ -205,7 +236,7 @@ fn main() {
     let bot2_type = match BotType::from_str(&args.bot2) {
         Some(t) => t,
         None => {
-            eprintln!("Unknown bot type: {}. Available: random, greedy, mcts", args.bot2);
+            eprintln!("Unknown bot type: {}. Available: random, greedy, mcts, agent-argentum, agent-symbiote, agent-obsidion, agent-generalist", args.bot2);
             process::exit(1);
         }
     };
@@ -222,9 +253,26 @@ fn main() {
     let (deck1, deck1_name) = load_deck(&args.deck1, &deck_registry, &card_db, "1");
     let (deck2, deck2_name) = load_deck(&args.deck2, &deck_registry, &card_db, "2");
 
-    // Load custom weights if specified
-    let weights1 = load_weights(&args.weights1, "bot1");
-    let weights2 = load_weights(&args.weights2, "bot2");
+    // Validate faction-deck binding for specialist agents
+    validate_faction_deck_binding(&bot1_type, &args.deck1, &deck_registry, "Bot 1");
+    validate_faction_deck_binding(&bot2_type, &args.deck2, &deck_registry, "Bot 2");
+
+    // Load custom weights if specified, or auto-load for Agent types
+    let weights1 = if args.weights1.is_some() {
+        load_weights(&args.weights1, "bot1")
+    } else if let Some(agent_path) = bot1_type.agent_weights_path() {
+        load_agent_weights(&agent_path, bot1_type.name())
+    } else {
+        None
+    };
+
+    let weights2 = if args.weights2.is_some() {
+        load_weights(&args.weights2, "bot2")
+    } else if let Some(agent_path) = bot2_type.agent_weights_path() {
+        load_agent_weights(&agent_path, bot2_type.name())
+    } else {
+        None
+    };
 
     // Create logger if needed
     let mut logger = if args.debug || args.verbose {
@@ -390,6 +438,80 @@ fn load_weights(path: &Option<PathBuf>, bot_name: &str) -> Option<BotWeights> {
             }
         }
         None => None,
+    }
+}
+
+/// Load agent weights from a known path, silently returning None if not found.
+/// Agent types use specialist weights when available, falling back to defaults.
+fn load_agent_weights(path: &PathBuf, agent_name: &str) -> Option<BotWeights> {
+    match BotWeights::load(path) {
+        Ok(w) => {
+            println!("Auto-loaded {} weights: {}", agent_name, w.name);
+            Some(w)
+        }
+        Err(_) => {
+            // Silently fall back to defaults if weights file doesn't exist
+            println!("Note: {} using default weights (no specialist weights at {:?})", agent_name, path);
+            None
+        }
+    }
+}
+
+/// Validate that specialist agents are paired with their faction's decks.
+///
+/// Specialist agents should only play decks of their faction.
+/// Prints a warning if there's a mismatch but allows the game to continue.
+fn validate_faction_deck_binding(
+    bot_type: &BotType,
+    deck_id: &Option<String>,
+    deck_registry: &DeckRegistry,
+    bot_label: &str,
+) {
+    // Only validate for specialist agents
+    let specialist_faction = match bot_type {
+        BotType::AgentSpecialist(faction) => faction,
+        _ => return,
+    };
+
+    // Only validate if a specific deck was chosen
+    let deck_id = match deck_id {
+        Some(id) => id,
+        None => return,
+    };
+
+    // Get the deck and check its faction
+    if let Some(deck) = deck_registry.get(deck_id) {
+        match deck.faction() {
+            Some(deck_faction) => {
+                if deck_faction != *specialist_faction {
+                    eprintln!(
+                        "Warning: {} ({}) is using a {} deck ('{}'), but specialists work best with their faction's decks.",
+                        bot_label,
+                        bot_type.name(),
+                        deck_faction.display_name(),
+                        deck_id
+                    );
+                    eprintln!(
+                        "  Recommended: Use a {} deck for {} specialists.",
+                        specialist_faction.display_name(),
+                        specialist_faction.display_name()
+                    );
+                }
+            }
+            None => {
+                eprintln!(
+                    "Warning: {} ({}) is using a non-faction deck ('{}').",
+                    bot_label,
+                    bot_type.name(),
+                    deck_id
+                );
+                eprintln!(
+                    "  Recommended: Use a {} deck for {} specialists.",
+                    specialist_faction.display_name(),
+                    specialist_faction.display_name()
+                );
+            }
+        }
     }
 }
 
@@ -642,13 +764,17 @@ fn run_single_game(
             match bot1_type {
                 BotType::Random => random_bot1.select_action(&state_tensor, &legal_mask, &legal_actions),
                 BotType::Greedy => greedy_bot1.select_action_with_engine(&engine),
-                BotType::Mcts => mcts_bot1.select_action_with_engine(&engine),
+                BotType::Mcts | BotType::AgentSpecialist(_) | BotType::AgentGeneralist => {
+                    mcts_bot1.select_action_with_engine(&engine)
+                }
             }
         } else {
             match bot2_type {
                 BotType::Random => random_bot2.select_action(&state_tensor, &legal_mask, &legal_actions),
                 BotType::Greedy => greedy_bot2.select_action_with_engine(&engine),
-                BotType::Mcts => mcts_bot2.select_action_with_engine(&engine),
+                BotType::Mcts | BotType::AgentSpecialist(_) | BotType::AgentGeneralist => {
+                    mcts_bot2.select_action_with_engine(&engine)
+                }
             }
         };
 
@@ -885,7 +1011,9 @@ fn run_single_game_no_log(
                     random_bot1.select_action(&state_tensor, &legal_mask, &legal_actions)
                 }
                 BotType::Greedy => greedy_bot1.select_action_with_engine(&engine),
-                BotType::Mcts => mcts_bot1.select_action_with_engine(&engine),
+                BotType::Mcts | BotType::AgentSpecialist(_) | BotType::AgentGeneralist => {
+                    mcts_bot1.select_action_with_engine(&engine)
+                }
             }
         } else {
             match bot2_type {
@@ -896,7 +1024,9 @@ fn run_single_game_no_log(
                     random_bot2.select_action(&state_tensor, &legal_mask, &legal_actions)
                 }
                 BotType::Greedy => greedy_bot2.select_action_with_engine(&engine),
-                BotType::Mcts => mcts_bot2.select_action_with_engine(&engine),
+                BotType::Mcts | BotType::AgentSpecialist(_) | BotType::AgentGeneralist => {
+                    mcts_bot2.select_action_with_engine(&engine)
+                }
             }
         };
 

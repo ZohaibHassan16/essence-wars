@@ -4,6 +4,8 @@
 //!   cargo run --release --bin tune -- --generations 50 --population 20
 //!   cargo run --release --bin tune -- --mode vs-greedy --games 100
 //!   cargo run --release --bin tune -- --mode specialist --deck aggressive_assault --opponent defensive_control
+//!   cargo run --release --bin tune -- --mode faction-specialist --faction argentum
+//!   cargo run --release --bin tune -- --mode agent-generalist
 //!   cargo run --release --bin tune -- --tag baseline
 
 use std::path::PathBuf;
@@ -16,7 +18,7 @@ use clap::Parser;
 
 use cardgame::bots::{BotWeights, GreedyWeights, WeightSet};
 use cardgame::cards::CardDatabase;
-use cardgame::decks::DeckRegistry;
+use cardgame::decks::{DeckRegistry, Faction};
 use cardgame::tuning::{CmaEs, CmaEsConfig, Evaluator, EvaluatorConfig, TuningMode};
 use cardgame::types::CardId;
 use cardgame::version::{self, VersionInfo};
@@ -26,15 +28,22 @@ use cardgame::version::{self, VersionInfo};
 #[command(name = "tune")]
 #[command(about = "Optimize bot weights using CMA-ES evolution strategy", long_about = None)]
 struct Args {
-    /// Tuning mode: vs-random, vs-greedy, multi-opponent, generalist, specialist
-    /// 
+    /// Tuning mode for weight optimization
+    ///
+    /// Available modes:
     /// - vs-random: Fast baseline (vs RandomBot)
     /// - vs-greedy: Moderate baseline (vs default GreedyBot)
     /// - multi-opponent: Robust (vs Random, Greedy, MCTS with 10%/40%/50% weights)
     /// - generalist: Ultra-robust (ALL deck matchups vs Random, Greedy, MCTS)
-    /// - specialist: Optimize for specific deck matchup
+    /// - specialist: Optimize for specific deck matchup (requires --deck and --opponent)
+    /// - faction-specialist: Train specialist for a faction (requires --faction)
+    /// - agent-generalist: Train generalist against all 3 faction specialists + mirror
     #[arg(long, default_value = "vs-random")]
     mode: String,
+
+    /// Faction for faction-specialist mode: argentum, symbiote, obsidion
+    #[arg(long)]
+    faction: Option<String>,
 
     /// Enable parallel game evaluation (uses all CPU cores)
     #[arg(long, default_value = "true")]
@@ -197,8 +206,64 @@ fn main() {
             println!("Specialist mode: {} vs {}", deck_id, opponent_id);
             TuningMode::Specialist { deck, opponent_deck }
         }
+        "faction-specialist" => {
+            let faction_str = args.faction.as_ref().expect("--faction required for faction-specialist mode");
+            let faction: Faction = faction_str.parse().unwrap_or_else(|e| {
+                eprintln!("{}", e);
+                process::exit(1);
+            });
+
+            // Get all decks for this faction
+            let faction_decks = deck_registry.decks_for_faction(faction);
+            if faction_decks.is_empty() {
+                eprintln!("No decks found for faction '{}'", faction);
+                process::exit(1);
+            }
+
+            // Get opponent decks from other factions
+            let opponent_decks: Vec<_> = Faction::all_factions()
+                .iter()
+                .filter(|f| **f != faction)
+                .flat_map(|f| deck_registry.decks_for_faction(*f))
+                .collect();
+
+            if opponent_decks.is_empty() {
+                eprintln!("No opponent decks found for faction-specialist mode");
+                process::exit(1);
+            }
+
+            // Create matchups: each faction deck vs each opponent deck
+            let matchups = create_faction_matchups(&faction_decks, &opponent_decks, &card_db);
+
+            println!("Faction Specialist mode: {}", faction);
+            println!("  {} faction decks", faction_decks.len());
+            println!("  {} opponent decks (from other factions)", opponent_decks.len());
+            println!("  {} total matchups", matchups.len());
+            TuningMode::Generalist { matchups }
+        }
+        "agent-generalist" => {
+            // Train generalist against all faction decks (simulating specialists + mirror)
+            // Uses all faction decks to create comprehensive matchups
+            let all_faction_decks: Vec<_> = Faction::all_factions()
+                .iter()
+                .flat_map(|f| deck_registry.decks_for_faction(*f))
+                .collect();
+
+            if all_faction_decks.is_empty() {
+                eprintln!("No faction decks found for agent-generalist mode");
+                process::exit(1);
+            }
+
+            // Create all matchups between faction decks (including mirrors)
+            let matchups = create_generalist_matchups(&deck_registry, &card_db);
+
+            println!("Agent Generalist mode:");
+            println!("  {} faction decks across {} factions", all_faction_decks.len(), Faction::all_factions().len());
+            println!("  {} total matchups (including mirrors)", matchups.len());
+            TuningMode::Generalist { matchups }
+        }
         _ => {
-            eprintln!("Unknown mode: {}. Available: vs-random, vs-greedy, multi-opponent, generalist, specialist", args.mode);
+            eprintln!("Unknown mode: {}. Available: vs-random, vs-greedy, multi-opponent, generalist, specialist, faction-specialist, agent-generalist", args.mode);
             process::exit(1);
         }
     };
@@ -372,12 +437,22 @@ Best win rate: {:.1}%\n",
         println!("--------------");
         print_weights(&tuned_weights);
 
+        // Determine weight name based on mode
+        let weight_name = if args.mode == "faction-specialist" {
+            let faction_str = args.faction.as_ref().expect("faction should be set");
+            format!("agent_{}", faction_str.to_lowercase())
+        } else if args.mode == "agent-generalist" {
+            "agent_generalist".to_string()
+        } else {
+            format!("tuned_{}", args.mode)
+        };
+
         // Save weights to experiment directory
         let weights_path = exp_dir.join("weights.toml");
         let bot_weights = BotWeights {
-            name: format!("tuned_{}", args.mode),
+            name: weight_name.clone(),
             version: 1,
-            default: WeightSet { greedy: tuned_weights },
+            default: WeightSet { greedy: tuned_weights.clone() },
             deck_specific: std::collections::HashMap::new(),
         };
 
@@ -389,6 +464,38 @@ Best win rate: {:.1}%\n",
             Err(e) => {
                 eprintln!("\n❌ Error saving weights: {}", e);
                 writeln!(log_file, "\nError saving weights: {}", e).unwrap();
+            }
+        }
+
+        // For faction-specialist and agent-generalist, also save to data/weights/
+        if args.mode == "faction-specialist" || args.mode == "agent-generalist" {
+            let data_weights_dir = PathBuf::from("data/weights/specialists");
+            if let Err(e) = fs::create_dir_all(&data_weights_dir) {
+                eprintln!("Warning: Could not create data/weights/specialists: {}", e);
+            } else {
+                let canonical_path = if args.mode == "faction-specialist" {
+                    let faction_str = args.faction.as_ref().expect("faction should be set");
+                    data_weights_dir.join(format!("{}.toml", faction_str.to_lowercase()))
+                } else {
+                    PathBuf::from("data/weights/generalist.toml")
+                };
+
+                let canonical_weights = BotWeights {
+                    name: weight_name,
+                    version: 1,
+                    default: WeightSet { greedy: tuned_weights },
+                    deck_specific: std::collections::HashMap::new(),
+                };
+
+                match canonical_weights.save(&canonical_path) {
+                    Ok(_) => {
+                        println!("✓ Canonical weights saved to {:?}", canonical_path);
+                        writeln!(log_file, "Canonical weights saved to {:?}", canonical_path).unwrap();
+                    }
+                    Err(e) => {
+                        eprintln!("Warning: Could not save canonical weights: {}", e);
+                    }
+                }
             }
         }
     } else {
@@ -421,6 +528,33 @@ fn create_generalist_matchups(registry: &DeckRegistry, card_db: &CardDatabase) -
     for deck1 in &decks {
         for deck2 in &decks {
             matchups.push((deck1.to_card_ids(), deck2.to_card_ids()));
+        }
+    }
+
+    matchups
+}
+
+/// Create matchups for faction-specialist mode.
+///
+/// Creates all combinations of faction decks vs opponent decks.
+fn create_faction_matchups(
+    faction_decks: &[&cardgame::decks::DeckDefinition],
+    opponent_decks: &[&cardgame::decks::DeckDefinition],
+    card_db: &CardDatabase,
+) -> Vec<(Vec<CardId>, Vec<CardId>)> {
+    let mut matchups = Vec::new();
+
+    for faction_deck in faction_decks {
+        if faction_deck.validate(card_db).is_err() {
+            continue;
+        }
+
+        for opponent_deck in opponent_decks {
+            if opponent_deck.validate(card_db).is_err() {
+                continue;
+            }
+
+            matchups.push((faction_deck.to_card_ids(), opponent_deck.to_card_ids()));
         }
     }
 
