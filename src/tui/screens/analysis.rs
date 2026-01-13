@@ -1,7 +1,7 @@
 //! Analysis screen - experiment results viewer
 
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::prelude::*;
@@ -138,7 +138,7 @@ impl AnalysisScreen {
         self.experiments = experiments;
     }
 
-    fn parse_summary(path: &PathBuf) -> Option<ExperimentSummary> {
+    fn parse_summary(path: &Path) -> Option<ExperimentSummary> {
         let summary_path = path.join("summary.txt");
         let content = fs::read_to_string(summary_path).ok()?;
 
@@ -175,7 +175,7 @@ impl AnalysisScreen {
         })
     }
 
-    fn parse_stats(path: &PathBuf) -> Vec<GenerationStat> {
+    fn parse_stats(path: &Path) -> Vec<GenerationStat> {
         let stats_path = path.join("stats.csv");
         let content = match fs::read_to_string(stats_path) {
             Ok(c) => c,
@@ -198,7 +198,7 @@ impl AnalysisScreen {
         stats
     }
 
-    fn parse_version(path: &PathBuf) -> Option<VersionInfo> {
+    fn parse_version(path: &Path) -> Option<VersionInfo> {
         let version_path = path.join("version.toml");
         let content = fs::read_to_string(version_path).ok()?;
 

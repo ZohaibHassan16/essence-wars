@@ -14,11 +14,11 @@ use crate::core::types::{CardId, PlayerId};
 pub(super) fn apply_passive_to_creature(creature: &mut Creature, modifier: &PassiveModifier) {
     match modifier {
         PassiveModifier::AttackBonus(amount) => {
-            creature.attack = creature.attack.saturating_add(*amount as i8);
+            creature.attack = creature.attack.saturating_add(*amount);
         }
         PassiveModifier::HealthBonus(amount) => {
-            creature.current_health = creature.current_health.saturating_add(*amount as i8);
-            creature.max_health = creature.max_health.saturating_add(*amount as i8);
+            creature.current_health = creature.current_health.saturating_add(*amount);
+            creature.max_health = creature.max_health.saturating_add(*amount);
         }
         PassiveModifier::GrantKeyword(keyword_name) => {
             let kw = Keywords::from_names(&[keyword_name.as_str()]);
@@ -31,11 +31,11 @@ pub(super) fn apply_passive_to_creature(creature: &mut Creature, modifier: &Pass
 pub(super) fn remove_passive_from_creature(creature: &mut Creature, modifier: &PassiveModifier) {
     match modifier {
         PassiveModifier::AttackBonus(amount) => {
-            creature.attack = creature.attack.saturating_sub(*amount as i8);
+            creature.attack = creature.attack.saturating_sub(*amount);
         }
         PassiveModifier::HealthBonus(amount) => {
-            creature.current_health = creature.current_health.saturating_sub(*amount as i8);
-            creature.max_health = creature.max_health.saturating_sub(*amount as i8);
+            creature.current_health = creature.current_health.saturating_sub(*amount);
+            creature.max_health = creature.max_health.saturating_sub(*amount);
             // Ensure health doesn't go below 1 from passive removal
             // (damage should kill, not passive loss)
             if creature.current_health < 1 {

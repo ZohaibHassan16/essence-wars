@@ -165,6 +165,7 @@ pub struct CombatTrace {
 
 impl CombatTrace {
     /// Create a new combat trace for a creature vs creature fight
+    #[allow(clippy::too_many_arguments)]
     pub fn new_creature_combat(
         attacker_owner: PlayerId,
         attacker_slot: Slot,

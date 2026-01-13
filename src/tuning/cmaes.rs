@@ -131,8 +131,8 @@ impl CmaEs {
 
         // Initialize covariance matrix to identity
         let mut cov = vec![vec![0.0; dim]; dim];
-        for i in 0..dim {
-            cov[i][i] = 1.0;
+        for (i, row) in cov.iter_mut().enumerate().take(dim) {
+            row[i] = 1.0;
         }
 
         Self {
@@ -256,8 +256,8 @@ impl CmaEs {
             }
 
             // Clip to bounds
-            for i in 0..self.dim {
-                x[i] = x[i].clamp(self.bounds[i].0, self.bounds[i].1);
+            for (i, val) in x.iter_mut().enumerate().take(self.dim) {
+                *val = val.clamp(self.bounds[i].0, self.bounds[i].1);
             }
 
             population.push(x);
@@ -293,8 +293,8 @@ impl CmaEs {
 
         // Update evolution path for sigma
         let sqrt_cs = (self.cs * (2.0 - self.cs) * self.mu_eff).sqrt();
-        for i in 0..self.dim {
-            self.ps[i] = (1.0 - self.cs) * self.ps[i] + sqrt_cs * mean_diff[i];
+        for (ps_val, &diff) in self.ps.iter_mut().zip(mean_diff.iter()).take(self.dim) {
+            *ps_val = (1.0 - self.cs) * *ps_val + sqrt_cs * diff;
         }
 
         // Compute |ps|
@@ -315,8 +315,8 @@ impl CmaEs {
 
         // Update evolution path for covariance
         let sqrt_cc = (self.cc * (2.0 - self.cc) * self.mu_eff).sqrt();
-        for i in 0..self.dim {
-            self.pc[i] = (1.0 - self.cc) * self.pc[i] + hsig * sqrt_cc * mean_diff[i];
+        for (pc_val, &diff) in self.pc.iter_mut().zip(mean_diff.iter()).take(self.dim) {
+            *pc_val = (1.0 - self.cc) * *pc_val + hsig * sqrt_cc * diff;
         }
 
         // Update covariance matrix
@@ -367,8 +367,8 @@ impl CmaEs {
         if max_off_diag < 0.1 {
             // Close to diagonal - just use square root of diagonal
             let mut result = vec![vec![0.0; self.dim]; self.dim];
-            for i in 0..self.dim {
-                result[i][i] = self.cov[i][i].abs().sqrt().max(0.001);
+            for (i, row) in result.iter_mut().enumerate().take(self.dim) {
+                row[i] = self.cov[i][i].abs().sqrt().max(0.001);
             }
             return result;
         }
@@ -384,8 +384,8 @@ impl CmaEs {
         for i in 0..self.dim {
             for j in 0..=i {
                 let mut sum = self.cov[i][j];
-                for k in 0..j {
-                    sum -= l[i][k] * l[j][k];
+                for (l_i, l_j) in l[i].iter().zip(l[j].iter()).take(j) {
+                    sum -= l_i * l_j;
                 }
                 if i == j {
                     l[i][j] = sum.max(1e-10).sqrt();

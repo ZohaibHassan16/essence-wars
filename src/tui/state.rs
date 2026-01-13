@@ -90,7 +90,7 @@ impl AppState {
         if let Ok(entries) = std::fs::read_dir(&deck_dir) {
             for entry in entries.flatten() {
                 let path = entry.path();
-                if path.extension().map_or(false, |e| e == "toml") {
+                if path.extension().is_some_and(|e| e == "toml") {
                     if let Some(stem) = path.file_stem() {
                         self.decks.push(DeckInfo {
                             id: stem.to_string_lossy().to_string(),
@@ -110,7 +110,7 @@ impl AppState {
         if let Ok(entries) = std::fs::read_dir(&weight_dir) {
             for entry in entries.flatten() {
                 let path = entry.path();
-                if path.extension().map_or(false, |e| e == "toml") {
+                if path.extension().is_some_and(|e| e == "toml") {
                     if let Some(stem) = path.file_stem() {
                         let name = stem.to_string_lossy().to_string();
                         self.weights.push(WeightInfo {

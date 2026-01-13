@@ -5,8 +5,8 @@ use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph};
 
 use super::{
-    AnalysisScreen, ArenaScreen, BenchmarksScreen, HelpScreen, Screen, ScreenWidget,
-    TuningScreen, WeightsScreen,
+    AnalysisScreen, BenchmarksScreen, HelpScreen, Screen, ScreenWidget,
+    WeightsScreen,
 };
 use crate::tui::app::Message;
 use crate::tui::events::{is_down_key, is_enter_key, is_help_key, is_up_key};
@@ -126,19 +126,19 @@ impl ScreenWidget for HomeScreen {
 
         if is_enter_key(key) {
             return match self.selected {
-                0 => Some(Message::Navigate(Screen::Arena(ArenaScreen::new()))),
-                1 => Some(Message::Navigate(Screen::Tuning(TuningScreen::new()))),
-                2 => Some(Message::Navigate(Screen::Analysis(AnalysisScreen::new()))),
-                3 => Some(Message::Navigate(Screen::Benchmarks(BenchmarksScreen::new()))),
-                4 => Some(Message::Navigate(Screen::Weights(WeightsScreen::new()))),
-                5 => Some(Message::Navigate(Screen::Help(HelpScreen::new()))),
+                0 => Some(Message::Navigate(Box::new(Screen::Arena(Box::default())))),
+                1 => Some(Message::Navigate(Box::new(Screen::Tuning(Box::default())))),
+                2 => Some(Message::Navigate(Box::new(Screen::Analysis(AnalysisScreen::new())))),
+                3 => Some(Message::Navigate(Box::new(Screen::Benchmarks(BenchmarksScreen::new())))),
+                4 => Some(Message::Navigate(Box::new(Screen::Weights(WeightsScreen::new())))),
+                5 => Some(Message::Navigate(Box::new(Screen::Help(HelpScreen::new())))),
                 6 => Some(Message::Quit),
                 _ => None,
             };
         }
 
         if is_help_key(key) {
-            return Some(Message::Navigate(Screen::Help(HelpScreen::new())));
+            return Some(Message::Navigate(Box::new(Screen::Help(HelpScreen::new()))));
         }
 
         // Number keys for quick selection

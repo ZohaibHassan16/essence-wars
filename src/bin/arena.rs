@@ -516,6 +516,7 @@ fn validate_faction_deck_binding(
 }
 
 /// Run a match between two bots (parallel version).
+#[allow(clippy::too_many_arguments)]
 fn run_match_parallel(
     card_db: &CardDatabase,
     bot1_type: &BotType,
@@ -606,6 +607,7 @@ fn run_match_parallel(
 }
 
 /// Run a match between two bots (sequential version with logging support).
+#[allow(clippy::too_many_arguments)]
 fn run_match_sequential(
     card_db: &CardDatabase,
     bot1_type: &BotType,
@@ -678,6 +680,7 @@ fn run_match_sequential(
 
 /// Run a single game between two bots.
 /// Returns (winner, turns, duration).
+#[allow(clippy::too_many_arguments)]
 fn run_single_game(
     card_db: &CardDatabase,
     bot1_type: &BotType,
@@ -950,6 +953,7 @@ fn verify_invariants(engine: &GameEngine, seed: u64, action_num: usize, last_act
 
 /// Run a single game without logging (for parallel execution).
 /// Returns (winner, turns, duration).
+#[allow(clippy::too_many_arguments)]
 fn run_single_game_no_log(
     card_db: &CardDatabase,
     bot1_type: &BotType,

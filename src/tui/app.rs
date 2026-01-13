@@ -16,7 +16,7 @@ use super::widgets::{Toast, ToastContainer};
 #[derive(Debug, Clone)]
 pub enum Message {
     // Navigation
-    Navigate(Screen),
+    Navigate(Box<Screen>),
     GoBack,
     Quit,
 
@@ -74,7 +74,7 @@ impl App {
         match msg {
             Message::Navigate(screen) => {
                 // Initialize screen with app state if needed
-                let screen = self.initialize_screen(screen);
+                let screen = self.initialize_screen(*screen);
                 let old = std::mem::replace(&mut self.screen, screen);
                 self.history.push(old);
             }
@@ -98,11 +98,10 @@ impl App {
                 }
 
                 // Global '?' for help (unless already on help screen)
-                if key.code == KeyCode::Char('?') {
-                    if !matches!(self.screen, Screen::Help(_)) {
-                        self.update(Message::Navigate(Screen::Help(HelpScreen::new())));
-                        return;
-                    }
+                if key.code == KeyCode::Char('?')
+                    && !matches!(self.screen, Screen::Help(_)) {
+                    self.update(Message::Navigate(Box::new(Screen::Help(HelpScreen::new()))));
+                    return;
                 }
 
                 // Delegate to current screen
@@ -149,10 +148,10 @@ impl App {
         let deck_ids: Vec<String> = self.state.decks.iter().map(|d| d.id.clone()).collect();
         match screen {
             Screen::Arena(arena) => {
-                Screen::Arena(arena.with_decks(&deck_ids))
+                Screen::Arena(Box::new(arena.with_decks(&deck_ids)))
             }
             Screen::Tuning(tuning) => {
-                Screen::Tuning(tuning.with_decks(&deck_ids))
+                Screen::Tuning(Box::new(tuning.with_decks(&deck_ids)))
             }
             // Other screens that need initialization can be added here
             other => other,

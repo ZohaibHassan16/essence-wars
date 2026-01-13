@@ -78,18 +78,10 @@ impl Default for BotWeights {
 }
 
 /// A complete set of weights for evaluating game states.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct WeightSet {
     /// Weights for evaluating game state
     pub greedy: GreedyWeights,
-}
-
-impl Default for WeightSet {
-    fn default() -> Self {
-        Self {
-            greedy: GreedyWeights::default(),
-        }
-    }
 }
 
 /// Weights for the greedy evaluation function.

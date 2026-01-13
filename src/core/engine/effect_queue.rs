@@ -459,10 +459,9 @@ impl EffectQueue {
             }
 
             // Check for death from negative health buff
-            if creature.current_health <= 0 {
-                if !self.pending_deaths.contains(&(owner, slot)) {
-                    self.pending_deaths.push((owner, slot));
-                }
+            if creature.current_health <= 0
+                && !self.pending_deaths.contains(&(owner, slot)) {
+                self.pending_deaths.push((owner, slot));
             }
         }
     }
@@ -482,10 +481,9 @@ impl EffectQueue {
                 creature.max_health = health as i8;
 
                 // Check for death
-                if creature.current_health <= 0 {
-                    if !self.pending_deaths.contains(&(owner, slot)) {
-                        self.pending_deaths.push((owner, slot));
-                    }
+                if creature.current_health <= 0
+                    && !self.pending_deaths.contains(&(owner, slot)) {
+                    self.pending_deaths.push((owner, slot));
                 }
             }
         }
@@ -499,10 +497,9 @@ impl EffectQueue {
     ) {
         match target {
             EffectTarget::Creature { owner, slot } => {
-                if state.players[owner.index()].get_creature(slot).is_some() {
-                    if !self.pending_deaths.contains(&(owner, slot)) {
-                        self.pending_deaths.push((owner, slot));
-                    }
+                if state.players[owner.index()].get_creature(slot).is_some()
+                    && !self.pending_deaths.contains(&(owner, slot)) {
+                    self.pending_deaths.push((owner, slot));
                 }
             }
             EffectTarget::AllCreatures => {

@@ -302,7 +302,7 @@ impl CardDatabase {
             let entry = entry?;
             let file_path = entry.path();
 
-            if file_path.extension().map_or(false, |ext| ext == "yaml" || ext == "yml") {
+            if file_path.extension().is_some_and(|ext| ext == "yaml" || ext == "yml") {
                 let yaml_content = fs::read_to_string(&file_path)?;
                 let card_set: CardSet = serde_yaml::from_str(&yaml_content)?;
                 all_cards.extend(card_set.cards);

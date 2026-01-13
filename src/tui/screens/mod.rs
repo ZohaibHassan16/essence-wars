@@ -26,8 +26,8 @@ use ratatui::prelude::*;
 #[derive(Debug, Clone)]
 pub enum Screen {
     Home(HomeScreen),
-    Arena(ArenaScreen),
-    Tuning(TuningScreen),
+    Arena(Box<ArenaScreen>),
+    Tuning(Box<TuningScreen>),
     Analysis(AnalysisScreen),
     Benchmarks(BenchmarksScreen),
     Weights(WeightsScreen),

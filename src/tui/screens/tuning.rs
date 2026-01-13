@@ -336,9 +336,9 @@ impl TuningScreen {
             KeyCode::Char('a') | KeyCode::Char('A') => {
                 if let Some(ref result) = self.result {
                     let exp_path = result.experiment_dir.display().to_string();
-                    Some(Message::Navigate(Screen::Analysis(
+                    Some(Message::Navigate(Box::new(Screen::Analysis(
                         AnalysisScreen::with_experiment(&exp_path)
-                    )))
+                    ))))
                 } else {
                     None
                 }
@@ -347,9 +347,9 @@ impl TuningScreen {
             KeyCode::Char('w') | KeyCode::Char('W') => {
                 if let Some(ref result) = self.result {
                     let weights_path = result.weights_path.display().to_string();
-                    Some(Message::Navigate(Screen::Weights(
+                    Some(Message::Navigate(Box::new(Screen::Weights(
                         WeightsScreen::with_compare(&weights_path)
-                    )))
+                    ))))
                 } else {
                     None
                 }
@@ -649,8 +649,6 @@ impl TuningScreen {
 
                     if value_row == row {
                         row_chars.push('*');
-                    } else if value_row < row {
-                        row_chars.push(' ');
                     } else {
                         row_chars.push(' ');
                     }

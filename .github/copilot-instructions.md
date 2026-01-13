@@ -33,6 +33,7 @@
 cargo build --release          # 14s typical
 cargo test                     # 243 tests, ~3s
 cargo bench                    # Criterion benchmarks
+./scripts/run-clippy.sh        # Lint production code (excludes tests)
 ```
 
 ### Run Bots

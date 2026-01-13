@@ -347,7 +347,7 @@ fn main() {
     if args.mode == "multi-opponent" {
         writeln!(log_file, "MCTS sims: {}", args.mcts_sims).unwrap();
     }
-    writeln!(log_file, "").unwrap();
+    writeln!(log_file).unwrap();
 
     // Create optimizer and evaluator
     let mut cmaes = CmaEs::new(initial_weights, bounds, cmaes_config);
@@ -398,7 +398,7 @@ fn main() {
             gen_time.as_secs_f64()
         );
         
-        if args.verbose || gen % 5 == 0 || gen == 0 {
+        if args.verbose || gen.is_multiple_of(5) || gen == 0 {
             println!("{}", progress_msg);
         }
         

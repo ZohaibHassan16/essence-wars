@@ -128,6 +128,7 @@ pub fn resolve_combat(
 }
 
 /// Resolve a face attack (attacking an empty slot).
+#[allow(clippy::too_many_arguments)]
 fn resolve_face_attack(
     state: &mut GameState,
     card_db: &CardDatabase,
@@ -147,7 +148,7 @@ fn resolve_face_attack(
         .unwrap_or(0);
 
     // Create trace if enabled
-    let mut trace = tracer.as_ref().map(|t| {
+    let mut trace = tracer.as_ref().and_then(|t| {
         if t.is_enabled() {
             Some(CombatTrace::new_face_attack(
                 attacker_player,
@@ -160,7 +161,7 @@ fn resolve_face_attack(
         } else {
             None
         }
-    }).flatten();
+    });
 
     let damage = attacker_attack;
 
@@ -223,6 +224,7 @@ fn resolve_face_attack(
 }
 
 /// Resolve creature vs creature combat with all keyword interactions.
+#[allow(clippy::too_many_arguments)]
 fn resolve_creature_combat(
     state: &mut GameState,
     card_db: &CardDatabase,
@@ -265,7 +267,7 @@ fn resolve_creature_combat(
     };
 
     // Create trace if enabled
-    let mut trace = tracer.as_ref().map(|t| {
+    let mut trace = tracer.as_ref().and_then(|t| {
         if t.is_enabled() {
             Some(CombatTrace::new_creature_combat(
                 attacker_player,
@@ -282,7 +284,7 @@ fn resolve_creature_combat(
         } else {
             None
         }
-    }).flatten();
+    });
 
     // Extract keyword flags
     let attacker_has_quick = attacker_keywords.has_quick();

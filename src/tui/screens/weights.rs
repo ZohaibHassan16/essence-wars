@@ -136,7 +136,7 @@ impl WeightsScreen {
             if let Ok(entries) = fs::read_dir(&experiments_dir) {
                 let mut exp_dirs: Vec<_> = entries.flatten().filter(|e| e.path().is_dir()).collect();
                 // Sort by name (timestamp) descending to get most recent first
-                exp_dirs.sort_by(|a, b| b.file_name().cmp(&a.file_name()));
+                exp_dirs.sort_by_key(|b| std::cmp::Reverse(b.file_name()));
 
                 // Only show 5 most recent experiment weights
                 for entry in exp_dirs.into_iter().take(5) {
@@ -202,12 +202,10 @@ impl WeightsScreen {
 
             if in_greedy_section {
                 Self::parse_greedy_field(line, &mut greedy);
-            } else {
-                if let Some(value) = line.strip_prefix("name = ") {
-                    name = value.trim_matches('"').to_string();
-                } else if let Some(value) = line.strip_prefix("version = ") {
-                    version = value.parse().unwrap_or(1);
-                }
+            } else if let Some(value) = line.strip_prefix("name = ") {
+                name = value.trim_matches('"').to_string();
+            } else if let Some(value) = line.strip_prefix("version = ") {
+                version = value.parse().unwrap_or(1);
             }
         }
 

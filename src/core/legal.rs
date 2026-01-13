@@ -81,13 +81,12 @@ fn generate_play_card_actions(
                 // For creatures: generate action for each empty creature slot
                 for slot_idx in 0..board::CREATURE_SLOTS as u8 {
                     let slot = Slot(slot_idx);
-                    if player.get_creature(slot).is_none() {
-                        if actions.len() < MAX_LEGAL_ACTIONS {
-                            actions.push(Action::PlayCard {
-                                hand_index: hand_idx as u8,
-                                slot,
-                            });
-                        }
+                    if player.get_creature(slot).is_none()
+                        && actions.len() < MAX_LEGAL_ACTIONS {
+                        actions.push(Action::PlayCard {
+                            hand_index: hand_idx as u8,
+                            slot,
+                        });
                     }
                 }
             }
@@ -105,13 +104,12 @@ fn generate_play_card_actions(
                 // For supports: generate action for each empty support slot
                 for slot_idx in 0..board::SUPPORT_SLOTS as u8 {
                     let slot = Slot(slot_idx);
-                    if player.get_support(slot).is_none() {
-                        if actions.len() < MAX_LEGAL_ACTIONS {
-                            actions.push(Action::PlayCard {
-                                hand_index: hand_idx as u8,
-                                slot,
-                            });
-                        }
+                    if player.get_support(slot).is_none()
+                        && actions.len() < MAX_LEGAL_ACTIONS {
+                        actions.push(Action::PlayCard {
+                            hand_index: hand_idx as u8,
+                            slot,
+                        });
                     }
                 }
             }
@@ -268,14 +266,13 @@ fn generate_ability_actions(
                         }
                     }
                     // Also allow targeting self for TargetAny
-                    if matches!(ability.targeting, TargetingRule::TargetAny) {
-                        if actions.len() < MAX_LEGAL_ACTIONS {
-                            actions.push(Action::UseAbility {
-                                slot: creature.slot,
-                                ability_index: ability_idx as u8,
-                                target: Target::Self_,
-                            });
-                        }
+                    if matches!(ability.targeting, TargetingRule::TargetAny)
+                        && actions.len() < MAX_LEGAL_ACTIONS {
+                        actions.push(Action::UseAbility {
+                            slot: creature.slot,
+                            ability_index: ability_idx as u8,
+                            target: Target::Self_,
+                        });
                     }
                 }
                 TargetingRule::TargetEnemyCreature => {

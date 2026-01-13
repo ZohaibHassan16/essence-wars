@@ -14,6 +14,11 @@ cargo build --release
 cargo nextest run --status-level=fail  # ~485 tests (only shows failures)
 cargo test                              # Alternative: use standard cargo test
 
+# Run Linter (production code only, excludes tests)
+./scripts/run-clippy.sh                 # Recommended: checks lib + binaries
+cargo clippy --lib --bins -- -D warnings  # Same as above
+cargo clippy --all-targets -- -D warnings # Include tests (verbose)
+ 
 # Run stress tests by tier (use helper script)
 ./scripts/run-tests.sh                  # Standard tests only
 ./scripts/run-tests.sh quick            # + quick tier (~2 min)

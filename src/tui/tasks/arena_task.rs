@@ -139,7 +139,7 @@ fn run_arena_task(config: ArenaConfig, sender: Sender<ArenaProgress>) {
         }
     };
     // Get a reference to the inner CardDatabase for bot creation
-    let card_db_ref: &CardDatabase = &*card_db;
+    let card_db_ref: &CardDatabase = &card_db;
 
     // Load deck registry
     let deck_registry = match DeckRegistry::load_from_directory("data/decks") {

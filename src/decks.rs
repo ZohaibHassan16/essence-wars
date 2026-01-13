@@ -226,7 +226,7 @@ impl DeckRegistry {
             let entry = entry?;
             let file_path = entry.path();
 
-            if file_path.extension().map_or(false, |ext| ext == "toml") {
+            if file_path.extension().is_some_and(|ext| ext == "toml") {
                 let content = fs::read_to_string(&file_path)?;
                 let deck: DeckDefinition = toml::from_str(&content)
                     .map_err(|e| DeckError::ParseError {
