@@ -1,45 +1,30 @@
-# Obsidion Syndicate Specialist Weights
-# "The Glass Cannon" - Burst damage with Lifesteal, Stealth, Ephemeral, Quick
-# Emphasizes direct damage and life manipulation
-
 name = "agent_obsidion"
 version = 1
 
 [default.greedy]
-# Life - Values life highly due to Lifesteal synergy
-own_life = 1.2
-enemy_life_damage = 2.5  # High priority on dealing damage
+own_life = 2.424933433532715
+enemy_life_damage = 1.0268954038619995
+own_creature_attack = 0.6010425090789795
+own_creature_health = 1.1925593614578247
+enemy_creature_attack = -1.7161389589309692
+enemy_creature_health = -1.566748857498169
+creature_count = 2.820333480834961
+board_advantage = 2.3038508892059326
+cards_in_hand = 1.209562063217163
+action_points = -0.39383792877197266
+keyword_guard = 4.026029109954834
+keyword_lethal = 3.387244939804077
+keyword_lifesteal = 2.9335906505584717
+keyword_rush = 1.023514986038208
+keyword_ranged = 2.0982213020324707
+keyword_piercing = 0.9305950403213501
+keyword_shield = 3.5097696781158447
+keyword_quick = 0.34507009387016296
+keyword_ephemeral = -0.7758904695510864
+keyword_regenerate = 1.5377256870269775
+keyword_stealth = 2.9986371994018555
+keyword_charge = 2.6832427978515625
+win_bonus = 999.517822265625
+lose_penalty = -999.6472778320313
 
-# Creatures - Attack matters, health is secondary
-own_creature_attack = 1.3
-own_creature_health = 0.6
-enemy_creature_attack = -0.8
-enemy_creature_health = -0.5
-
-# Board Control - Quality over quantity
-creature_count = 1.5
-board_advantage = 1.0
-
-# Resources - Values hand for combos
-cards_in_hand = 0.5
-action_points = 0.15
-
-# Keywords - Obsidion specialty
-keyword_guard = 0.5      # Not their style (avoid)
-keyword_piercing = 1.0
-keyword_shield = 1.0
-keyword_lethal = 1.5
-keyword_lifesteal = 4.0  # PRIMARY: Life manipulation
-keyword_rush = 2.0
-keyword_ranged = 1.5
-keyword_quick = 3.5      # PRIMARY: Strike first
-
-# New Keywords
-keyword_ephemeral = 0.5  # Obsidion uses Ephemeral creatures strategically
-keyword_regenerate = 0.5 # Not their focus (avoid)
-keyword_stealth = 4.0    # PRIMARY: Assassination tactics
-keyword_charge = 2.0
-
-# Terminal
-win_bonus = 1000.0
-lose_penalty = -1000.0
+[deck_specific]

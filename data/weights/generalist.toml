@@ -1,45 +1,30 @@
-# Generalist Agent Weights
-# Balanced approach that works reasonably well against all factions
-# Trained against all specialists + mirror play
-
-name = "agent_generalist"
+name = "tuned_generalist"
 version = 1
 
 [default.greedy]
-# Life - Balanced approach
-own_life = 1.2
-enemy_life_damage = 1.5
+own_life = 3.379558563232422
+enemy_life_damage = 2.664247512817383
+own_creature_attack = 0.7423701882362366
+own_creature_health = 0.07331487536430359
+enemy_creature_attack = -2.949723720550537
+enemy_creature_health = -2.3844118118286133
+creature_count = 2.0712730884552
+board_advantage = 0.764156699180603
+cards_in_hand = 1.8275530338287354
+action_points = 0.10957106947898865
+keyword_guard = 2.6788578033447266
+keyword_lethal = 3.610771656036377
+keyword_lifesteal = 2.9362704753875732
+keyword_rush = 1.756394624710083
+keyword_ranged = 2.1224355697631836
+keyword_piercing = 0.025465743616223335
+keyword_shield = 3.4775657653808594
+keyword_quick = 0.10440494120121002
+keyword_ephemeral = -0.5949468016624451
+keyword_regenerate = 2.7673490047454834
+keyword_stealth = 3.655573606491089
+keyword_charge = 3.016944408416748
+win_bonus = 999.3978881835938
+lose_penalty = -1000.5458984375
 
-# Creatures - Balanced valuation
-own_creature_attack = 1.0
-own_creature_health = 1.0
-enemy_creature_attack = -0.9
-enemy_creature_health = -0.8
-
-# Board Control - Important but not dominant
-creature_count = 2.0
-board_advantage = 1.5
-
-# Resources
-cards_in_hand = 0.35
-action_points = 0.15
-
-# Keywords - Balanced across all keywords
-keyword_guard = 2.0
-keyword_piercing = 1.5
-keyword_shield = 1.5
-keyword_lethal = 2.5
-keyword_lifesteal = 2.0
-keyword_rush = 2.0
-keyword_ranged = 1.5
-keyword_quick = 2.0
-
-# New Keywords
-keyword_ephemeral = -1.0
-keyword_regenerate = 2.0
-keyword_stealth = 2.0
-keyword_charge = 1.5
-
-# Terminal
-win_bonus = 1000.0
-lose_penalty = -1000.0
+[deck_specific]

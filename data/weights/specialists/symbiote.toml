@@ -1,45 +1,30 @@
-# Symbiote Circles Specialist Weights
-# "The Swarm" - Aggressive tempo with Rush, Lethal, Regenerate
-# Emphasizes trading efficiently and overwhelming opponents
-
 name = "agent_symbiote"
 version = 1
 
 [default.greedy]
-# Life - Willing to trade life for board
-own_life = 1.0
-enemy_life_damage = 1.8
+own_life = 4.112363815307617
+enemy_life_damage = 2.3161442279815674
+own_creature_attack = 0.7728467583656311
+own_creature_health = 0.9436355233192444
+enemy_creature_attack = -1.5892831087112427
+enemy_creature_health = -1.9062989950180054
+creature_count = 5.268179416656494
+board_advantage = 0.27890804409980774
+cards_in_hand = 2.3648838996887207
+action_points = -0.3947812020778656
+keyword_guard = 0.6024255752563477
+keyword_lethal = 3.449932098388672
+keyword_lifesteal = 3.9645655155181885
+keyword_rush = 1.796385645866394
+keyword_ranged = 0.565819501876831
+keyword_piercing = 1.2636981010437012
+keyword_shield = 4.266754150390625
+keyword_quick = 0.36956605315208435
+keyword_ephemeral = -2.986079454421997
+keyword_regenerate = 0.8752970695495605
+keyword_stealth = 4.268548965454102
+keyword_charge = 3.243101119995117
+win_bonus = 999.1188354492188
+lose_penalty = -1001.06494140625
 
-# Creatures - Attack matters more for Symbiote
-own_creature_attack = 1.2
-own_creature_health = 0.8
-enemy_creature_attack = -1.0
-enemy_creature_health = -1.0
-
-# Board Control - Swarm tactics
-creature_count = 3.0
-board_advantage = 2.0
-
-# Resources
-cards_in_hand = 0.4
-action_points = 0.2
-
-# Keywords - Symbiote specialty
-keyword_guard = 1.0      # Only Hive Guardian
-keyword_piercing = 1.0
-keyword_shield = 0.5
-keyword_lethal = 4.0     # PRIMARY: Efficient trades
-keyword_lifesteal = 1.5
-keyword_rush = 3.5       # PRIMARY: Immediate pressure
-keyword_ranged = 1.5
-keyword_quick = 1.5
-
-# New Keywords
-keyword_ephemeral = -1.5
-keyword_regenerate = 3.5 # PRIMARY: Sustain over time
-keyword_stealth = 1.0
-keyword_charge = 2.0
-
-# Terminal
-win_bonus = 1000.0
-lose_penalty = -1000.0
+[deck_specific]
