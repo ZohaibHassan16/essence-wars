@@ -33,6 +33,9 @@ pub mod combat;
 // Main game engine (depends on all above)
 pub mod engine;
 
+// Tracing infrastructure for debugging (depends on types, keywords, effects)
+pub mod tracing;
+
 // Re-export commonly used items for convenience
 pub use types::*;
 pub use keywords::*;

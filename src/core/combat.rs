@@ -21,6 +21,7 @@ use crate::core::effects::{EffectSource, Trigger};
 use crate::core::engine::EffectQueue;
 use crate::core::keywords::Keywords;
 use crate::core::state::GameState;
+use crate::core::tracing::{CombatTrace, CombatTracer};
 use crate::core::types::{PlayerId, Slot};
 
 /// Result of combat resolution
@@ -53,6 +54,7 @@ pub struct CombatResult {
 /// * `attacker_player` - The player who is attacking
 /// * `attacker_slot` - The slot of the attacking creature
 /// * `defender_slot` - The target slot being attacked
+/// * `tracer` - Optional combat tracer for debugging
 ///
 /// # Returns
 /// A `CombatResult` containing details about what happened in combat
@@ -63,6 +65,7 @@ pub fn resolve_combat(
     attacker_player: PlayerId,
     attacker_slot: Slot,
     defender_slot: Slot,
+    tracer: Option<&mut CombatTracer>,
 ) -> CombatResult {
     let defender_player = attacker_player.opponent();
 
@@ -88,8 +91,10 @@ pub fn resolve_combat(
             attacker_player,
             attacker_slot,
             defender_player,
+            defender_slot,
             attacker_attack,
             attacker_keywords,
+            tracer,
         );
     }
 
@@ -102,6 +107,7 @@ pub fn resolve_combat(
         attacker_slot,
         defender_player,
         defender_slot,
+        tracer,
     )
 }
 
@@ -113,9 +119,33 @@ fn resolve_face_attack(
     attacker_player: PlayerId,
     attacker_slot: Slot,
     defender_player: PlayerId,
+    defender_slot: Slot,
     attacker_attack: u8,
     attacker_keywords: Keywords,
+    tracer: Option<&mut CombatTracer>,
 ) -> CombatResult {
+    // Get attacker health for trace
+    let attacker_health = state.players[attacker_player.index()]
+        .get_creature(attacker_slot)
+        .map(|c| c.current_health)
+        .unwrap_or(0);
+
+    // Create trace if enabled
+    let mut trace = tracer.as_ref().map(|t| {
+        if t.is_enabled() {
+            Some(CombatTrace::new_face_attack(
+                attacker_player,
+                attacker_slot,
+                attacker_attack as i8,
+                attacker_health,
+                attacker_keywords,
+                defender_slot,
+            ))
+        } else {
+            None
+        }
+    }).flatten();
+
     let damage = attacker_attack;
 
     // Deal face damage
@@ -125,6 +155,11 @@ fn resolve_face_attack(
     // Track total damage dealt
     state.players[attacker_player.index()].total_damage_dealt += damage as u16;
 
+    // Log face damage
+    if let Some(ref mut t) = trace {
+        t.log_face_damage(damage);
+    }
+
     // Apply Lifesteal
     let healed = if attacker_keywords.has_lifesteal() && damage > 0 {
         // Heal attacker's controller, capped at 30 (max life per DESIGN.md)
@@ -132,6 +167,11 @@ fn resolve_face_attack(
         let new_life = (current_life + damage as i16).min(30);
         let actual_heal = (new_life - current_life) as u8;
         state.players[attacker_player.index()].life = new_life;
+
+        if let Some(ref mut t) = trace {
+            t.log_lifesteal(actual_heal);
+        }
+
         actual_heal
     } else {
         0
@@ -145,6 +185,16 @@ fn resolve_face_attack(
 
     // Check for game over
     check_game_over(state);
+
+    // Log completion
+    if let Some(ref mut t) = trace {
+        t.log_complete(false, false);
+    }
+
+    // Add trace to tracer
+    if let (Some(tracer), Some(trace)) = (tracer, trace) {
+        tracer.add_trace(trace);
+    }
 
     CombatResult {
         attacker_damage_dealt: damage,
@@ -165,6 +215,7 @@ fn resolve_creature_combat(
     attacker_slot: Slot,
     defender_player: PlayerId,
     defender_slot: Slot,
+    tracer: Option<&mut CombatTracer>,
 ) -> CombatResult {
     // Gather all creature stats and keywords before combat
     let (
@@ -197,6 +248,26 @@ fn resolve_creature_combat(
         )
     };
 
+    // Create trace if enabled
+    let mut trace = tracer.as_ref().map(|t| {
+        if t.is_enabled() {
+            Some(CombatTrace::new_creature_combat(
+                attacker_player,
+                attacker_slot,
+                attacker_attack as i8,
+                attacker_health,
+                attacker_keywords,
+                defender_player,
+                defender_slot,
+                defender_attack as i8,
+                defender_health,
+                defender_keywords,
+            ))
+        } else {
+            None
+        }
+    }).flatten();
+
     // Extract keyword flags
     let attacker_has_quick = attacker_keywords.has_quick();
     let attacker_has_shield = attacker_keywords.has_shield();
@@ -208,6 +279,20 @@ fn resolve_creature_combat(
     let defender_has_quick = defender_keywords.has_quick();
     let defender_has_shield = defender_keywords.has_shield();
     let defender_has_lethal = defender_keywords.has_lethal();
+
+    // Log Quick check
+    if let Some(ref mut t) = trace {
+        t.log_quick_check(attacker_has_quick, defender_has_quick);
+        if attacker_has_ranged {
+            t.log_ranged();
+        }
+        if attacker_has_shield {
+            t.log_shield_check("Attacker", true);
+        }
+        if defender_has_shield {
+            t.log_shield_check("Defender", true);
+        }
+    }
 
     // Trigger OnAttack effect before combat damage
     trigger_on_attack(state, card_db, effect_queue, attacker_player, attacker_slot);
@@ -337,6 +422,11 @@ fn resolve_creature_combat(
     result.attacker_died = attacker_died;
     result.defender_died = defender_died;
 
+    // Log damage dealt
+    if let Some(ref mut t) = trace {
+        t.log_damage(actual_damage_to_defender, actual_damage_to_attacker);
+    }
+
     // Apply Piercing: excess damage to face when defender dies
     if attacker_has_piercing && defender_died && actual_damage_to_defender > 0 {
         // Calculate excess damage: attack power minus defender's remaining health before death
@@ -350,6 +440,11 @@ fn resolve_creature_combat(
 
             // Track piercing damage dealt
             state.players[attacker_player.index()].total_damage_dealt += excess as u16;
+
+            // Log piercing
+            if let Some(ref mut t) = trace {
+                t.log_piercing(excess);
+            }
         }
     }
 
@@ -364,6 +459,11 @@ fn resolve_creature_combat(
             let actual_heal = (new_life - current_life) as u8;
             state.players[attacker_player.index()].life = new_life;
             result.attacker_healed = actual_heal;
+
+            // Log lifesteal
+            if let Some(ref mut t) = trace {
+                t.log_lifesteal(actual_heal);
+            }
         }
     }
 
@@ -401,6 +501,14 @@ fn resolve_creature_combat(
 
     // Check for game over
     check_game_over(state);
+
+    // Log completion and add trace to tracer
+    if let Some(ref mut t) = trace {
+        t.log_complete(attacker_died, defender_died);
+    }
+    if let (Some(tracer), Some(trace)) = (tracer, trace) {
+        tracer.add_trace(trace);
+    }
 
     result
 }

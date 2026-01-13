@@ -110,6 +110,7 @@ fn run_combat(
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     (result, state)
@@ -318,6 +319,7 @@ fn test_ranged_plus_lifesteal() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     assert_eq!(result.attacker_damage_dealt, 4);
@@ -608,6 +610,7 @@ fn test_shield_vs_lifesteal() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     assert_eq!(result.attacker_damage_dealt, 0); // Blocked
@@ -703,6 +706,7 @@ fn test_lethal_plus_lifesteal() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     assert!(result.defender_died); // Lethal kill
@@ -782,6 +786,7 @@ fn test_piercing_plus_lifesteal() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     assert!(result.defender_died);
@@ -829,6 +834,7 @@ fn test_lifesteal_capped_at_30() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     assert_eq!(result.attacker_healed, 2); // Only healed 2 (28 + 2 = 30)
@@ -861,6 +867,7 @@ fn test_lifesteal_on_face_attack() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     assert_eq!(result.face_damage, 5);
@@ -978,6 +985,7 @@ fn test_zero_attack_with_lifesteal() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     assert_eq!(result.attacker_damage_dealt, 0);
@@ -1063,6 +1071,7 @@ fn test_ranged_piercing_lifesteal() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     assert_eq!(result.attacker_damage_dealt, 6);

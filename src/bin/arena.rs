@@ -573,9 +573,10 @@ fn run_single_game(
 ) -> (Option<PlayerId>, u32, Duration) {
     let start = Instant::now();
 
-    // Create tracers if enabled (mutable for future engine integration)
-    let combat_tracer = CombatTracer::new(trace_combat);
-    let effect_tracer = EffectTracer::new(trace_effects);
+    // Create tracers if enabled
+    let mut combat_tracer = CombatTracer::new(trace_combat);
+    let mut effect_tracer = EffectTracer::new(trace_effects);
+    let tracing_enabled = trace_combat || trace_effects;
 
     // Create bots with appropriate seeds and weights
     let bot1_seed = seed;
@@ -669,8 +670,18 @@ fn run_single_game(
             let _ = l.log_action(&record);
         }
 
-        // Apply action
-        if let Err(e) = engine.apply_action(action) {
+        // Apply action - use traced version when tracing is enabled
+        let result = if tracing_enabled {
+            engine.apply_action_with_tracers(
+                action,
+                if trace_combat { Some(&mut combat_tracer) } else { None },
+                if trace_effects { Some(&mut effect_tracer) } else { None },
+            )
+        } else {
+            engine.apply_action(action)
+        };
+
+        if let Err(e) = result {
             eprintln!("Error applying action {:?}: {:?}", action, e);
             break;
         }
@@ -698,20 +709,13 @@ fn run_single_game(
         );
     }
 
-    // Print trace output if enabled
-    // Note: The tracers need to be called during combat/effect resolution.
-    // Currently this prints empty traces as a placeholder - full integration
-    // requires passing tracers to engine.resolve_combat() and engine.process_effect_queue().
+    // Print trace output if tracing is enabled
     if trace_combat && !combat_tracer.traces.is_empty() {
         println!("{}", combat_tracer.format_all());
     }
     if trace_effects && !effect_tracer.events.is_empty() {
         println!("{}", effect_tracer.format());
     }
-
-    // Suppress unused variable warnings when tracing is disabled
-    let _ = &combat_tracer;
-    let _ = &effect_tracer;
 
     (winner, turns, duration)
 }

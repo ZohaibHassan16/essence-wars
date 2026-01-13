@@ -196,6 +196,7 @@ fn test_basic_combat() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Attacker deals 3 damage, defender deals 2 damage
@@ -238,6 +239,7 @@ fn test_face_damage() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Face damage dealt
@@ -286,6 +288,7 @@ fn test_quick_kills_before_counter() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Quick creature kills defender before counter-attack
@@ -333,6 +336,7 @@ fn test_shield_absorbs_damage() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Shield absorbed damage, defender survives
@@ -384,6 +388,7 @@ fn test_ranged_no_counter_attack() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Ranged creature deals damage but takes none
@@ -436,6 +441,7 @@ fn test_piercing_overflow() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // 5 attack - 2 health = 3 overflow damage
@@ -481,6 +487,7 @@ fn test_lethal_kills_regardless_of_health() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Lethal killed the high-health defender
@@ -527,6 +534,7 @@ fn test_lifesteal_heals() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Lifesteal heals for damage dealt (3, the defender's health)
@@ -571,6 +579,7 @@ fn test_quick_plus_lethal_combo() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Quick + Lethal kills the 10/10 before it can counter-attack
@@ -618,6 +627,7 @@ fn test_shield_vs_piercing() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Shield absorbs damage, no piercing overflow
@@ -666,6 +676,7 @@ fn test_shield_vs_lethal() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Shield absorbs damage, lethal doesn't trigger
@@ -716,6 +727,7 @@ fn test_both_have_shield() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Both shields absorbed damage
@@ -772,6 +784,7 @@ fn test_shield_vs_lifesteal() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Shield blocked damage, no lifesteal healing
@@ -815,6 +828,7 @@ fn test_lifesteal_face_attack() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Lifesteal heals for face damage
@@ -859,6 +873,7 @@ fn test_defender_has_quick() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Defender has Quick, so they strike first
@@ -908,6 +923,7 @@ fn test_both_have_quick() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Both have Quick = simultaneous damage
@@ -950,6 +966,7 @@ fn test_attacker_exhausted_after_combat() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Attacker should be exhausted
@@ -986,6 +1003,7 @@ fn test_game_over_on_lethal_face_damage() {
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     // Game should be over

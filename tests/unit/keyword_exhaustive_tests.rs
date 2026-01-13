@@ -112,6 +112,7 @@ fn run_combat(
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     (result, state)
@@ -156,6 +157,7 @@ fn run_combat_with_life(
         PlayerId::PLAYER_ONE,
         Slot(0),
         Slot(0),
+        None,
     );
 
     (result, state)

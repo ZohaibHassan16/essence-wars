@@ -7,14 +7,15 @@
 //! - Combat resolution tracing for debugging
 //! - Effect queue tracing for debugging
 
-mod combat_tracer;
-mod effect_tracer;
 mod logger;
 mod runner;
 mod stats;
 
-pub use combat_tracer::{CombatPhase, CombatStep, CombatTrace, CombatTracer};
-pub use effect_tracer::{EffectEvent, EffectEventType, EffectTracer};
+// Re-export tracing types from core::tracing for convenience
+pub use crate::core::tracing::{
+    CombatPhase, CombatStep, CombatTrace, CombatTracer,
+    EffectEvent, EffectEventType, EffectTracer,
+};
 pub use logger::{ActionLogger, ActionRecord, LogOutput, StateSnapshot};
 pub use runner::{GameRunner, GameResult};
 pub use stats::{MatchStats, MatchupStats};
