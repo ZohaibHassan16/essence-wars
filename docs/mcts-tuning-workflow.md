@@ -38,7 +38,7 @@ $ cargo run --release --bin tune -- \
 ```
 
 * Creates: `experiments/mcts/2026-01-12_HHMM_my_experiment/`
-* Output: `weights.toml` with 20 optimized weight parameters
+* Output: `weights.toml` with 24 optimized weight parameters
 * Also creates: `train.log`, `summary.txt`, and `plots/` (after analysis)
 
 ## STEP 1b: ANALYZE RESULTS

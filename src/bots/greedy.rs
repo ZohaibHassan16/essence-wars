@@ -56,8 +56,9 @@ impl<'a> GreedyBot<'a> {
                 // eprintln!("Loaded default weights from {}", DEFAULT_PATH);
                 bot_weights.default.greedy.clone()
             }
-            Err(_) => {
-                eprintln!("Using hardcoded default weights ({}not found)", DEFAULT_PATH);
+            Err(e) => {
+                eprintln!("Failed to load weights from {}: {}", DEFAULT_PATH, e);
+                eprintln!("Using hardcoded default weights instead");
                 GreedyWeights::default()
             }
         }

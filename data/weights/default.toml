@@ -1,0 +1,30 @@
+name = "tuned_multi-opponent"
+version = 1
+
+[default.greedy]
+own_life = 2.7434580326080322
+enemy_life_damage = 1.811079502105713
+own_creature_attack = 1.6441248655319214
+own_creature_health = 0.30151844024658203
+enemy_creature_attack = -1.4250891208648682
+enemy_creature_health = -1.6221704483032227
+creature_count = 2.2012879848480225
+board_advantage = 2.6306519508361816
+cards_in_hand = 1.0598864555358887
+action_points = -0.13732044398784637
+keyword_guard = 2.6329476833343506
+keyword_lethal = 3.114079475402832
+keyword_lifesteal = 2.518770217895508
+keyword_rush = 2.8520147800445557
+keyword_ranged = 1.5305966138839722
+keyword_piercing = 0.2743566632270813
+keyword_shield = 3.820589780807495
+keyword_quick = 1.0014371871948242
+keyword_ephemeral = -2.0
+keyword_regenerate = 3.0
+keyword_stealth = 3.0
+keyword_charge = 2.0
+win_bonus = 999.06884765625
+lose_penalty = -1000.3414916992188
+
+[deck_specific]

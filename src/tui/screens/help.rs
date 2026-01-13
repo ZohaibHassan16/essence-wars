@@ -328,7 +328,7 @@ impl HelpScreen {
             Line::from(""),
             Line::from(vec![
                 Span::styled("        0       ", code),
-                Span::styled(" - Auto: 4 + 3*ln(20) = ~12 (recommended)", dim),
+                Span::styled(" - Auto: 4 + 3*ln(24) = ~13 (recommended)", dim),
             ]),
             Line::from(vec![
                 Span::styled("        5-10    ", code),
@@ -407,7 +407,7 @@ impl HelpScreen {
             Line::from(""),
             Line::from(Span::styled("  WEIGHT PARAMETERS", h1)),
             Line::from(""),
-            Line::from(Span::styled("  GreedyBot evaluates game states using 20 weighted factors.", text)),
+            Line::from(Span::styled("  GreedyBot evaluates game states using 24 weighted factors.", text)),
             Line::from(Span::styled("  Higher weight = more important in decisions.", text)),
             Line::from(""),
             Line::from(Span::styled("  LIFE CATEGORY", h2)),
@@ -507,6 +507,22 @@ impl HelpScreen {
             Line::from(vec![
                 Span::styled("    quick ", highlight),
                 Span::styled("- Attacks first in combat", dim),
+            ]),
+            Line::from(vec![
+                Span::styled("    ephemeral ", highlight),
+                Span::styled("- Dies at end of turn (negative value)", dim),
+            ]),
+            Line::from(vec![
+                Span::styled("    regenerate ", highlight),
+                Span::styled("- Heals 2 HP at start of turn", dim),
+            ]),
+            Line::from(vec![
+                Span::styled("    stealth ", highlight),
+                Span::styled("- Cannot be targeted by enemy", dim),
+            ]),
+            Line::from(vec![
+                Span::styled("    charge ", highlight),
+                Span::styled("- +2 attack when attacking", dim),
             ]),
             Line::from(""),
             Line::from(Span::styled("  TERMINAL CATEGORY", h2)),

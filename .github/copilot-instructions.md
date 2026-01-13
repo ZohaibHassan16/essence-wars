@@ -14,7 +14,7 @@
 
 ### Bot System (`src/bots/`)
 - **RandomBot**: Baseline uniform random
-- **GreedyBot**: Simulate-and-evaluate with 20 tunable weights
+- **GreedyBot**: Simulate-and-evaluate with 24 tunable weights
 - **MctsBot**: UCB1 tree search, uses GreedyBot for rollouts (configurable weights improve search quality)
 
 ### Tuning & Arena (`src/tuning/`, `src/arena/`)

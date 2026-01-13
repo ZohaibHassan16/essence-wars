@@ -204,7 +204,7 @@ pub trait Bot: Send {
 }
 ```
 
-### GreedyBot Weights (20 parameters)
+### GreedyBot Weights (24 parameters)
 
 GreedyBot uses configurable weights for state evaluation:
 

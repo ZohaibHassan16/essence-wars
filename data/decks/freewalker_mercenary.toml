@@ -1,0 +1,25 @@
+# Free-Walker Mercenary Deck
+# Faction: Free-Walkers - "The Toolbox"
+# Strategy: Flexible midrange with Ranged precision and Charge aggression.
+
+id = "freewalker_mercenary"
+name = "Free-Walker Mercenary"
+description = "Flexible midrange deck featuring Free-Walker mercenaries and giants."
+
+tags = ["midrange", "flexible", "new-horizons", "freewalker"]
+
+# 20 cards total (pure faction)
+cards = [
+    93, 93, # Bounty Hunter (2-cost 2/2 Ranged)
+    95, 95, # Wasteland Scout (2-cost 2/3 Ranged)
+    100, 100, # Reckless Charger (2-cost 4/1 Charge+Rush)
+    94, 94, # Berserker (3-cost 3/2 Charge)
+    96, 96, # Hired Blade (3-cost 3/3)
+    99, 99, # Sharpshooter (4-cost 3/3 Ranged)
+    97, 97, # War Veteran (4-cost 4/4 Charge)
+    101,    # Scrap Golem (5-cost 4/6)
+    98,     # Siege Giant (6-cost 6/5 Piercing)
+    102,    # The Warbringer (7-cost 7/7 Charge+Piercing)
+    104, 104, # Precision Shot (2-cost spell, 3 damage)
+    106,    # Mercenary Camp (4-cost support, +1 attack)
+]

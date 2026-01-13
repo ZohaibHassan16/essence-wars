@@ -240,7 +240,7 @@ fn main() {
     println!("Mode: {}", args.mode);
     println!("Parallel: {}", args.parallel);
     println!("Generations: {}", args.generations);
-    println!("Population: {}", cmaes_config.population_size.unwrap_or(4 + (3.0 * (20.0_f64).ln()).floor() as usize));
+    println!("Population: {}", cmaes_config.population_size.unwrap_or(4 + (3.0 * (initial_weights.len() as f64).ln()).floor() as usize));
     println!("Games/eval: {}", args.games);
     println!("Initial sigma: {:.3}", args.sigma);
     println!("Seed: {}", args.seed);
@@ -266,7 +266,7 @@ fn main() {
     writeln!(log_file, "Mode: {}", args.mode).unwrap();
     writeln!(log_file, "Parallel: {}", args.parallel).unwrap();
     writeln!(log_file, "Generations: {}", args.generations).unwrap();
-    writeln!(log_file, "Population: {}", cmaes_config.population_size.unwrap_or(4 + (3.0 * (20.0_f64).ln()).floor() as usize)).unwrap();
+    writeln!(log_file, "Population: {}", cmaes_config.population_size.unwrap_or(4 + (3.0 * (initial_weights.len() as f64).ln()).floor() as usize)).unwrap();
     writeln!(log_file, "Games/eval: {}", args.games).unwrap();
     writeln!(log_file, "Initial sigma: {:.3}", args.sigma).unwrap();
     writeln!(log_file, "Seed: {}", args.seed).unwrap();

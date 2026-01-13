@@ -451,10 +451,11 @@ impl EffectQueue {
         state: &mut GameState,
     ) {
         if let Some(creature) = state.players[owner.index()].get_creature_mut(slot) {
-            creature.attack += attack;
-            creature.current_health += health;
+            // Use saturating arithmetic to prevent overflow
+            creature.attack = creature.attack.saturating_add(attack);
+            creature.current_health = creature.current_health.saturating_add(health);
             if health > 0 {
-                creature.max_health += health;
+                creature.max_health = creature.max_health.saturating_add(health);
             }
 
             // Check for death from negative health buff

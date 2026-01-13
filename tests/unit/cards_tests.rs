@@ -191,8 +191,10 @@ fn test_load_from_directory() {
     let db =
         CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards from directory");
 
-    // Verify we loaded the starter set (47 cards: 43 base + 4 Phase 1.5 test cards)
-    assert_eq!(db.len(), 47);
+    // Verify we loaded all card sets:
+    // - Starter Set: 47 cards (43 base + 4 Phase 1.5 test cards)
+    // - New Horizons: 60 cards (4 faction batches × 15 cards)
+    assert_eq!(db.len(), 107);
 
     // Verify specific cards exist
     let eager_recruit = db.get(CardId(1)).expect("Card 1 not found");

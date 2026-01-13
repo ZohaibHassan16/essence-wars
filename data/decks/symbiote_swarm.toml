@@ -1,0 +1,25 @@
+# Symbiote Swarm Deck
+# Faction: Symbiote Circles - "The Swarm"
+# Strategy: Aggressive tempo with Rush and Lethal creatures. Trade efficiently and regenerate.
+
+id = "symbiote_swarm"
+name = "Symbiote Swarm"
+description = "Aggressive tempo deck featuring Symbiote Circles beasts and parasites."
+
+tags = ["aggro", "tempo", "new-horizons", "symbiote"]
+
+# 20 cards total (pure faction)
+cards = [
+    63, 63, # Spore Crawler (1-cost 1/2)
+    66, 66, # Broodling (1-cost 2/1 Rush)
+    69, 69, # Parasitic Larva (1-cost 1/1 Lethal)
+    64, 64, # Venom Fang (2-cost 2/2 Lethal)
+    68, 68, # Pack Hunter (2-cost 3/1 Rush)
+    65, 65, # Regenerating Ooze (3-cost 2/5 Regenerate)
+    73,     # Acid Spitter (3-cost 3/2 Ranged)
+    74,     # Carapace Warrior (4-cost 2/6 Regenerate)
+    67, 67, # Hive Guardian (4-cost 3/5 Guard+Regenerate)
+    71,     # Alpha Predator (5-cost 5/4 Rush+Lethal)
+    75, 75, # Rapid Mutation (2-cost spell, +2/+0 and Rush)
+    77,     # Spawning Pool (4-cost support, +1 attack)
+]
