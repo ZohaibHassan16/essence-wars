@@ -53,7 +53,7 @@ Reduce your opponent's life total from 30 to 0, or achieve an alternate victory 
 - **Perfect Information:** All cards are visible to both players, including hands and decks. Strategy comes from outthinking your opponent, not from hidden information.
 - **Guaranteed Resources:** No resource cards in your deck means no "bad draws" — every game has consistent pacing.
 - **Action Point System:** Limited actions per turn force meaningful choices about what to do each turn.
-- **Eight Keywords:** A focused set of keywords creates strategic depth without overwhelming complexity.
+- **Twelve Keywords:** A focused set of keywords creates strategic depth without overwhelming complexity.
 
 ---
 
@@ -774,6 +774,71 @@ Keywords are special abilities that modify how creatures behave. Each keyword ha
 
 **Strategic Use:** Quick lets you trade up efficiently. A Quick creature can kill something and survive when it normally would have died in mutual combat.
 
+### EPHEMERAL
+**"This creature is destroyed at the end of your turn."**
+
+- Triggers at the end of the owner's turn, not immediately
+- Death triggers (OnDeath effects) still fire normally
+- Can still attack if it has Rush
+- Excellent for burst damage or one-time effects
+
+**Example:**
+> You play a 3/3 Rush + Ephemeral creature for only 1 mana
+> - It attacks immediately for 3 damage
+> - At end of turn, it dies
+> - Great value for burst damage, no board presence next turn
+
+**Strategic Use:** Ephemeral creatures trade lasting board presence for immediate impact. Use them for surprise attacks or when you need to close out a game.
+
+### REGENERATE
+**"At the start of your turn, this creature heals 2 health."**
+
+- Triggers at the start of the owner's turn
+- Cannot heal above maximum health
+- Makes the creature very hard to remove through gradual damage
+- Does not trigger if the creature is already at full health
+
+**Example:**
+> Your 2/4 Regenerate takes 3 damage, is now at 2/1
+> - At start of your next turn: heals 2, becomes 2/3
+> - Survives another attack!
+
+**Strategic Use:** Regenerate creatures are excellent for attrition battles. They force opponents to either kill them in one hit or waste resources on repeated attacks.
+
+### STEALTH
+**"This creature cannot be targeted by enemy attacks or abilities. Stealth is removed when this creature attacks."**
+
+- Enemy creatures cannot attack this creature
+- Enemy targeted spells/abilities cannot target this creature
+- YOUR OWN spells/abilities CAN still target it (friendly targeting allowed)
+- Stealth is removed (broken) when the creature declares an attack
+- Stealth masks Guard (a stealthed Guard cannot force enemies to attack it)
+
+**Example:**
+> You play a 3/2 Stealth creature
+> - Enemy cannot attack it directly
+> - Enemy cannot use "Deal 2 damage to target creature" on it
+> - On your next turn, you attack → Stealth is removed
+> - Now the creature can be targeted normally
+
+**Strategic Use:** Stealth creatures guarantee at least one attack. Use them to set up powerful attacks or to protect key creatures until you're ready to strike.
+
+### CHARGE
+**"This creature deals +2 attack damage when attacking."**
+
+- Bonus applies when this creature attacks (not when defending)
+- The bonus damage applies to both creature and face attacks
+- Works with Piercing (excess damage includes the Charge bonus)
+- Does not increase the creature's displayed Attack stat
+
+**Example:**
+> Your 2/3 Charge attacks an enemy creature
+> - Base attack: 2
+> - Charge bonus: +2
+> - Total damage dealt: 4
+
+**Strategic Use:** Charge creatures hit harder than their stats suggest. They're excellent for trading up or pushing face damage.
+
 ## 12.3 Keyword Summary Table
 
 | Keyword | Effect | Stat Cost* |
@@ -786,8 +851,12 @@ Keywords are special abilities that modify how creatures behave. Each keyword ha
 | Lethal | Any damage to creatures kills them | ~1.5-2.0 stats |
 | Shield | Absorb first damage instance | ~1.0 stats |
 | Quick | Deal combat damage first | ~1.0-1.5 stats |
+| Ephemeral | Dies at end of your turn | ~-1.5 stats (bonus) |
+| Regenerate | Heal 2 at start of your turn | ~1.0 stats |
+| Stealth | Can't be targeted by enemies until attacking | ~1.5 stats |
+| Charge | +2 attack damage when attacking | ~1.0 stats |
 
-*Stat Cost indicates how many stat points (Attack + Health) a creature "loses" to have this keyword. A vanilla 3-cost creature has ~7 stats; a 3-cost with Rush has ~6 stats.
+*Stat Cost indicates how many stat points (Attack + Health) a creature "loses" to have this keyword. A vanilla 3-cost creature has ~7 stats; a 3-cost with Rush has ~6 stats. Ephemeral has negative cost (bonus stats) because the creature self-destructs.
 
 ---
 
@@ -873,6 +942,52 @@ BYPASS/BYPSD = One keyword bypasses the other
 BLOCKS/BLOCKED = One keyword blocks/is blocked by the other
 COMBO! = Especially powerful combination
 ```
+
+## 13.7 Stealth + Guard
+
+**Stealth MASKS Guard.**
+
+A creature with both Stealth and Guard cannot be targeted by enemies while stealthed. The Guard keyword is effectively inactive until Stealth is broken (when the creature attacks).
+
+**Example:**
+> You play a creature with Stealth + Guard
+> - Enemies cannot target it (Stealth)
+> - Guard does NOT force enemies to attack it (masked by Stealth)
+> - When it attacks, Stealth breaks
+> - NOW Guard is active and enemies must attack it
+
+## 13.8 Ephemeral + Rush
+
+**POWERFUL BURST COMBO!**
+
+Ephemeral + Rush creatures can attack immediately and die at end of turn anyway. This allows for extremely aggressive stats at low cost, since the creature was going to die regardless.
+
+**Example:**
+> Ghost Wolf (1-cost 3/3 Rush + Ephemeral)
+> - Play for just 1 mana
+> - Attack immediately for 3 damage
+> - Dies at end of turn
+> - Incredible burst value!
+
+## 13.9 Charge + Piercing
+
+**ENHANCED PIERCING DAMAGE!**
+
+When a Charge creature kills a defender, the excess damage for Piercing includes the +2 Charge bonus.
+
+**Example:**
+> Your 3/3 Charge + Piercing attacks enemy 2/2
+> - Damage dealt: 3 + 2 (Charge) = 5
+> - Enemy has 2 health → Dies
+> - Piercing excess: 5 - 2 = 3 damage to face!
+
+## 13.10 Regenerate + Damage Trading
+
+**EXCELLENT FOR ATTRITION!**
+
+Regenerate creatures are very efficient in repeated small trades. They heal 2 HP at start of your turn, making them hard to remove through chip damage.
+
+**Counter Strategy:** Kill Regenerate creatures in one hit, or they'll keep coming back.
 
 ---
 

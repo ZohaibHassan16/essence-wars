@@ -139,7 +139,7 @@ impl<'a> GreedyBot<'a> {
             score += creature.attack.max(0) as f32 * w.own_creature_attack;
             score += creature.current_health.max(0) as f32 * w.own_creature_health;
 
-            // Keyword bonuses
+            // Keyword bonuses (original 8)
             let kw = creature.keywords;
             if kw.has_guard() { score += w.keyword_guard; }
             if kw.has_lethal() { score += w.keyword_lethal; }
@@ -149,6 +149,11 @@ impl<'a> GreedyBot<'a> {
             if kw.has_piercing() { score += w.keyword_piercing; }
             if kw.has_shield() { score += w.keyword_shield; }
             if kw.has_quick() { score += w.keyword_quick; }
+            // Keyword bonuses (new 4)
+            if kw.has_ephemeral() { score += w.keyword_ephemeral; }
+            if kw.has_regenerate() { score += w.keyword_regenerate; }
+            if kw.has_stealth() { score += w.keyword_stealth; }
+            if kw.has_charge() { score += w.keyword_charge; }
         }
 
         // Enemy creatures (these weights are typically negative)

@@ -74,8 +74,24 @@ pub fn resolve_combat(
         .get_creature(attacker_slot)
         .expect("Attacker must exist");
 
-    let attacker_attack = attacker.attack.max(0) as u8;
+    // CHARGE BONUS: +2 attack when attacking
+    const CHARGE_BONUS: u8 = 2;
+    let base_attack = attacker.attack.max(0) as u8;
+    let attacker_attack = if attacker.keywords.has_charge() {
+        base_attack.saturating_add(CHARGE_BONUS)
+    } else {
+        base_attack
+    };
     let attacker_keywords = attacker.keywords;
+
+    // STEALTH BREAK: When a creature attacks, it loses Stealth
+    if attacker_keywords.has_stealth() {
+        if let Some(attacker_mut) = state.players[attacker_player.index()]
+            .get_creature_mut(attacker_slot)
+        {
+            attacker_mut.keywords.remove(Keywords::STEALTH);
+        }
+    }
 
     // Check if defender slot is empty (face damage)
     let defender_exists = state.players[defender_player.index()]

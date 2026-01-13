@@ -91,6 +91,10 @@ fn test_bad_weights_lose() {
         keyword_piercing: -1.0,
         keyword_shield: -1.0,
         keyword_quick: -1.0,
+        keyword_ephemeral: 1.0,   // Reward ephemeral (bad!)
+        keyword_regenerate: -1.0, // Penalize regenerate
+        keyword_stealth: -1.0,    // Penalize stealth
+        keyword_charge: -1.0,     // Penalize charge
         win_bonus: -1000.0,       // Penalize winning!
         lose_penalty: 1000.0,     // Reward losing!
     };

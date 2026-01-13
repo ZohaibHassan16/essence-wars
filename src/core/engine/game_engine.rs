@@ -140,6 +140,9 @@ impl<'a> GameEngine<'a> {
             creature.status.set_exhausted(false);
         }
 
+        // Process Regenerate - creatures with this keyword heal 2 HP at start of turn
+        self.process_regenerate_healing(current_player);
+
         // Process StartOfTurn triggered effects for supports
         self.process_support_start_of_turn_triggers(current_player);
     }
@@ -181,6 +184,74 @@ impl<'a> GameEngine<'a> {
         effect_queue.process_all(&mut self.state, self.card_db);
     }
 
+    /// Process Regenerate keyword - heal creatures by 2 HP at start of turn.
+    fn process_regenerate_healing(&mut self, player: PlayerId) {
+        const REGEN_AMOUNT: i8 = 2;
+
+        for creature in &mut self.state.players[player.index()].creatures {
+            if creature.keywords.has_regenerate() && creature.current_health < creature.max_health {
+                creature.current_health =
+                    (creature.current_health + REGEN_AMOUNT).min(creature.max_health);
+            }
+        }
+    }
+
+    /// Process Ephemeral keyword - creatures with this keyword die at end of turn.
+    fn process_ephemeral_deaths(&mut self, player: PlayerId) {
+        use crate::core::effects::{EffectSource, EffectTarget, Trigger};
+        use crate::core::engine::effect_queue::EffectQueue;
+        use crate::core::cards::CardType;
+
+        // Collect slots of ephemeral creatures to process
+        let ephemeral_slots: Vec<Slot> = self.state.players[player.index()]
+            .creatures
+            .iter()
+            .filter(|c| c.keywords.has_ephemeral())
+            .map(|c| c.slot)
+            .collect();
+
+        if ephemeral_slots.is_empty() {
+            return;
+        }
+
+        let mut effect_queue = EffectQueue::new();
+
+        // Queue OnDeath triggers for each ephemeral creature before removing them
+        for slot in &ephemeral_slots {
+            if let Some(creature) = self.state.players[player.index()].get_creature(*slot) {
+                let card_id = creature.card_id;
+
+                // Check for OnDeath triggers
+                if let Some(card_def) = self.card_db.get(card_id) {
+                    if let CardType::Creature { abilities, .. } = &card_def.card_type {
+                        for ability in abilities {
+                            if ability.trigger == Trigger::OnDeath {
+                                let source = EffectSource::Creature { owner: player, slot: *slot };
+                                for effect_def in &ability.effects {
+                                    if let Some(effect) = crate::core::engine::effect_convert::effect_def_to_effect_with_target(
+                                        effect_def,
+                                        EffectTarget::Creature { owner: player, slot: *slot },
+                                        player,
+                                    ) {
+                                        effect_queue.push(effect, source);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Remove ephemeral creatures
+        self.state.players[player.index()]
+            .creatures
+            .retain(|c| !c.keywords.has_ephemeral());
+
+        // Process any OnDeath effects
+        effect_queue.process_all(&mut self.state, self.card_db);
+    }
+
     /// End the current player's turn.
     /// - Decrement support durability and remove depleted supports
     /// - Switch to other player
@@ -217,6 +288,9 @@ impl<'a> GameEngine<'a> {
                 .supports
                 .retain(|s| s.slot != slot);
         }
+
+        // Process Ephemeral - creatures with this keyword die at end of turn
+        self.process_ephemeral_deaths(current_player);
 
         // Switch to opponent
         self.state.active_player = self.state.active_player.opponent();

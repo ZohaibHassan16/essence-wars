@@ -7,7 +7,7 @@ description = "Fast aggro deck focused on early creature pressure and direct dam
 
 tags = ["aggro", "creature-focused", "starter"]
 
-# 18 cards total (2 copies each for consistency)
+# 22 cards total (includes Phase 1.5 test cards)
 cards = [
     1, 1,   # Eager Recruit (1-cost 2/1)
     3, 3,   # Nimble Scout (1-cost 1/1 Rush)
@@ -18,4 +18,7 @@ cards = [
     16, 16, # Piercing Striker (3-cost 4/2 Piercing)
     20, 20, # Siege Breaker (4-cost 5/3 Piercing)
     34, 34, # Lightning Bolt (3-cost spell - 4 damage)
+    # Phase 1.5 Test Cards
+    44, 44, # Ghost Wolf (1-cost 3/3 Ephemeral+Rush)
+    45, 45, # Frenzied Berserker (3-cost 2/3 Charge)
 ]

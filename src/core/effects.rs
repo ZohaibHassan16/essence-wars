@@ -80,9 +80,9 @@ pub enum Effect {
 
     // === Keyword Manipulation ===
     /// Grant a keyword to target
-    GrantKeyword { target: EffectTarget, keyword: u8 },
+    GrantKeyword { target: EffectTarget, keyword: u16 },
     /// Remove a keyword from target
-    RemoveKeyword { target: EffectTarget, keyword: u8 },
+    RemoveKeyword { target: EffectTarget, keyword: u16 },
     /// Silence target (remove all keywords and abilities)
     Silence { target: EffectTarget },
 
@@ -151,9 +151,9 @@ pub struct CreatureFilter {
     /// Minimum health
     pub min_health: Option<u8>,
     /// Must have this keyword
-    pub has_keyword: Option<u8>,
+    pub has_keyword: Option<u16>,
     /// Must NOT have this keyword
-    pub lacks_keyword: Option<u8>,
+    pub lacks_keyword: Option<u16>,
 }
 
 impl CreatureFilter {
@@ -175,13 +175,13 @@ impl CreatureFilter {
     }
 
     /// Builder: must have keyword
-    pub fn with_keyword(mut self, keyword: u8) -> Self {
+    pub fn with_keyword(mut self, keyword: u16) -> Self {
         self.has_keyword = Some(keyword);
         self
     }
 
     /// Builder: must lack keyword
-    pub fn without_keyword(mut self, keyword: u8) -> Self {
+    pub fn without_keyword(mut self, keyword: u16) -> Self {
         self.lacks_keyword = Some(keyword);
         self
     }

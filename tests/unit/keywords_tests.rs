@@ -4,8 +4,8 @@ use cardgame::keywords::Keywords;
 
 #[test]
 fn test_keywords_size() {
-    // Keywords must be exactly 1 byte
-    assert_eq!(std::mem::size_of::<Keywords>(), 1);
+    // Keywords is 2 bytes (u16) to support up to 16 keywords
+    assert_eq!(std::mem::size_of::<Keywords>(), 2);
 }
 
 #[test]

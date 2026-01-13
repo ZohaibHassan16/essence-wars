@@ -473,3 +473,44 @@ cards:
       - modifier:
           health_bonus: 2
     rarity: Uncommon
+
+  # === NEW KEYWORD TEST CREATURES (Phase 1.5) ===
+  - id: 44
+    name: "Ghost Wolf"
+    cost: 1
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: [Ephemeral, Rush]
+    rarity: Uncommon
+    tags: [Spirit]
+
+  - id: 45
+    name: "Frenzied Berserker"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: [Charge]
+    rarity: Uncommon
+    tags: [Warrior]
+
+  - id: 46
+    name: "Swamp Troll"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: [Regenerate]
+    rarity: Uncommon
+    tags: [Beast]
+
+  - id: 47
+    name: "Shadow Agent"
+    cost: 2
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: [Stealth]
+    rarity: Uncommon
+    tags: [Rogue]

@@ -126,7 +126,7 @@ pub struct GreedyWeights {
     /// Value per action point remaining (discourages waste)
     pub action_points: f32,
 
-    // === Keyword Values ===
+    // === Keyword Values (Original 8) ===
     /// Value for each creature with Guard
     pub keyword_guard: f32,
     /// Value for each creature with Lethal
@@ -143,6 +143,16 @@ pub struct GreedyWeights {
     pub keyword_shield: f32,
     /// Value for each creature with Quick
     pub keyword_quick: f32,
+
+    // === Keyword Values (New 4) ===
+    /// Value for each creature with Ephemeral (negative - dies at end of turn)
+    pub keyword_ephemeral: f32,
+    /// Value for each creature with Regenerate (heals 2 HP at start of turn)
+    pub keyword_regenerate: f32,
+    /// Value for each creature with Stealth (untargetable by enemy)
+    pub keyword_stealth: f32,
+    /// Value for each creature with Charge (+2 attack when attacking)
+    pub keyword_charge: f32,
 
     // === Strategic Bonuses ===
     /// Bonus for winning the game (should be very high)
@@ -173,6 +183,10 @@ impl GreedyWeights {
             keyword_piercing: 0.0,
             keyword_shield: 0.0,
             keyword_quick: 0.0,
+            keyword_ephemeral: 0.0,
+            keyword_regenerate: 0.0,
+            keyword_stealth: 0.0,
+            keyword_charge: 0.0,
             win_bonus: 0.0,
             lose_penalty: 0.0,
         }
@@ -199,6 +213,10 @@ impl GreedyWeights {
             self.keyword_piercing,
             self.keyword_shield,
             self.keyword_quick,
+            self.keyword_ephemeral,
+            self.keyword_regenerate,
+            self.keyword_stealth,
+            self.keyword_charge,
             self.win_bonus,
             self.lose_penalty,
         ]
@@ -206,7 +224,7 @@ impl GreedyWeights {
 
     /// Create weights from a vector (for optimization algorithms).
     pub fn from_vec(v: &[f32]) -> Option<Self> {
-        if v.len() < 20 {
+        if v.len() < Self::PARAM_COUNT {
             return None;
         }
         Some(Self {
@@ -228,8 +246,12 @@ impl GreedyWeights {
             keyword_piercing: v[15],
             keyword_shield: v[16],
             keyword_quick: v[17],
-            win_bonus: v[18],
-            lose_penalty: v[19],
+            keyword_ephemeral: v[18],
+            keyword_regenerate: v[19],
+            keyword_stealth: v[20],
+            keyword_charge: v[21],
+            win_bonus: v[22],
+            lose_penalty: v[23],
         })
     }
 
@@ -254,13 +276,17 @@ impl GreedyWeights {
             (0.0, 3.0),    // keyword_piercing
             (0.0, 5.0),    // keyword_shield
             (0.0, 3.0),    // keyword_quick
+            (-5.0, 0.0),   // keyword_ephemeral (negative - dies at end of turn)
+            (0.0, 5.0),    // keyword_regenerate (positive - survivability)
+            (0.0, 5.0),    // keyword_stealth (positive - evasion)
+            (0.0, 5.0),    // keyword_charge (positive - burst damage)
             (100.0, 10000.0), // win_bonus
             (-10000.0, -100.0), // lose_penalty
         ]
     }
 
     /// Number of weight parameters.
-    pub const PARAM_COUNT: usize = 20;
+    pub const PARAM_COUNT: usize = 24;
 }
 
 impl Default for GreedyWeights {
@@ -294,6 +320,12 @@ impl Default for GreedyWeights {
             keyword_piercing: 2.0,
             keyword_shield: 4.0,
             keyword_quick: 1.0,
+
+            // New keywords
+            keyword_ephemeral: -2.0,  // Negative - creature dies at end of turn
+            keyword_regenerate: 3.0,  // Positive - survivability
+            keyword_stealth: 3.0,     // Positive - evasion
+            keyword_charge: 2.0,      // Positive - burst damage
 
             // Win/Lose - must be high to ensure bot prioritizes winning
             win_bonus: 1000.0,

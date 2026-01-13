@@ -160,8 +160,8 @@ fn encode_creature_slot(
             tensor[*idx] = if c.keywords.has(Keywords::GUARD) { 1.0 } else { 0.0 };
             *idx += 1;
 
-            // [9]: Full keyword bitfield normalized (0-255 -> 0.0-1.0)
-            tensor[*idx] = c.keywords.0 as f32 / 255.0;
+            // [9]: Full keyword bitfield normalized (0-65535 -> 0.0-1.0)
+            tensor[*idx] = c.keywords.0 as f32 / 65535.0;
             *idx += 1;
         }
     }

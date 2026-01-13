@@ -512,9 +512,13 @@ fn test_edge_case_all_keywords_interact_correctly() {
     kw = kw.with_quick();
     assert!(kw.has_quick(), "Should have quick");
 
-    // All 8 keywords should be set
-    assert_eq!(kw, Keywords::all(), "All keywords should be set");
-    assert_eq!(kw.0, 0xFF, "All bits should be set");
+    // All 8 original keywords should be set (bits 0-7)
+    assert_eq!(kw.0, 0xFF, "All 8 original keyword bits should be set");
+
+    // Test that the 4 new keywords can also be set
+    kw = kw.with_ephemeral().with_regenerate().with_stealth().with_charge();
+    assert_eq!(kw, Keywords::all(), "All 12 keywords should be set");
+    assert_eq!(kw.0, 0x0FFF, "All 12 keyword bits should be set");
 }
 
 #[test]

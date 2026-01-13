@@ -127,9 +127,9 @@ fn generate_attack_actions(
     let player_state = state.active_player_state();
     let opponent_state = state.opponent_state();
 
-    // Check if any enemy creature has GUARD
+    // Check if any enemy creature has GUARD (and is not stealthed - Stealth masks Guard)
     let guards_present = opponent_state.creatures.iter()
-        .any(|c| c.keywords.has_guard());
+        .any(|c| c.keywords.has_guard() && !c.keywords.has_stealth());
 
     // For each of our creatures that can attack
     for attacker in &player_state.creatures {
@@ -146,6 +146,13 @@ fn generate_attack_actions(
             // Ranged creatures can target any enemy slot (0-4)
             for defender_slot_idx in 0..board::CREATURE_SLOTS as u8 {
                 let defender_slot = Slot(defender_slot_idx);
+
+                // Check if target creature has STEALTH (can't be targeted)
+                if let Some(defender) = opponent_state.get_creature(defender_slot) {
+                    if defender.keywords.has_stealth() {
+                        continue; // Can't attack stealthed creatures
+                    }
+                }
 
                 // Check GUARD enforcement for ranged attacks on creatures
                 if guards_present {
@@ -170,6 +177,13 @@ fn generate_attack_actions(
         } else {
             // Non-ranged creatures can only target adjacent slots
             for &defender_slot in attacker_slot.adjacent_slots() {
+                // Check if target creature has STEALTH (can't be targeted)
+                if let Some(defender) = opponent_state.get_creature(defender_slot) {
+                    if defender.keywords.has_stealth() {
+                        continue; // Can't attack stealthed creatures
+                    }
+                }
+
                 // Check GUARD enforcement for non-ranged attacks
                 if guards_present {
                     // Must target a creature with GUARD if any exists
@@ -265,9 +279,13 @@ fn generate_ability_actions(
                     }
                 }
                 TargetingRule::TargetEnemyCreature => {
-                    // Target enemy creature slots that have creatures
+                    // Target enemy creature slots that have creatures (excluding stealthed)
                     let opponent_state = &state.players[opponent.index()];
                     for opp_creature in &opponent_state.creatures {
+                        // Can't target stealthed enemy creatures with abilities
+                        if opp_creature.keywords.has_stealth() {
+                            continue;
+                        }
                         if actions.len() < MAX_LEGAL_ACTIONS {
                             actions.push(Action::UseAbility {
                                 slot: creature.slot,

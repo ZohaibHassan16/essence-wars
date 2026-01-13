@@ -4,6 +4,25 @@ All notable changes to the Essence Wars engine.
 
 Format: `[version] - YYYY-MM-DD` with categories: Added, Changed, Fixed, Removed.
 
+## [0.3.0] - 2026-01-13
+
+### Added
+- **Phase 1.5 Keywords**: 4 new keywords expanding from 8 to 12 total
+  - **Ephemeral**: Creature dies at end of turn (triggers OnDeath effects)
+  - **Regenerate**: Heals 2 HP at start of owner's turn
+  - **Stealth**: Cannot be targeted by enemy attacks/spells (breaks on attack)
+  - **Charge**: +2 attack damage when attacking
+- 4 new test cards: Ghost Wolf, Frenzied Berserker, Swamp Troll, Shadow Agent
+- Keyword weights for AI evaluation: `keyword_ephemeral`, `keyword_regenerate`, `keyword_stealth`, `keyword_charge`
+- GreedyWeights now has 24 parameters (was 20)
+
+### Changed
+- Keywords upgraded from `u8` to `u16` bitfield (allows 16 keywords)
+- Tensor normalization for keyword bitfield: `/65535.0` (was `/255.0`)
+- Deck sizes increased to 22 cards (from 18) to include test cards
+- Stealth masks Guard (stealthed Guards cannot be targeted)
+- Regression test golden values updated for new deck compositions
+
 ## [0.2.1] - 2026-01-13
 
 ### Added

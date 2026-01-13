@@ -609,7 +609,7 @@ impl EffectQueue {
     fn apply_grant_keyword(
         &mut self,
         target: EffectTarget,
-        keyword: u8,
+        keyword: u16,
         _source_player: PlayerId,
         state: &mut GameState,
     ) {
@@ -645,7 +645,7 @@ impl EffectQueue {
     fn apply_remove_keyword(
         &mut self,
         target: EffectTarget,
-        keyword: u8,
+        keyword: u16,
         state: &mut GameState,
     ) {
         match target {

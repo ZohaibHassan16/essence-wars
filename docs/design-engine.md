@@ -1,8 +1,8 @@
 # Card Game Engine Design Document
 
-> **Version:** 1.0 Draft
-> **Last Updated:** 2026-01-12
-> **Status:** Design Phase
+> **Version:** 1.1 (Phase 1.5)
+> **Last Updated:** 2026-01-13
+> **Status:** Implementation Complete
 
 This document is the single source of truth for all game rules, parameters, and engine specifications.
 
@@ -589,6 +589,10 @@ Note: Playing a creature does NOT exhaust it (but summoning sickness
 | **Lethal** | Any damage dealt by this creature destroys the target | ~2.0 |
 | **Lifesteal** | When this deals damage, heal your hero for that amount | ~1.5 |
 | **Piercing** | When this kills a creature, excess damage hits enemy face | ~0.5-1.0 |
+| **Ephemeral** | Dies at end of owner's turn (triggers OnDeath effects) | ~-1.5 |
+| **Regenerate** | Heals 2 HP at start of owner's turn | ~1.0 |
+| **Stealth** | Cannot be targeted by enemy attacks/spells; breaks when attacking | ~1.5 |
+| **Charge** | +2 attack damage when attacking | ~1.0 |
 
 ### 7.2 Keyword Interaction Matrix
 
@@ -643,24 +647,61 @@ Note: Playing a creature does NOT exhaust it (but summoning sickness
 │ +         │ Piercing deals excess to face                                  │
 │ Piercing  │ RESULT: Heal for Attack value, pierce excess to face          │
 │           │                                                                 │
+├───────────┼─────────────────────────────────────────────────────────────────┤
+│           │                                                                 │
+│ Stealth   │ Stealth masks Guard until broken                               │
+│ +         │ A stealthed Guard cannot be targeted                           │
+│ Guard     │ RESULT: Stealth takes priority until creature attacks          │
+│           │                                                                 │
+├───────────┼─────────────────────────────────────────────────────────────────┤
+│           │                                                                 │
+│ Stealth   │ Stealth only blocks ENEMY targeting                            │
+│ Targeting │ Friendly spells/abilities can target your stealthed creatures │
+│           │ RESULT: Can buff/heal your own stealthed creatures             │
+│           │                                                                 │
+├───────────┼─────────────────────────────────────────────────────────────────┤
+│           │                                                                 │
+│ Charge    │ Charge grants +2 attack damage when attacking                  │
+│ +         │ Bonus applies to both creature and face attacks                │
+│ Piercing  │ RESULT: Piercing excess calculated with Charge bonus included  │
+│           │                                                                 │
+├───────────┼─────────────────────────────────────────────────────────────────┤
+│           │                                                                 │
+│ Ephemeral │ Ephemeral death triggers OnDeath effects                       │
+│ +         │ Death occurs at end of owner's turn, not immediately           │
+│ OnDeath   │ RESULT: Useful for "suicide bomber" style creatures            │
+│           │                                                                 │
+├───────────┼─────────────────────────────────────────────────────────────────┤
+│           │                                                                 │
+│ Ephemeral │ Ephemeral creature CAN attack (if it has Rush)                 │
+│ +         │ Gets full turn of action before dying                          │
+│ Rush      │ RESULT: Strong burst damage, no board presence next turn       │
+│           │                                                                 │
 └───────────┴─────────────────────────────────────────────────────────────────┘
 ```
 
 ### 7.3 Keyword Implementation (Bitfield)
 
 ```rust
-// Keywords packed into a single byte for efficiency
-pub struct Keywords(u8);
+// Keywords packed into a u16 for efficiency (supports up to 16 keywords)
+pub struct Keywords(u16);
 
 impl Keywords {
-    pub const RUSH: u8      = 0b0000_0001;
-    pub const RANGED: u8    = 0b0000_0010;
-    pub const PIERCING: u8  = 0b0000_0100;
-    pub const GUARD: u8     = 0b0000_1000;
-    pub const LIFESTEAL: u8 = 0b0001_0000;
-    pub const LETHAL: u8    = 0b0010_0000;
-    pub const SHIELD: u8    = 0b0100_0000;
-    pub const QUICK: u8     = 0b1000_0000;
+    // Original 8 keywords (bits 0-7)
+    pub const RUSH: u16      = 0x0001;  // bit 0
+    pub const RANGED: u16    = 0x0002;  // bit 1
+    pub const PIERCING: u16  = 0x0004;  // bit 2
+    pub const GUARD: u16     = 0x0008;  // bit 3
+    pub const LIFESTEAL: u16 = 0x0010;  // bit 4
+    pub const LETHAL: u16    = 0x0020;  // bit 5
+    pub const SHIELD: u16    = 0x0040;  // bit 6
+    pub const QUICK: u16     = 0x0080;  // bit 7
+
+    // Phase 1.5 keywords (bits 8-11)
+    pub const EPHEMERAL: u16   = 0x0100;  // bit 8
+    pub const REGENERATE: u16  = 0x0200;  // bit 9
+    pub const STEALTH: u16     = 0x0400;  // bit 10
+    pub const CHARGE: u16      = 0x0800;  // bit 11
 }
 
 // Check with single bitwise AND: keywords.0 & Keywords::RUSH != 0

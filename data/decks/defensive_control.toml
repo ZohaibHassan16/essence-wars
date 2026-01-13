@@ -8,7 +8,7 @@ description = "Control deck using Guards, Lifesteal, and removal to survive, win
 
 tags = ["control", "defensive", "starter"]
 
-# 18 cards total (2 copies each for consistency)
+# 22 cards total (includes Phase 1.5 test cards)
 cards = [
     5, 5,   # Iron Defender (2-cost 1/4 Guard)
     7, 7,   # Young Knight (2-cost 2/3)
@@ -19,4 +19,7 @@ cards = [
     32, 32, # Quick Strike (1-cost spell - 2 damage)
     36, 36, # Execute (2-cost spell - destroy)
     37, 37, # Mass Heal (4-cost spell - heal all)
+    # Phase 1.5 Test Cards
+    46, 46, # Swamp Troll (3-cost 2/4 Regenerate)
+    47, 47, # Shadow Agent (2-cost 3/2 Stealth)
 ]

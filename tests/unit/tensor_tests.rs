@@ -175,8 +175,8 @@ fn test_creature_encoding_occupied_slot() {
     assert_eq!(tensor[creature_offset + 7], 1.0);
     // [8]: Guard = 1.0
     assert_eq!(tensor[creature_offset + 8], 1.0);
-    // [9]: keywords bitfield normalized
-    let expected_kw = (Keywords::RUSH | Keywords::GUARD) as f32 / 255.0;
+    // [9]: keywords bitfield normalized (u16 now, so divide by 65535)
+    let expected_kw = (Keywords::RUSH | Keywords::GUARD) as f32 / 65535.0;
     assert!((tensor[creature_offset + 9] - expected_kw).abs() < 0.001);
 }
 
