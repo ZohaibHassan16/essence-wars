@@ -282,40 +282,53 @@ impl<'a> Evaluator<'a> {
         let card_db = self.card_db;
         let mcts_sims = self.config.mcts_sims;
 
-        // Run games against all three opponents in parallel
-        let vs_random: Vec<(bool, u32)> = (0..games_per_opponent)
-            .into_par_iter()
-            .map(|i| {
-                let seed = base_seed.wrapping_add(i as u64);
-                Self::run_game_vs_random_static(card_db, weights, default_deck, seed, max_actions)
-            })
-            .collect();
+        // Create parallel iterators for each opponent type
+        // 0 = Random, 1 = Greedy, 2 = MCTS
+        
+        let random_iter = (0..games_per_opponent).into_par_iter().map(|i| {
+            let seed = base_seed.wrapping_add(i as u64);
+            let (won, turns) = Self::run_game_vs_random_static(card_db, weights, default_deck, seed, max_actions);
+            (0, won, turns)
+        });
 
-        let vs_greedy: Vec<(bool, u32)> = (0..games_per_opponent)
-            .into_par_iter()
-            .map(|i| {
-                let seed = base_seed.wrapping_add(10000 + i as u64);
-                Self::run_game_vs_greedy_static(card_db, weights, default_deck, seed, max_actions)
-            })
-            .collect();
+        let greedy_iter = (0..games_per_opponent).into_par_iter().map(|i| {
+            let seed = base_seed.wrapping_add(10000 + i as u64);
+            let (won, turns) = Self::run_game_vs_greedy_static(card_db, weights, default_deck, seed, max_actions);
+            (1, won, turns)
+        });
 
-        let vs_mcts: Vec<(bool, u32)> = (0..games_per_opponent)
-            .into_par_iter()
-            .map(|i| {
-                let seed = base_seed.wrapping_add(20000 + i as u64);
-                Self::run_game_vs_mcts_static(card_db, weights, default_deck, seed, max_actions, mcts_sims)
-            })
+        let mcts_iter = (0..games_per_opponent).into_par_iter().map(|i| {
+            let seed = base_seed.wrapping_add(20000 + i as u64);
+            let (won, turns) = Self::run_game_vs_mcts_static(card_db, weights, default_deck, seed, max_actions, mcts_sims);
+            (2, won, turns)
+        });
+
+        // Run all games in a single parallel batch
+        let results: Vec<(u8, bool, u32)> = random_iter
+            .chain(greedy_iter)
+            .chain(mcts_iter)
             .collect();
 
         // Compute stats
-        let random_wins: usize = vs_random.iter().filter(|(won, _)| *won).count();
-        let greedy_wins: usize = vs_greedy.iter().filter(|(won, _)| *won).count();
-        let mcts_wins: usize = vs_mcts.iter().filter(|(won, _)| *won).count();
+        let mut random_wins = 0;
+        let mut greedy_wins = 0;
+        let mut mcts_wins = 0;
+        let mut total_turns = 0;
+
+        for (opponent_type, won, turns) in results {
+            if won {
+                match opponent_type {
+                    0 => random_wins += 1,
+                    1 => greedy_wins += 1,
+                    2 => mcts_wins += 1,
+                    _ => unreachable!(),
+                }
+            }
+            total_turns += turns;
+        }
 
         let total_wins = random_wins + greedy_wins + mcts_wins;
         let total_games = games_per_opponent * 3;
-        let total_turns: u32 = vs_random.iter().chain(vs_greedy.iter()).chain(vs_mcts.iter())
-            .map(|(_, turns)| *turns).sum();
 
         let win_rate = total_wins as f64 / total_games as f64;
         let avg_turns = total_turns as f64 / total_games as f64;
@@ -441,19 +454,29 @@ impl<'a> Evaluator<'a> {
 
     /// Evaluate for a specific matchup (specialist).
     fn evaluate_specialist(&self, weights: &GreedyWeights, deck: &[CardId], opponent_deck: &[CardId]) -> (f64, f64, usize, f64) {
-        let mut wins = 0;
-        let mut total_turns = 0u32;
         let games = self.config.games_per_eval;
+        let base_seed = self.config.seed.wrapping_add(self.eval_count * 10000);
+        let card_db = self.card_db;
+        let max_actions = self.config.max_actions;
 
-        for i in 0..games {
-            let seed = self.config.seed.wrapping_add(self.eval_count * 10000 + i as u64);
-            let (winner, turns) = self.run_game_with_decks(weights, deck, opponent_deck, seed);
+        // Run games in parallel
+        let results: Vec<(bool, u32)> = (0..games)
+            .into_par_iter()
+            .map(|i| {
+                let seed = base_seed.wrapping_add(i as u64);
+                // Use the static helper we already have for parallel execution
+                // We reuse run_game_vs_greedy_with_decks_static but need to be careful
+                // run_game_vs_greedy_with_decks_static uses default Greedy for opponent.
+                // evaluate_specialist expects the opponent deck to be played by... whom?
+                // The original implementation used run_game_with_decks which puts 
+                // Candidate (Greedy w/ weights) vs Baseline (Greedy w/ default weights).
+                // So we need a static version of run_game_with_decks.
+                Self::run_game_with_decks_static(card_db, weights, deck, opponent_deck, seed, max_actions)
+            })
+            .collect();
 
-            if winner == Some(PlayerId::PLAYER_ONE) {
-                wins += 1;
-            }
-            total_turns += turns;
-        }
+        let wins: usize = results.iter().filter(|(won, _)| *won).count();
+        let total_turns: u32 = results.iter().map(|(_, turns)| *turns).sum();
 
         let win_rate = wins as f64 / games as f64;
         let avg_turns = total_turns as f64 / games as f64;
@@ -499,33 +522,6 @@ impl<'a> Evaluator<'a> {
 
         let mut engine = GameEngine::new(self.card_db);
         engine.start_game(self.default_deck.clone(), self.default_deck.clone(), seed);
-
-        let mut action_count = 0;
-        while !engine.is_game_over() && action_count < self.config.max_actions {
-            let current_player = engine.current_player();
-
-            let action = if current_player == PlayerId::PLAYER_ONE {
-                candidate_bot.select_action_with_engine(&engine)
-            } else {
-                baseline_bot.select_action_with_engine(&engine)
-            };
-
-            if engine.apply_action(action).is_err() {
-                break;
-            }
-            action_count += 1;
-        }
-
-        (engine.winner(), engine.turn_number() as u32)
-    }
-
-    /// Run a single game with specific decks against default GreedyBot.
-    fn run_game_with_decks(&self, weights: &GreedyWeights, deck1: &[CardId], deck2: &[CardId], seed: u64) -> (Option<PlayerId>, u32) {
-        let mut candidate_bot = GreedyBot::with_weights(self.card_db, weights.clone(), seed);
-        let mut baseline_bot = GreedyBot::new(self.card_db, seed.wrapping_add(1000));
-
-        let mut engine = GameEngine::new(self.card_db);
-        engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < self.config.max_actions {
@@ -759,6 +755,41 @@ impl<'a> Evaluator<'a> {
         }
 
         (engine.winner(), engine.turn_number() as u32)
+    }
+
+    /// Run a single game with specific decks against default GreedyBot (static version for parallel).
+    fn run_game_with_decks_static(
+        card_db: &CardDatabase,
+        weights: &GreedyWeights,
+        deck1: &[CardId],
+        deck2: &[CardId],
+        seed: u64,
+        max_actions: usize,
+    ) -> (bool, u32) {
+        let mut candidate_bot = GreedyBot::with_weights(card_db, weights.clone(), seed);
+        let mut baseline_bot = GreedyBot::new(card_db, seed.wrapping_add(1000));
+
+        let mut engine = GameEngine::new(card_db);
+        engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
+
+        let mut action_count = 0;
+        while !engine.is_game_over() && action_count < max_actions {
+            let current_player = engine.current_player();
+
+            let action = if current_player == PlayerId::PLAYER_ONE {
+                candidate_bot.select_action_with_engine(&engine)
+            } else {
+                baseline_bot.select_action_with_engine(&engine)
+            };
+
+            if engine.apply_action(action).is_err() {
+                break;
+            }
+            action_count += 1;
+        }
+
+        let won = engine.winner() == Some(PlayerId::PLAYER_ONE);
+        (won, engine.turn_number() as u32)
     }
 
     /// Run game vs Random with custom decks (static version for parallel).
