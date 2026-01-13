@@ -32,7 +32,7 @@ cards:
     cost: 3
     card_type: creature
     attack: 2
-    health: 6
+    health: 5
     keywords: [Guard]
     rarity: Common
     tags: [Construct]
@@ -59,7 +59,7 @@ cards:
     cost: 5
     card_type: creature
     attack: 3
-    health: 8
+    health: 7
     keywords: [Guard]
     rarity: Uncommon
     tags: [Construct]
@@ -97,7 +97,7 @@ cards:
       - trigger: OnPlay
         effects:
           - type: heal
-            amount: 3
+            amount: 2
 
   - id: 56
     name: "Siege Engine"
@@ -113,8 +113,8 @@ cards:
     name: "Grand Constructor"
     cost: 7
     card_type: creature
-    attack: 5
-    health: 8
+    attack: 4
+    health: 6
     keywords: [Guard]
     rarity: Legendary
     tags: [Engineer]
@@ -123,8 +123,8 @@ cards:
         targeting: TargetAllyCreature
         effects:
           - type: buff_stats
-            attack: 2
-            health: 3
+            attack: 1
+            health: 2
 
   # === ARGENTUM SPELLS ===
   - id: 58
@@ -206,7 +206,7 @@ cards:
     cost: 2
     card_type: creature
     attack: 2
-    health: 2
+    health: 3
     keywords: [Lethal]
     rarity: Uncommon
     tags: [Beast]
@@ -236,7 +236,7 @@ cards:
     cost: 4
     card_type: creature
     attack: 3
-    health: 5
+    health: 6
     keywords: [Guard, Regenerate]
     rarity: Rare
     tags: [Beast]
@@ -246,7 +246,7 @@ cards:
     cost: 2
     card_type: creature
     attack: 3
-    health: 1
+    health: 2
     keywords: [Rush]
     rarity: Common
     tags: [Beast]
@@ -256,7 +256,7 @@ cards:
     cost: 1
     card_type: creature
     attack: 1
-    health: 1
+    health: 2
     keywords: [Lethal]
     rarity: Uncommon
     tags: [Parasite]
@@ -283,7 +283,7 @@ cards:
     cost: 5
     card_type: creature
     attack: 5
-    health: 4
+    health: 5
     keywords: [Rush, Lethal]
     rarity: Rare
     tags: [Beast]
@@ -309,7 +309,7 @@ cards:
     cost: 3
     card_type: creature
     attack: 3
-    health: 2
+    health: 3
     keywords: [Ranged]
     rarity: Common
     tags: [Beast]
@@ -370,7 +370,7 @@ cards:
     name: "Soul Fragment"
     cost: 1
     card_type: creature
-    attack: 2
+    attack: 3
     health: 2
     keywords: [Ephemeral]
     rarity: Common
@@ -381,7 +381,7 @@ cards:
     cost: 2
     card_type: creature
     attack: 3
-    health: 1
+    health: 2
     keywords: [Stealth]
     rarity: Uncommon
     tags: [Assassin]
@@ -391,7 +391,7 @@ cards:
     cost: 2
     card_type: creature
     attack: 2
-    health: 3
+    health: 4
     keywords: [Lifesteal]
     rarity: Common
     tags: [Cultist]
@@ -400,7 +400,7 @@ cards:
     name: "Void Walker"
     cost: 3
     card_type: creature
-    attack: 3
+    attack: 4
     health: 3
     keywords: [Ephemeral, Rush]
     rarity: Uncommon
@@ -411,7 +411,7 @@ cards:
     cost: 4
     card_type: creature
     attack: 3
-    health: 4
+    health: 5
     keywords: [Lifesteal]
     rarity: Uncommon
     tags: [Mage]
@@ -420,8 +420,8 @@ cards:
     name: "Silent Assassin"
     cost: 4
     card_type: creature
-    attack: 4
-    health: 2
+    attack: 5
+    health: 3
     keywords: [Stealth, Quick]
     rarity: Rare
     tags: [Assassin]
@@ -447,10 +447,10 @@ cards:
 
   - id: 85
     name: "The Eternal One"
-    cost: 8
+    cost: 7
     card_type: creature
     attack: 6
-    health: 6
+    health: 7
     keywords: [Lifesteal, Regenerate]
     rarity: Legendary
     tags: [Undead]
@@ -518,7 +518,7 @@ cards:
   # === OBSIDION SUPPORTS ===
   - id: 92
     name: "Dark Altar"
-    cost: 5
+    cost: 4
     card_type: support
     durability: 3
     passive_effects:
