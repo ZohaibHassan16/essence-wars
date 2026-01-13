@@ -849,7 +849,7 @@ fn test_fork_state_validity() {
 /// This test is ignored by default because it takes ~10-15 minutes to run.
 /// Use this for overnight or CI stress testing.
 #[test]
-#[ignore]
+#[ignore = "tier_overnight"] // ~15 min: 100k random games
 fn stress_test_100k_random() {
     const NUM_GAMES: u64 = 100_000;
 
@@ -914,7 +914,7 @@ fn stress_test_100k_random() {
 ///
 /// This exercises smarter play patterns and catches bugs that random play misses.
 #[test]
-#[ignore]
+#[ignore = "tier_overnight"] // ~30 min: 100k greedy games
 fn stress_test_100k_greedy() {
     const NUM_GAMES: u64 = 100_000;
 

@@ -183,7 +183,7 @@ fn run_bot_game(
 ///
 /// Run with: `cargo test --release stress_test_mcts_vs_mcts -- --ignored --nocapture`
 #[test]
-#[ignore]
+#[ignore = "tier_medium"] // ~5 min: 100 MCTS vs MCTS games
 fn stress_test_mcts_vs_mcts_100_games() {
     const NUM_GAMES: u64 = 100;
 
@@ -234,7 +234,7 @@ fn stress_test_mcts_vs_mcts_100_games() {
 ///
 /// Run with: `cargo test --release stress_test_mcts_vs_greedy_500 -- --ignored --nocapture`
 #[test]
-#[ignore]
+#[ignore = "tier_long"] // ~20 min: 500 MCTS vs Greedy games
 fn stress_test_mcts_vs_greedy_500_games() {
     const NUM_GAMES: u64 = 500;
 
@@ -297,7 +297,7 @@ fn stress_test_mcts_vs_greedy_500_games() {
 ///
 /// Run with: `cargo test --release stress_test_all_bot_combinations -- --ignored --nocapture`
 #[test]
-#[ignore]
+#[ignore = "tier_medium"] // ~5 min: 300 games across all bot matchups
 fn stress_test_all_bot_combinations() {
     let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
@@ -410,7 +410,7 @@ fn stress_test_all_bot_combinations() {
 ///
 /// Run with: `cargo test --release stress_test_mcts_fork_integrity -- --ignored --nocapture`
 #[test]
-#[ignore]
+#[ignore = "tier_quick"] // ~1 min: 50 fork integrity games
 fn stress_test_mcts_fork_integrity() {
     const NUM_GAMES: u64 = 50;
 
@@ -488,7 +488,7 @@ fn stress_test_mcts_fork_integrity() {
 ///
 /// Run with: `cargo test --release stress_test_mcts_high_sims -- --ignored --nocapture`
 #[test]
-#[ignore]
+#[ignore = "tier_long"] // ~15 min: 20 games with 500 sims/move
 fn stress_test_mcts_high_sims() {
     const NUM_GAMES: u64 = 20;
 

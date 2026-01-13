@@ -11,11 +11,21 @@
 cargo build --release
 
 # Run all tests
-cargo nextest run --status-level=fail  # ~480 tests (only shows failures)
+cargo nextest run --status-level=fail  # ~485 tests (only shows failures)
 cargo test                              # Alternative: use standard cargo test
 
-# Run slow/ignored tests (stress tests, performance validation)
-cargo nextest run --status-level=fail -- --ignored  # 10 ignored tests
+# Run stress tests by tier (use helper script)
+./scripts/run-tests.sh                  # Standard tests only
+./scripts/run-tests.sh quick            # + quick tier (~2 min)
+./scripts/run-tests.sh medium           # + medium tier (~10 min)
+./scripts/run-tests.sh long             # + long tier (~30 min)
+./scripts/run-tests.sh overnight        # + overnight tier (~1-2 hours)
+
+# Or run tiers directly
+cargo nextest run --release -- --ignored tier_quick
+cargo nextest run --release -- --ignored tier_medium
+cargo nextest run --release -- --ignored tier_long
+cargo nextest run --release -- --ignored tier_overnight
 
 # Run arena matches
 cargo run --release --bin arena -- --bot1 greedy --bot2 random --games 100
@@ -139,6 +149,34 @@ ai-cardgame/
 - **Shared test utilities**: Go in `tests/common/mod.rs`
 
 When adding new tests for core modules, create them in `tests/unit/` and add the module to `tests/unit.rs`.
+
+## Test Tiers & CI/CD
+
+Tests are organized into tiers by runtime:
+
+| Tier | Duration | When Run | Examples |
+|------|----------|----------|----------|
+| **Standard** | ~2 min | Every commit | Unit tests, integration tests |
+| **tier_quick** | ~2 min | Every PR | 20-50 game MCTS tests |
+| **tier_medium** | ~10 min | Nightly | 100 game bot validation |
+| **tier_long** | ~30 min | Nightly | 500 game stress tests |
+| **tier_overnight** | ~1-2 hours | Weekly | 100k game exhaustive tests |
+
+### GitHub Actions Workflows
+
+- **ci.yml** - Runs on every push/PR: formatting, linting, standard tests, quick tier
+- **nightly.yml** - Runs at 2 AM UTC daily: quick + medium + long tiers
+- **weekly.yml** - Runs Sundays at 3 AM UTC: all tiers including overnight
+
+### Running Tests Locally
+
+```bash
+./scripts/run-tests.sh              # Standard tests
+./scripts/run-tests.sh quick        # + quick (~2 min)
+./scripts/run-tests.sh medium       # + quick + medium (~12 min)
+./scripts/run-tests.sh long         # + all above + long (~45 min)
+./scripts/run-tests.sh overnight    # Full suite (~2 hours)
+```
 
 ## Bot System
 

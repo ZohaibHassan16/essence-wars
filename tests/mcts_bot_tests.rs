@@ -229,7 +229,7 @@ fn test_mcts_varies_with_seed() {
 
 /// Test more simulations produces better results
 #[test]
-#[ignore]
+#[ignore = "tier_quick"] // ~1 min: 20 games comparing sim counts
 fn test_mcts_simulation_count_matters() {
     let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
@@ -285,7 +285,7 @@ fn test_mcts_simulation_count_matters() {
 
 /// Test MCTS beats GreedyBot (with enough simulations)
 #[test]
-#[ignore]
+#[ignore = "tier_quick"] // ~1 min: 20 MCTS vs Greedy games
 fn test_mcts_vs_greedy() {
     let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");

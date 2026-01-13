@@ -156,7 +156,7 @@ fn test_greedy_vs_greedy_100_games() {
 }
 
 #[test]
-#[ignore] // Slow: runs real MCTS search
+#[ignore = "tier_quick"] // ~1 min: 20 MCTS games
 fn test_mcts_vs_mcts_20_games() {
     let card_db = load_card_db();
     let deck = arena_test_deck();
@@ -189,7 +189,7 @@ fn test_mcts_vs_mcts_20_games() {
 }
 
 #[test]
-#[ignore] // Slow: runs real MCTS search
+#[ignore = "tier_medium"] // ~2 min: 50 MCTS games
 fn test_mcts_vs_greedy_50_games() {
     let card_db = load_card_db();
     let deck = arena_test_deck();
@@ -509,7 +509,7 @@ fn test_edge_case_guard_enforcement() {
 // =============================================================================
 
 #[test]
-#[ignore]
+#[ignore = "tier_medium"] // ~5 min: 100 MCTS vs MCTS games
 fn stress_test_mcts_vs_mcts_100_games() {
     let card_db = load_card_db();
     let deck = arena_test_deck();
@@ -545,7 +545,7 @@ fn stress_test_mcts_vs_mcts_100_games() {
 }
 
 #[test]
-#[ignore]
+#[ignore = "tier_medium"] // ~5 min: Bot hierarchy validation
 fn stress_test_bot_hierarchy() {
     let card_db = load_card_db();
     let deck = arena_test_deck();

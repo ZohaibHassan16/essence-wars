@@ -365,7 +365,7 @@ fn test_coverage_greedy_vs_random_1k() {
 }
 
 #[test]
-#[ignore] // Long-running stress test
+#[ignore = "tier_long"] // ~10 min: 10k game coverage test
 fn stress_test_coverage_10k_games() {
     let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks")
@@ -493,7 +493,7 @@ fn stress_test_coverage_10k_games() {
 }
 
 #[test]
-#[ignore] // Long-running MCTS test
+#[ignore = "tier_long"] // ~15 min: 500 MCTS coverage games
 fn stress_test_mcts_coverage_500_games() {
     let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks")
