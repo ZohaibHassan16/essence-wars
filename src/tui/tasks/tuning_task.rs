@@ -266,7 +266,7 @@ fn run_tuning_task(
     }
 
     // Load card database
-    let card_db = match CardDatabase::load_from_directory("data/cards") {
+    let card_db = match CardDatabase::load_from_directory("data/cards/sets") {
         Ok(db) => db,
         Err(e) => {
             let _ = sender.send(TuningProgress::Error(format!("Failed to load cards: {}", e)));

@@ -26,7 +26,7 @@ fn test_deck_definition() {
 
 #[test]
 fn test_deck_validation() {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
 
     // Valid deck

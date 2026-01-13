@@ -7,7 +7,7 @@ use cardgame::engine::GameEngine;
 use cardgame::types::{CardId, Slot};
 
 fn load_test_db() -> CardDatabase {
-    CardDatabase::load_from_directory("data/cards").expect("Failed to load cards")
+    CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards")
 }
 
 fn test_deck() -> Vec<CardId> {
@@ -143,4 +143,43 @@ fn test_mcts_leaf_parallel_search() {
     let legal = engine.get_legal_actions();
 
     assert!(legal.contains(&action), "Leaf-parallel MCTS should return a legal action");
+}
+
+#[test]
+fn test_mcts_requires_engine() {
+    let card_db = load_test_db();
+    let bot = MctsBot::new(&card_db, 42);
+
+    // MCTS bots require engine access for full functionality
+    assert!(bot.requires_engine(), "MctsBot should require engine access");
+}
+
+#[test]
+#[should_panic(expected = "MctsBot::select_action() called without engine access")]
+fn test_mcts_select_action_panics_without_engine() {
+    let card_db = load_test_db();
+    let mut bot = MctsBot::new(&card_db, 42);
+
+    // Create dummy state data
+    let state_tensor = [0.0f32; cardgame::tensor::STATE_TENSOR_SIZE];
+    let legal_mask = [0.0f32; 256];
+    let legal_actions = vec![Action::EndTurn];
+
+    // This should panic because MCTS requires engine access
+    let _ = bot.select_action(&state_tensor, &legal_mask, &legal_actions);
+}
+
+#[test]
+fn test_mcts_select_action_with_engine_trait_method() {
+    let card_db = load_test_db();
+    let mut bot = MctsBot::with_config(&card_db, MctsConfig::fast(), 42);
+
+    let mut engine = GameEngine::new(&card_db);
+    engine.start_game(test_deck(), test_deck(), 12345);
+
+    // Call through the trait method (as GameRunner does)
+    let action = bot.select_action_with_engine(&engine);
+    let legal = engine.get_legal_actions();
+
+    assert!(legal.contains(&action), "Trait method should return a legal action");
 }

@@ -10,7 +10,7 @@ use cardgame::keywords::Keywords;
 use cardgame::types::{CardId, PlayerId, Slot};
 
 fn create_test_db() -> CardDatabase {
-    CardDatabase::load_from_directory("data/cards").expect("Failed to load cards")
+    CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards")
 }
 
 /// Find a card with specific criteria

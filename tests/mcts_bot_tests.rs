@@ -9,7 +9,7 @@
 mod common;
 
 use cardgame::actions::Action;
-use cardgame::bots::{GreedyBot, MctsBot, MctsConfig};
+use cardgame::bots::{Bot, GreedyBot, MctsBot, MctsConfig};
 use cardgame::cards::CardDatabase;
 use cardgame::engine::GameEngine;
 use cardgame::keywords::Keywords;
@@ -35,7 +35,7 @@ fn mcts_config(simulations: u32) -> MctsConfig {
 /// Test that MCTS finds lethal when a creature can attack face for exact kill
 #[test]
 fn test_mcts_finds_lethal() {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
 
     let mut engine = GameEngine::new(&card_db);
@@ -104,7 +104,7 @@ fn test_mcts_finds_lethal() {
 /// Test MCTS with only one legal action returns immediately
 #[test]
 fn test_mcts_single_legal_action() {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
 
     let mut engine = GameEngine::new(&card_db);
@@ -133,7 +133,7 @@ fn test_mcts_single_legal_action() {
 /// Test MCTS handles terminal states gracefully
 #[test]
 fn test_mcts_on_terminal_state() {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
 
     let mut engine = GameEngine::new(&card_db);
@@ -161,7 +161,7 @@ fn test_mcts_on_terminal_state() {
 /// Test same seed produces identical action selection
 #[test]
 fn test_mcts_determinism_same_seed() {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
 
     // Create the same game state twice
@@ -196,7 +196,7 @@ fn test_mcts_determinism_same_seed() {
 /// Test different seeds produce varying selections (probabilistic)
 #[test]
 fn test_mcts_varies_with_seed() {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
 
     let mut engine = GameEngine::new(&card_db);
@@ -231,7 +231,7 @@ fn test_mcts_varies_with_seed() {
 #[test]
 #[ignore]
 fn test_mcts_simulation_count_matters() {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
 
     // Run several games with low vs high simulation counts
@@ -287,7 +287,7 @@ fn test_mcts_simulation_count_matters() {
 #[test]
 #[ignore]
 fn test_mcts_vs_greedy() {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
 
     let mut mcts_wins = 0;
@@ -345,7 +345,7 @@ fn test_mcts_vs_greedy() {
 /// Verify forking during MCTS doesn't corrupt original state
 #[test]
 fn test_mcts_fork_integrity() {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
 
     let mut engine = GameEngine::new(&card_db);

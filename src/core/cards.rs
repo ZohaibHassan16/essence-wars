@@ -268,31 +268,63 @@ pub enum CardLoadError {
 }
 
 impl CardDatabase {
-    /// Load cards from a directory containing YAML files
+    /// Load cards from a directory containing YAML files.
+    ///
+    /// The directory should contain `.yaml` or `.yml` files with card definitions.
+    /// For example, if your cards are in `data/cards/sets/`, pass that full path.
+    ///
+    /// # Errors
+    /// Returns an error if:
+    /// - The directory doesn't exist
+    /// - No cards are found (empty directory or no valid YAML files)
+    /// - Duplicate card IDs are found
+    /// - YAML parsing fails
     pub fn load_from_directory<P: AsRef<Path>>(path: P) -> Result<Self, CardLoadError> {
+        let dir_path = path.as_ref();
+
+        if !dir_path.exists() {
+            return Err(CardLoadError::Validation(format!(
+                "Card directory does not exist: {}",
+                dir_path.display()
+            )));
+        }
+
+        if !dir_path.is_dir() {
+            return Err(CardLoadError::Validation(format!(
+                "Path is not a directory: {}",
+                dir_path.display()
+            )));
+        }
+
         let mut all_cards = Vec::new();
-        let sets_path = path.as_ref().join("sets");
 
-        if sets_path.exists() {
-            for entry in fs::read_dir(&sets_path)? {
-                let entry = entry?;
-                let file_path = entry.path();
+        for entry in fs::read_dir(dir_path)? {
+            let entry = entry?;
+            let file_path = entry.path();
 
-                if file_path.extension().map_or(false, |ext| ext == "yaml" || ext == "yml") {
-                    let yaml_content = fs::read_to_string(&file_path)?;
-                    let card_set: CardSet = serde_yaml::from_str(&yaml_content)?;
-                    all_cards.extend(card_set.cards);
-                }
+            if file_path.extension().map_or(false, |ext| ext == "yaml" || ext == "yml") {
+                let yaml_content = fs::read_to_string(&file_path)?;
+                let card_set: CardSet = serde_yaml::from_str(&yaml_content)?;
+                all_cards.extend(card_set.cards);
             }
+        }
+
+        // Validate that we loaded at least one card
+        if all_cards.is_empty() {
+            return Err(CardLoadError::Validation(format!(
+                "No cards found in directory: {}. Expected .yaml or .yml files with card definitions.",
+                dir_path.display()
+            )));
         }
 
         // Validate no duplicate IDs
         let mut seen_ids = std::collections::HashSet::new();
         for card in &all_cards {
             if !seen_ids.insert(card.id) {
-                return Err(CardLoadError::Validation(
-                    format!("Duplicate card ID: {}", card.id)
-                ));
+                return Err(CardLoadError::Validation(format!(
+                    "Duplicate card ID: {}",
+                    card.id
+                )));
             }
         }
 

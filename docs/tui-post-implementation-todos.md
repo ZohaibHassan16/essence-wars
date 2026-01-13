@@ -1,48 +1,61 @@
 # TUI Post-Implementation Investigation Items
 
-These issues were discovered during TUI Phase 3 implementation and should be addressed after all TUI phases are complete.
-
-## 1. MctsBot::select_action() Fallback Heuristic
-
-**File:** `src/bots/mcts.rs`
-
-The generic `Bot::select_action()` trait method for MctsBot falls back to a simple heuristic instead of performing actual MCTS search:
-
-```rust
-fn select_action(
-    &mut self,
-    _state_tensor: &[f32; STATE_TENSOR_SIZE],
-    _legal_mask: &[f32; 256],
-    legal_actions: &[Action],
-) -> Action {
-    // MCTS requires engine access for simulation
-    // Fall back to simple heuristic without engine
-    ...
-}
-```
-
-**Problem:** Code that uses `Box<dyn Bot>` and calls the generic `select_action()` method will get the fallback heuristic instead of actual MCTS search. Only code that uses the concrete `MctsBot` type and calls `select_action_with_engine()` gets real MCTS.
-
-**Investigation:** Consider whether the `Bot` trait should be redesigned to support engine-based bots, or if documentation should be clearer about when to use `select_action_with_engine()`.
+These issues were discovered during TUI Phase 3 implementation and have been **RESOLVED**.
 
 ---
 
-## 2. CardDatabase::load_from_directory() Path Confusion
+## 1. MctsBot::select_action() Fallback Heuristic ✅ FIXED
 
-**File:** `src/core/cards.rs`
+**File:** `src/bots/mcts.rs`
 
-The `load_from_directory()` function internally appends `/sets` to the provided path:
+**Original Problem:** The generic `Bot::select_action()` trait method for MctsBot fell back to a simple heuristic instead of performing actual MCTS search. Code using `Box<dyn Bot>` would get degraded behavior silently.
 
+**Resolution:**
+1. Extended the `Bot` trait with `select_action_with_engine()` default method
+2. Added `requires_engine()` method to the `Bot` trait
+3. Updated `GameRunner` to use `select_action_with_engine()` for all bots
+4. Made `MctsBot::select_action()` panic with a clear error message
+5. Added tests for the new behavior
+
+**New API:**
 ```rust
-pub fn load_from_directory<P: AsRef<Path>>(path: P) -> Result<Self, CardLoadError> {
-    let sets_path = path.as_ref().join("sets");
-    ...
+pub trait Bot: Send {
+    fn select_action(&mut self, ...) -> Action;
+
+    // New: Engine-aware selection for bots like MCTS
+    fn select_action_with_engine(&mut self, engine: &GameEngine) -> Action {
+        // Default: extract state from engine and call select_action()
+    }
+
+    // New: Indicates if bot requires engine for full functionality
+    fn requires_engine(&self) -> bool { false }
 }
 ```
 
-**Problem:** Calling `load_from_directory("data/cards/sets")` results in looking for `"data/cards/sets/sets"` which doesn't exist, causing 0 cards to be loaded silently (no error, just empty database).
+---
 
-**Investigation:** Consider either:
-- Removing the internal `/sets` join and requiring callers to provide the full path
-- Adding validation/warning when 0 cards are loaded
-- Better documenting the expected path structure
+## 2. CardDatabase::load_from_directory() Path Confusion ✅ FIXED
+
+**File:** `src/core/cards.rs`
+
+**Original Problem:** The function internally appended `/sets` to the path, causing confusion. Calling with `"data/cards/sets"` would look for `"data/cards/sets/sets"` which doesn't exist, returning an empty database silently.
+
+**Resolution:**
+1. Removed the implicit `/sets` join - callers now provide the full path
+2. Added validation that returns an error if:
+   - Directory doesn't exist
+   - Path is not a directory
+   - No cards are found (empty database)
+3. Updated all callers to use `"data/cards/sets"` instead of `"data/cards"`
+4. Added comprehensive tests for error cases
+
+**New Behavior:**
+```rust
+// Correct usage - provide full path to directory containing YAML files
+let db = CardDatabase::load_from_directory("data/cards/sets")?;
+
+// Errors now returned instead of silent failures:
+// - "Card directory does not exist: ..."
+// - "Path is not a directory: ..."
+// - "No cards found in directory: ..."
+```

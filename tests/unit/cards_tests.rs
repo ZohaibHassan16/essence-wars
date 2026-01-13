@@ -189,7 +189,7 @@ cards:
 #[test]
 fn test_load_from_directory() {
     let db =
-        CardDatabase::load_from_directory("data/cards").expect("Failed to load cards from directory");
+        CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards from directory");
 
     // Verify we loaded the starter set (43 cards)
     assert_eq!(db.len(), 43);
@@ -252,4 +252,52 @@ cards:
     let db = CardDatabase::load_from_yaml(yaml).expect("Failed to parse YAML");
     let card = db.get(CardId(100)).expect("Card not found");
     assert!(card.is_support());
+}
+
+#[test]
+fn test_load_from_directory_nonexistent_path() {
+    let result = CardDatabase::load_from_directory("nonexistent/path/to/cards");
+    assert!(result.is_err());
+    let err = result.unwrap_err();
+    assert!(matches!(err, CardLoadError::Validation(_)));
+    assert!(
+        err.to_string().contains("does not exist"),
+        "Error should mention path doesn't exist: {}",
+        err
+    );
+}
+
+#[test]
+fn test_load_from_directory_empty_directory() {
+    // Create a temp directory for this test
+    let temp_dir = std::env::temp_dir().join("cardgame_test_empty_dir");
+    let _ = std::fs::remove_dir_all(&temp_dir); // Clean up from previous runs
+    std::fs::create_dir_all(&temp_dir).expect("Failed to create temp directory");
+
+    let result = CardDatabase::load_from_directory(&temp_dir);
+    assert!(result.is_err());
+    let err = result.unwrap_err();
+    assert!(matches!(err, CardLoadError::Validation(_)));
+    assert!(
+        err.to_string().contains("No cards found"),
+        "Error should mention no cards found: {}",
+        err
+    );
+
+    // Clean up
+    let _ = std::fs::remove_dir_all(&temp_dir);
+}
+
+#[test]
+fn test_load_from_directory_file_not_directory() {
+    // Use a known file that exists
+    let result = CardDatabase::load_from_directory("data/cards/sets/starter.yaml");
+    assert!(result.is_err());
+    let err = result.unwrap_err();
+    assert!(matches!(err, CardLoadError::Validation(_)));
+    assert!(
+        err.to_string().contains("not a directory"),
+        "Error should mention path is not a directory: {}",
+        err
+    );
 }

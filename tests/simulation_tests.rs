@@ -620,8 +620,7 @@ fn verify_comprehensive_invariants_with_db(
 /// Test with full database validation (checks all card IDs are valid)
 #[test]
 fn test_database_validated_games() {
-    // Note: load_from_directory adds "sets" internally, so pass "data/cards" not "data/cards/sets"
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
 
     // Verify deck card IDs exist in the database first

@@ -83,7 +83,7 @@ struct Args {
     experiment_dir: PathBuf,
 
     /// Path to card database
-    #[arg(long, default_value = "data/cards")]
+    #[arg(long, default_value = "data/cards/sets")]
     cards: PathBuf,
 
     /// Path to deck definitions directory

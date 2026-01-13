@@ -112,17 +112,15 @@ impl<'a> GameRunner<'a> {
             let action_start = Instant::now();
 
             // Get current state info
-            let state_tensor = engine.get_state_tensor();
-            let legal_mask = engine.get_legal_action_mask();
-            let legal_actions = engine.get_legal_actions();
             let current_player = engine.current_player();
             let turn = engine.turn_number() as u32;
 
             // Select action from appropriate bot
+            // Use engine-aware method to support bots like MCTS that need simulation
             let action = if current_player == PlayerId::PLAYER_ONE {
-                bot1.select_action(&state_tensor, &legal_mask, &legal_actions)
+                bot1.select_action_with_engine(&engine)
             } else {
-                bot2.select_action(&state_tensor, &legal_mask, &legal_actions)
+                bot2.select_action_with_engine(&engine)
             };
 
             let thinking_time = action_start.elapsed();

@@ -25,7 +25,7 @@ fn test_deck() -> Vec<CardId> {
 
 /// Benchmark single game with random bots.
 fn bench_random_game(c: &mut Criterion) {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
     let deck = test_deck();
 
@@ -59,7 +59,7 @@ fn bench_random_game(c: &mut Criterion) {
 
 /// Benchmark single game with greedy bots.
 fn bench_greedy_game(c: &mut Criterion) {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
     let deck = test_deck();
 
@@ -89,7 +89,7 @@ fn bench_greedy_game(c: &mut Criterion) {
 
 /// Benchmark state tensor generation.
 fn bench_state_tensor(c: &mut Criterion) {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
     let deck = test_deck();
 
@@ -116,7 +116,7 @@ fn bench_state_tensor(c: &mut Criterion) {
 
 /// Benchmark legal action generation.
 fn bench_legal_actions(c: &mut Criterion) {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
     let deck = test_deck();
 
@@ -143,7 +143,7 @@ fn bench_legal_actions(c: &mut Criterion) {
 
 /// Benchmark engine fork operation.
 fn bench_engine_fork(c: &mut Criterion) {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
     let deck = test_deck();
 
@@ -170,7 +170,7 @@ fn bench_engine_fork(c: &mut Criterion) {
 
 /// Benchmark MCTS with different simulation counts.
 fn bench_mcts_simulations(c: &mut Criterion) {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
     let deck = test_deck();
 
@@ -212,7 +212,7 @@ fn bench_mcts_simulations(c: &mut Criterion) {
 
 /// Benchmark throughput: games per second with random bots.
 fn bench_games_per_second(c: &mut Criterion) {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
     let deck = test_deck();
 

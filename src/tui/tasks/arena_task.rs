@@ -131,7 +131,7 @@ fn run_arena_task(config: ArenaConfig, sender: Sender<ArenaProgress>) {
     let _ = sender.send(ArenaProgress::Started);
 
     // Load card database (path should be "data/cards" - the function appends "/sets" internally)
-    let card_db: Arc<CardDatabase> = match CardDatabase::load_from_directory("data/cards") {
+    let card_db: Arc<CardDatabase> = match CardDatabase::load_from_directory("data/cards/sets") {
         Ok(db) => Arc::new(db),
         Err(e) => {
             let _ = sender.send(ArenaProgress::Error(format!("Failed to load cards: {}", e)));

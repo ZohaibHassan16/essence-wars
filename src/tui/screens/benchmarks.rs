@@ -504,7 +504,7 @@ fn run_benchmark(sender: Sender<BenchmarkProgress>) {
     let _ = sender.send(BenchmarkProgress::Started);
 
     // Load card database
-    let card_db = match CardDatabase::load_from_directory("data/cards") {
+    let card_db = match CardDatabase::load_from_directory("data/cards/sets") {
         Ok(db) => db,
         Err(e) => {
             let _ = sender.send(BenchmarkProgress::Error(format!("Failed to load cards: {}", e)));

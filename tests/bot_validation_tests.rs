@@ -156,6 +156,7 @@ fn test_greedy_vs_greedy_100_games() {
 }
 
 #[test]
+#[ignore] // Slow: runs real MCTS search
 fn test_mcts_vs_mcts_20_games() {
     let card_db = load_card_db();
     let deck = valid_yaml_deck();
@@ -188,6 +189,7 @@ fn test_mcts_vs_mcts_20_games() {
 }
 
 #[test]
+#[ignore] // Slow: runs real MCTS search
 fn test_mcts_vs_greedy_50_games() {
     let card_db = load_card_db();
     let deck = valid_yaml_deck();

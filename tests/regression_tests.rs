@@ -65,7 +65,7 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
 ];
 
 fn load_test_resources() -> (CardDatabase, DeckRegistry) {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks")
         .expect("Failed to load decks");

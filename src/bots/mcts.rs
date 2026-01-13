@@ -589,26 +589,24 @@ impl<'a> Bot for MctsBot<'a> {
         &mut self,
         _state_tensor: &[f32; STATE_TENSOR_SIZE],
         _legal_mask: &[f32; 256],
-        legal_actions: &[Action],
+        _legal_actions: &[Action],
     ) -> Action {
-        // MCTS requires engine access for simulation
-        // Fall back to simple heuristic without engine
-        if legal_actions.is_empty() {
-            return Action::EndTurn;
-        }
+        // MCTS requires engine access for simulation - this method should never be called.
+        // Use select_action_with_engine() instead, or call through GameRunner which
+        // automatically uses the engine-aware method for bots that require it.
+        panic!(
+            "MctsBot::select_action() called without engine access. \
+             MCTS requires the game engine for tree search simulation. \
+             Use select_action_with_engine() or ensure GameRunner is being used."
+        );
+    }
 
-        // Simple fallback: prioritize attacks, then plays, then end turn
-        for action in legal_actions {
-            if matches!(action, Action::Attack { .. }) {
-                return *action;
-            }
-        }
-        for action in legal_actions {
-            if matches!(action, Action::PlayCard { .. }) {
-                return *action;
-            }
-        }
-        legal_actions[0]
+    fn select_action_with_engine(&mut self, engine: &GameEngine) -> Action {
+        self.search(engine)
+    }
+
+    fn requires_engine(&self) -> bool {
+        true
     }
 
     fn reset(&mut self) {
@@ -619,12 +617,5 @@ impl<'a> Bot for MctsBot<'a> {
         // Cannot clone MCTS bot due to CardDatabase reference
         // Fall back to RandomBot
         Box::new(crate::bots::RandomBot::new(self.seed))
-    }
-}
-
-impl<'a> MctsBot<'a> {
-    /// Select an action using full MCTS search.
-    pub fn select_action_with_engine(&mut self, engine: &GameEngine) -> Action {
-        self.search(engine)
     }
 }

@@ -22,7 +22,7 @@ fn test_deck() -> Vec<CardId> {
 }
 
 fn main() {
-    let card_db = CardDatabase::load_from_directory("data/cards")
+    let card_db = CardDatabase::load_from_directory("data/cards/sets")
         .expect("Failed to load cards");
     let deck = test_deck();
 

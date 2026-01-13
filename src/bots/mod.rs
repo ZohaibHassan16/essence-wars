@@ -15,7 +15,7 @@ pub use mcts::{MctsBot, MctsConfig, MctsNode};
 pub use weights::{BotWeights, GreedyWeights, WeightSet};
 
 use crate::actions::Action;
-
+use crate::engine::GameEngine;
 use crate::tensor::STATE_TENSOR_SIZE;
 
 /// Trait for bot implementations.
@@ -45,6 +45,28 @@ pub trait Bot: Send {
         legal_mask: &[f32; 256],
         legal_actions: &[Action],
     ) -> Action;
+
+    /// Select an action with access to the game engine.
+    ///
+    /// This method allows bots that require engine access (like MCTS) to
+    /// perform full search. The default implementation falls back to
+    /// `select_action()` using state information from the engine.
+    ///
+    /// Bots that need engine access should override this method.
+    fn select_action_with_engine(&mut self, engine: &GameEngine) -> Action {
+        let state_tensor = engine.get_state_tensor();
+        let legal_mask = engine.get_legal_action_mask();
+        let legal_actions = engine.get_legal_actions();
+        self.select_action(&state_tensor, &legal_mask, &legal_actions)
+    }
+
+    /// Returns true if this bot requires engine access for full functionality.
+    ///
+    /// Bots like MCTS that need to simulate future states should return true.
+    /// This allows callers to use `select_action_with_engine()` when appropriate.
+    fn requires_engine(&self) -> bool {
+        false
+    }
 
     /// Reset internal state between games.
     ///

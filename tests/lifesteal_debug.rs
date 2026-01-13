@@ -12,7 +12,7 @@ use cardgame::types::{CardId, PlayerId};
 
 #[test]
 fn debug_lifesteal_investigation() {
-    let card_db = CardDatabase::load_from_directory("data/cards").expect("Failed to load cards");
+    let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks").expect("Failed to load decks");
 
     // Verify Lifesteal cards exist
@@ -121,7 +121,7 @@ fn debug_lifesteal_investigation() {
 
 #[test]
 fn debug_game_length_and_mana() {
-    let card_db = CardDatabase::load_from_directory("data/cards").expect("Failed to load cards");
+    let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks").expect("Failed to load decks");
 
     let defensive_deck = deck_registry.get("defensive_control").expect("Deck should exist");
@@ -174,7 +174,7 @@ fn debug_game_length_and_mana() {
 
 #[test]
 fn debug_what_cards_are_played() {
-    let card_db = CardDatabase::load_from_directory("data/cards").expect("Failed to load cards");
+    let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks").expect("Failed to load decks");
 
     let defensive_deck = deck_registry.get("defensive_control").expect("Deck should exist");

@@ -9,7 +9,7 @@ use cardgame::types::{CardId, PlayerId};
 
 #[test]
 fn trace_single_game_detailed() {
-    let card_db = CardDatabase::load_from_directory("data/cards").expect("Failed to load cards");
+    let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks").expect("Failed to load decks");
 
     let defensive_deck = deck_registry.get("defensive_control").expect("Deck should exist");
@@ -130,7 +130,7 @@ fn trace_single_game_detailed() {
 
 #[test]
 fn check_vampire_lord_in_starting_hands() {
-    let card_db = CardDatabase::load_from_directory("data/cards").expect("Failed to load cards");
+    let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks").expect("Failed to load decks");
 
     let defensive_deck = deck_registry.get("defensive_control").expect("Deck should exist");
