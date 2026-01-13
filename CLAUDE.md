@@ -89,10 +89,21 @@ ai-cardgame/
 │   └── game_benchmarks.rs  # Criterion benchmarks
 ├── data/
 │   ├── cards/sets/
-│   │   └── starter.yaml  # 43 card definitions
-│   └── decks/
-│       ├── aggressive_assault.toml  # Aggro deck
-│       └── defensive_control.toml   # Control deck
+│   │   ├── starter.yaml        # 47 cards (base + Phase 1.5 test)
+│   │   └── new-horizons.yaml   # 60 cards (4 faction batches)
+│   ├── decks/
+│   │   ├── argentum_fortress.toml    # Argentum faction deck
+│   │   ├── symbiote_swarm.toml       # Symbiote faction deck
+│   │   ├── obsidion_shadow.toml      # Obsidion faction deck
+│   │   ├── freewalker_mercenary.toml # Free-Walker utility deck
+│   │   ├── aggressive_assault.toml   # Starter aggro deck
+│   │   └── defensive_control.toml    # Starter control deck
+│   └── weights/
+│       ├── specialists/        # Faction-specific weights
+│       │   ├── argentum.toml
+│       │   ├── symbiote.toml
+│       │   └── obsidion.toml
+│       └── generalist.toml     # Cross-faction weights
 ├── experiments/             # Experiment outputs (gitignored)
 │   ├── mcts/                # MCTS tuning experiments
 │   │   └── YYYY-MM-DD_HHMM_tag/
@@ -384,13 +395,87 @@ cargo bench  # Run all benchmarks
 - **Indexed action space** (256 actions) - fixed-size for neural networks
 - **Engine fork()** - efficient state cloning for tree search
 
+## Faction System
+
+Essence Wars uses a **faction-based card system** with three true factions plus neutral cards:
+
+### True Factions
+
+| Faction | Identity | Primary Keywords | Playstyle |
+|---------|----------|------------------|-----------|
+| **Argentum Combine** | "The Wall" | Guard, Piercing, Shield | Defensive, high-HP, outlast |
+| **Symbiote Circles** | "The Swarm" | Rush, Lethal, Regenerate | Aggressive tempo, efficient trades |
+| **Obsidion Syndicate** | "The Shadow" | Lifesteal, Stealth, Ephemeral, Quick | Burst damage, life manipulation |
+
+### Neutral Cards
+
+| Category | Identity | Primary Keywords | Role |
+|----------|----------|------------------|------|
+| **Free-Walkers** | "The Toolbox" | Ranged, Charge | Utility splash for any faction |
+
+Free-Walkers are **not a standalone faction**—they are neutral utility cards (like MTG artifacts) that can be splashed into any faction deck.
+
+### Deck Composition
+
+Standard decks follow the **Faction Core + Neutral Splash** model:
+
+```
+STANDARD DECK: 20 cards
+├── Faction Core: 14 cards (70%)    ← Primary faction identity
+└── Neutral Splash: 6 cards (30%)   ← Free-Walker utility
+```
+
+## Agent Architecture
+
+All AI agents (MCTS, PPO, AlphaZero) follow this architecture:
+
+### Agent Types
+
+| Agent | Faction | Deck Binding | Training |
+|-------|---------|--------------|----------|
+| **Agent-Argentum** | Argentum | `argentum_*` only | vs other specialists + mirror |
+| **Agent-Symbiote** | Symbiote | `symbiote_*` only | vs other specialists + mirror |
+| **Agent-Obsidion** | Obsidion | `obsidion_*` only | vs other specialists + mirror |
+| **Agent-Generalist** | Any | Any deck | vs all specialists + mirror (25% each) |
+
+**Key Rule:** Specialists are **bound to their faction's decks**. Generalist can play any deck.
+
+### Weight/Model Organization
+
+```
+data/weights/                     # MCTS/Greedy weights
+├── specialists/
+│   ├── argentum.toml
+│   ├── symbiote.toml
+│   └── obsidion.toml
+└── generalist.toml
+
+models/                           # Neural networks (future)
+├── ppo/
+│   ├── specialists/{argentum,symbiote,obsidion}/
+│   └── generalist/
+└── alphazero/
+    ├── specialists/{argentum,symbiote,obsidion}/
+    └── generalist/
+```
+
+### Balance Testing
+
+| Test Type | Purpose | Configuration |
+|-----------|---------|---------------|
+| **Deck Balance** | Are factions balanced? | Generalist vs Generalist, all matchups |
+| **Specialist Quality** | Do specialists outperform? | Specialist vs Generalist, same deck |
+| **Full Tournament** | Meta health | All meaningful permutations (27 configs) |
+
+**Balance Targets:** 45-55% win rate between factions, no dominant strategy.
+
 ## Key Design Decisions
 
 ### Game Rules
 - 5 creature slots, 2 support slots per player
 - 3 Action Points per turn
 - 30 turn limit with life-based tiebreaker
-- 8 keywords: Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick
+- 12 keywords: Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick, Ephemeral, Regenerate, Stealth, Charge
 
 ### AI Interface (GameEnvironment trait)
 - `get_state_tensor()` - 326 floats representing full game state
@@ -463,21 +548,27 @@ cargo bench  # Run all benchmarks
 ## Implementation Status
 
 **Complete:**
-- All core game rules and 8 keywords
+- All core game rules and 12 keywords
 - Essence/mana system (grows +1/turn, caps at 10)
 - AI interface (tensor, action mask, rewards)
-- 43-card starter set
+- 107-card pool (47 starter + 60 New Horizons expansion)
+- Faction system (3 factions + neutrals)
 - Bot system (RandomBot, GreedyBot, MctsBot)
 - Arena for running matches with progress indicator
-- Deck system with TOML definitions
+- Deck system with TOML definitions (6 decks)
 - Weight tuning pipeline with CMA-ES optimizer
 - Version tracking for ML reproducibility
 - Criterion benchmarks for performance testing
-- ~480 tests passing
+- CI/CD with GitHub Actions (nightly + weekly)
+- ~485 tests passing
+
+**In Progress:**
+- Faction-specific weight tuning (specialists)
+- Balance iteration on New Horizons cards
 
 **Future work:**
 - Python bindings (PyO3) for ML training
-- Additional card sets
+- PPO and AlphaZero agents
 - Web-based game viewer
 
 ## Python Tooling

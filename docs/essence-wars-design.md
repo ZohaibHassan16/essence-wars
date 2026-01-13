@@ -25,8 +25,10 @@
 15. [Card Anatomy](#15-card-anatomy)
 16. [Starter Set Card List](#16-starter-set-card-list)
 17. [Sample Decks](#17-sample-decks)
-18. [Glossary](#18-glossary)
-19. [Quick Reference](#19-quick-reference)
+18. [Faction System](#18-faction-system)
+19. [AI Agent Architecture](#19-ai-agent-architecture)
+20. [Glossary](#20-glossary)
+21. [Quick Reference](#21-quick-reference)
 
 ---
 
@@ -1338,7 +1340,348 @@ The complete starter set contains 43 cards: 31 Creatures, 8 Spells, and 4 Suppor
 
 ---
 
-# 18. GLOSSARY
+# 18. FACTION SYSTEM
+
+## 18.1 Overview
+
+Essence Wars features a **faction-based card system** that provides thematic identity and strategic focus. Cards are organized into three true factions plus a neutral category.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         FACTION HIERARCHY                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│   TRUE FACTIONS (Primary Identity)                                       │
+│   ├── Argentum Combine    "The Wall"     [Defensive, Industrial]        │
+│   ├── Symbiote Circles    "The Swarm"    [Aggressive, Adaptive]         │
+│   └── Obsidion Syndicate  "The Shadow"   [Burst, Control]               │
+│                                                                          │
+│   NEUTRAL CARDS (Supplemental)                                           │
+│   └── Free-Walkers        "The Toolbox"  [Utility, Flexible]            │
+│       - Can be splashed into any faction deck                            │
+│       - Provides answers and flexibility                                 │
+│       - Similar to "colorless/artifact" cards in other games            │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+## 18.2 True Factions
+
+### 🏛️ ARGENTUM COMBINE — "The Wall"
+
+**Thematic Identity:** Order, Industry, Defense
+**Lore:** Art Deco Steampunk civilization. "Structure is Safety."
+
+| Aspect | Definition |
+|--------|------------|
+| **Primary Keywords** | Guard, Piercing, Shield |
+| **Secondary Keywords** | Regenerate (rare) |
+| **Archetypes** | Soldiers, Constructs, Engineers |
+| **Strengths** | High HP, defensive formations, outlasting opponents |
+| **Weaknesses** | Low burst damage, slow tempo |
+| **Avoid** | Rush, Lethal, Ephemeral, Stealth |
+
+**Playstyle:** Wall up with Guard creatures, heal through damage, grind opponents down through superior board presence.
+
+---
+
+### 🌿 SYMBIOTE CIRCLES — "The Swarm"
+
+**Thematic Identity:** Growth, Adaptation, Evolution
+**Lore:** Biopunk Fantasy ecosystem. "Adapt or Perish."
+
+| Aspect | Definition |
+|--------|------------|
+| **Primary Keywords** | Rush, Lethal, Regenerate |
+| **Secondary Keywords** | Ranged (acid spitters) |
+| **Archetypes** | Beasts, Parasites, Healers, Swarm |
+| **Strengths** | Tempo, efficient trading, sustained pressure |
+| **Weaknesses** | Low board control, vulnerable to AoE |
+| **Avoid** | Guard, Shield |
+
+**Playstyle:** Aggressive tempo with Rush creatures. Trade efficiently using Lethal. Regenerate provides staying power for key threats.
+
+---
+
+### 🔮 OBSIDION SYNDICATE — "The Glass Cannon"
+
+**Thematic Identity:** Knowledge, Ambition, Power
+**Lore:** Gothic Cyber-Magic underworld. "Power is Personal."
+
+| Aspect | Definition |
+|--------|------------|
+| **Primary Keywords** | Lifesteal, Stealth, Ephemeral, Quick |
+| **Secondary Keywords** | Lethal (assassins) |
+| **Archetypes** | Mages, Cultists, Assassins, Undead, Spirits |
+| **Strengths** | Burst damage, life manipulation, precision removal |
+| **Weaknesses** | Low creature stats, fragile board presence |
+| **Avoid** | Guard, Regenerate |
+
+**Playstyle:** Setup-based burst damage. Use Ephemeral creatures for tempo, Stealth for guaranteed damage, and Lifesteal to sustain through self-inflicted costs.
+
+---
+
+### ⚖️ FREE-WALKERS — "The Toolbox" (Neutral)
+
+**Thematic Identity:** Mercenaries, Flexibility, Profit
+**Lore:** Rugged frontier survivors. "No Flag. Just Gold."
+
+| Aspect | Definition |
+|--------|------------|
+| **Primary Keywords** | Ranged, Charge |
+| **Secondary Keywords** | Any (neutral access) |
+| **Archetypes** | Giants, Hunters, Mercenaries, Scouts |
+| **Strengths** | Flexibility, precision damage, gap-filling |
+| **Weaknesses** | No strong faction identity, jack-of-all-trades |
+| **Special Rule** | Can be splashed into ANY faction deck |
+
+**Role:** Free-Walker cards are **neutral utility cards** that can be added to any faction deck. They fill gaps, provide answers, and add flexibility without diluting faction identity.
+
+## 18.3 Deck Composition
+
+Standard deck construction follows the **Faction Core + Neutral Splash** model:
+
+```
+STANDARD DECK: 20 cards
+├── Faction Core: 14 cards (70%)    ← Primary faction identity
+└── Neutral Splash: 6 cards (30%)   ← Free-Walker utility
+```
+
+| Deck Type | Composition | Strategy |
+|-----------|-------------|----------|
+| `argentum_control` | 14 Argentum + 6 FW | Wall up, outlast, utility removal |
+| `symbiote_aggro` | 14 Symbiote + 6 FW | Fast pressure, Charge finishers |
+| `obsidion_burst` | 14 Obsidion + 6 FW | Setup + burst, Ranged precision |
+
+**Why 14/6 Split?**
+- **70% Faction Core:** Maintains clear faction identity and keyword focus
+- **30% Neutral Splash:** Provides flexibility without diluting theme
+- Free-Walkers fill gaps that factions intentionally lack
+
+## 18.4 Keyword Distribution by Faction
+
+| Keyword | Argentum | Symbiote | Obsidion | Free-Walker |
+|---------|:--------:|:--------:|:--------:|:-----------:|
+| Rush | ✗ | ★★★ | ★ | ★ |
+| Ranged | ★ | ★ | ✗ | ★★★ |
+| Piercing | ★★ | ✗ | ✗ | ★★ |
+| Guard | ★★★ | ✗ | ✗ | ★ |
+| Lifesteal | ✗ | ✗ | ★★★ | ✗ |
+| Lethal | ✗ | ★★★ | ★ | ✗ |
+| Shield | ★★ | ✗ | ✗ | ★ |
+| Quick | ✗ | ✗ | ★★ | ★ |
+| Ephemeral | ✗ | ✗ | ★★★ | ✗ |
+| Regenerate | ★ | ★★★ | ✗ | ✗ |
+| Stealth | ✗ | ✗ | ★★★ | ✗ |
+| Charge | ✗ | ✗ | ✗ | ★★★ |
+
+**Legend:** ★★★ Primary | ★★ Secondary | ★ Rare | ✗ Avoided
+
+## 18.5 Balance Philosophy
+
+### Design Goals
+
+1. **Faction Identity:** Each faction should feel distinct and have clear strengths/weaknesses
+2. **No Hard Counters:** Avoid strict rock-paper-scissors relationships
+3. **Slight Asymmetry OK:** Perfect 50/50 balance is not required; ±5% variance acceptable
+4. **Neutral as Glue:** Free-Walkers should enable faction decks, not replace them
+
+### Balance Targets
+
+| Matchup Type | Target Win Rate |
+|--------------|-----------------|
+| Faction vs Faction | 45-55% |
+| Mirror Match | 50% (by definition) |
+| Same Deck, Different Agents | Agent skill difference |
+
+### What We Avoid
+
+- **"Anti-X" Decks:** No deck should exist solely to counter another faction
+- **Dominant Strategies:** No single faction/deck should exceed 60% win rate
+- **Unplayable Factions:** No faction should fall below 40% win rate
+
+---
+
+# 19. AI AGENT ARCHITECTURE
+
+## 19.1 Overview
+
+Essence Wars is designed for AI research, with a comprehensive agent architecture that supports both specialized and generalized play.
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         AGENT HIERARCHY                                  │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│   SPECIALISTS (Faction-Optimized)                                        │
+│   ├── Agent-Argentum   → Tuned for defensive, high-HP strategies        │
+│   ├── Agent-Symbiote   → Tuned for aggressive tempo strategies          │
+│   └── Agent-Obsidion   → Tuned for burst/control strategies             │
+│                                                                          │
+│   GENERALIST (Cross-Faction)                                             │
+│   └── Agent-Generalist → Balanced across all factions                   │
+│       - Can play any deck competently                                    │
+│       - Benchmark for specialist comparison                              │
+│       - Trained against all specialists + mirror play                    │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+## 19.2 Agent Types
+
+### Specialist Agents
+
+Specialist agents are **optimized for a specific faction**. They have weights/policies tuned to maximize performance with that faction's deck and playstyle.
+
+| Agent | Faction | Deck Binding | Optimization Focus |
+|-------|---------|--------------|-------------------|
+| Agent-Argentum | Argentum Combine | `argentum_*` decks only | Guard value, HP preservation, survival |
+| Agent-Symbiote | Symbiote Circles | `symbiote_*` decks only | Rush value, Lethal trades, board presence |
+| Agent-Obsidion | Obsidion Syndicate | `obsidion_*` decks only | Lifesteal value, burst damage, Stealth setup |
+
+**Key Rule:** Specialists are **bound to their faction's decks**. An Argentum specialist should not play a Symbiote deck—this would be suboptimal and wastes computation.
+
+### Generalist Agent
+
+The Generalist agent is **balanced across all factions**. It can play any deck competently and serves as a benchmark.
+
+| Property | Value |
+|----------|-------|
+| Deck Binding | Any deck |
+| Training | Against all specialists equally + mirror play |
+| Purpose | Benchmark, flexible opponent, "universal player" |
+
+## 19.3 Training Pipeline
+
+### Specialist Training
+
+Each specialist is trained against its optimal opponents:
+
+```
+SPECIALIST TRAINING
+├── Agent-Argentum trains vs:
+│   ├── Agent-Symbiote (cross-faction)
+│   ├── Agent-Obsidion (cross-faction)
+│   └── Agent-Argentum (mirror, for robustness)
+│
+├── Agent-Symbiote trains vs:
+│   ├── Agent-Argentum (cross-faction)
+│   ├── Agent-Obsidion (cross-faction)
+│   └── Agent-Symbiote (mirror)
+│
+└── Agent-Obsidion trains vs:
+    ├── Agent-Argentum (cross-faction)
+    ├── Agent-Symbiote (cross-faction)
+    └── Agent-Obsidion (mirror)
+```
+
+### Generalist Training
+
+The Generalist trains against **all specialists equally plus itself**:
+
+```
+GENERALIST TRAINING
+Agent-Generalist trains vs:
+├── Agent-Argentum (25%)
+├── Agent-Symbiote (25%)
+├── Agent-Obsidion (25%)
+└── Agent-Generalist (25%, mirror play)
+```
+
+This ensures the Generalist:
+- Can handle any faction's playstyle
+- Doesn't overfit to one opponent type
+- Learns robust, general strategies
+
+## 19.4 Agent Implementation
+
+This architecture applies to **all agent types**:
+
+| Agent Type | MCTS | PPO | AlphaZero |
+|------------|------|-----|-----------|
+| Argentum Specialist | Weight file | Policy network | Value+Policy network |
+| Symbiote Specialist | Weight file | Policy network | Value+Policy network |
+| Obsidion Specialist | Weight file | Policy network | Value+Policy network |
+| Generalist | Weight file | Policy network | Value+Policy network |
+
+### File Organization
+
+```
+data/weights/                     # MCTS/Greedy weights
+├── specialists/
+│   ├── argentum.toml
+│   ├── symbiote.toml
+│   └── obsidion.toml
+└── generalist.toml
+
+models/                           # Trained neural networks
+├── ppo/
+│   ├── specialists/
+│   │   ├── argentum/
+│   │   ├── symbiote/
+│   │   └── obsidion/
+│   └── generalist/
+└── alphazero/
+    ├── specialists/
+    │   ├── argentum/
+    │   ├── symbiote/
+    │   └── obsidion/
+    └── generalist/
+```
+
+## 19.5 Balance Testing Matrix
+
+### Test Configurations
+
+| Test Type | Purpose | Configuration |
+|-----------|---------|---------------|
+| **Deck Balance** | Are faction decks balanced? | Generalist vs Generalist, all deck matchups |
+| **Specialist Quality** | Do specialists outperform generalists? | Specialist vs Generalist, same deck |
+| **Meta Health** | Overall competitive landscape | Full specialist tournament |
+
+### Standard Test Suite
+
+**Quick Balance Check** (during development):
+```
+3 decks × 3 decks = 9 matchups
+Agent: Generalist only
+Games: 50-100 per matchup
+Time: ~5 minutes
+```
+
+**Specialist Validation** (after training):
+```
+Specialist vs Specialist round-robin
+3 matchups (Arg vs Sym, Arg vs Obs, Sym vs Obs)
+Games: 100 per matchup
+Time: ~10 minutes
+```
+
+**Full Tournament** (nightly/weekly):
+```
+All meaningful permutations:
+├── 9 deck matchups (3×3 including mirrors)
+├── 3 agent configurations per matchup:
+│   ├── Generalist vs Generalist (baseline)
+│   ├── Specialist vs Specialist (optimal)
+│   └── Specialist vs Generalist (advantage test)
+└── Total: 27 test cases
+Games: 100 per test case
+Time: ~30-60 minutes
+```
+
+## 19.6 Success Metrics
+
+| Metric | Target | Meaning |
+|--------|--------|---------|
+| Faction Balance | 45-55% win rates | No dominant faction |
+| Specialist Advantage | >5% vs Generalist | Specialization is rewarded |
+| Training Convergence | Stable fitness | Agent has learned |
+| Meta Diversity | All factions viable | Healthy competitive landscape |
+
+---
+
+# 20. GLOSSARY
 
 | Term | Definition |
 |------|------------|
@@ -1384,9 +1727,9 @@ The complete starter set contains 43 cards: 31 Creatures, 8 Spells, and 4 Suppor
 
 ---
 
-# 19. QUICK REFERENCE
+# 21. QUICK REFERENCE
 
-## 19.1 Turn Structure
+## 21.1 Turn Structure
 
 1. **START PHASE**
    - +1 Maximum Essence (cap 10)
@@ -1406,7 +1749,7 @@ The complete starter set contains 43 cards: 31 Creatures, 8 Spells, and 4 Suppor
    - Resolve end-of-turn effects
    - Pass to opponent
 
-## 19.2 Action Costs
+## 21.2 Action Costs
 
 | Action | Cost |
 |--------|------|
@@ -1414,7 +1757,7 @@ The complete starter set contains 43 cards: 31 Creatures, 8 Spells, and 4 Suppor
 | Attack with creature | 1 AP |
 | End turn | Free |
 
-## 19.3 Lane Attack Ranges
+## 21.3 Lane Attack Ranges
 
 | Your Slot | Attack Range |
 |-----------|--------------|
@@ -1424,7 +1767,7 @@ The complete starter set contains 43 cards: 31 Creatures, 8 Spells, and 4 Suppor
 | 4 | Slots 3, 4, 5 |
 | 5 | Slots 4, 5 |
 
-## 19.4 Keyword Quick Reference
+## 21.4 Keyword Quick Reference
 
 | Keyword | One-Line Summary |
 |---------|------------------|
@@ -1437,7 +1780,7 @@ The complete starter set contains 43 cards: 31 Creatures, 8 Spells, and 4 Suppor
 | Shield | Block first damage, one time |
 | Quick | Deal damage first in combat |
 
-## 19.5 Win Conditions
+## 21.5 Win Conditions
 
 1. **Enemy life ≤ 0** → You win
 2. **50 Victory Points** → You win

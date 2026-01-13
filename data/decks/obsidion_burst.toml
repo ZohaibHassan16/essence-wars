@@ -1,0 +1,28 @@
+# Obsidion Burst Deck
+# Faction: Obsidion Syndicate - "The Glass Cannon"
+# Composition: 14 Obsidion Core + 6 Free-Walker Splash
+# Strategy: High-damage burst with Lifesteal for sustain. Ephemeral for tempo, Stealth for precision.
+
+id = "obsidion_burst"
+name = "Obsidion Burst"
+description = "Burst damage deck featuring Obsidion Syndicate mages with Free-Walker precision."
+
+tags = ["combo", "burst", "faction", "obsidion"]
+
+# 20 cards total (14 Obsidion + 6 Free-Walker)
+cards = [
+    # === OBSIDION CORE (14 cards) ===
+    78, 78, # Soul Fragment (1-cost 2/2 Ephemeral)
+    80, 80, # Blood Acolyte (2-cost 2/3 Lifesteal)
+    79, 79, # Shadow Blade (2-cost 3/1 Stealth)
+    81, 81, # Void Walker (3-cost 3/3 Ephemeral+Rush)
+    82, 82, # Hemomancer (4-cost 3/4 Lifesteal)
+    83, 83, # Silent Assassin (4-cost 4/2 Stealth+Quick)
+    84,     # Ritual Master (5-cost 4/4, deal 3 + heal 3)
+    85,     # The Eternal One (8-cost 6/6 Lifesteal+Regenerate)
+
+    # === FREE-WALKER SPLASH (6 cards) ===
+    93, 93, # Bounty Hunter (2-cost 2/2 Ranged) - precision removal
+    104, 104, # Precision Shot (2-cost spell, 3 damage) - direct damage
+    99, 99, # Sharpshooter (4-cost 3/3 Ranged) - flexible reach
+]

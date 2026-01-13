@@ -292,6 +292,13 @@ impl HelpScreen {
             Line::from(Span::styled("        - 50% MCTS (hard target)", dim)),
             Line::from(Span::styled("      Most robust, prevents overfitting to one opponent.", dim)),
             Line::from(""),
+            Line::from(vec![
+                Span::styled("    generalist", highlight),
+            ]),
+            Line::from(Span::styled("      Ultra-robust: ALL deck matchups vs Random/Greedy/MCTS.", dim)),
+            Line::from(Span::styled("      Best for universal weights that work with any deck.", dim)),
+            Line::from(Span::styled("      ⚠️  Slowest - 30+ min for 100 generations.", dim)),
+            Line::from(""),
             Line::from(Span::styled("  PARAMETERS EXPLAINED", h2)),
             Line::from(""),
             Line::from(vec![

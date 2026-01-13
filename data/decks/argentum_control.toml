@@ -1,0 +1,28 @@
+# Argentum Control Deck
+# Faction: Argentum Combine - "The Wall"
+# Composition: 14 Argentum Core + 6 Free-Walker Splash
+# Strategy: Defensive, high-health creatures with Guard. Outlast opponents through durability.
+
+id = "argentum_control"
+name = "Argentum Control"
+description = "Defensive deck featuring Argentum Combine constructs with Free-Walker utility."
+
+tags = ["control", "defensive", "faction", "argentum"]
+
+# 20 cards total (14 Argentum + 6 Free-Walker)
+cards = [
+    # === ARGENTUM CORE (14 cards) ===
+    48, 48, # Brass Sentinel (2-cost 1/5 Guard)
+    54, 54, # Shield Bearer (2-cost 2/3 Shield)
+    49, 49, # Steam Knight (3-cost 3/3 Piercing)
+    50, 50, # Cogwork Defender (3-cost 2/6 Guard)
+    55, 55, # Clockwork Medic (3-cost 1/4, heal 3)
+    52, 52, # Iron Colossus (5-cost 3/8 Guard)
+    56,     # Siege Engine (6-cost 4/7 Guard+Piercing)
+    57,     # Grand Constructor (7-cost 5/8 Guard, buff +2/+3)
+
+    # === FREE-WALKER SPLASH (6 cards) ===
+    93, 93, # Bounty Hunter (2-cost 2/2 Ranged) - answers Stealth
+    104, 104, # Precision Shot (2-cost spell, 3 damage) - removal
+    99, 99, # Sharpshooter (4-cost 3/3 Ranged) - flexible targeting
+]

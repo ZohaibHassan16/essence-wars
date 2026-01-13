@@ -1,0 +1,29 @@
+# Symbiote Aggro Deck
+# Faction: Symbiote Circles - "The Swarm"
+# Composition: 14 Symbiote Core + 6 Free-Walker Splash
+# Strategy: Aggressive tempo with Rush and Lethal creatures. Trade efficiently and regenerate.
+
+id = "symbiote_aggro"
+name = "Symbiote Aggro"
+description = "Aggressive tempo deck featuring Symbiote Circles beasts with Free-Walker chargers."
+
+tags = ["aggro", "tempo", "faction", "symbiote"]
+
+# 20 cards total (14 Symbiote + 6 Free-Walker)
+cards = [
+    # === SYMBIOTE CORE (14 cards) ===
+    66, 66, # Broodling (1-cost 2/1 Rush)
+    69, 69, # Parasitic Larva (1-cost 1/1 Lethal)
+    64, 64, # Venom Fang (2-cost 2/2 Lethal)
+    68, 68, # Pack Hunter (2-cost 3/1 Rush)
+    65, 65, # Regenerating Ooze (3-cost 2/5 Regenerate)
+    73,     # Acid Spitter (3-cost 3/2 Ranged)
+    67,     # Hive Guardian (4-cost 3/5 Guard+Regenerate)
+    71,     # Alpha Predator (5-cost 5/4 Rush+Lethal)
+    72,     # Swarm Mother (6-cost 4/6 Regenerate, +1/+0 each turn)
+
+    # === FREE-WALKER SPLASH (6 cards) ===
+    100, 100, # Reckless Charger (2-cost 4/1 Charge+Rush) - burst damage
+    94, 94,   # Berserker (3-cost 3/2 Charge) - extra damage on attack
+    102, 102, # The Warbringer (7-cost 7/7 Charge+Piercing) - finisher
+]

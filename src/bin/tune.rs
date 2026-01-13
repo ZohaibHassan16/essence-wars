@@ -27,6 +27,12 @@ use cardgame::version::{self, VersionInfo};
 #[command(about = "Optimize bot weights using CMA-ES evolution strategy", long_about = None)]
 struct Args {
     /// Tuning mode: vs-random, vs-greedy, multi-opponent, generalist, specialist
+    /// 
+    /// - vs-random: Fast baseline (vs RandomBot)
+    /// - vs-greedy: Moderate baseline (vs default GreedyBot)
+    /// - multi-opponent: Robust (vs Random, Greedy, MCTS with 10%/40%/50% weights)
+    /// - generalist: Ultra-robust (ALL deck matchups vs Random, Greedy, MCTS)
+    /// - specialist: Optimize for specific deck matchup
     #[arg(long, default_value = "vs-random")]
     mode: String,
 
@@ -162,7 +168,10 @@ fn main() {
                 eprintln!("No valid matchups found for generalist mode");
                 process::exit(1);
             }
-            println!("Generalist mode with {} matchups", matchups.len());
+            println!("Enhanced Generalist mode:");
+            println!("  {} deck matchups", matchups.len());
+            println!("  Testing vs Random, Greedy, AND MCTS per matchup");
+            println!("  Total games per evaluation: {}", args.games);
             TuningMode::Generalist { matchups }
         }
         "specialist" => {

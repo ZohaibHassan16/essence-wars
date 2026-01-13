@@ -33,9 +33,23 @@ git commit -m "Update default weights: [description]"
 # Run tuning experiment (outputs to experiments/mcts/)
 $ cargo run --release --bin tune -- \
     --tag my_experiment \
-    --mode vs-greedy \
+    --mode multi-opponent \
     --generations 50
+
+# Or for truly universal weights (slower but most robust):
+$ cargo run --release --bin tune -- \
+    --tag generalist_v1 \
+    --mode generalist \
+    --generations 100 \
+    --games 100
 ```
+
+**Mode options:**
+- `vs-random`: Fast baseline (vs RandomBot)
+- `vs-greedy`: Medium baseline (vs default GreedyBot) 
+- `multi-opponent`: Robust (vs Random 10%, Greedy 40%, MCTS 50%) **← RECOMMENDED**
+- `generalist`: Ultra-robust (ALL deck matchups vs Random/Greedy/MCTS) **← Most powerful, slowest**
+- `specialist`: Optimize for specific deck matchup (requires `--deck` and `--opponent`)
 
 * Creates: `experiments/mcts/2026-01-12_HHMM_my_experiment/`
 * Output: `weights.toml` with 24 optimized weight parameters

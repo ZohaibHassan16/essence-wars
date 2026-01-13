@@ -333,31 +333,108 @@ impl<'a> Evaluator<'a> {
 
     /// Evaluate across multiple matchups (generalist).
     fn evaluate_generalist(&self, weights: &GreedyWeights, matchups: &[(Vec<CardId>, Vec<CardId>)]) -> (f64, f64, usize, f64) {
-        let mut total_wins = 0;
+        // Enhanced generalist: test each deck matchup against all 3 opponent types
+        // Distributes games: 1/3 each for Random, Greedy, MCTS per matchup
+        let games_per_matchup = (self.config.games_per_eval / matchups.len()).max(3);
+        let games_per_opponent = games_per_matchup / 3;
+
+        let mut random_wins = 0;
+        let mut greedy_wins = 0;
+        let mut mcts_wins = 0;
         let mut total_games = 0;
         let mut total_turns = 0u32;
 
-        let games_per_matchup = (self.config.games_per_eval / matchups.len()).max(1);
+        if self.config.parallel {
+            // Parallel evaluation for speed
+            let card_db = self.card_db;
+            let max_actions = self.config.max_actions;
+            let base_seed = self.config.seed.wrapping_add(self.eval_count * 100000);
+            let mcts_sims = self.config.mcts_sims;
 
-        for (matchup_idx, (deck1, deck2)) in matchups.iter().enumerate() {
-            for i in 0..games_per_matchup {
-                let seed = self.config.seed
-                    .wrapping_add(self.eval_count * 10000)
-                    .wrapping_add((matchup_idx * 1000 + i) as u64);
+            // Process all matchups in parallel
+            let results: Vec<_> = matchups.par_iter().enumerate().map(|(matchup_idx, (deck1, deck2))| {
+                let matchup_seed = base_seed.wrapping_add((matchup_idx * 10000) as u64);
+                
+                // vs Random
+                let random_results: Vec<(bool, u32)> = (0..games_per_opponent).map(|i| {
+                    let seed = matchup_seed.wrapping_add(i as u64);
+                    Self::run_game_vs_random_with_decks_static(card_db, weights, deck1, deck2, seed, max_actions)
+                }).collect();
 
-                let (winner, turns) = self.run_game_with_decks(weights, deck1, deck2, seed);
+                // vs Greedy
+                let greedy_results: Vec<(bool, u32)> = (0..games_per_opponent).map(|i| {
+                    let seed = matchup_seed.wrapping_add(1000 + i as u64);
+                    Self::run_game_vs_greedy_with_decks_static(card_db, weights, deck1, deck2, seed, max_actions)
+                }).collect();
 
-                if winner == Some(PlayerId::PLAYER_ONE) {
-                    total_wins += 1;
+                // vs MCTS
+                let mcts_results: Vec<(bool, u32)> = (0..games_per_opponent).map(|i| {
+                    let seed = matchup_seed.wrapping_add(2000 + i as u64);
+                    Self::run_game_vs_mcts_with_decks_static(card_db, weights, deck1, deck2, seed, max_actions, mcts_sims)
+                }).collect();
+
+                (random_results, greedy_results, mcts_results)
+            }).collect();
+
+            // Aggregate results
+            for (random_results, greedy_results, mcts_results) in results {
+                random_wins += random_results.iter().filter(|(won, _)| *won).count();
+                greedy_wins += greedy_results.iter().filter(|(won, _)| *won).count();
+                mcts_wins += mcts_results.iter().filter(|(won, _)| *won).count();
+                
+                total_turns += random_results.iter().map(|(_, t)| t).sum::<u32>();
+                total_turns += greedy_results.iter().map(|(_, t)| t).sum::<u32>();
+                total_turns += mcts_results.iter().map(|(_, t)| t).sum::<u32>();
+                
+                total_games += random_results.len() + greedy_results.len() + mcts_results.len();
+            }
+        } else {
+            // Sequential evaluation (fallback)
+            for (matchup_idx, (deck1, deck2)) in matchups.iter().enumerate() {
+                let matchup_seed = self.config.seed
+                    .wrapping_add(self.eval_count * 100000)
+                    .wrapping_add((matchup_idx * 10000) as u64);
+
+                // vs Random
+                for i in 0..games_per_opponent {
+                    let seed = matchup_seed.wrapping_add(i as u64);
+                    let (winner, turns) = self.run_game_vs_random_with_decks(weights, deck1, deck2, seed);
+                    if winner == Some(PlayerId::PLAYER_ONE) { random_wins += 1; }
+                    total_turns += turns;
+                    total_games += 1;
                 }
-                total_turns += turns;
-                total_games += 1;
+
+                // vs Greedy
+                for i in 0..games_per_opponent {
+                    let seed = matchup_seed.wrapping_add(1000 + i as u64);
+                    let (winner, turns) = self.run_game_vs_greedy_with_decks(weights, deck1, deck2, seed);
+                    if winner == Some(PlayerId::PLAYER_ONE) { greedy_wins += 1; }
+                    total_turns += turns;
+                    total_games += 1;
+                }
+
+                // vs MCTS
+                for i in 0..games_per_opponent {
+                    let seed = matchup_seed.wrapping_add(2000 + i as u64);
+                    let (winner, turns) = self.run_game_vs_mcts_with_decks(weights, deck1, deck2, seed);
+                    if winner == Some(PlayerId::PLAYER_ONE) { mcts_wins += 1; }
+                    total_turns += turns;
+                    total_games += 1;
+                }
             }
         }
 
+        let games_per_opponent_type = (total_games / 3).max(1);
+        let random_wr = random_wins as f64 / games_per_opponent_type as f64;
+        let greedy_wr = greedy_wins as f64 / games_per_opponent_type as f64;
+        let mcts_wr = mcts_wins as f64 / games_per_opponent_type as f64;
+
+        // Weighted fitness like multi-opponent: Random 10%, Greedy 40%, MCTS 50%
+        let fitness = random_wr * 10.0 + greedy_wr * 40.0 + mcts_wr * 50.0;
+
+        let total_wins = random_wins + greedy_wins + mcts_wins;
         let win_rate = total_wins as f64 / total_games as f64;
         let avg_turns = total_turns as f64 / total_games as f64;
-        let fitness = win_rate * 100.0 - avg_turns * 0.01;
 
         (fitness, win_rate, total_games, avg_turns)
     }
@@ -568,6 +645,217 @@ impl<'a> Evaluator<'a> {
 
         let mut engine = GameEngine::new(card_db);
         engine.start_game(deck.to_vec(), deck.to_vec(), seed);
+
+        let mut action_count = 0;
+        while !engine.is_game_over() && action_count < max_actions {
+            let current_player = engine.current_player();
+
+            let action = if current_player == PlayerId::PLAYER_ONE {
+                candidate_bot.select_action_with_engine(&engine)
+            } else {
+                mcts_bot.select_action_with_engine(&engine)
+            };
+
+            if engine.apply_action(action).is_err() {
+                break;
+            }
+            action_count += 1;
+        }
+
+        let won = engine.winner() == Some(PlayerId::PLAYER_ONE);
+        (won, engine.turn_number() as u32)
+    }
+
+    // ============================================================================
+    // Helper methods for generalist mode with custom decks
+    // ============================================================================
+
+    /// Run game vs Random with custom decks (non-static version).
+    fn run_game_vs_random_with_decks(&self, weights: &GreedyWeights, deck1: &[CardId], deck2: &[CardId], seed: u64) -> (Option<PlayerId>, u32) {
+        let mut greedy_bot = GreedyBot::with_weights(self.card_db, weights.clone(), seed);
+        let mut random_bot = RandomBot::new(seed.wrapping_add(1000));
+
+        let mut engine = GameEngine::new(self.card_db);
+        engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
+
+        let mut action_count = 0;
+        while !engine.is_game_over() && action_count < self.config.max_actions {
+            let current_player = engine.current_player();
+
+            let action = if current_player == PlayerId::PLAYER_ONE {
+                greedy_bot.select_action_with_engine(&engine)
+            } else {
+                let state_tensor = engine.get_state_tensor();
+                let legal_mask = engine.get_legal_action_mask();
+                let legal_actions = engine.get_legal_actions();
+                random_bot.select_action(&state_tensor, &legal_mask, &legal_actions)
+            };
+
+            if engine.apply_action(action).is_err() {
+                break;
+            }
+            action_count += 1;
+        }
+
+        (engine.winner(), engine.turn_number() as u32)
+    }
+
+    /// Run game vs Greedy with custom decks (non-static version).
+    fn run_game_vs_greedy_with_decks(&self, weights: &GreedyWeights, deck1: &[CardId], deck2: &[CardId], seed: u64) -> (Option<PlayerId>, u32) {
+        let mut candidate_bot = GreedyBot::with_weights(self.card_db, weights.clone(), seed);
+        let mut baseline_bot = GreedyBot::new(self.card_db, seed.wrapping_add(1000));
+
+        let mut engine = GameEngine::new(self.card_db);
+        engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
+
+        let mut action_count = 0;
+        while !engine.is_game_over() && action_count < self.config.max_actions {
+            let current_player = engine.current_player();
+
+            let action = if current_player == PlayerId::PLAYER_ONE {
+                candidate_bot.select_action_with_engine(&engine)
+            } else {
+                baseline_bot.select_action_with_engine(&engine)
+            };
+
+            if engine.apply_action(action).is_err() {
+                break;
+            }
+            action_count += 1;
+        }
+
+        (engine.winner(), engine.turn_number() as u32)
+    }
+
+    /// Run game vs MCTS with custom decks (non-static version).
+    fn run_game_vs_mcts_with_decks(&self, weights: &GreedyWeights, deck1: &[CardId], deck2: &[CardId], seed: u64) -> (Option<PlayerId>, u32) {
+        let mut candidate_bot = GreedyBot::with_weights(self.card_db, weights.clone(), seed);
+        let mcts_config = MctsConfig {
+            simulations: self.config.mcts_sims,
+            exploration: 1.414,
+            max_rollout_depth: 50,
+            parallel_trees: 1,
+            leaf_rollouts: 1,
+        };
+        let mut mcts_bot = MctsBot::with_config(self.card_db, mcts_config, seed.wrapping_add(1000));
+
+        let mut engine = GameEngine::new(self.card_db);
+        engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
+
+        let mut action_count = 0;
+        while !engine.is_game_over() && action_count < self.config.max_actions {
+            let current_player = engine.current_player();
+
+            let action = if current_player == PlayerId::PLAYER_ONE {
+                candidate_bot.select_action_with_engine(&engine)
+            } else {
+                mcts_bot.select_action_with_engine(&engine)
+            };
+
+            if engine.apply_action(action).is_err() {
+                break;
+            }
+            action_count += 1;
+        }
+
+        (engine.winner(), engine.turn_number() as u32)
+    }
+
+    /// Run game vs Random with custom decks (static version for parallel).
+    fn run_game_vs_random_with_decks_static(
+        card_db: &CardDatabase,
+        weights: &GreedyWeights,
+        deck1: &[CardId],
+        deck2: &[CardId],
+        seed: u64,
+        max_actions: usize,
+    ) -> (bool, u32) {
+        let mut greedy_bot = GreedyBot::with_weights(card_db, weights.clone(), seed);
+        let mut random_bot = RandomBot::new(seed.wrapping_add(1000));
+
+        let mut engine = GameEngine::new(card_db);
+        engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
+
+        let mut action_count = 0;
+        while !engine.is_game_over() && action_count < max_actions {
+            let current_player = engine.current_player();
+
+            let action = if current_player == PlayerId::PLAYER_ONE {
+                greedy_bot.select_action_with_engine(&engine)
+            } else {
+                let state_tensor = engine.get_state_tensor();
+                let legal_mask = engine.get_legal_action_mask();
+                let legal_actions = engine.get_legal_actions();
+                random_bot.select_action(&state_tensor, &legal_mask, &legal_actions)
+            };
+
+            if engine.apply_action(action).is_err() {
+                break;
+            }
+            action_count += 1;
+        }
+
+        let won = engine.winner() == Some(PlayerId::PLAYER_ONE);
+        (won, engine.turn_number() as u32)
+    }
+
+    /// Run game vs Greedy with custom decks (static version for parallel).
+    fn run_game_vs_greedy_with_decks_static(
+        card_db: &CardDatabase,
+        weights: &GreedyWeights,
+        deck1: &[CardId],
+        deck2: &[CardId],
+        seed: u64,
+        max_actions: usize,
+    ) -> (bool, u32) {
+        let mut candidate_bot = GreedyBot::with_weights(card_db, weights.clone(), seed);
+        let mut baseline_bot = GreedyBot::new(card_db, seed.wrapping_add(1000));
+
+        let mut engine = GameEngine::new(card_db);
+        engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
+
+        let mut action_count = 0;
+        while !engine.is_game_over() && action_count < max_actions {
+            let current_player = engine.current_player();
+
+            let action = if current_player == PlayerId::PLAYER_ONE {
+                candidate_bot.select_action_with_engine(&engine)
+            } else {
+                baseline_bot.select_action_with_engine(&engine)
+            };
+
+            if engine.apply_action(action).is_err() {
+                break;
+            }
+            action_count += 1;
+        }
+
+        let won = engine.winner() == Some(PlayerId::PLAYER_ONE);
+        (won, engine.turn_number() as u32)
+    }
+
+    /// Run game vs MCTS with custom decks (static version for parallel).
+    fn run_game_vs_mcts_with_decks_static(
+        card_db: &CardDatabase,
+        weights: &GreedyWeights,
+        deck1: &[CardId],
+        deck2: &[CardId],
+        seed: u64,
+        max_actions: usize,
+        mcts_sims: u32,
+    ) -> (bool, u32) {
+        let mut candidate_bot = GreedyBot::with_weights(card_db, weights.clone(), seed);
+        let mcts_config = MctsConfig {
+            simulations: mcts_sims,
+            exploration: 1.414,
+            max_rollout_depth: 50,
+            parallel_trees: 1,
+            leaf_rollouts: 1,
+        };
+        let mut mcts_bot = MctsBot::with_config(card_db, mcts_config, seed.wrapping_add(1000));
+
+        let mut engine = GameEngine::new(card_db);
+        engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < max_actions {
