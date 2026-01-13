@@ -52,7 +52,7 @@ jobs:
       - name: Run ALL stress tests (including 100k games)
         run: |
           # Run all ignored tests except golden data generator
-          cargo nextest run --release --status-level=fail -- --ignored \
+          cargo nextest run --release --status-level=fail --run-ignored=ignored-only \
             -E 'not test(/generate_golden/)'
 
   notify-on-failure:

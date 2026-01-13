@@ -53,7 +53,7 @@ jobs:
         run: |
           # Run all ignored tests EXCEPT the 100k game tests (overnight tier)
           # These are: tier_quick, tier_medium, tier_long
-          cargo nextest run --release --status-level=fail -- --ignored \
+          cargo nextest run --release --status-level=fail --run-ignored=ignored-only \
             -E 'not (test(/100k/) | test(/generate_golden/))'
         continue-on-error: false
 
