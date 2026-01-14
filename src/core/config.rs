@@ -15,8 +15,8 @@ pub mod player {
     pub const STARTING_HAND_SIZE: usize = 4;
 
     /// Extra cards Player 2 draws at game start (First Player Advantage compensation)
-    /// Note: Set to 0 because +1 essence alone provides sufficient FPA compensation
-    pub const P2_BONUS_CARDS: usize = 0;
+    /// Testing: +2 cards for FPA compensation
+    pub const P2_BONUS_CARDS: usize = 2;
 
     /// Maximum cards in hand (excess are burned)
     pub const MAX_HAND_SIZE: usize = 10;
@@ -27,8 +27,9 @@ pub mod player {
     /// Starting essence for Player 1
     pub const STARTING_ESSENCE_P1: u8 = 1;
 
-    /// Starting essence for Player 2 (higher to compensate for First Player Advantage)
-    pub const STARTING_ESSENCE_P2: u8 = 2;
+    /// Starting essence for Player 2
+    /// NOTE: Temporarily set equal to P1 for baseline measurement (was 2)
+    pub const STARTING_ESSENCE_P2: u8 = 1;
 
     /// Maximum essence pool
     pub const MAX_ESSENCE: u8 = 10;
