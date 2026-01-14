@@ -1,6 +1,6 @@
 # Modal Cloud Training Setup
 
-**Status: Not yet implemented, Discuss first**
+**Status: Implemented**
 
 Complete guide to running Essence Wars tuning on Modal's serverless compute platform.
 
@@ -15,11 +15,11 @@ Complete guide to running Essence Wars tuning on Modal's serverless compute plat
 ### 1. Install Modal CLI
 
 ```bash
-# Install Modal Python package
-pip install modal
+# Install Modal as a global tool with uv (recommended)
+uv tool install modal
 
-# Or with uv (recommended)
-uv pip install modal
+# Or with pip (if you prefer)
+pip install modal
 ```
 
 ### 2. Authenticate
@@ -34,17 +34,44 @@ Follow the browser prompts to authenticate with GitHub or Google.
 ### 3. Run Training
 
 ```bash
-# Run all 4 configs in parallel (fastest!)
+# Full pipeline: train all 4 configs + run balance validation
 modal run modal_tune.py
 
-# Or run single configuration
+# Train only (skip validation)
+modal run modal_tune.py --mode train-only
+
+# Validate only (use existing trained weights)
+modal run modal_tune.py --mode validate-only
+
+# Run single configuration
 modal run modal_tune.py --single generalist
 modal run modal_tune.py --single argentum
 modal run modal_tune.py --single symbiote
 modal run modal_tune.py --single obsidion
 ```
 
-### 4. Download Results
+### 4. Auto-Deploy Weights
+
+After a successful training run, weights are **automatically deployed** to your local repository:
+
+```
+data/weights/
+├── generalist.toml              ← Updated automatically
+└── specialists/
+    ├── argentum.toml            ← Updated automatically
+    ├── symbiote.toml            ← Updated automatically
+    └── obsidion.toml            ← Updated automatically
+```
+
+To skip auto-deploy (e.g., for testing):
+
+```bash
+modal run modal_tune.py --no-deploy
+```
+
+### 5. Download Experiment Logs (Optional)
+
+For detailed analysis of training runs:
 
 ```bash
 # List available experiments
@@ -64,36 +91,35 @@ tar -xzf experiments_modal_*.tar.gz
 ### Architecture
 
 ```
-Local Machine                 Modal Cloud (4x Parallel Instances)
-┌─────────────┐              ┌──────────────────────────────────┐
-│             │              │  Instance 1: 16 cores            │
-│  Workspace  │─────────────▶│  → Generalist                    │
-│  Snapshot   │              │  → Build + Train + Deploy        │
-│  (~5-10 MB) │              │  → Save to persistent volume     │
-└─────────────┘              └──────────────────────────────────┘
-                             ┌──────────────────────────────────┐
-                             │  Instance 2: 16 cores            │
-                             │  → Argentum Specialist           │
+Local Machine                 Modal Cloud
+┌─────────────┐
+│             │              Phase 1: Training (4x Parallel)
+│  Workspace  │              ┌──────────────────────────────────┐
+│  Snapshot   │─────────────▶│  Instance 1-4: 16 cores each     │
+│  (~5-10 MB) │              │  → Generalist, Argentum,         │
+└─────────────┘              │    Symbiote, Obsidion            │
+                             │  → Build + Train + Deploy        │
                              └──────────────────────────────────┘
+                                            │
+                                            ▼
+                             Phase 2: Validation
                              ┌──────────────────────────────────┐
-                             │  Instance 3: 16 cores            │
-                             │  → Symbiote Specialist           │
+                             │  Instance 5: 16 cores            │
+                             │  → Balance testing (3 matchups)  │
+                             │  → 500 games per matchup         │
+                             │  → JSON results output           │
                              └──────────────────────────────────┘
-                             ┌──────────────────────────────────┐
-                             │  Instance 4: 16 cores            │
-                             │  → Obsidion Specialist           │
-                             └──────────────────────────────────┘
-                             
+
                              Modal Persistent Volume (Shared)
                              ┌──────────────────────────────────┐
                              │ experiments/                     │
                              │   2026-01-14_HHMM_gen-v0.4/     │
                              │   2026-01-14_HHMM_arg-v0.4/     │
-                             │   2026-01-14_HHMM_sym-v0.4/     │
-                             │   2026-01-14_HHMM_obs-v0.4/     │
+                             │   ...                            │
                              │ weights/                         │
                              │   generalist.toml                │
                              │   specialists/                   │
+                             │ validation_2026-01-14_HHMM.json  │
                              └──────────────────────────────────┘
 ```
 
@@ -103,7 +129,7 @@ Local Machine                 Modal Cloud (4x Parallel Instances)
    - Tar workspace directory (exclude target/, experiments/, .git/)
    - Upload to Modal (~5-10 MB, <1s)
 
-2. **Cloud: Spawn 4 Parallel Instances**
+2. **Cloud: Phase 1 - Spawn 4 Parallel Training Instances**
    - Each gets 16 dedicated CPU cores + 8 GB RAM
    - Extract workspace snapshot
    - Build Rust binary (`cargo build --release`)
@@ -114,13 +140,26 @@ Local Machine                 Modal Cloud (4x Parallel Instances)
    - CMA-ES optimization with Rayon parallelism (16 cores)
    - Auto-deploy weights to data/weights/
 
-4. **Cloud: Save Results**
+4. **Cloud: Phase 2 - Balance Validation (~10 min)**
+   - Run `validate` binary with trained weights
+   - Test all 3 faction matchups (both player orders)
+   - 500 games per matchup for statistical confidence
+   - Output JSON results with balance summary
+
+5. **Cloud: Save Results**
    - Copy experiments/ to Modal persistent volume
    - Copy weights/ to volume
+   - Save validation_results.json
    - Commit volume changes
 
-5. **Local: Download**
-   - Retrieve results from volume as tarball
+6. **Local: Auto-Deploy Weights**
+   - Download trained weights from Modal volume
+   - Deploy to `data/weights/generalist.toml`
+   - Deploy specialists to `data/weights/specialists/*.toml`
+   - Ready for immediate use (no manual copying!)
+
+7. **Local: Download Logs (Optional)**
+   - Retrieve full experiment logs as tarball
    - Extract to local experiments/ directory
    - Analyze with `./scripts/analyze-tuning.sh`
 
@@ -262,9 +301,9 @@ rust_image = (
 
 **Solution:** Install Modal CLI
 ```bash
+uv tool install modal
+# or with pip
 pip install modal
-# or
-uv pip install modal
 ```
 
 ### "Authentication required"
@@ -346,9 +385,10 @@ If empty, training didn't save results. Check logs in Modal dashboard.
 1. **Test locally first** - Verify tuning works before running on Modal
 2. **Use parallel execution** - Run all 4 configs simultaneously for 4x speedup
 3. **Monitor dashboard** - Watch real-time logs at https://modal.com/apps
-4. **Download results promptly** - Volume storage is limited
-5. **Version your configs** - Use descriptive tags (e.g., `generalist-v0.4-modal`)
-6. **Scale cores wisely** - 16 cores is sweet spot for most workloads
+4. **Trust auto-deploy** - Weights are automatically deployed to `data/weights/` after training
+5. **Use `--no-deploy` for experiments** - Skip auto-deploy when testing hyperparameters
+6. **Version your configs** - Use descriptive tags (e.g., `generalist-v0.4-modal`)
+7. **Scale cores wisely** - 16 cores is sweet spot for most workloads
 
 ---
 
@@ -365,14 +405,17 @@ If empty, training didn't save results. Check logs in Modal dashboard.
 
 ```bash
 # Install
-pip install modal
+uv tool install modal
 modal token new
 
-# Run training
-modal run modal_tune.py                    # All 4 in parallel
-modal run modal_tune.py --single generalist # Single config
+# Run full pipeline (train + validate + auto-deploy)
+modal run modal_tune.py                         # All 4 + validation + deploy
+modal run modal_tune.py --mode train-only       # Training only + deploy
+modal run modal_tune.py --mode validate-only    # Validation only (no deploy)
+modal run modal_tune.py --single generalist     # Single config + deploy
+modal run modal_tune.py --no-deploy             # Skip auto-deploy to local repo
 
-# Download results
+# Download experiment logs (optional)
 modal run modal_tune.py::list_experiments
 modal run modal_tune.py::download_latest
 
@@ -384,6 +427,10 @@ modal app logs essence-wars-tuning
 
 # Check usage/billing
 # https://modal.com/settings/billing
+
+# Local validation (no Modal required)
+cargo run --release --bin validate -- --games 100
+cargo run --release --bin validate -- --games 500 --output results.json
 ```
 
 ---

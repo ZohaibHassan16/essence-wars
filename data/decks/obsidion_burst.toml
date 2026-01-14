@@ -1,6 +1,6 @@
 # Obsidion Burst Deck
 # Faction: Obsidion Syndicate - "The Glass Cannon"
-# Composition: 14 Obsidion Core + 6 Free-Walker Splash
+# Composition: 21 Obsidion Core + 9 Free-Walker Splash
 # Strategy: High-damage burst with Lifesteal for sustain. Ephemeral for tempo, Stealth for precision.
 
 id = "obsidion_burst"
@@ -9,20 +9,37 @@ description = "Burst damage deck featuring Obsidion Syndicate mages with Free-Wa
 
 tags = ["combo", "burst", "faction", "obsidion"]
 
-# 20 cards total (14 Obsidion + 6 Free-Walker)
+# 30 cards total (21 Obsidion + 9 Free-Walker)
 cards = [
-    # === OBSIDION CORE (14 cards) ===
-    78, 78, # Soul Fragment (1-cost 2/2 Ephemeral)
-    80, 80, # Blood Acolyte (2-cost 2/3 Lifesteal)
-    79, 79, # Shadow Blade (2-cost 3/1 Stealth)
-    81, 81, # Void Walker (3-cost 3/3 Ephemeral+Rush)
-    82, 82, # Hemomancer (4-cost 3/4 Lifesteal)
-    83, 83, # Silent Assassin (4-cost 4/2 Stealth+Quick)
-    84,     # Ritual Master (5-cost 4/4, deal 3 + heal 3)
-    85,     # The Eternal One (8-cost 6/6 Lifesteal+Regenerate)
+    # === OBSIDION CORE (21 cards) ===
+    # -- 1-cost (4 cards) --
+    78, 78, # Soul Fragment (3/2 Ephemeral)
+    88, 88, # Shadow Strike spell (2 damage + heal 1)
 
-    # === FREE-WALKER SPLASH (6 cards) ===
+    # -- 2-cost (6 cards) --
+    80, 80, # Blood Acolyte (3/4 Lifesteal)
+    79, 79, # Shadow Blade (3/2 Stealth+Lethal)
+    86, 86, # Soul Drain spell (4 damage)
+
+    # -- 3-cost (4 cards) --
+    81, 81, # Void Walker (5/3 Ephemeral+Rush)
+    87, 87, # Dark Insight spell (draw 2)
+
+    # -- 4-cost (4 cards) --
+    82, 82, # Hemomancer (4/5 Lifesteal)
+    83, 83, # Silent Assassin (5/3 Stealth+Quick)
+
+    # -- 5+ cost (2 cards) --
+    84,     # Ritual Master (4/4, deal 3 + heal 3)
+    85,     # The Eternal One (6/7 Lifesteal+Regenerate)
+
+    # -- Support (1 card) --
+    92,     # Dark Altar (4-cost, dur 3, grant Lifesteal)
+
+    # === FREE-WALKER SPLASH (9 cards) ===
     93, 93, # Bounty Hunter (2-cost 2/2 Ranged) - precision removal
     104, 104, # Precision Shot (2-cost spell, 3 damage) - direct damage
     99, 99, # Sharpshooter (4-cost 3/3 Ranged) - flexible reach
+    96, 96, # Hired Blade (3-cost 3/3 vanilla) - efficient body
+    97,     # War Veteran (4-cost 4/4 Charge) - mid-game threat
 ]

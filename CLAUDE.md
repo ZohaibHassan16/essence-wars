@@ -6,6 +6,8 @@
 
 **Current Version:** 0.4.0
 
+**Author: Christian Wissmann (Chris), Best Friends with Claude
+
 ## Quick Commands
 
 ```bash
@@ -41,9 +43,19 @@ cargo run --release --bin tune -- --mode faction-specialist --faction argentum -
 ./scripts/analyze-tuning.sh --latest
 ./scripts/analyze-tuning.sh --all
 
+# Run balance validation
+cargo run --release --bin validate -- --games 100              # Quick local check
+cargo run --release --bin validate -- --games 500 --output results.json  # Full validation
+
 # Run benchmarks
 cargo bench
 ./scripts/run-benchmarks.sh  # Full benchmark suite with report
+
+# Modal cloud training (requires Modal CLI: uv tool install modal && modal token new)
+modal run modal_tune.py::main                         # Full pipeline (train + validate + auto-deploy)
+modal run modal_tune.py::main --mode train-only       # Train only + auto-deploy weights
+modal run modal_tune.py::main --mode validate-only    # Validate with existing weights
+modal run modal_tune.py::main --no-deploy             # Full pipeline without auto-deploying weights
 ```
 
 ## Project Structure
@@ -92,6 +104,7 @@ ai-cardgame/
 │   └── bin/
 │       ├── arena.rs        # CLI for running bot matches
 │       ├── tune.rs         # CLI for weight optimization
+│       ├── validate.rs     # CLI for balance validation
 │       └── profile_mcts.rs # MCTS performance profiling
 ├── data/
 │   ├── cards/sets/
@@ -325,12 +338,37 @@ Output includes:
 
 ## Modal Cloud Training
 
-For cloud-based tuning runs, see `docs/modal-cloud-setup.md`. This enables running expensive tuning jobs on Modal.com infrastructure.
+For cloud-based tuning runs, see `docs/modal-cloud-setup.md`. This enables running expensive tuning jobs on Modal.com infrastructure with 4x parallel speedup.
 
 ```bash
-# Example: Run tuning on Modal
-modal run modal_tune.py --mode generalist --generations 100
+# Full pipeline: train all 4 configs + validate + auto-deploy weights
+modal run modal_tune.py
+
+# Train only (skip validation)
+modal run modal_tune.py --mode train-only
+
+# Validate only (with existing weights on Modal volume)
+modal run modal_tune.py --mode validate-only
+
+# Single configuration
+modal run modal_tune.py --single generalist
+
+# Skip auto-deploy to local repo
+modal run modal_tune.py --no-deploy
 ```
+
+**Note:** Training parameters (generations, games, mcts-sims) are configured in `TRAINING_CONFIGS` within `modal_tune.py`, not via CLI flags.
+
+### Local vs Cloud: When to Use Each
+
+| Scenario | Recommendation | Command |
+|----------|----------------|---------|
+| Quick experiment, single config | **Local** | `cargo run --release --bin tune -- --mode generalist` |
+| Training all 4 specialists | **Cloud** | `modal run modal_tune.py` |
+| Balance validation only | **Either** | Local: `cargo run --release --bin validate` / Cloud: `--mode validate-only` |
+| Hyperparameter tuning | **Cloud** | Edit `TRAINING_CONFIGS`, run parallel |
+
+**Setup:** `uv tool install modal && modal token new` (one-time, 2 minutes)
 
 ## Deck System
 

@@ -370,7 +370,7 @@ cards:
     name: "Soul Fragment"
     cost: 1
     card_type: creature
-    attack: 3
+    attack: 2
     health: 2
     keywords: [Ephemeral]
     rarity: Common
@@ -400,7 +400,7 @@ cards:
     name: "Void Walker"
     cost: 3
     card_type: creature
-    attack: 5
+    attack: 4
     health: 3
     keywords: [Ephemeral, Rush]
     rarity: Uncommon
@@ -410,7 +410,7 @@ cards:
     name: "Hemomancer"
     cost: 4
     card_type: creature
-    attack: 4
+    attack: 3
     health: 5
     keywords: [Lifesteal]
     rarity: Uncommon
@@ -463,7 +463,7 @@ cards:
     targeting: TargetEnemyCreature
     effects:
       - type: damage
-        amount: 4
+        amount: 3
     rarity: Common
 
   - id: 87
