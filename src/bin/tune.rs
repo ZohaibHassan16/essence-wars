@@ -28,43 +28,46 @@ use cardgame::version::{self, VersionInfo};
 #[command(name = "tune")]
 #[command(about = "Optimize bot weights using CMA-ES evolution strategy", long_about = None)]
 struct Args {
+    // ===== Tuning Mode =====
     /// Tuning mode for weight optimization
     ///
     /// Available modes:
-    /// - vs-random: Fast baseline (vs RandomBot)
-    /// - vs-greedy: Moderate baseline (vs default GreedyBot)
-    /// - multi-opponent: Robust (vs Random, Greedy, MCTS with 10%/40%/50% weights)
-    /// - generalist: Ultra-robust (ALL deck matchups vs Random, Greedy, MCTS)
-    /// - specialist: Optimize for specific deck matchup (requires --deck and --opponent)
-    /// - faction-specialist: Train specialist for a faction (requires --faction)
-    /// - agent-generalist: Train generalist against all 3 faction specialists + mirror
-    #[arg(long, default_value = "vs-random")]
+    /// - generalist: Train across all deck matchups (vs Random/Greedy/MCTS)
+    /// - specialist: Train for specific deck matchup (requires --deck and --opponent)
+    /// - faction-specialist: Train for a faction (requires --faction)
+    #[arg(long, default_value = "generalist")]
     mode: String,
 
     /// Faction for faction-specialist mode: argentum, symbiote, obsidion
-    #[arg(long)]
+    #[arg(long, requires_if("faction-specialist", "mode"))]
     faction: Option<String>,
 
-    /// Enable parallel game evaluation (uses all CPU cores)
-    #[arg(long, default_value = "true")]
-    parallel: bool,
+    /// Deck ID for specialist mode (our deck)
+    #[arg(long, requires_if("specialist", "mode"))]
+    deck: Option<String>,
 
-    /// MCTS simulations for multi-opponent mode
-    #[arg(long, default_value = "200")]
-    mcts_sims: u32,
+    /// Opponent deck ID for specialist mode
+    #[arg(long, requires_if("specialist", "mode"))]
+    opponent: Option<String>,
 
+    // ===== Training Parameters =====
     /// Number of CMA-ES generations
-    #[arg(long, short = 'g', default_value = "50")]
+    #[arg(long, short = 'g', default_value = "100")]
     generations: u32,
 
-    /// Population size (candidates per generation)
+    /// Games per evaluation
+    #[arg(long, default_value = "100")]
+    games: usize,
+
+    /// Population size (candidates per generation). Auto-calculated if not specified.
     #[arg(long, short = 'p')]
     population: Option<usize>,
 
-    /// Games per evaluation
+    /// MCTS simulations per move (for MCTS opponents)
     #[arg(long, default_value = "50")]
-    games: usize,
+    mcts_sims: u32,
 
+    // ===== CMA-ES Hyperparameters =====
     /// Initial sigma (step size) for CMA-ES
     #[arg(long, default_value = "0.3")]
     sigma: f64,
@@ -77,22 +80,28 @@ struct Args {
     #[arg(long)]
     target_win_rate: Option<f64>,
 
-    /// Random seed
-    #[arg(long, short = 's', default_value = "42")]
-    seed: u64,
-
-    /// Deck ID for specialist mode (our deck)
+    /// Start from existing weights file
     #[arg(long)]
-    deck: Option<String>,
+    initial_weights: Option<PathBuf>,
 
-    /// Opponent deck ID for specialist mode
-    #[arg(long)]
-    opponent: Option<String>,
-
+    // ===== Experiment Configuration =====
     /// Experiment tag (descriptive name for this run)
     #[arg(long, short = 't', default_value = "default")]
     tag: String,
 
+    /// Random seed
+    #[arg(long, short = 's', default_value = "42")]
+    seed: u64,
+
+    /// Enable parallel game evaluation (uses all CPU cores)
+    #[arg(long, default_value = "true")]
+    parallel: bool,
+
+    /// Verbose output (print each generation)
+    #[arg(long, short = 'v')]
+    verbose: bool,
+
+    // ===== Data Paths =====
     /// Base output directory for experiments
     #[arg(long, default_value = "experiments")]
     experiment_dir: PathBuf,
@@ -104,14 +113,6 @@ struct Args {
     /// Path to deck definitions directory
     #[arg(long, default_value = "data/decks")]
     decks: PathBuf,
-
-    /// Verbose output (print each generation)
-    #[arg(long, short = 'v')]
-    verbose: bool,
-
-    /// Start from existing weights file
-    #[arg(long)]
-    initial_weights: Option<PathBuf>,
 }
 
 fn main() {
@@ -167,9 +168,6 @@ fn main() {
 
     // Parse tuning mode
     let tuning_mode = match args.mode.as_str() {
-        "vs-random" => TuningMode::VsRandom,
-        "vs-greedy" => TuningMode::VsGreedy,
-        "multi-opponent" => TuningMode::MultiOpponent,
         "generalist" => {
             // Use all deck combinations
             let matchups = create_generalist_matchups(&deck_registry, &card_db);
@@ -177,7 +175,7 @@ fn main() {
                 eprintln!("No valid matchups found for generalist mode");
                 process::exit(1);
             }
-            println!("Enhanced Generalist mode:");
+            println!("Generalist mode:");
             println!("  {} deck matchups", matchups.len());
             println!("  Testing vs Random, Greedy, AND MCTS per matchup");
             println!("  Total games per evaluation: {}", args.games);
@@ -204,6 +202,8 @@ fn main() {
             };
 
             println!("Specialist mode: {} vs {}", deck_id, opponent_id);
+            println!("  Testing vs Random, Greedy, AND MCTS");
+            println!("  Total games per evaluation: {}", args.games);
             TuningMode::Specialist { deck, opponent_deck }
         }
         "faction-specialist" => {
@@ -239,31 +239,12 @@ fn main() {
             println!("  {} faction decks", faction_decks.len());
             println!("  {} opponent decks (from other factions)", opponent_decks.len());
             println!("  {} total matchups", matchups.len());
-            TuningMode::Generalist { matchups }
-        }
-        "agent-generalist" => {
-            // Train generalist against all faction decks (simulating specialists + mirror)
-            // Uses all faction decks to create comprehensive matchups
-            let all_faction_decks: Vec<_> = Faction::all_factions()
-                .iter()
-                .flat_map(|f| deck_registry.decks_for_faction(*f))
-                .collect();
-
-            if all_faction_decks.is_empty() {
-                eprintln!("No faction decks found for agent-generalist mode");
-                process::exit(1);
-            }
-
-            // Create all matchups between faction decks (including mirrors)
-            let matchups = create_generalist_matchups(&deck_registry, &card_db);
-
-            println!("Agent Generalist mode:");
-            println!("  {} faction decks across {} factions", all_faction_decks.len(), Faction::all_factions().len());
-            println!("  {} total matchups (including mirrors)", matchups.len());
+            println!("  Testing vs Random, Greedy, AND MCTS per matchup");
+            println!("  Total games per evaluation: {}", args.games);
             TuningMode::Generalist { matchups }
         }
         _ => {
-            eprintln!("Unknown mode: {}. Available: vs-random, vs-greedy, multi-opponent, generalist, specialist, faction-specialist, agent-generalist", args.mode);
+            eprintln!("Unknown mode: {}. Available modes: generalist, specialist, faction-specialist", args.mode);
             process::exit(1);
         }
     };
@@ -316,11 +297,9 @@ fn main() {
     println!("Generations: {}", args.generations);
     println!("Population: {}", cmaes_config.population_size.unwrap_or(4 + (3.0 * (initial_weights.len() as f64).ln()).floor() as usize));
     println!("Games/eval: {}", args.games);
+    println!("MCTS sims: {}", args.mcts_sims);
     println!("Initial sigma: {:.3}", args.sigma);
     println!("Seed: {}", args.seed);
-    if args.mode == "multi-opponent" {
-        println!("MCTS sims: {}", args.mcts_sims);
-    }
     if let Some(wr) = args.target_win_rate {
         println!("Target win rate: {:.1}%", wr * 100.0);
     }
@@ -344,9 +323,7 @@ fn main() {
     writeln!(log_file, "Games/eval: {}", args.games).unwrap();
     writeln!(log_file, "Initial sigma: {:.3}", args.sigma).unwrap();
     writeln!(log_file, "Seed: {}", args.seed).unwrap();
-    if args.mode == "multi-opponent" {
-        writeln!(log_file, "MCTS sims: {}", args.mcts_sims).unwrap();
-    }
+    writeln!(log_file, "MCTS sims: {}", args.mcts_sims).unwrap();
     writeln!(log_file).unwrap();
 
     // Create optimizer and evaluator
@@ -467,34 +444,59 @@ Best win rate: {:.1}%\n",
             }
         }
 
-        // For faction-specialist and agent-generalist, also save to data/weights/
-        if args.mode == "faction-specialist" || args.mode == "agent-generalist" {
-            let data_weights_dir = PathBuf::from("data/weights/specialists");
-            if let Err(e) = fs::create_dir_all(&data_weights_dir) {
-                eprintln!("Warning: Could not create data/weights/specialists: {}", e);
-            } else {
-                let canonical_path = if args.mode == "faction-specialist" {
-                    let faction_str = args.faction.as_ref().expect("faction should be set");
-                    data_weights_dir.join(format!("{}.toml", faction_str.to_lowercase()))
+        // Auto-deploy: Copy weights to data/weights/ for easy access
+        let deploy_path = match args.mode.as_str() {
+            "generalist" | "agent-generalist" => {
+                Some(PathBuf::from("data/weights/generalist.toml"))
+            }
+            "faction-specialist" => {
+                if let Some(ref faction_str) = args.faction {
+                    // Ensure specialists directory exists
+                    let specialists_dir = PathBuf::from("data/weights/specialists");
+                    if let Err(e) = fs::create_dir_all(&specialists_dir) {
+                        eprintln!("⚠️  Warning: Could not create specialists directory: {}", e);
+                        None
+                    } else {
+                        Some(specialists_dir.join(format!("{}.toml", faction_str.to_lowercase())))
+                    }
                 } else {
-                    PathBuf::from("data/weights/generalist.toml")
-                };
-
-                let canonical_weights = BotWeights {
-                    name: weight_name,
-                    version: 1,
-                    default: WeightSet { greedy: tuned_weights },
-                    deck_specific: std::collections::HashMap::new(),
-                };
-
-                match canonical_weights.save(&canonical_path) {
-                    Ok(_) => {
-                        println!("✓ Canonical weights saved to {:?}", canonical_path);
-                        writeln!(log_file, "Canonical weights saved to {:?}", canonical_path).unwrap();
+                    None
+                }
+            }
+            "specialist" => {
+                // For single-deck specialists, infer faction from deck name
+                if let Some(ref deck_name) = args.deck {
+                    let specialists_dir = PathBuf::from("data/weights/specialists");
+                    if let Err(e) = fs::create_dir_all(&specialists_dir) {
+                        eprintln!("⚠️  Warning: Could not create specialists directory: {}", e);
+                        None
+                    } else {
+                        // Extract faction from deck name (e.g., "argentum_control" -> "argentum")
+                        let faction = deck_name.split('_').next().unwrap_or(deck_name);
+                        Some(specialists_dir.join(format!("{}.toml", faction.to_lowercase())))
                     }
-                    Err(e) => {
-                        eprintln!("Warning: Could not save canonical weights: {}", e);
-                    }
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        };
+
+        if let Some(canonical_path) = deploy_path {
+            let canonical_weights = BotWeights {
+                name: weight_name,
+                version: 1,
+                default: WeightSet { greedy: tuned_weights },
+                deck_specific: std::collections::HashMap::new(),
+            };
+
+            match canonical_weights.save(&canonical_path) {
+                Ok(_) => {
+                    println!("✅ Auto-deployed to {:?}", canonical_path);
+                    writeln!(log_file, "Auto-deployed to {:?}", canonical_path).unwrap();
+                }
+                Err(e) => {
+                    eprintln!("⚠️  Warning: Could not auto-deploy weights: {}", e);
                 }
             }
         }

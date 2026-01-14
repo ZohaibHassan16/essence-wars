@@ -1,0 +1,48 @@
+● Tuning Commands for v0.4
+
+All commands now use MCTS opponents (Random/Greedy/MCTS) for robust evaluation.
+Weights are automatically deployed to data/weights/ after training completes.
+
+  # 1. Generalist (plays all decks competently)
+  cargo run --release --bin tune -- \
+    --tag generalist-v0.4 \
+    --mode generalist \
+    --generations 100 \
+    --games 100 \
+    --mcts-sims 50
+
+  # 2. Argentum Specialist (defensive control)
+  cargo run --release --bin tune -- \
+    --tag argentum-specialist-v0.4 \
+    --mode faction-specialist \
+    --faction argentum \
+    --generations 100 \
+    --games 100 \
+    --mcts-sims 50
+
+  # 3. Symbiote Specialist (aggressive tempo)
+  cargo run --release --bin tune -- \
+    --tag symbiote-specialist-v0.4 \
+    --mode faction-specialist \
+    --faction symbiote \
+    --generations 100 \
+    --games 100 \
+    --mcts-sims 50
+
+  # 4. Obsidion Specialist (burst damage)
+  cargo run --release --bin tune -- \
+    --tag obsidion-specialist-v0.4 \
+    --mode faction-specialist \
+    --faction obsidion \
+    --generations 100 \
+    --games 100 \
+    --mcts-sims 50
+
+  Notes:
+  - All modes now test vs Random, Greedy, AND MCTS opponents
+  - Weights automatically saved to:
+    * Generalist: data/weights/generalist.toml
+    * Specialists: data/weights/specialists/{faction}.toml
+  - 100 generations × 100 games recommended for convergence
+  - Results saved to experiments/mcts/ with timestamped folders
+  - Use --help to see all available options (organized by category)
