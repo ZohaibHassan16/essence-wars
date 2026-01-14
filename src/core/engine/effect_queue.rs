@@ -365,9 +365,9 @@ impl EffectQueue {
         _card_db: &CardDatabase,
     ) {
         if let Some(creature) = state.players[owner.index()].get_creature_mut(slot) {
-            // Heal up to max health
-            creature.current_health = (creature.current_health + amount as i8)
-                .min(creature.max_health);
+            // Heal up to max health (use i16 to avoid overflow)
+            creature.current_health = ((creature.current_health as i16) + (amount as i16))
+                .min(creature.max_health as i16) as i8;
         }
     }
 

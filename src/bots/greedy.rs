@@ -264,8 +264,17 @@ impl<'a> Bot for GreedyBot<'a> {
 
         // Since we can't reconstruct the full engine from just the tensor,
         // we fall back to a simple heuristic that doesn't require simulation.
-        // This is a degraded mode - prefer using select_best_action() directly.
+        // This is a degraded mode - prefer using select_action_with_engine().
         self.select_action_fallback(legal_actions)
+    }
+
+    /// Override to use full simulation when engine is available.
+    ///
+    /// This is the preferred method - GameRunner and other callers should use this
+    /// when they have access to the GameEngine, enabling full action simulation.
+    fn select_action_with_engine(&mut self, engine: &GameEngine) -> Action {
+        let legal_actions = engine.get_legal_actions();
+        self.select_best_action(engine, &legal_actions)
     }
 
     fn reset(&mut self) {
@@ -322,16 +331,3 @@ fn action_priority(action: &Action) -> i32 {
     }
 }
 
-/// Extended GreedyBot interface for arena use.
-///
-/// This provides methods that take a GameEngine reference directly,
-/// enabling full action simulation.
-impl<'a> GreedyBot<'a> {
-    /// Select an action using the full GameEngine for simulation.
-    ///
-    /// This is the preferred method when you have access to the engine.
-    pub fn select_action_with_engine(&mut self, engine: &GameEngine) -> Action {
-        let legal_actions = engine.get_legal_actions();
-        self.select_best_action(engine, &legal_actions)
-    }
-}

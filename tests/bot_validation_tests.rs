@@ -27,75 +27,23 @@ fn load_decks() -> DeckRegistry {
         .expect("Failed to load decks")
 }
 
-/// Run games between two bots directly using GameEngine (bypasses GameRunner)
-/// Returns results compatible with existing test infrastructure
+/// Run games between two bots using GameRunner
+/// Returns results for test analysis
 fn run_traced_match(
     card_db: &CardDatabase,
-    _bot1: &mut dyn cardgame::bots::Bot, // Not used - bots created fresh each game
-    _bot2: &mut dyn cardgame::bots::Bot, // Not used - bots created fresh each game
+    bot1: &mut dyn cardgame::bots::Bot,
+    bot2: &mut dyn cardgame::bots::Bot,
     deck1: Vec<CardId>,
     deck2: Vec<CardId>,
     games: usize,
     base_seed: u64,
 ) -> Vec<cardgame::arena::GameResult> {
-    use cardgame::arena::ActionRecord;
-    use cardgame::bots::Bot;
-    use cardgame::engine::GameEngine;
-    use std::time::Instant;
-
     let mut results = Vec::with_capacity(games);
+    let mut runner = GameRunner::new(card_db);
 
     for i in 0..games {
         let seed = base_seed.wrapping_add(i as u64);
-        let start = Instant::now();
-
-        // Create fresh bots for each game
-        let bot1_seed = seed;
-        let bot2_seed = seed.wrapping_add(1000000);
-        let mut greedy = GreedyBot::new(card_db, bot1_seed);
-        let mut random = RandomBot::new(bot2_seed);
-
-        // Run game directly with GameEngine
-        let mut engine = GameEngine::new(card_db);
-        engine.start_game(deck1.clone(), deck2.clone(), seed);
-
-        let mut actions = Vec::new();
-        let max_actions = 1000;
-        let mut action_count = 0;
-
-        while !engine.is_game_over() && action_count < max_actions {
-            let current_player = engine.current_player();
-            let action = if current_player == PlayerId::PLAYER_ONE {
-                greedy.select_action_with_engine(&engine)
-            } else {
-                random.select_action_with_engine(&engine)
-            };
-
-            // Record action for result
-            let record = ActionRecord {
-                turn: engine.turn_number() as u32,
-                player: current_player,
-                action,
-                thinking_time_us: 0,
-                state_snapshot: None,
-            };
-            actions.push(record);
-
-            if engine.apply_action(action).is_err() {
-                break;
-            }
-            action_count += 1;
-        }
-
-        let result = cardgame::arena::GameResult {
-            seed,
-            winner: engine.winner(),
-            turns: engine.turn_number() as u32,
-            duration: start.elapsed(),
-            actions,
-            combat_traces: Vec::new(),
-            effect_events: Vec::new(),
-        };
+        let result = runner.run_game(bot1, bot2, deck1.clone(), deck2.clone(), seed);
         results.push(result);
     }
 

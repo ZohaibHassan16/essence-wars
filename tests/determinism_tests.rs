@@ -13,7 +13,7 @@
 
 mod common;
 
-use cardgame::bots::GreedyBot;
+use cardgame::bots::{Bot, GreedyBot};
 use cardgame::cards::CardDatabase;
 use cardgame::engine::GameEngine;
 use cardgame::types::PlayerId;

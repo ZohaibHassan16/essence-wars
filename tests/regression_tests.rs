@@ -12,7 +12,7 @@
 //! GameRunner that causes games to hit the 1000 action limit.
 
 use cardgame::actions::Action;
-use cardgame::bots::GreedyBot;
+use cardgame::bots::{Bot, GreedyBot};
 use cardgame::cards::CardDatabase;
 use cardgame::decks::DeckRegistry;
 use cardgame::engine::GameEngine;
