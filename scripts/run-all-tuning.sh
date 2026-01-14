@@ -248,7 +248,7 @@ EOF
     print_info "  3. ${FIRE} Symbiote       - Aggressive tempo specialist"
     print_info "  4. ${FIRE} Obsidion       - Burst damage specialist"
     echo ""
-    print_info "Each run: 100 generations × 100 games vs Random/Greedy/MCTS"
+    print_info "Each run: 100 generations × 150 games vs Random/Greedy/MCTS"
     print_info "Estimated total time: ${CYAN}~40-60 minutes${NC}"
     echo ""
     
@@ -263,7 +263,7 @@ else
     # Quiet mode: just state what we're doing
     echo "Essence Wars Bot Training Pipeline"
     echo "Training 4 configurations: Generalist, Argentum, Symbiote, Obsidion"
-    echo "100 generations × 100 games each"
+    echo "100 generations × 150 games each"
     echo ""
 fi
 
@@ -287,25 +287,25 @@ print_success "Build complete"
 # Run each tuning configuration
 print_header "${ROCKET} Training Phase 1/4: Generalist"
 run_with_spinner \
-    "cargo run --release --bin tune -- --tag generalist-v0.4 --mode generalist --generations 100 --games 100 --mcts-sims 50" \
+    "cargo run --release --bin tune -- --tag generalist-v0.4 --mode generalist --generations 100 --games 150 --mcts-sims 25" \
     "Generalist Training" \
     "generalist"
 
 print_header "${ROCKET} Training Phase 2/4: Argentum Specialist"
 run_with_spinner \
-    "cargo run --release --bin tune -- --tag argentum-specialist-v0.4 --mode faction-specialist --faction argentum --generations 100 --games 100 --mcts-sims 50" \
+    "cargo run --release --bin tune -- --tag argentum-specialist-v0.4 --mode faction-specialist --faction argentum --generations 100 --games 150 --mcts-sims 25" \
     "Argentum Specialist Training" \
     "argentum"
 
 print_header "${ROCKET} Training Phase 3/4: Symbiote Specialist"
 run_with_spinner \
-    "cargo run --release --bin tune -- --tag symbiote-specialist-v0.4 --mode faction-specialist --faction symbiote --generations 100 --games 100 --mcts-sims 50" \
+    "cargo run --release --bin tune -- --tag symbiote-specialist-v0.4 --mode faction-specialist --faction symbiote --generations 100 --games 150 --mcts-sims 25" \
     "Symbiote Specialist Training" \
     "symbiote"
 
 print_header "${ROCKET} Training Phase 4/4: Obsidion Specialist"
 run_with_spinner \
-    "cargo run --release --bin tune -- --tag obsidion-specialist-v0.4 --mode faction-specialist --faction obsidion --generations 100 --games 100 --mcts-sims 50" \
+    "cargo run --release --bin tune -- --tag obsidion-specialist-v0.4 --mode faction-specialist --faction obsidion --generations 100 --games 150 --mcts-sims 25" \
     "Obsidion Specialist Training" \
     "obsidion"
 
