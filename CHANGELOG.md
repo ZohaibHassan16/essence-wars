@@ -4,6 +4,28 @@ All notable changes to the Essence Wars engine.
 
 Format: `[version] - YYYY-MM-DD` with categories: Added, Changed, Fixed, Removed.
 
+## [0.5.0] - 2026-01-14
+
+### Added
+- `src/bin/diagnose.rs`: P1/P2 diagnostic tool for analyzing game balance
+  - Per-turn resource tracking (life, creatures, attack power, hand size)
+  - Win rate breakdown by game phase (early/mid/late)
+  - First blood statistics
+
+### Changed
+- **First Player Advantage (FPA) compensation redesigned**:
+  - Old: P2 started with +1 essence (2 vs 1) - caused P2 to win 55%
+  - New: P2 draws +2 extra cards at game start (6 vs 4 cards)
+  - Both players now start with equal essence (1 each)
+  - Achieves ~50% P1 win rate (validated with 10k games)
+- `P2_BONUS_CARDS` constant added to `src/core/config.rs`
+
+### Fixed
+- **Critical**: MCTS now detects immediate wins before tree search
+  - Previously missed lethal attacks, wasting simulations
+  - Now checks all legal actions for instant victory first
+- P1/P2 balance: P1 win rate improved from 29% to ~50%
+
 ## [0.4.0] - 2026-01-13
 
 ### Added

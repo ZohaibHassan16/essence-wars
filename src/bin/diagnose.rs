@@ -152,14 +152,14 @@ impl AggregatedStats {
         }
 
         // Track notable game seeds
-        if diag.winner == Some(PlayerId::PLAYER_ONE) {
-            if self.earliest_p1_win_seed.is_none() || diag.total_turns < self.earliest_p1_win_seed.unwrap().1 {
-                self.earliest_p1_win_seed = Some((diag.seed, diag.total_turns));
-            }
-        } else if diag.winner == Some(PlayerId::PLAYER_TWO) {
-            if self.earliest_p2_win_seed.is_none() || diag.total_turns < self.earliest_p2_win_seed.unwrap().1 {
-                self.earliest_p2_win_seed = Some((diag.seed, diag.total_turns));
-            }
+        if diag.winner == Some(PlayerId::PLAYER_ONE)
+            && (self.earliest_p1_win_seed.is_none() || diag.total_turns < self.earliest_p1_win_seed.unwrap().1)
+        {
+            self.earliest_p1_win_seed = Some((diag.seed, diag.total_turns));
+        } else if diag.winner == Some(PlayerId::PLAYER_TWO)
+            && (self.earliest_p2_win_seed.is_none() || diag.total_turns < self.earliest_p2_win_seed.unwrap().1)
+        {
+            self.earliest_p2_win_seed = Some((diag.seed, diag.total_turns));
         }
 
         // Resource curves - record at start of each turn
