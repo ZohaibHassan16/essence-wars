@@ -6,32 +6,37 @@
 
 - [x] Built ✅
 
-2. Test Engine with MCTS and Greedy Bots, fully traceable combat (ongoing)
+2.1 Test Engine with MCTS and Greedy Bots, fully traceable combat (ongoing)
 
 -  [x] Tested ✅
 
-2.1 Expand Cards and Engine
+2.2 Expand Cards and Engine
 
 - [ ] Expanded to 300 Cards , First Edition (`Legends`)
 - [ ] Update `docs/essence-wars-design.md` and `/home/chris/ai-cardgame/docs/design-engine.md`
 - [ ] Create new `cards-First-Edition.md` File as Database
 
-2.2 Build ML/AI Training and Inference Infrastructure (Gym Bridge, Python Gymnasium / OpenAI Gym)
+2.3 Setup Modal Compute Pipeline for Cloud Tuning
+
+2.4 Refactor TUI. New Scope, discuss specs etc (more for arena matches and easy visualization? Just using the tuning bash script instead of own tuning pipeline? Improving analysis options, not just for one tuning run, but for all stored tuning data runs, comparing those etc (making plots). Goal"  true research tool and TUI Interface for the project. Including PPO and AlphaZero Agents once they are added
+
+2.5 Create new Engine Doc (Architecture, Design, API)
+
+3.1 Build ML/AI Training and Inference Infrastructure (Gym Bridge, Python Gymnasium / OpenAI Gym)
 
 
-3. Train first PPO and AlphaZero Agents as Proof of Concept 
+3.2 Train first PPO and AlphaZero Agents as Proof of Concept 
 
-3.1 Once it works, explore cloud compute solutions (both mcts and ppo/alphazero training), document and use for ongoing experiments, local pc only for small testing/development batches
 
 4.1 Develop and expand Lore, Background, Characters, Wordbuilding, create Artwork and Flavor Text, make it fun to play, not just fun to research with. Factions, Champions, Setting. Drawing Inspiration from Hearthstone/Warcraft, MTG and other Fantasy / Steampunk Fantasy Worlds, without blatantly copying IP.
 
 4.2 Implement the full first Card Edition, properly tune Greedy/MCTSBot, properly train PPO and AlphaZero agents, in a systematic and structured way, keeping records, data, analysis, all streamlined and reproducable with scripts etc, document everythin properly
 
-5. Focus on ML AI Research (Specialist vs Generalist, different PPO Approaches, different AlphaZero
+5.1 Focus on ML AI Research (Specialist vs Generalist, different PPO Approaches, different AlphaZero
 Approaches)
 
-5.1 Transfer Learning: hidden information, randomness, etc
-5.2 adding new sets with new cards and combos, does the agent perform well without retraining?
+5.2 Transfer Learning: hidden information, randomness, etc
+5.3 adding new sets with new cards and combos, does the agent perform well without retraining?
 
 6. Build Visualization Web Client, host on huggingface.ai space
 6.1 Research Mode: AI vs AI (Agents, Bots) Mode with Research focus
