@@ -215,7 +215,7 @@ cards:
     name: "Regenerating Ooze"
     cost: 3
     card_type: creature
-    attack: 2
+    attack: 3
     health: 5
     keywords: [Regenerate]
     rarity: Uncommon
@@ -226,7 +226,7 @@ cards:
     cost: 1
     card_type: creature
     attack: 1
-    health: 1
+    health: 2
     keywords: [Rush]
     rarity: Common
     tags: [Swarm]

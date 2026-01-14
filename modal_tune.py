@@ -39,25 +39,25 @@ TRAINING_CONFIGS = [
     {
         "tag": "generalist-v0.4-modal",
         "mode": "generalist",
-        "args": ["--generations", "100", "--games", "100", "--mcts-sims", "50"],
+        "args": ["--generations", "100", "--games", "150", "--mcts-sims", "25"],
         "description": "Universal weights for all decks",
     },
     {
         "tag": "argentum-specialist-v0.4-modal",
         "mode": "faction-specialist",
-        "args": ["--faction", "argentum", "--generations", "100", "--games", "100", "--mcts-sims", "50"],
+        "args": ["--faction", "argentum", "--generations", "100", "--games", "150", "--mcts-sims", "25"],
         "description": "Argentum (defensive control) specialist",
     },
     {
         "tag": "symbiote-specialist-v0.4-modal",
         "mode": "faction-specialist",
-        "args": ["--faction", "symbiote", "--generations", "100", "--games", "100", "--mcts-sims", "50"],
+        "args": ["--faction", "symbiote", "--generations", "100", "--games", "150", "--mcts-sims", "25"],
         "description": "Symbiote (aggressive tempo) specialist",
     },
     {
         "tag": "obsidion-specialist-v0.4-modal",
         "mode": "faction-specialist",
-        "args": ["--faction", "obsidion", "--generations", "100", "--games", "100", "--mcts-sims", "50"],
+        "args": ["--faction", "obsidion", "--generations", "100", "--games", "150", "--mcts-sims", "25"],
         "description": "Obsidion (burst damage) specialist",
     },
 ]
@@ -228,21 +228,34 @@ def run_training(config: dict, workspace_snapshot: bytes):
             volume.commit()
             print("✓ Volume committed")
     
-    # Also save weights to volume
+    # Save ONLY the trained weights to a consolidated location (not per-config)
+    # This ensures we don't overwrite good weights with stale ones
     weights_dir = workspace_path / "data" / "weights"
-    if weights_dir.exists():
-        weights_dest = Path("/experiments") / "weights" / config['tag']
-        weights_dest.mkdir(parents=True, exist_ok=True)
-        
-        for weights_file in weights_dir.rglob("*.toml"):
-            if weights_file.is_file():
-                rel_path = weights_file.relative_to(weights_dir)
-                dest_file = weights_dest / rel_path
-                dest_file.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(weights_file, dest_file)
-        
-        print(f"✓ Weights saved to: {weights_dest}")
-        volume.commit()
+    weights_dest = Path("/experiments") / "trained_weights"
+    weights_dest.mkdir(parents=True, exist_ok=True)
+    specialists_dest = weights_dest / "specialists"
+    specialists_dest.mkdir(parents=True, exist_ok=True)
+
+    if config['mode'] == 'generalist':
+        # Only save generalist.toml
+        src = weights_dir / "generalist.toml"
+        if src.exists():
+            shutil.copy2(src, weights_dest / "generalist.toml")
+            print(f"✓ Saved generalist weights to volume")
+            volume.commit()
+    elif config['mode'] == 'faction-specialist':
+        # Only save the specific faction's specialist weights
+        faction = None
+        for i, arg in enumerate(config['args']):
+            if arg == '--faction' and i + 1 < len(config['args']):
+                faction = config['args'][i + 1]
+                break
+        if faction:
+            src = weights_dir / "specialists" / f"{faction}.toml"
+            if src.exists():
+                shutil.copy2(src, specialists_dest / f"{faction}.toml")
+                print(f"✓ Saved {faction} specialist weights to volume")
+                volume.commit()
     
     total_time = time.time() - start_time
     
@@ -324,36 +337,33 @@ def run_validation(workspace_snapshot: bytes, run_id: str = None):
         print(f"❌ Build failed:\n{result.stderr}")
         return {"success": False, "error": f"Build failed: {result.stderr[-1000:]}"}
 
-    # Set up weights - copy from latest training outputs to consolidated location
+    # Set up weights - copy from consolidated training outputs
     print("\n📂 Setting up weights...")
     weights_dest = workspace_path / "data" / "weights"
     specialists_dest = weights_dest / "specialists"
     specialists_dest.mkdir(parents=True, exist_ok=True)
 
-    # Look for trained weights in the experiments volume
-    exp_weights = Path("/experiments/weights")
+    # Look for trained weights in the consolidated location
+    trained_weights = Path("/experiments/trained_weights")
     weights_found = 0
 
-    if exp_weights.exists():
-        # Find latest weights for each configuration
-        for config_dir in exp_weights.iterdir():
-            if config_dir.is_dir():
-                # Copy generalist weights
-                gen_weights = config_dir / "generalist.toml"
-                if gen_weights.exists():
-                    import shutil
-                    shutil.copy2(gen_weights, weights_dest / "generalist.toml")
-                    print(f"  ✓ Copied generalist weights from {config_dir.name}")
-                    weights_found += 1
+    if trained_weights.exists():
+        import shutil
 
-                # Copy specialist weights
-                spec_dir = config_dir / "specialists"
-                if spec_dir.exists():
-                    for spec_file in spec_dir.glob("*.toml"):
-                        import shutil
-                        shutil.copy2(spec_file, specialists_dest / spec_file.name)
-                        print(f"  ✓ Copied {spec_file.stem} specialist weights")
-                        weights_found += 1
+        # Copy generalist weights
+        gen_weights = trained_weights / "generalist.toml"
+        if gen_weights.exists():
+            shutil.copy2(gen_weights, weights_dest / "generalist.toml")
+            print(f"  ✓ Copied generalist weights")
+            weights_found += 1
+
+        # Copy specialist weights
+        spec_dir = trained_weights / "specialists"
+        if spec_dir.exists():
+            for spec_file in spec_dir.glob("*.toml"):
+                shutil.copy2(spec_file, specialists_dest / spec_file.name)
+                print(f"  ✓ Copied {spec_file.stem} specialist weights")
+                weights_found += 1
 
     print(f"  Found {weights_found} weight files")
 
@@ -482,26 +492,24 @@ def download_trained_weights() -> dict:
     Returns:
         Dict with weight file names and their contents
     """
-    weights_path = Path("/experiments/weights")
+    # Use consolidated weights location
+    weights_path = Path("/experiments/trained_weights")
     weights = {}
 
     if not weights_path.exists():
         return weights
 
-    # Collect all weight files from all training runs
-    for config_dir in weights_path.iterdir():
-        if config_dir.is_dir():
-            # Check for generalist weights
-            gen_file = config_dir / "generalist.toml"
-            if gen_file.exists():
-                weights["generalist.toml"] = gen_file.read_text()
+    # Copy generalist weights
+    gen_file = weights_path / "generalist.toml"
+    if gen_file.exists():
+        weights["generalist.toml"] = gen_file.read_text()
 
-            # Check for specialist weights
-            spec_dir = config_dir / "specialists"
-            if spec_dir.exists():
-                for spec_file in spec_dir.glob("*.toml"):
-                    key = f"specialists/{spec_file.name}"
-                    weights[key] = spec_file.read_text()
+    # Copy specialist weights
+    spec_dir = weights_path / "specialists"
+    if spec_dir.exists():
+        for spec_file in spec_dir.glob("*.toml"):
+            key = f"specialists/{spec_file.name}"
+            weights[key] = spec_file.read_text()
 
     return weights
 
