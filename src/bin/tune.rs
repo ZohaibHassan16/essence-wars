@@ -3,7 +3,7 @@
 //! Usage:
 //!   cargo run --release --bin tune -- --generations 50 --population 20
 //!   cargo run --release --bin tune -- --mode vs-greedy --games 100
-//!   cargo run --release --bin tune -- --mode specialist --deck aggressive_assault --opponent defensive_control
+//!   cargo run --release --bin tune -- --mode specialist --deck symbiote_aggro --opponent argentum_control
 //!   cargo run --release --bin tune -- --mode faction-specialist --faction argentum
 //!   cargo run --release --bin tune -- --mode agent-generalist
 //!   cargo run --release --bin tune -- --tag baseline
@@ -107,7 +107,7 @@ struct Args {
     experiment_dir: PathBuf,
 
     /// Path to card database
-    #[arg(long, default_value = "data/cards/sets")]
+    #[arg(long, default_value = "data/cards/core_set")]
     cards: PathBuf,
 
     /// Path to deck definitions directory

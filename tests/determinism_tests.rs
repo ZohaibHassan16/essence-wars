@@ -94,7 +94,7 @@ fn run_game_with_seed(card_db: &CardDatabase, seed: u64) -> GameOutcome {
 /// Test that same seed produces identical outcomes
 #[test]
 fn test_identical_seed_identical_outcome() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     for seed in [0u64, 42, 12345, 99999, u64::MAX / 2] {
@@ -137,7 +137,7 @@ fn test_identical_seed_identical_outcome() {
 /// Test multiple runs of the same seed
 #[test]
 fn test_repeated_identical_outcomes() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     let seed = 77777u64;
@@ -156,7 +156,7 @@ fn test_repeated_identical_outcomes() {
 /// Test that different seeds produce different initial states
 #[test]
 fn test_different_seeds_different_initial_states() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     let deck = valid_yaml_deck();
@@ -193,7 +193,7 @@ fn test_different_seeds_different_initial_states() {
 /// Test that fork creates an isolated copy
 #[test]
 fn test_fork_isolation() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     let mut engine = GameEngine::new(&card_db);
@@ -250,7 +250,7 @@ fn test_fork_isolation() {
 /// Test that fork and original produce identical results with same actions
 #[test]
 fn test_fork_identical_with_same_actions() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     for seed in [42u64, 12345, 99999] {
@@ -317,7 +317,7 @@ fn test_fork_identical_with_same_actions() {
 /// Test that tensor output is consistent across calls
 #[test]
 fn test_tensor_determinism() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     let mut engine = GameEngine::new(&card_db);
@@ -361,7 +361,7 @@ fn test_tensor_determinism() {
 /// Test that tensor accurately reflects state changes
 #[test]
 fn test_tensor_reflects_state_changes() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     let mut engine = GameEngine::new(&card_db);
@@ -390,7 +390,7 @@ fn test_tensor_reflects_state_changes() {
 /// Test that GreedyBot produces identical decisions with same state
 #[test]
 fn test_greedy_bot_determinism() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     for seed in [42u64, 12345, 99999] {
@@ -426,7 +426,7 @@ fn test_greedy_bot_determinism() {
 /// Test GreedyBot vs GreedyBot game determinism
 #[test]
 fn test_greedy_vs_greedy_determinism() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     for seed in [100u64, 200, 300] {
@@ -503,7 +503,7 @@ fn run_greedy_game(card_db: &CardDatabase, seed: u64) -> GameOutcome {
 /// Test that deck shuffling is deterministic
 #[test]
 fn test_deck_shuffle_determinism() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     for seed in [42u64, 12345, 99999] {

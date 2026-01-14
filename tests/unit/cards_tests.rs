@@ -189,25 +189,28 @@ cards:
 #[test]
 fn test_load_from_directory() {
     let db =
-        CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards from directory");
+        CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards from directory");
 
     // Verify we loaded all card sets:
-    // - Starter Set: 47 cards (43 base + 4 Phase 1.5 test cards)
-    // - New Horizons: 60 cards (4 faction batches × 15 cards)
-    assert_eq!(db.len(), 107);
+    // - Core Set: 60 cards (4 faction batches × 15 cards)
+    //   - Argentum: IDs 1000-1014 (15 cards)
+    //   - Symbiote: IDs 2000-2014 (15 cards)
+    //   - Obsidion: IDs 3000-3014 (15 cards)
+    //   - Free-Walkers: IDs 4000-4014 (15 cards)
+    assert_eq!(db.len(), 60);
 
-    // Verify specific cards exist
-    let eager_recruit = db.get(CardId(1)).expect("Card 1 not found");
-    assert_eq!(eager_recruit.name, "Eager Recruit");
-    assert!(eager_recruit.is_creature());
+    // Verify specific cards exist from each faction
+    let brass_sentinel = db.get(CardId(1000)).expect("Card 1000 not found");
+    assert_eq!(brass_sentinel.name, "Brass Sentinel");
+    assert!(brass_sentinel.is_creature());
 
-    let quick_strike = db.get(CardId(32)).expect("Card 32 not found");
-    assert_eq!(quick_strike.name, "Quick Strike");
-    assert!(quick_strike.is_spell());
+    let reinforce = db.get(CardId(1010)).expect("Card 1010 not found");
+    assert_eq!(reinforce.name, "Reinforce");
+    assert!(reinforce.is_spell());
 
-    let war_drums = db.get(CardId(40)).expect("Card 40 not found");
-    assert_eq!(war_drums.name, "War Drums");
-    assert!(war_drums.is_support());
+    let assembly_line = db.get(CardId(1013)).expect("Card 1013 not found");
+    assert_eq!(assembly_line.name, "Assembly Line");
+    assert!(assembly_line.is_support());
 }
 
 #[test]
@@ -293,7 +296,7 @@ fn test_load_from_directory_empty_directory() {
 #[test]
 fn test_load_from_directory_file_not_directory() {
     // Use a known file that exists
-    let result = CardDatabase::load_from_directory("data/cards/sets/starter.yaml");
+    let result = CardDatabase::load_from_directory("data/cards/core_set/argentum.yaml");
     assert!(result.is_err());
     let err = result.unwrap_err();
     assert!(matches!(err, CardLoadError::Validation(_)));

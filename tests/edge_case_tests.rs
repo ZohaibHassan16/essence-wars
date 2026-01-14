@@ -10,7 +10,7 @@ use cardgame::keywords::Keywords;
 use cardgame::types::{CardId, PlayerId, Slot};
 
 fn create_test_db() -> CardDatabase {
-    CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards")
+    CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards")
 }
 
 /// Find a card with specific criteria
@@ -18,10 +18,21 @@ fn find_card_by_criteria(
     card_db: &CardDatabase,
     criteria: impl Fn(&CardDefinition) -> bool,
 ) -> Option<CardId> {
-    for id in 1..=100 {
-        if let Some(card) = card_db.get(CardId(id)) {
-            if criteria(card) {
-                return Some(CardId(id));
+    // Search all faction ID ranges:
+    // Argentum: 1000-1999, Symbiote: 2000-2999, Obsidion: 3000-3999, Neutral: 4000-4999
+    let ranges = [
+        (1000, 1100),
+        (2000, 2100),
+        (3000, 3100),
+        (4000, 4100),
+    ];
+
+    for (start, end) in ranges {
+        for id in start..end {
+            if let Some(card) = card_db.get(CardId(id)) {
+                if criteria(card) {
+                    return Some(CardId(id));
+                }
             }
         }
     }

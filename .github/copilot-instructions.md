@@ -43,7 +43,7 @@ cargo run --release --bin arena -- --bot1 greedy --bot2 random --games 100 --pro
 
 # With custom decks and weights
 cargo run --release --bin arena -- \
-  --deck1 aggressive_assault --deck2 defensive_control \
+  --deck1 symbiote_aggro --deck2 argentum_control \
   --bot1 mcts --weights1 data/weights/tuned_multi_opponent.toml \
   --games 50 --debug
 ```
@@ -58,7 +58,7 @@ cargo run --release --bin tune -- --tag vs_all --mode multi-opponent --generatio
 
 # Specialist for specific matchup
 cargo run --release --bin tune -- --tag aggro_spec \
-  --mode specialist --deck aggressive_assault --opponent defensive_control
+  --mode specialist --deck symbiote_aggro --opponent argentum_control
 ```
 
 ### Analyze Results
@@ -94,7 +94,7 @@ Every training run must:
 Use `docs/experiments/` for curated reports worth preserving in git.
 
 ### Card Definitions
-- **YAML format**: starter.yaml in data/cards/sets - 43 cards with effects/abilities
+- **YAML format**: starter.yaml in data/cards/core_set - 43 cards with effects/abilities
 - **Deck format**: TOML files in data/decks - Card ID arrays (20-30 cards)
 
 ### Python Environment

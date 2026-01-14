@@ -1,0 +1,45 @@
+# Symbiote Tempo Deck
+# Faction: Symbiote Circles - "The Swarm"
+# Composition: 21 Symbiote Core + 9 Free-Walker Splash
+# Strategy: Board control with Regenerate creatures. Trade efficiently and outlast opponents.
+
+id = "symbiote_tempo"
+name = "Symbiote Tempo"
+description = "Board control deck featuring Symbiote Circles beasts with Regenerate staying power."
+
+tags = ["tempo", "midrange", "faction", "symbiote"]
+
+# 30 cards total (21 Symbiote + 9 Free-Walker)
+cards = [
+    # === SYMBIOTE CORE (21 cards) ===
+    # -- 1-cost (2 cards) --
+    2000, 2000, # Spore Crawler (1/2 vanilla) - early blocker
+
+    # -- 2-cost (4 cards) --
+    2001, 2001, # Venom Fang (2/3 Lethal)
+    2005, 2005, # Pack Hunter (2/2 Rush)
+
+    # -- 3-cost (8 cards) --
+    2002, 2002, # Regenerating Ooze (2/5 Regenerate)
+    2007, 2007, # Evolution Chamber (2/4, buff +1/+1)
+    2010, 2010, # Acid Spitter (3/3 Ranged)
+    2013, 2013, # Consume spell (3 damage) - removal
+
+    # -- 4-cost (4 cards) --
+    2004, 2004, # Hive Guardian (3/6 Guard+Regenerate) - anchor
+    2011, 2011, # Carapace Warrior (2/6 Regenerate)
+
+    # -- 5-6 cost (2 cards) --
+    2008,       # Alpha Predator (5/5 Rush+Lethal)
+    2009,       # Swarm Mother (4/6 Regenerate, +1/+0 each turn)
+
+    # -- Support (1 card) --
+    2014,       # Spawning Pool (4-cost support, +1 attack)
+
+    # === FREE-WALKER SPLASH (9 cards) ===
+    4002, 4002, # Wasteland Scout (2-cost 2/3 Ranged) - flexible
+    4003, 4003, # Hired Blade (3-cost 3/3 vanilla) - efficient
+    4006, 4006, # Sharpshooter (4-cost 3/3 Ranged) - reach
+    4008, 4008, # Scrap Golem (5-cost 4/6 vanilla) - solid body
+    4010,       # Hired Help (3-cost spell, +2/+2) - buff
+]

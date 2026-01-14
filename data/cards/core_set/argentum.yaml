@@ -1,0 +1,186 @@
+name: "Argentum Combine"
+cards:
+  # =============================================================================
+  # ARGENTUM COMBINE - "The Wall"
+  # Identity: Order, Industry, Defense
+  # Primary Keywords: Guard, Piercing, Shield
+  # ID Range: 1000-1999
+  # =============================================================================
+
+  # === ARGENTUM CREATURES ===
+  - id: 1000
+    name: "Brass Sentinel"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: [Guard]
+    rarity: Common
+    tags: [Construct]
+
+  - id: 1001
+    name: "Steam Knight"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: [Piercing]
+    rarity: Common
+    tags: [Soldier]
+
+  - id: 1002
+    name: "Cogwork Defender"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 5
+    keywords: [Guard]
+    rarity: Common
+    tags: [Construct]
+
+  - id: 1003
+    name: "Factory Foreman"
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags: [Engineer]
+    abilities:
+      - trigger: OnPlay
+        targeting: TargetAllyCreature
+        effects:
+          - type: buff_stats
+            attack: 0
+            health: 2
+
+  - id: 1004
+    name: "Iron Colossus"
+    cost: 5
+    card_type: creature
+    attack: 3
+    health: 7
+    keywords: [Guard]
+    rarity: Uncommon
+    tags: [Construct]
+
+  - id: 1005
+    name: "Pressure Trooper"
+    cost: 3
+    card_type: creature
+    attack: 4
+    health: 2
+    keywords: [Piercing]
+    rarity: Common
+    tags: [Soldier]
+
+  - id: 1006
+    name: "Shield Bearer"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: [Shield]
+    rarity: Common
+    tags: [Soldier]
+
+  - id: 1007
+    name: "Clockwork Medic"
+    cost: 3
+    card_type: creature
+    attack: 1
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags: [Construct]
+    abilities:
+      - trigger: OnPlay
+        effects:
+          - type: heal
+            amount: 2
+
+  - id: 1008
+    name: "Siege Engine"
+    cost: 6
+    card_type: creature
+    attack: 4
+    health: 7
+    keywords: [Guard, Piercing]
+    rarity: Rare
+    tags: [Construct]
+
+  - id: 1009
+    name: "Grand Constructor"
+    cost: 7
+    card_type: creature
+    attack: 4
+    health: 6
+    keywords: [Guard]
+    rarity: Legendary
+    tags: [Engineer]
+    abilities:
+      - trigger: OnPlay
+        targeting: TargetAllyCreature
+        effects:
+          - type: buff_stats
+            attack: 1
+            health: 2
+
+  # === ARGENTUM SPELLS ===
+  - id: 1010
+    name: "Reinforce"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: buff_stats
+        attack: 0
+        health: 3
+    rarity: Common
+
+  - id: 1011
+    name: "Emergency Repairs"
+    cost: 3
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: heal
+        amount: 5
+    rarity: Common
+
+  - id: 1012
+    name: "Construct Protocol"
+    cost: 4
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: buff_stats
+        attack: 1
+        health: 2
+      - type: grant_keyword
+        keyword: Guard
+    rarity: Uncommon
+
+  # === ARGENTUM SUPPORTS ===
+  - id: 1013
+    name: "Assembly Line"
+    cost: 4
+    card_type: support
+    durability: 3
+    triggered_effects:
+      - trigger: StartOfTurn
+        effects:
+          - type: heal
+            amount: 2
+    rarity: Uncommon
+
+  - id: 1014
+    name: "Fortification"
+    cost: 3
+    card_type: support
+    durability: 4
+    passive_effects:
+      - modifier:
+          health_bonus: 1
+    rarity: Uncommon

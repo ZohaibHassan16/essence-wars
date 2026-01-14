@@ -4,7 +4,7 @@
 //!   cargo run --release --bin arena -- --bot1 random --bot2 random --games 100
 //!   cargo run --release --bin arena -- --bot1 greedy --bot2 greedy --games 100
 //!   cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --seed 12345 --debug
-//!   cargo run --release --bin arena -- --deck1 aggressive_assault --deck2 defensive_control
+//!   cargo run --release --bin arena -- --deck1 symbiote_aggro --deck2 argentum_control
 //!
 //! Agent types (with auto-loaded specialist weights):
 //!   cargo run --release --bin arena -- --bot1 agent-argentum --bot2 agent-symbiote
@@ -70,7 +70,7 @@ struct Args {
     log_file: Option<PathBuf>,
 
     /// Path to card database
-    #[arg(long, default_value = "data/cards/sets")]
+    #[arg(long, default_value = "data/cards/core_set")]
     cards: PathBuf,
 
     /// Path to deck definitions directory

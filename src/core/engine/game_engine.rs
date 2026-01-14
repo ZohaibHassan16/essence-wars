@@ -73,6 +73,8 @@ impl<'a> GameEngine<'a> {
         }
 
         // P2 draws extra cards to compensate for First Player Advantage
+        // Note: Currently P2_BONUS_CARDS is 0, using essence instead for FPA compensation
+        #[allow(clippy::reversed_empty_ranges)]
         for _ in 0..player::P2_BONUS_CARDS {
             self.draw_card(PlayerId::PLAYER_TWO);
         }

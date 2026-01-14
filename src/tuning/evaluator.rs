@@ -94,17 +94,22 @@ pub struct Evaluator<'a> {
 impl<'a> Evaluator<'a> {
     /// Create a new evaluator.
     pub fn new(card_db: &'a CardDatabase, config: EvaluatorConfig) -> Self {
-        // Default deck for simple evaluations
+        // Default deck for simple evaluations (Core Set IDs)
+        // Uses a mix of factions for balanced testing
         let default_deck = vec![
-            CardId(1), CardId(1),   // Eager Recruit x2
-            CardId(3), CardId(3),   // Nimble Scout x2
-            CardId(6), CardId(6),   // Frontier Ranger x2
-            CardId(8), CardId(8),   // Shielded Squire x2
-            CardId(11), CardId(11), // Centaur Charger x2
-            CardId(12), CardId(12), // Blade Dancer x2
-            CardId(16), CardId(16), // Piercing Striker x2
-            CardId(20), CardId(20), // Siege Breaker x2
-            CardId(34), CardId(34), // Lightning Bolt x2
+            // Argentum (1000+) - 6 cards
+            CardId(1000), CardId(1000), // Iron Sentinel (2/4 Guard)
+            CardId(1001), CardId(1001), // Brass Automaton (2/3)
+            CardId(1004), CardId(1004), // Steel Vanguard (3/5 Guard)
+            // Symbiote (2000+) - 6 cards
+            CardId(2000), CardId(2000), // Spore Crawler (1/2)
+            CardId(2003), CardId(2003), // Broodling (1/1 Rush)
+            CardId(2005), CardId(2005), // Pack Hunter (2/2 Rush)
+            // Obsidion (3000+) - 4 cards
+            CardId(3000), CardId(3000), // Shadow Initiate (2/2 Lifesteal)
+            CardId(3003), CardId(3003), // Nightblade (3/2 Quick)
+            // Neutral (4000+) - 2 cards
+            CardId(4001), CardId(4001), // Berserker (3/2 Charge)
         ];
 
         Self {

@@ -15,7 +15,7 @@ fn test_deck() -> Vec<CardId> {
 
 #[test]
 fn test_run_single_game() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     let mut runner = GameRunner::new(&card_db);
@@ -37,7 +37,7 @@ fn test_run_single_game() {
 
 #[test]
 fn test_game_determinism() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     let mut runner = GameRunner::new(&card_db);
@@ -70,7 +70,7 @@ fn test_game_determinism() {
 
 #[test]
 fn test_run_match() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     let mut runner = GameRunner::new(&card_db);

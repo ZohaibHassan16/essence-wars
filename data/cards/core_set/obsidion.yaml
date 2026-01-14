@@ -1,0 +1,171 @@
+name: "Obsidion Syndicate"
+cards:
+  # =============================================================================
+  # OBSIDION SYNDICATE - "The Glass Cannon"
+  # Identity: Knowledge, Ambition, Power
+  # Primary Keywords: Lifesteal, Quick, Stealth, Ephemeral
+  # ID Range: 3000-3999
+  # =============================================================================
+
+  # === OBSIDION CREATURES ===
+  - id: 3000
+    name: "Soul Fragment"
+    cost: 1
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: [Ephemeral]
+    rarity: Common
+    tags: [Spirit]
+
+  - id: 3001
+    name: "Shadow Blade"
+    cost: 2
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: [Stealth, Lethal]
+    rarity: Uncommon
+    tags: [Assassin]
+
+  - id: 3002
+    name: "Blood Acolyte"
+    cost: 2
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: [Lifesteal]
+    rarity: Common
+    tags: [Cultist]
+
+  - id: 3003
+    name: "Void Walker"
+    cost: 3
+    card_type: creature
+    attack: 4
+    health: 3
+    keywords: [Ephemeral, Rush]
+    rarity: Uncommon
+    tags: [Spirit]
+
+  - id: 3004
+    name: "Hemomancer"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 5
+    keywords: [Lifesteal]
+    rarity: Uncommon
+    tags: [Mage]
+
+  - id: 3005
+    name: "Silent Assassin"
+    cost: 4
+    card_type: creature
+    attack: 5
+    health: 3
+    keywords: [Stealth, Quick]
+    rarity: Rare
+    tags: [Assassin]
+
+  - id: 3006
+    name: "Ritual Master"
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords: []
+    rarity: Rare
+    tags: [Cultist]
+    abilities:
+      - trigger: OnPlay
+        effects:
+          - type: damage
+            amount: 3
+      - trigger: OnPlay
+        effects:
+          - type: heal
+            amount: 3
+
+  - id: 3007
+    name: "The Eternal One"
+    cost: 7
+    card_type: creature
+    attack: 6
+    health: 7
+    keywords: [Lifesteal, Regenerate]
+    rarity: Legendary
+    tags: [Undead]
+
+  # === OBSIDION SPELLS ===
+  - id: 3008
+    name: "Soul Drain"
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 3
+    rarity: Common
+
+  - id: 3009
+    name: "Dark Insight"
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: draw
+        count: 2
+    rarity: Uncommon
+
+  - id: 3010
+    name: "Shadow Strike"
+    cost: 1
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 2
+      - type: heal
+        amount: 1
+    rarity: Common
+
+  - id: 3011
+    name: "Obliteration"
+    cost: 4
+    card_type: spell
+    targeting: TargetAny
+    effects:
+      - type: destroy
+    rarity: Uncommon
+
+  - id: 3012
+    name: "Mind Shatter"
+    cost: 3
+    card_type: spell
+    targeting: TargetAny
+    effects:
+      - type: damage
+        amount: 3
+    rarity: Uncommon
+
+  - id: 3013
+    name: "Cataclysm"
+    cost: 6
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: damage
+        amount: 4
+    rarity: Rare
+
+  # === OBSIDION SUPPORTS ===
+  - id: 3014
+    name: "Dark Altar"
+    cost: 4
+    card_type: support
+    durability: 3
+    passive_effects:
+      - modifier:
+          grant_keyword: Lifesteal
+    rarity: Rare

@@ -213,7 +213,8 @@ impl DeckRegistry {
 
     /// Load decks from a directory.
     ///
-    /// Searches for .toml files in the directory and loads them as deck definitions.
+    /// Recursively searches for .toml files in the directory and all subdirectories,
+    /// loading them as deck definitions.
     pub fn load_from_directory<P: AsRef<Path>>(path: P) -> Result<Self, DeckError> {
         let mut registry = Self::new();
         let dir_path = path.as_ref();
@@ -222,27 +223,44 @@ impl DeckRegistry {
             return Err(DeckError::DirectoryNotFound(dir_path.display().to_string()));
         }
 
-        for entry in fs::read_dir(dir_path)? {
-            let entry = entry?;
-            let file_path = entry.path();
+        // Collect all TOML files recursively
+        let toml_files = Self::collect_toml_files(dir_path)?;
 
-            if file_path.extension().is_some_and(|ext| ext == "toml") {
-                let content = fs::read_to_string(&file_path)?;
-                let deck: DeckDefinition = toml::from_str(&content)
-                    .map_err(|e| DeckError::ParseError {
-                        path: file_path.display().to_string(),
-                        error: e.to_string(),
-                    })?;
+        for file_path in toml_files {
+            let content = fs::read_to_string(&file_path)?;
+            let deck: DeckDefinition = toml::from_str(&content)
+                .map_err(|e| DeckError::ParseError {
+                    path: file_path.display().to_string(),
+                    error: e.to_string(),
+                })?;
 
-                if registry.decks.contains_key(&deck.id) {
-                    return Err(DeckError::DuplicateId(deck.id.clone()));
-                }
-
-                registry.decks.insert(deck.id.clone(), deck);
+            if registry.decks.contains_key(&deck.id) {
+                return Err(DeckError::DuplicateId(deck.id.clone()));
             }
+
+            registry.decks.insert(deck.id.clone(), deck);
         }
 
         Ok(registry)
+    }
+
+    /// Recursively collect all .toml files from a directory and its subdirectories.
+    fn collect_toml_files(dir: &Path) -> Result<Vec<std::path::PathBuf>, DeckError> {
+        let mut files = Vec::new();
+
+        for entry in fs::read_dir(dir)? {
+            let entry = entry?;
+            let path = entry.path();
+
+            if path.is_dir() {
+                // Recursively collect from subdirectory
+                files.extend(Self::collect_toml_files(&path)?);
+            } else if path.extension().is_some_and(|ext| ext == "toml") {
+                files.push(path);
+            }
+        }
+
+        Ok(files)
     }
 
     /// Load a single deck from a TOML file.

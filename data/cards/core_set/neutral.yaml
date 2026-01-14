@@ -1,0 +1,167 @@
+name: "Free-Walkers"
+cards:
+  # =============================================================================
+  # FREE-WALKERS - "The Toolbox"
+  # Identity: Mercenaries, Flexibility, Profit
+  # Primary Keywords: Ranged, Charge
+  # ID Range: 4000-4999
+  # Note: Neutral cards that can be splashed into any faction deck
+  # =============================================================================
+
+  # === FREE-WALKER CREATURES ===
+  - id: 4000
+    name: "Bounty Hunter"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: [Ranged]
+    rarity: Common
+    tags: [Mercenary]
+
+  - id: 4001
+    name: "Berserker"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: [Charge]
+    rarity: Uncommon
+    tags: [Warrior]
+
+  - id: 4002
+    name: "Wasteland Scout"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: [Ranged]
+    rarity: Common
+    tags: [Scout]
+
+  - id: 4003
+    name: "Hired Blade"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: []
+    rarity: Common
+    tags: [Mercenary]
+
+  - id: 4004
+    name: "War Veteran"
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords: [Charge]
+    rarity: Uncommon
+    tags: [Soldier]
+
+  - id: 4005
+    name: "Siege Giant"
+    cost: 6
+    card_type: creature
+    attack: 6
+    health: 5
+    keywords: [Piercing]
+    rarity: Uncommon
+    tags: [Giant]
+
+  - id: 4006
+    name: "Sharpshooter"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: [Ranged]
+    rarity: Common
+    tags: [Mercenary]
+
+  - id: 4007
+    name: "Reckless Charger"
+    cost: 2
+    card_type: creature
+    attack: 4
+    health: 1
+    keywords: [Charge, Rush]
+    rarity: Uncommon
+    tags: [Warrior]
+
+  - id: 4008
+    name: "Scrap Golem"
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 6
+    keywords: []
+    rarity: Common
+    tags: [Construct]
+
+  - id: 4009
+    name: "The Warbringer"
+    cost: 7
+    card_type: creature
+    attack: 7
+    health: 7
+    keywords: [Charge, Piercing]
+    rarity: Legendary
+    tags: [Giant]
+
+  # === FREE-WALKER SPELLS ===
+  - id: 4010
+    name: "Hired Help"
+    cost: 3
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: buff_stats
+        attack: 2
+        health: 2
+    rarity: Common
+
+  - id: 4011
+    name: "Precision Shot"
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 3
+    rarity: Common
+
+  # === FREE-WALKER SUPPORTS ===
+  - id: 4012
+    name: "Supply Depot"
+    cost: 3
+    card_type: support
+    durability: 4
+    triggered_effects:
+      - trigger: StartOfTurn
+        effects:
+          - type: heal
+            amount: 1
+    rarity: Uncommon
+
+  - id: 4013
+    name: "Mercenary Camp"
+    cost: 4
+    card_type: support
+    durability: 3
+    passive_effects:
+      - modifier:
+          attack_bonus: 1
+    rarity: Uncommon
+
+  - id: 4014
+    name: "Artillery Platform"
+    cost: 5
+    card_type: support
+    durability: 2
+    triggered_effects:
+      - trigger: StartOfTurn
+        effects:
+          - type: damage
+            amount: 2
+    rarity: Rare

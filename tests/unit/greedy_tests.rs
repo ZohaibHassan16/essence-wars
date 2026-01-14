@@ -8,7 +8,7 @@ use cardgame::state::{GameResult, GameState, WinReason};
 use cardgame::types::{CardId, PlayerId, Slot};
 
 fn load_test_db() -> CardDatabase {
-    CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards")
+    CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards")
 }
 
 fn test_deck() -> Vec<CardId> {

@@ -271,7 +271,7 @@ impl CardDatabase {
     /// Load cards from a directory containing YAML files.
     ///
     /// The directory should contain `.yaml` or `.yml` files with card definitions.
-    /// For example, if your cards are in `data/cards/sets/`, pass that full path.
+    /// For example, if your cards are in `data/cards/core_set/`, pass that full path.
     ///
     /// # Errors
     /// Returns an error if:

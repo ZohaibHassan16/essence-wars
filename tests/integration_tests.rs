@@ -15,7 +15,7 @@ use common::*;
 #[test]
 fn test_complete_game_simulation() {
     // Load card database from YAML files
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards from YAML");
 
     // Create engine
@@ -59,7 +59,7 @@ fn test_complete_game_simulation() {
 /// Test neural network interface end-to-end with YAML-loaded cards
 #[test]
 fn test_neural_network_interface() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
     let mut engine = GameEngine::new(&card_db);
 
@@ -78,10 +78,10 @@ fn test_neural_network_interface() {
             "Tensor value at index {} is not finite: {}",
             i, val
         );
-        // Most normalized values are 0-1, but card IDs are raw (0-255 range)
+        // Most normalized values are 0-1, but card IDs are raw (1000-4999 range in Core Set)
         // and some values like winner can be -1
         assert!(
-            val >= -1.0 && val <= 256.0,
+            val >= -1.0 && val <= 5000.0,
             "Tensor value at index {} out of expected range: {}",
             i, val
         );
@@ -113,7 +113,7 @@ fn test_neural_network_interface() {
 /// Test MCTS-style tree search scenario with forking
 #[test]
 fn test_mcts_tree_search_scenario() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
     let mut engine = GameEngine::new(&card_db);
 
@@ -171,7 +171,7 @@ fn test_mcts_tree_search_scenario() {
 /// Test game determinism with same seed
 #[test]
 fn test_game_determinism() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     // Play same game twice with same seed
@@ -200,7 +200,7 @@ fn test_game_determinism() {
 /// Test that games with different seeds produce different outcomes
 #[test]
 fn test_different_seeds_different_games() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     // Play games with different seeds
@@ -226,7 +226,7 @@ fn test_different_seeds_different_games() {
 /// Test full game plays to completion without panics
 #[test]
 fn test_multiple_games_no_panics() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     // Play multiple games with different seeds
@@ -261,7 +261,7 @@ fn test_multiple_games_no_panics() {
 /// Test reward values throughout a game
 #[test]
 fn test_rewards_during_gameplay() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
     let mut engine = GameEngine::new(&card_db);
 
@@ -317,7 +317,7 @@ fn test_rewards_during_gameplay() {
 /// Test that tensor output remains valid throughout gameplay
 #[test]
 fn test_tensor_validity_throughout_game() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
     let mut engine = GameEngine::new(&card_db);
 
@@ -357,7 +357,7 @@ fn test_tensor_validity_throughout_game() {
 /// Test keywords are correctly applied during combat in a real game
 #[test]
 fn test_keyword_combat_in_game() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
     let mut engine = GameEngine::new(&card_db);
 

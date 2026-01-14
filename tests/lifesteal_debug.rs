@@ -3,6 +3,8 @@
 //! These tests verify that Lifesteal creatures are properly played and enter combat.
 //! Originally created to debug an issue where Lifesteal never appeared in combat
 //! (which was caused by the Essence system not being implemented, fixed 2026-01-12).
+//!
+//! Updated 2026-01-14 to use new Core Set (Obsidion has Lifesteal creatures).
 
 use cardgame::arena::GameRunner;
 use cardgame::bots::{GreedyBot, RandomBot};
@@ -12,32 +14,35 @@ use cardgame::types::{CardId, PlayerId};
 
 #[test]
 fn debug_lifesteal_investigation() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks").expect("Failed to load decks");
 
-    // Verify Lifesteal cards exist
+    // Verify Lifesteal cards exist in Obsidion faction
     println!("\n=== CARD DATABASE CHECK ===");
-    let vampire_lord = card_db.get(CardId(21));
-    let guardian_angel = card_db.get(CardId(28));
+    // Obsidion Lifesteal cards: Blood Acolyte (3002), Hemomancer (3004), The Eternal One (3007)
+    let blood_acolyte = card_db.get(CardId(3002));
+    let hemomancer = card_db.get(CardId(3004));
+    let eternal_one = card_db.get(CardId(3007));
 
-    println!("Card 21 (Vampire Lord): {:?}", vampire_lord.map(|c| (c.name.as_str(), c.keywords())));
-    println!("Card 28 (Guardian Angel): {:?}", guardian_angel.map(|c| (c.name.as_str(), c.keywords())));
+    println!("Card 3002 (Blood Acolyte): {:?}", blood_acolyte.map(|c| (c.name.as_str(), c.keywords())));
+    println!("Card 3004 (Hemomancer): {:?}", hemomancer.map(|c| (c.name.as_str(), c.keywords())));
+    println!("Card 3007 (The Eternal One): {:?}", eternal_one.map(|c| (c.name.as_str(), c.keywords())));
 
-    // Verify defensive_control deck has Lifesteal
+    // Verify obsidion_burst deck has Lifesteal
     println!("\n=== DECK CHECK ===");
-    let defensive_deck = deck_registry.get("defensive_control").expect("Deck should exist");
-    println!("Defensive deck cards: {:?}", defensive_deck.cards);
+    let obsidion_deck = deck_registry.get("obsidion_burst").expect("Deck should exist");
+    println!("Obsidion Burst deck cards: {:?}", obsidion_deck.cards);
 
-    let lifesteal_in_deck = defensive_deck.cards.iter()
-        .filter(|&&id| id == 21 || id == 28)
+    let lifesteal_in_deck = obsidion_deck.cards.iter()
+        .filter(|&&id| id == 3002 || id == 3004 || id == 3007)
         .count();
-    println!("Lifesteal cards in deck: {} (should be 4 - two each of ID 21 and 28)", lifesteal_in_deck);
+    println!("Lifesteal cards in deck: {}", lifesteal_in_deck);
 
     // Run games and track what's happening
     println!("\n=== RUNNING 100 GAMES WITH TRACING ===");
 
-    let deck1_cards: Vec<CardId> = defensive_deck.cards.iter().map(|&id| CardId(id)).collect();
-    let deck2 = deck_registry.get("aggressive_assault").expect("Deck should exist");
+    let deck1_cards: Vec<CardId> = obsidion_deck.cards.iter().map(|&id| CardId(id)).collect();
+    let deck2 = deck_registry.get("symbiote_aggro").expect("Deck should exist");
     let deck2_cards: Vec<CardId> = deck2.cards.iter().map(|&id| CardId(id)).collect();
 
     let mut total_combats = 0;
@@ -89,7 +94,7 @@ fn debug_lifesteal_investigation() {
 
         // Print first few games' details
         if game_num < 5 {
-            println!("\nGame {}: Turns={}, Winner={:?}, Combats={}, P1 creatures played: ?",
+            println!("\nGame {}: Turns={}, Winner={:?}, Combats={}",
                 game_num, result.turns, result.winner, result.combat_traces.len());
         }
     }
@@ -108,26 +113,17 @@ fn debug_lifesteal_investigation() {
         lifesteal_combats > 0,
         "Should have some combats involving Lifesteal"
     );
-
-    // The real question: why aren't 4-cost Lifesteal creatures entering combat?
-    println!("\n=== POSSIBLE CAUSES ===");
-    if lifesteal_combats == 0 {
-        println!("1. Lifesteal creatures (4+ cost) may not be played due to mana constraints");
-        println!("2. Games may end before turn 4-6 when these cards can be played");
-        println!("3. Lifesteal creatures may be killed before they can attack");
-        println!("4. GreedyBot may not value playing them highly enough");
-    }
 }
 
 #[test]
 fn debug_game_length_and_mana() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks").expect("Failed to load decks");
 
-    let defensive_deck = deck_registry.get("defensive_control").expect("Deck should exist");
-    let aggressive_deck = deck_registry.get("aggressive_assault").expect("Deck should exist");
+    let obsidion_deck = deck_registry.get("obsidion_burst").expect("Deck should exist");
+    let aggressive_deck = deck_registry.get("symbiote_aggro").expect("Deck should exist");
 
-    let deck1_cards: Vec<CardId> = defensive_deck.cards.iter().map(|&id| CardId(id)).collect();
+    let deck1_cards: Vec<CardId> = obsidion_deck.cards.iter().map(|&id| CardId(id)).collect();
     let deck2_cards: Vec<CardId> = aggressive_deck.cards.iter().map(|&id| CardId(id)).collect();
 
     println!("\n=== GAME LENGTH ANALYSIS ===");
@@ -160,28 +156,28 @@ fn debug_game_length_and_mana() {
         }
     }
 
-    println!("Turn distribution (Defensive vs Aggressive, {} games):", num_games);
+    println!("Turn distribution (Obsidion Burst vs Symbiote Aggro, {} games):", num_games);
     for (turn, count) in turn_histogram.iter().enumerate() {
         if *count > 0 {
             println!("  Turn {}: {} games", turn, count);
         }
     }
 
-    println!("\nP1 (Defensive) win rate: {}%", p1_wins);
-    println!("\nNote: Lifesteal creatures cost 4-6 mana.");
-    println!("If games end before turn 4-6, Lifesteal creatures won't be played.");
+    println!("\nP1 (Obsidion Burst) win rate: {}%", p1_wins);
+    println!("\nNote: Lifesteal creatures cost 2-7 mana.");
+    println!("Blood Acolyte (2), Hemomancer (4), The Eternal One (7).");
 }
 
 #[test]
 fn debug_what_cards_are_played() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks").expect("Failed to load decks");
 
-    let defensive_deck = deck_registry.get("defensive_control").expect("Deck should exist");
+    let obsidion_deck = deck_registry.get("obsidion_burst").expect("Deck should exist");
 
-    // List all cards in defensive deck with their costs
-    println!("\n=== DEFENSIVE DECK CARD COSTS ===");
-    for &card_id in &defensive_deck.cards {
+    // List all cards in obsidion deck with their costs
+    println!("\n=== OBSIDION BURST DECK CARD COSTS ===");
+    for &card_id in &obsidion_deck.cards {
         if let Some(card) = card_db.get(CardId(card_id)) {
             println!("ID {}: {} (cost {}) - {:?}",
                 card_id, card.name, card.cost, card.keywords().to_names());
@@ -191,7 +187,7 @@ fn debug_what_cards_are_played() {
     // Calculate mana curve
     println!("\n=== MANA CURVE ===");
     let mut cost_counts = vec![0; 10];
-    for &card_id in &defensive_deck.cards {
+    for &card_id in &obsidion_deck.cards {
         if let Some(card) = card_db.get(CardId(card_id)) {
             let cost = card.cost as usize;
             if cost < cost_counts.len() {
@@ -206,7 +202,8 @@ fn debug_what_cards_are_played() {
         }
     }
 
-    println!("\nLifesteal cards:");
-    println!("  - Vampire Lord: 4 mana (can play turn 4+)");
-    println!("  - Guardian Angel: 6 mana (can play turn 6+)");
+    println!("\nLifesteal cards in Obsidion:");
+    println!("  - Blood Acolyte (3002): 2 mana (can play turn 2+)");
+    println!("  - Hemomancer (3004): 4 mana (can play turn 4+)");
+    println!("  - The Eternal One (3007): 7 mana (can play turn 7+)");
 }

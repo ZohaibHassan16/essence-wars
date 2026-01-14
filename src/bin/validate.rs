@@ -18,7 +18,6 @@ use std::time::{Duration, Instant};
 use clap::Parser;
 use rayon::prelude::*;
 use serde::Serialize;
-use serde_json;
 
 use cardgame::bots::{Bot, BotWeights, MctsBot, MctsConfig};
 use cardgame::cards::CardDatabase;
@@ -57,7 +56,7 @@ struct Args {
     threads: usize,
 
     /// Path to card database
-    #[arg(long, default_value = "data/cards/sets")]
+    #[arg(long, default_value = "data/cards/core_set")]
     cards: PathBuf,
 
     /// Path to deck definitions directory
@@ -290,7 +289,7 @@ fn main() {
 }
 
 /// Load faction-specific weights
-fn load_faction_weights(weights_dir: &PathBuf, quiet: bool) -> FactionWeights {
+fn load_faction_weights(weights_dir: &std::path::Path, quiet: bool) -> FactionWeights {
     let specialists_dir = weights_dir.join("specialists");
 
     let load_one = |faction: &str| -> Option<BotWeights> {

@@ -1,0 +1,45 @@
+# Obsidion Control Deck
+# Faction: Obsidion Syndicate - "The Glass Cannon"
+# Composition: 21 Obsidion Core + 9 Free-Walker Splash
+# Strategy: Heavy removal and Lifesteal sustain. Control the board, then win with value.
+
+id = "obsidion_control"
+name = "Obsidion Control"
+description = "Control deck featuring Obsidion Syndicate mages with removal and sustain."
+
+tags = ["control", "removal", "faction", "obsidion"]
+
+# 30 cards total (21 Obsidion + 9 Free-Walker)
+cards = [
+    # === OBSIDION CORE (21 cards) ===
+    # -- 1-cost (2 cards) --
+    3010, 3010, # Shadow Strike spell (2 damage + heal 1)
+
+    # -- 2-cost (6 cards) --
+    3002, 3002, # Blood Acolyte (3/4 Lifesteal)
+    3001, 3001, # Shadow Blade (3/2 Stealth+Lethal)
+    3008, 3008, # Soul Drain spell (3 damage)
+
+    # -- 3-cost (4 cards) --
+    3009, 3009, # Dark Insight spell (draw 2) - card advantage
+    3012, 3012, # Mind Shatter spell (3 damage to any)
+
+    # -- 4-cost (6 cards) --
+    3004, 3004, # Hemomancer (3/5 Lifesteal)
+    3006, 3006, # Ritual Master (4/4, deal 3 + heal 3)
+    3011, 3011, # Obliteration spell (destroy) - hard removal
+
+    # -- 6-7 cost (2 cards) --
+    3013,       # Cataclysm spell (4 damage AoE) - board clear
+    3007,       # The Eternal One (6/7 Lifesteal+Regenerate) - finisher
+
+    # -- Support (1 card) --
+    3014,       # Dark Altar (4-cost, dur 3, grant Lifesteal)
+
+    # === FREE-WALKER SPLASH (9 cards) ===
+    4000, 4000, # Bounty Hunter (2-cost 2/2 Ranged) - early game
+    4002, 4002, # Wasteland Scout (2-cost 2/3 Ranged) - flexible
+    4006, 4006, # Sharpshooter (4-cost 3/3 Ranged) - reach
+    4008, 4008, # Scrap Golem (5-cost 4/6 vanilla) - solid body
+    4012,       # Supply Depot (3-cost support, heal 1/turn)
+]

@@ -1,0 +1,177 @@
+name: "Symbiote Circles"
+cards:
+  # =============================================================================
+  # SYMBIOTE CIRCLES - "The Swarm"
+  # Identity: Growth, Adaptation, Evolution
+  # Primary Keywords: Rush, Lethal, Regenerate
+  # ID Range: 2000-2999
+  # =============================================================================
+
+  # === SYMBIOTE CREATURES ===
+  - id: 2000
+    name: "Spore Crawler"
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 2
+    keywords: []
+    rarity: Common
+    tags: [Parasite]
+
+  - id: 2001
+    name: "Venom Fang"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: [Lethal]
+    rarity: Uncommon
+    tags: [Beast]
+
+  - id: 2002
+    name: "Regenerating Ooze"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 5
+    keywords: [Regenerate]
+    rarity: Uncommon
+    tags: [Ooze]
+
+  - id: 2003
+    name: "Broodling"
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 2
+    keywords: [Rush]
+    rarity: Common
+    tags: [Swarm]
+
+  - id: 2004
+    name: "Hive Guardian"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 6
+    keywords: [Guard, Regenerate]
+    rarity: Rare
+    tags: [Beast]
+
+  - id: 2005
+    name: "Pack Hunter"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: [Rush]
+    rarity: Common
+    tags: [Beast]
+
+  - id: 2006
+    name: "Parasitic Larva"
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 2
+    keywords: [Lethal]
+    rarity: Uncommon
+    tags: [Parasite]
+
+  - id: 2007
+    name: "Evolution Chamber"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags: [Structure]
+    abilities:
+      - trigger: OnPlay
+        targeting: TargetAllyCreature
+        effects:
+          - type: buff_stats
+            attack: 1
+            health: 1
+
+  - id: 2008
+    name: "Alpha Predator"
+    cost: 5
+    card_type: creature
+    attack: 5
+    health: 5
+    keywords: [Rush, Lethal]
+    rarity: Rare
+    tags: [Beast]
+
+  - id: 2009
+    name: "Swarm Mother"
+    cost: 6
+    card_type: creature
+    attack: 4
+    health: 6
+    keywords: [Regenerate]
+    rarity: Rare
+    tags: [Beast]
+    abilities:
+      - trigger: StartOfTurn
+        effects:
+          - type: buff_stats
+            attack: 1
+            health: 0
+
+  - id: 2010
+    name: "Acid Spitter"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: [Ranged]
+    rarity: Common
+    tags: [Beast]
+
+  - id: 2011
+    name: "Carapace Warrior"
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 6
+    keywords: [Regenerate]
+    rarity: Common
+    tags: [Beast]
+
+  # === SYMBIOTE SPELLS ===
+  - id: 2012
+    name: "Rapid Mutation"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: buff_stats
+        attack: 2
+        health: 0
+      - type: grant_keyword
+        keyword: Rush
+    rarity: Uncommon
+
+  - id: 2013
+    name: "Consume"
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 3
+    rarity: Uncommon
+
+  # === SYMBIOTE SUPPORTS ===
+  - id: 2014
+    name: "Spawning Pool"
+    cost: 4
+    card_type: support
+    durability: 3
+    passive_effects:
+      - modifier:
+          attack_bonus: 1
+    rarity: Rare

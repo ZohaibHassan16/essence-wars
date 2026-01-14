@@ -6,7 +6,7 @@ use cardgame::tuning::{Evaluator, EvaluatorConfig, TuningMode};
 
 #[test]
 fn test_evaluate_vs_random() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     let config = EvaluatorConfig {
@@ -31,7 +31,7 @@ fn test_evaluate_vs_random() {
 
 #[test]
 fn test_evaluate_vs_greedy() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     let config = EvaluatorConfig {
@@ -57,7 +57,7 @@ fn test_evaluate_vs_greedy() {
 
 #[test]
 fn test_bad_weights_lose() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
     let config = EvaluatorConfig {

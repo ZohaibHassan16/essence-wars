@@ -302,27 +302,58 @@ pub fn card_playing_test_db() -> CardDatabase {
     CardDatabase::new(cards)
 }
 
-/// Create a valid deck for integration tests using YAML card IDs
+/// Create a valid deck for integration tests using Core Set card IDs.
+/// Uses a mix of creatures from all factions for testing.
+/// Returns a proper 30-card deck for realistic game play.
 pub fn valid_yaml_deck() -> Vec<CardId> {
-    let valid_ids = [1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 15, 32, 33, 40];
-    (0..20).map(|i| CardId(valid_ids[i % valid_ids.len()] as u16)).collect()
+    // Balanced mix from all factions with variety of costs
+    // This ensures games can progress naturally to completion
+    let card_ids: [u16; 30] = [
+        // Argentum (10 cards)
+        1000, 1000, // Brass Sentinel (2/4 Guard)
+        1001, 1001, // Steam Knight (3/3 Piercing)
+        1002, 1002, // Iron Golem (4/6 Guard)
+        1003, 1003, // Clockwork Archer (2/2 Ranged)
+        1004, 1004, // Steel Vanguard (3/5 Guard)
+        // Symbiote (10 cards)
+        2000, 2000, // Spore Crawler (1/2)
+        2001, 2001, // Venom Fang (2/3 Lethal)
+        2003, 2003, // Broodling (1/1 Rush)
+        2005, 2005, // Pack Hunter (2/2 Rush)
+        2002, 2002, // Regenerating Ooze (2/5 Regenerate)
+        // Obsidion (10 cards)
+        3000, 3000, // Shadow Initiate (2/2 Lifesteal)
+        3001, 3001, // Void Stalker (3/2 Stealth)
+        3002, 3002, // Twilight Reaper (4/3 Lifesteal)
+        3003, 3003, // Nightblade (3/2 Quick)
+        3004, 3004, // Phantom Assassin (2/1 Stealth+Lethal)
+    ];
+    card_ids.iter().map(|&id| CardId(id)).collect()
 }
 
 /// Create the standard arena deck for bot testing.
-/// This is the same deck used by the arena binary's default deck.
-/// It's a well-balanced "Aggressive Assault" style deck that works
-/// well for testing bot performance comparisons.
+/// Uses Symbiote Aggro style deck (same as data/decks/symbiote/aggro.toml).
 pub fn arena_test_deck() -> Vec<CardId> {
-    let card_ids = [
-        1, 1,   // Eager Recruit x2
-        3, 3,   // Nimble Scout x2
-        6, 6,   // Frontier Ranger x2
-        8, 8,   // Shielded Squire x2
-        11, 11, // Centaur Charger x2
-        12, 12, // Blade Dancer x2
-        16, 16, // Piercing Striker x2
-        20, 20, // Siege Breaker x2
-        34, 34, // Lightning Bolt x2
+    let card_ids: [u16; 30] = [
+        // Symbiote Core (21 cards)
+        2003, 2003, // Broodling (1/1 Rush)
+        2006, 2006, // Parasitic Larva (1/2 Lethal)
+        2000, 2000, // Spore Crawler (1/2 vanilla)
+        2001, 2001, // Venom Fang (2/3 Lethal)
+        2005, 2005, // Pack Hunter (2/2 Rush)
+        2002, 2002, // Regenerating Ooze (2/5 Regenerate)
+        2010, 2010, // Acid Spitter (3/3 Ranged)
+        2007, 2007, // Evolution Chamber (2/4, buff +1/+1)
+        2011, 2011, // Carapace Warrior (2/6 Regenerate)
+        2008,       // Alpha Predator (5/5 Rush+Lethal)
+        2009,       // Swarm Mother (4/6 Regenerate)
+        2012,       // Rapid Mutation spell
+        // Free-Walker Splash (9 cards)
+        4007, 4007, // Reckless Charger (4/1 Charge+Rush)
+        4001, 4001, // Berserker (3/2 Charge)
+        4011, 4011, // Precision Shot spell
+        4003, 4003, // Hired Blade (3/3)
+        4009,       // The Warbringer (7/7 finisher)
     ];
     card_ids.iter().map(|&id| CardId(id)).collect()
 }

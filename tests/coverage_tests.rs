@@ -294,7 +294,7 @@ fn run_coverage_games(
 
 #[test]
 fn test_coverage_random_vs_random_1k() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks")
         .expect("Failed to load decks");
 
@@ -322,7 +322,7 @@ fn test_coverage_random_vs_random_1k() {
 
 #[test]
 fn test_coverage_greedy_vs_random_1k() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks")
         .expect("Failed to load decks");
 
@@ -368,7 +368,7 @@ fn test_coverage_greedy_vs_random_1k() {
 #[test]
 #[ignore = "tier_long"] // ~10 min: 10k game coverage test
 fn stress_test_coverage_10k_games() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks")
         .expect("Failed to load decks");
 
@@ -496,7 +496,7 @@ fn stress_test_coverage_10k_games() {
 #[test]
 #[ignore = "tier_long"] // ~15 min: 500 MCTS coverage games
 fn stress_test_mcts_coverage_500_games() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks")
         .expect("Failed to load decks");
 
@@ -530,7 +530,7 @@ fn stress_test_mcts_coverage_500_games() {
 
 #[test]
 fn test_all_decks_exercised() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks")
         .expect("Failed to load decks");
 
@@ -610,7 +610,7 @@ fn test_action_index_roundtrip_exhaustive() {
 
 #[test]
 fn test_game_determinism_verification() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks")
         .expect("Failed to load decks");
 

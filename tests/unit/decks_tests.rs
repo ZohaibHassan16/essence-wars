@@ -26,15 +26,15 @@ fn test_deck_definition() {
 
 #[test]
 fn test_deck_validation() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets")
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
 
-    // Valid deck
+    // Valid deck (using Argentum card IDs)
     let valid_deck = DeckDefinition {
         id: "valid".to_string(),
         name: "Valid".to_string(),
         description: String::new(),
-        cards: vec![1, 1, 2, 2, 3, 3],
+        cards: vec![1000, 1000, 1001, 1001, 1002, 1002],
         tags: vec![],
     };
     assert!(valid_deck.validate(&card_db).is_ok());
@@ -44,7 +44,7 @@ fn test_deck_validation() {
         id: "invalid".to_string(),
         name: "Invalid".to_string(),
         description: String::new(),
-        cards: vec![1, 1, 9999],
+        cards: vec![1000, 1000, 9999],
         tags: vec![],
     };
     assert!(invalid_deck.validate(&card_db).is_err());
@@ -167,7 +167,7 @@ fn test_deck_faction_detection() {
         id: "argentum_test".to_string(),
         name: "Argentum Test".to_string(),
         description: String::new(),
-        cards: vec![48, 49, 50],
+        cards: vec![1000, 1001, 1002],
         tags: vec!["control".to_string(), "argentum".to_string()],
     };
     assert_eq!(argentum_deck.faction(), Some(Faction::Argentum));
@@ -180,7 +180,7 @@ fn test_deck_faction_detection() {
         id: "symbiote_test".to_string(),
         name: "Symbiote Test".to_string(),
         description: String::new(),
-        cards: vec![66, 67, 68],
+        cards: vec![2003, 2004, 2005],
         tags: vec!["aggro".to_string(), "symbiote".to_string()],
     };
     assert_eq!(symbiote_deck.faction(), Some(Faction::Symbiote));
@@ -191,7 +191,7 @@ fn test_deck_faction_detection() {
         id: "mixed_test".to_string(),
         name: "Mixed Test".to_string(),
         description: String::new(),
-        cards: vec![1, 2, 3],
+        cards: vec![4000, 4001, 4002],
         tags: vec!["aggro".to_string()],
     };
     assert_eq!(neutral_deck.faction(), None);
@@ -204,7 +204,7 @@ fn test_deck_specialist_compatibility() {
         id: "argentum_control".to_string(),
         name: "Argentum Control".to_string(),
         description: String::new(),
-        cards: vec![48, 49, 50],
+        cards: vec![1000, 1001, 1002],
         tags: vec!["argentum".to_string()],
     };
 
@@ -226,7 +226,7 @@ fn test_registry_faction_filtering() {
         id: "argentum1".to_string(),
         name: "Argentum 1".to_string(),
         description: String::new(),
-        cards: vec![48],
+        cards: vec![1000],
         tags: vec!["argentum".to_string()],
     };
 
@@ -234,7 +234,7 @@ fn test_registry_faction_filtering() {
         id: "symbiote1".to_string(),
         name: "Symbiote 1".to_string(),
         description: String::new(),
-        cards: vec![66],
+        cards: vec![2003],
         tags: vec!["symbiote".to_string()],
     };
 
@@ -242,7 +242,7 @@ fn test_registry_faction_filtering() {
         id: "neutral1".to_string(),
         name: "Neutral 1".to_string(),
         description: String::new(),
-        cards: vec![1],
+        cards: vec![4000],
         tags: vec!["aggro".to_string()],
     };
 

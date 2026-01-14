@@ -40,7 +40,7 @@ fn seed_strategy() -> impl Strategy<Value = u64> {
 
 /// Load the full card database
 fn load_full_card_db() -> CardDatabase {
-    CardDatabase::load_from_directory("data/cards/sets")
+    CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load card database")
 }
 

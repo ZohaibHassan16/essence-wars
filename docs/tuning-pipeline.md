@@ -716,7 +716,7 @@ cargo run --release --bin tune -- --help
 - `--parallel <BOOL>`: Enable parallelism (default: true)
 - `--verbose`: Print each generation
 - `--experiment-dir <PATH>`: Base output dir (default: experiments)
-- `--cards <PATH>`: Card database path (default: data/cards/sets)
+- `--cards <PATH>`: Card database path (default: data/cards/core_set)
 - `--decks <PATH>`: Deck registry path (default: data/decks)
 
 ---

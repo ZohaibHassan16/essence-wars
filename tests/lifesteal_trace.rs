@@ -1,4 +1,6 @@
-//! Detailed trace to understand why Lifesteal creatures never attack
+//! Detailed trace to understand Lifesteal combat interactions.
+//!
+//! Updated 2026-01-14 to use new Core Set (Obsidion has Lifesteal creatures).
 
 use cardgame::actions::Action;
 use cardgame::bots::{Bot, GreedyBot};
@@ -9,13 +11,14 @@ use cardgame::types::{CardId, PlayerId};
 
 #[test]
 fn trace_single_game_detailed() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks").expect("Failed to load decks");
 
-    let defensive_deck = deck_registry.get("defensive_control").expect("Deck should exist");
-    let aggressive_deck = deck_registry.get("aggressive_assault").expect("Deck should exist");
+    // Use Obsidion deck which has Lifesteal creatures
+    let obsidion_deck = deck_registry.get("obsidion_burst").expect("Deck should exist");
+    let aggressive_deck = deck_registry.get("symbiote_aggro").expect("Deck should exist");
 
-    let deck1_cards: Vec<CardId> = defensive_deck.cards.iter().map(|&id| CardId(id)).collect();
+    let deck1_cards: Vec<CardId> = obsidion_deck.cards.iter().map(|&id| CardId(id)).collect();
     let deck2_cards: Vec<CardId> = aggressive_deck.cards.iter().map(|&id| CardId(id)).collect();
 
     println!("\n=== DETAILED SINGLE GAME TRACE ===\n");
@@ -130,13 +133,14 @@ fn trace_single_game_detailed() {
 
 #[test]
 fn check_vampire_lord_in_starting_hands() {
-    let card_db = CardDatabase::load_from_directory("data/cards/sets").expect("Failed to load cards");
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks").expect("Failed to load decks");
 
-    let defensive_deck = deck_registry.get("defensive_control").expect("Deck should exist");
-    let aggressive_deck = deck_registry.get("aggressive_assault").expect("Deck should exist");
+    // Use Obsidion deck which has Lifesteal creatures
+    let obsidion_deck = deck_registry.get("obsidion_burst").expect("Deck should exist");
+    let aggressive_deck = deck_registry.get("symbiote_aggro").expect("Deck should exist");
 
-    let deck1_cards: Vec<CardId> = defensive_deck.cards.iter().map(|&id| CardId(id)).collect();
+    let deck1_cards: Vec<CardId> = obsidion_deck.cards.iter().map(|&id| CardId(id)).collect();
     let deck2_cards: Vec<CardId> = aggressive_deck.cards.iter().map(|&id| CardId(id)).collect();
 
     println!("\n=== CHECKING STARTING HANDS FOR LIFESTEAL ===\n");
@@ -173,7 +177,7 @@ fn check_vampire_lord_in_starting_hands() {
     println!("\n=== DECK COMPOSITION CHECK ===");
     let mut total_cards = 0;
     let mut lifesteal_cards = 0;
-    for &id in &defensive_deck.cards {
+    for &id in &obsidion_deck.cards {
         let card = card_db.get(CardId(id)).unwrap();
         total_cards += 1;
         if card.keywords().has_lifesteal() {
@@ -182,4 +186,7 @@ fn check_vampire_lord_in_starting_hands() {
         }
     }
     println!("Total Lifesteal cards in deck: {}/{}", lifesteal_cards, total_cards);
+
+    // Should have some Lifesteal cards in the deck
+    assert!(lifesteal_cards > 0, "Obsidion deck should have Lifesteal creatures");
 }

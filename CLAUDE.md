@@ -107,15 +107,21 @@ ai-cardgame/
 │       ├── validate.rs     # CLI for balance validation
 │       └── profile_mcts.rs # MCTS performance profiling
 ├── data/
-│   ├── cards/sets/
-│   │   ├── starter.yaml        # 47 cards (base set)
-│   │   └── new-horizons.yaml   # 60 cards (4 faction batches)
-│   ├── decks/                  # 5 predefined decks
-│   │   ├── aggressive_assault.toml   # Starter aggro
-│   │   ├── defensive_control.toml    # Starter control
-│   │   ├── argentum_control.toml     # Argentum faction
-│   │   ├── symbiote_aggro.toml       # Symbiote faction
-│   │   └── obsidion_burst.toml       # Obsidion faction
+│   ├── cards/core_set/         # 60 cards (4 faction files)
+│   │   ├── argentum.yaml       # IDs 1000-1014 (15 cards)
+│   │   ├── symbiote.yaml       # IDs 2000-2014 (15 cards)
+│   │   ├── obsidion.yaml       # IDs 3000-3014 (15 cards)
+│   │   └── neutral.yaml        # IDs 4000-4014 (15 cards)
+│   ├── decks/                  # 6 predefined decks (organized by faction)
+│   │   ├── argentum/
+│   │   │   ├── control.toml    # Argentum Control
+│   │   │   └── midrange.toml   # Argentum Midrange
+│   │   ├── symbiote/
+│   │   │   ├── aggro.toml      # Symbiote Aggro
+│   │   │   └── tempo.toml      # Symbiote Tempo
+│   │   └── obsidion/
+│   │       ├── burst.toml      # Obsidion Burst
+│   │       └── control.toml    # Obsidion Control
 │   └── weights/
 │       ├── generalist.toml           # Cross-faction weights
 │       └── specialists/
@@ -372,15 +378,32 @@ modal run modal_tune.py --no-deploy
 
 ## Deck System
 
-### Available Decks (5)
+### Available Decks (6)
 
-| Deck ID | Name | Type | Faction |
-|---------|------|------|---------|
-| `aggressive_assault` | Aggressive Assault | Starter | - |
-| `defensive_control` | Defensive Control | Starter | - |
-| `argentum_control` | Argentum Control | Faction | Argentum |
-| `symbiote_aggro` | Symbiote Aggro | Faction | Symbiote |
-| `obsidion_burst` | Obsidion Burst | Faction | Obsidion |
+| Deck ID | Name | Archetype | Faction |
+|---------|------|-----------|---------|
+| `argentum_control` | Argentum Control | Control | Argentum |
+| `argentum_midrange` | Argentum Midrange | Midrange | Argentum |
+| `symbiote_aggro` | Symbiote Aggro | Aggro | Symbiote |
+| `symbiote_tempo` | Symbiote Tempo | Tempo | Symbiote |
+| `obsidion_burst` | Obsidion Burst | Combo | Obsidion |
+| `obsidion_control` | Obsidion Control | Control | Obsidion |
+
+### Deck Organization
+
+Decks are organized by faction in subdirectories:
+```
+data/decks/
+├── argentum/
+│   ├── control.toml
+│   └── midrange.toml
+├── symbiote/
+│   ├── aggro.toml
+│   └── tempo.toml
+└── obsidion/
+    ├── burst.toml
+    └── control.toml
+```
 
 ### TOML Format
 
@@ -391,8 +414,8 @@ description = "Defensive deck featuring Argentum Combine constructs."
 tags = ["control", "defensive", "faction", "argentum"]
 
 cards = [
-    48, 48,  # Brass Sentinel x2
-    # ... 20 card entries total
+    1000, 1000,  # Brass Sentinel x2
+    # ... 30 card entries total (21 faction + 9 neutral)
 ]
 ```
 
@@ -441,9 +464,9 @@ Free-Walkers are **not a standalone faction**—they are neutral utility cards t
 ### Deck Composition
 
 ```
-STANDARD DECK: 20 cards
-├── Faction Core: 14 cards (70%)    ← Primary faction identity
-└── Neutral Splash: 6 cards (30%)   ← Free-Walker utility
+STANDARD DECK: 30 cards
+├── Faction Core: 21 cards (70%)    ← Primary faction identity
+└── Neutral Splash: 9 cards (30%)   ← Free-Walker utility
 ```
 
 ## Performance
@@ -487,15 +510,26 @@ cargo bench                    # Criterion benchmarks
 ## Card System
 
 ### Card Counts
-- **Total**: 107 cards
-- **Starter set**: 47 cards (base)
-- **New Horizons expansion**: 60 cards (4 faction batches)
+- **Total**: 60 cards (Core Set)
+- **Argentum Combine**: 15 cards (IDs 1000-1014)
+- **Symbiote Circles**: 15 cards (IDs 2000-2014)
+- **Obsidion Syndicate**: 15 cards (IDs 3000-3014)
+- **Free-Walkers (Neutral)**: 15 cards (IDs 4000-4014)
+
+### Card ID Ranges
+
+| Faction | ID Range | Reserved For |
+|---------|----------|--------------|
+| Argentum | 1000-1999 | Future expansion |
+| Symbiote | 2000-2999 | Future expansion |
+| Obsidion | 3000-3999 | Future expansion |
+| Neutral | 4000-4999 | Future expansion |
 
 ### YAML Schema
 
 ```yaml
 # Creature
-- id: 48
+- id: 1000
   name: "Brass Sentinel"
   cost: 2
   card_type: creature
@@ -512,7 +546,7 @@ cargo bench                    # Criterion benchmarks
           amount: 2
 
 # Spell
-- id: 58
+- id: 1010
   name: "Reinforce"
   cost: 2
   card_type: spell
@@ -523,7 +557,7 @@ cargo bench                    # Criterion benchmarks
       health: 3
 
 # Support
-- id: 61
+- id: 1013
   name: "Assembly Line"
   cost: 4
   card_type: support
@@ -567,11 +601,11 @@ cargo bench                    # Criterion benchmarks
 - Core game engine with 12 keywords
 - Essence/mana system (grows +1/turn, caps at 10)
 - AI interface (tensor, action mask, rewards)
-- 107-card pool (47 starter + 60 New Horizons)
+- 60-card Core Set (4 factions × 15 cards each)
 - Faction system (3 factions + neutrals)
 - Bot system (RandomBot, GreedyBot, MctsBot)
 - Arena CLI with parallel execution and progress indicator
-- Deck system with 5 TOML definitions
+- Deck system with 6 TOML definitions (organized by faction)
 - Weight tuning pipeline with CMA-ES optimizer
 - Analysis pipeline with visualizations
 - Version tracking for ML reproducibility
@@ -579,8 +613,8 @@ cargo bench                    # Criterion benchmarks
 - CI/CD with GitHub Actions (nightly + weekly)
 - ~485 tests passing
 
-**Current Focus (see ROADMAP.md):**
-- Card expansion to 300 cards (New Horizons Edition)
+**Current Focus (see PROJECT-300.md):**
+- Card expansion to 300 cards (Project 300)
 - Modal cloud training pipeline
 - Documentation updates
 
@@ -618,8 +652,8 @@ ai-cardgame/
 ├── experiments/           # ALL run artifacts (GITIGNORED)
 │   └── mcts/             # Weight tuning runs
 ├── data/                  # Configuration and weights
-│   ├── cards/sets/       # Card definitions (YAML)
-│   ├── decks/            # Deck definitions (TOML)
+│   ├── cards/core_set/   # Card definitions (YAML) - organized by faction
+│   ├── decks/            # Deck definitions (TOML) - organized by faction
 │   └── weights/          # Tuned weight files
 └── docs/                  # Documentation (committed)
 ```
