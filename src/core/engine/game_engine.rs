@@ -72,6 +72,16 @@ impl<'a> GameEngine<'a> {
             self.draw_card(PlayerId::PLAYER_TWO);
         }
 
+        // P2 draws extra cards to compensate for First Player Advantage
+        for _ in 0..player::P2_BONUS_CARDS {
+            self.draw_card(PlayerId::PLAYER_TWO);
+        }
+
+        // Set up initial essence (P2 starts higher to compensate for FPA)
+        // Note: start_turn() will add +1, so we set to (target - 1)
+        self.state.players[0].max_essence = player::STARTING_ESSENCE_P1 - 1;
+        self.state.players[1].max_essence = player::STARTING_ESSENCE_P2 - 1;
+
         // Set up initial game state
         self.state.current_turn = 0; // Will be incremented to 1 in start_turn
         self.state.active_player = PlayerId::PLAYER_ONE;

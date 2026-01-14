@@ -4,6 +4,30 @@ All notable changes to the Essence Wars engine.
 
 Format: `[version] - YYYY-MM-DD` with categories: Added, Changed, Fixed, Removed.
 
+## [0.4.0] - 2026-01-13
+
+### Added
+- **New Horizons Expansion**: 60 new faction-based cards (IDs 48-107)
+  - **Argentum Combine** (15 cards): Guard, Piercing, Shield focus
+  - **Symbiote Circles** (15 cards): Rush, Lethal, Regenerate focus
+  - **Obsidion Syndicate** (15 cards): Lifesteal, Stealth, Ephemeral focus
+  - **Free-Walkers** (15 cards): Ranged, Charge neutral cards
+- Faction decks: `argentum_fortress.toml`, `symbiote_swarm.toml`, `obsidion_shadow.toml`
+- `scripts/balance-test.sh` for symmetric faction matchup testing
+
+### Changed
+- **First Player Advantage (FPA) compensation**: P2 starts with 2 max essence (was 1)
+  - P1 starts with 1 essence on turn 1, P2 starts with 2 essence
+  - Brings cross-faction win rates into 45-55% target range
+  - Advantage narrows as both approach 10 essence cap
+- Design document updated to v1.1 with FPA mechanics documented
+- Regression test golden values updated for FPA changes
+- Bot validation thresholds adjusted for asymmetric starting resources
+
+### Fixed
+- Symbiote P1 vs Argentum dominance (79% → 49%) via FPA fix
+- Cross-faction balance: all matchups now within 45-55% target
+
 ## [0.3.0] - 2026-01-13
 
 ### Added

@@ -35,17 +35,16 @@ struct GoldenTestCase {
 /// The Essence system properly implements mana growth (+1 max essence per turn),
 /// which fundamentally changed game dynamics compared to the broken version.
 ///
-/// Note: Values updated for Phase 1.5 (2026-01-13) after adding 4 new keyword test
-/// cards to decks (Ephemeral, Regenerate, Stealth, Charge).
+/// Note: Values updated for FPA fix (2026-01-13) - P2 starts with +1 essence (no extra card).
 const GOLDEN_TESTS: &[GoldenTestCase] = &[
     GoldenTestCase {
         name: "greedy_mirror_seed_100",
         seed: 100,
         deck1_id: "aggressive_assault",
         deck2_id: "aggressive_assault",
-        expected_winner: Some(1), // P2 wins (changed with Phase 1.5 cards)
-        expected_turns: 16,
-        expected_action_count: 69,
+        expected_winner: Some(1), // P2 wins
+        expected_turns: 14,
+        expected_action_count: 60,
     },
     GoldenTestCase {
         name: "greedy_mirror_seed_200",
@@ -53,17 +52,17 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
         deck1_id: "aggressive_assault",
         deck2_id: "aggressive_assault",
         expected_winner: Some(1), // P2 wins
-        expected_turns: 20,
-        expected_action_count: 79,
+        expected_turns: 16,
+        expected_action_count: 63,
     },
     GoldenTestCase {
         name: "greedy_mirror_seed_600",
         seed: 600,
         deck1_id: "aggressive_assault",
         deck2_id: "aggressive_assault",
-        expected_winner: Some(1), // P2 wins (changed with Phase 1.5 cards)
-        expected_turns: 16,
-        expected_action_count: 68,
+        expected_winner: Some(0), // P1 wins
+        expected_turns: 19,
+        expected_action_count: 78,
     },
 ];
 

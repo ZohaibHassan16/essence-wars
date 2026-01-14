@@ -41,6 +41,7 @@ fn test_new_game_setup() {
     // Each player draws STARTING_HAND_SIZE cards, then P1 draws 1 at turn start
     // P1: STARTING_HAND_SIZE + 1 turn start draw
     // P2: STARTING_HAND_SIZE (hasn't had a turn yet)
+    // Note: P2 gets +1 essence instead of extra cards for FPA compensation
     let starting_hand = player::STARTING_HAND_SIZE;
     assert_eq!(engine.state.players[0].hand.len(), starting_hand + 1);
     assert_eq!(engine.state.players[1].hand.len(), starting_hand);

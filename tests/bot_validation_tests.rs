@@ -253,9 +253,10 @@ fn test_greedy_vs_random_100_games() {
         greedy_win_rate * 100.0
     );
 
-    // Greedy should win 95%+ against Random
+    // Greedy should win 75%+ against Random
+    // Note: threshold lowered from 95% due to FPA compensation (P2 gets +1 card, +1 essence)
     assert!(
-        greedy_win_rate >= 0.90,
+        greedy_win_rate >= 0.75,
         "Greedy should dominate Random, got only {:.1}% win rate",
         greedy_win_rate * 100.0
     );

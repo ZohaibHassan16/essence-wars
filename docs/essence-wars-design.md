@@ -1,8 +1,8 @@
 # ESSENCE WARS
 ## A Strategic Card Game Design Document
 
-**Version:** 1.0  
-**Last Updated:** January 2025
+**Version:** 1.1
+**Last Updated:** January 2026
 
 ---
 
@@ -139,13 +139,22 @@ Combat resolution is predictable. Players can plan ahead with certainty about ou
 
 ## 4.2 Starting Resources
 
-| Resource | Starting Value |
-|----------|----------------|
-| Life | 30 |
-| Maximum Essence | 0 (becomes 1 on turn 1) |
-| Current Essence | 0 (refills to max each turn) |
-| Action Points | 0 (becomes 3 on turn 1) |
-| Hand Size | 4 cards |
+| Resource | Player 1 | Player 2 | Notes |
+|----------|----------|----------|-------|
+| Life | 30 | 30 | |
+| Maximum Essence | 0 (→1 T1) | 1 (→2 T1) | **FPA Compensation** |
+| Current Essence | 0 | 0 | Refills to max each turn |
+| Action Points | 0 | 0 | Becomes 3 on turn 1 |
+| Hand Size | 4 cards | 4 cards | |
+
+### First Player Advantage (FPA) Compensation
+
+The player going first has a natural advantage due to earlier board development. To balance this:
+
+- **Player 2 starts with +1 Maximum Essence** (2 essence on Turn 1 vs P1's 1 essence)
+- This allows P2 to deploy a stronger creature or two 1-cost creatures on their first turn
+- Testing shows this brings cross-faction win rates into the 45-55% target range
+- The +1 essence advantage narrows over time as both players approach the 10 essence cap
 
 ---
 
@@ -336,7 +345,8 @@ Essence is the primary resource used to play cards. Unlike some other card games
 
 ## 7.2 Essence Generation
 
-- **Starting Essence:** 0 Maximum / 0 Current
+- **Starting Essence (P1):** 0 Maximum / 0 Current → 1/1 after first turn start
+- **Starting Essence (P2):** 1 Maximum / 0 Current → 2/2 after first turn start *(FPA compensation)*
 - **Per Turn Gain:** +1 Maximum Essence (gained at the start of your turn)
 - **Maximum Cap:** 10 Essence
 - **Refill:** Current Essence refills to Maximum at the start of each turn
@@ -344,20 +354,20 @@ Essence is the primary resource used to play cards. Unlike some other card games
 
 ## 7.3 Essence Curve
 
-| Turn | Max Essence | Cumulative Total* |
-|------|-------------|-------------------|
-| 1 | 1 | 1 |
-| 2 | 2 | 3 |
-| 3 | 3 | 6 |
-| 4 | 4 | 10 |
-| 5 | 5 | 15 |
-| 6 | 6 | 21 |
-| 7 | 7 | 28 |
-| 8 | 8 | 36 |
-| 9 | 9 | 45 |
-| 10+ | 10 | 55+ |
+| Turn | P1 Max Essence | P2 Max Essence | Notes |
+|------|----------------|----------------|-------|
+| 1 | 1 | 2 | P2 has FPA compensation |
+| 2 | 2 | 3 | Gap narrows |
+| 3 | 3 | 4 | |
+| 4 | 4 | 5 | |
+| 5 | 5 | 6 | |
+| 6 | 6 | 7 | |
+| 7 | 7 | 8 | |
+| 8 | 8 | 9 | |
+| 9 | 9 | 10 | P2 caps first |
+| 10+ | 10 | 10 | Both capped, parity reached |
 
-*Cumulative total represents total Essence available over the course of the game if all Essence is spent each turn.
+*Note: P2's essence advantage diminishes as both players approach the 10 essence cap. By turn 10, both players have equal maximum essence.*
 
 ## 7.4 Design Rationale
 

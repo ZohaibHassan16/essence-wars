@@ -353,12 +353,13 @@ fn test_coverage_greedy_vs_random_1k() {
         draws, 100.0 * draws as f64 / total as f64);
 
     // GreedyBot should win more than RandomBot when games complete (not draw)
+    // Note: threshold lowered from 70% to 55% due to FPA compensation (P2 gets +1 card, +1 essence)
     let decisive_games = p1_wins + p2_wins;
     if decisive_games > 0 {
         let win_rate_in_decisive = p1_wins as f64 / decisive_games as f64;
         assert!(
-            win_rate_in_decisive > 0.7,
-            "GreedyBot should win >70% of decisive games vs RandomBot (got {:.1}%)",
+            win_rate_in_decisive > 0.55,
+            "GreedyBot should win >55% of decisive games vs RandomBot (got {:.1}%)",
             win_rate_in_decisive * 100.0
         );
     }

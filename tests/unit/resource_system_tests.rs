@@ -145,8 +145,9 @@ fn test_first_turn_gives_one_essence() {
     assert_eq!(engine.state.players[0].max_essence, 1);
     assert_eq!(engine.state.players[0].current_essence, 1);
 
-    // P2 hasn't had a turn yet
-    assert_eq!(engine.state.players[1].max_essence, 0);
+    // P2 hasn't had a turn yet, but starts with 1 max_essence (FPA compensation)
+    // current_essence is 0 until their turn starts
+    assert_eq!(engine.state.players[1].max_essence, 1);
     assert_eq!(engine.state.players[1].current_essence, 0);
 }
 
@@ -161,9 +162,10 @@ fn test_essence_grows_each_turn() {
     assert_eq!(engine.turn_number(), 1);
 
     // End P1's turn, P2's turn starts
+    // Note: P2 starts with 2 essence (FPA compensation)
     engine.apply_action(Action::EndTurn).unwrap();
-    assert_eq!(engine.state.players[1].max_essence, 1);
-    assert_eq!(engine.state.players[1].current_essence, 1);
+    assert_eq!(engine.state.players[1].max_essence, 2);
+    assert_eq!(engine.state.players[1].current_essence, 2);
 
     // End P2's turn, P1's turn 2 starts
     engine.apply_action(Action::EndTurn).unwrap();
@@ -172,8 +174,8 @@ fn test_essence_grows_each_turn() {
 
     // End P1's turn, P2's turn 2 starts
     engine.apply_action(Action::EndTurn).unwrap();
-    assert_eq!(engine.state.players[1].max_essence, 2);
-    assert_eq!(engine.state.players[1].current_essence, 2);
+    assert_eq!(engine.state.players[1].max_essence, 3);
+    assert_eq!(engine.state.players[1].current_essence, 3);
 }
 
 #[test]
@@ -544,8 +546,8 @@ fn test_full_turn_cycle_resources() {
     // End P1 turn
     engine.apply_action(Action::EndTurn).unwrap();
 
-    // P2's turn: 1 essence, 3 AP
-    assert_eq!(engine.state.players[1].current_essence, 1);
+    // P2's turn: 2 essence (FPA compensation), 3 AP
+    assert_eq!(engine.state.players[1].current_essence, 2);
     assert_eq!(engine.state.players[1].action_points, 3);
 
     // End P2 turn
@@ -606,8 +608,8 @@ fn test_multiple_games_consistent_resources() {
         // End P1 turn
         engine.apply_action(Action::EndTurn).unwrap();
 
-        // P2 should also have 1 essence, 3 AP
-        assert_eq!(engine.state.players[1].current_essence, 1, "Seed {}: P2 essence should be 1", seed);
+        // P2 should have 2 essence (FPA compensation), 3 AP
+        assert_eq!(engine.state.players[1].current_essence, 2, "Seed {}: P2 essence should be 2 (FPA)", seed);
         assert_eq!(engine.state.players[1].action_points, 3, "Seed {}: P2 AP should be 3", seed);
     }
 }
