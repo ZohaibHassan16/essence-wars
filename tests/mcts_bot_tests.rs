@@ -33,12 +33,7 @@ fn mcts_config(simulations: u32) -> MctsConfig {
 // ============================================================================
 
 /// Test that MCTS finds lethal when a creature can attack face for exact kill
-///
-/// NOTE: This test is temporarily ignored due to MCTS convergence issues.
-/// MCTS is choosing EndTurn over attack even with 1000 simulations.
-/// This needs investigation as part of the broader GameRunner/bot behavior audit.
 #[test]
-#[ignore = "MCTS convergence issue - needs investigation"]
 fn test_mcts_finds_lethal() {
     let card_db = CardDatabase::load_from_directory("data/cards/core_set")
         .expect("Failed to load cards");
@@ -104,6 +99,63 @@ fn test_mcts_finds_lethal() {
         action,
         actions
     );
+}
+
+/// Diagnostic test: verify that attacking face actually ends the game
+#[test]
+fn test_attack_face_ends_game() {
+    let card_db = CardDatabase::load_from_directory("data/cards/core_set")
+        .expect("Failed to load cards");
+
+    let mut engine = GameEngine::new(&card_db);
+    let deck1 = valid_yaml_deck();
+    let deck2 = valid_yaml_deck();
+    engine.start_game(deck1, deck2, 42);
+
+    // Set up lethal scenario
+    engine.state.players[1].life = 3;
+    engine.state.players[0].creatures.clear();
+    engine.state.players[1].creatures.clear();
+
+    // Add attacker
+    let creature = Creature {
+        instance_id: engine.state.next_creature_instance_id(),
+        card_id: CardId(2008),
+        owner: PlayerId::PLAYER_ONE,
+        slot: Slot(2),
+        attack: 5,
+        current_health: 5,
+        max_health: 5,
+        base_attack: 5,
+        base_health: 5,
+        keywords: Keywords::none().with_rush(),
+        status: CreatureStatus::default(),
+        turn_played: engine.turn_number(),
+    };
+    engine.state.players[0].creatures.push(creature);
+
+    engine.state.active_player = PlayerId::PLAYER_ONE;
+    engine.state.players[0].action_points = 3;
+    engine.state.players[0].hand.clear();
+
+    println!("Before attack:");
+    println!("  P2 life: {}", engine.state.players[1].life);
+    println!("  Game over: {}", engine.is_game_over());
+    println!("  Legal actions: {:?}", engine.get_legal_actions());
+
+    // Apply attack
+    let attack = Action::Attack { attacker: Slot(2), defender: Slot(2) };
+    let result = engine.apply_action(attack);
+    println!("  Apply result: {:?}", result);
+
+    println!("After attack:");
+    println!("  P2 life: {}", engine.state.players[1].life);
+    println!("  Game over: {}", engine.is_game_over());
+    println!("  Winner: {:?}", engine.winner());
+
+    // Verify game ended with P1 winning
+    assert!(engine.is_game_over(), "Game should be over after lethal attack");
+    assert_eq!(engine.winner(), Some(PlayerId::PLAYER_ONE), "P1 should win");
 }
 
 /// Test MCTS with only one legal action returns immediately

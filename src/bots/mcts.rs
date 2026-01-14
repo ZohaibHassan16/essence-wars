@@ -297,6 +297,21 @@ impl<'a> MctsBot<'a> {
             return legal_actions[0];
         }
 
+        // Check for immediate wins - if any action leads to immediate victory, take it
+        // This fixes the "delayed win" problem where MCTS doesn't distinguish
+        // between winning now vs winning later
+        let player = engine.current_player();
+        for &action in &legal_actions {
+            let mut sim = engine.fork();
+            if sim.apply_action(action).is_ok()
+                && sim.is_game_over()
+                && sim.winner() == Some(player)
+            {
+                // Immediate win - take it without further simulation
+                return action;
+            }
+        }
+
         // Use parallel trees if configured
         if self.config.parallel_trees > 1 {
             return self.search_parallel(engine, &legal_actions);
@@ -445,6 +460,18 @@ impl<'a> MctsBot<'a> {
         seed: u64,
     ) -> Action {
         let mut rng = SmallRng::seed_from_u64(seed);
+
+        // Check for immediate wins first
+        let player = engine.current_player();
+        for &action in legal_actions {
+            let mut sim = engine.fork();
+            if sim.apply_action(action).is_ok()
+                && sim.is_game_over()
+                && sim.winner() == Some(player)
+            {
+                return action;
+            }
+        }
 
         // Create root node and expand it
         let root = Rc::new(RefCell::new(MctsNode::root()));
