@@ -1,5 +1,7 @@
 # Modal Cloud Training Setup
 
+**Status: Not yet implemented, Discuss first**
+
 Complete guide to running Essence Wars tuning on Modal's serverless compute platform.
 
 ## 📋 Prerequisites
