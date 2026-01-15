@@ -26,6 +26,9 @@ pub mod tuning;
 // Execution utilities for parallel game running
 pub mod execution;
 
+// Validation module for balance testing
+pub mod validation;
+
 // Re-export modules from core at crate root for backward compatibility
 pub use core::types;
 pub use core::keywords;
