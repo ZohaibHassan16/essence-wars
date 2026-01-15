@@ -8,20 +8,22 @@
 //!   cargo run --release --bin tune -- --mode agent-generalist
 //!   cargo run --release --bin tune -- --tag baseline
 
+use std::io::Write;
 use std::path::PathBuf;
 use std::process;
 use std::time::Instant;
-use std::fs;
-use std::io::Write;
 
 use clap::Parser;
 
-use cardgame::bots::{BotWeights, GreedyWeights, WeightSet};
+use cardgame::bots::{BotWeights, GreedyWeights};
 use cardgame::cards::CardDatabase;
 use cardgame::decks::{DeckRegistry, Faction};
-use cardgame::tuning::{CmaEs, CmaEsConfig, Evaluator, EvaluatorConfig, TuningMode};
+use cardgame::tuning::{
+    deploy_weights, CmaEs, CmaEsConfig, Evaluator, EvaluatorConfig, ExperimentConfig,
+    ExperimentDir, TuningMode,
+};
 use cardgame::types::CardId;
-use cardgame::version::{self, VersionInfo};
+use cardgame::version;
 
 /// Weight tuning CLI using CMA-ES optimization
 #[derive(Parser, Debug)]
@@ -119,30 +121,22 @@ fn main() {
     let args = Args::parse();
 
     // Create experiment directory with timestamp
-    let timestamp = chrono::Local::now().format("%Y-%m-%d_%H%M").to_string();
-    let exp_id = format!("{}_{}", timestamp, args.tag);
-    let exp_dir = args.experiment_dir.join("mcts").join(&exp_id);
-    
-    fs::create_dir_all(&exp_dir).unwrap_or_else(|e| {
-        eprintln!("Error creating experiment directory {:?}: {}", exp_dir, e);
-        process::exit(1);
-    });
+    let exp_config = ExperimentConfig::new(&args.experiment_dir, "mcts", &args.tag);
+    let experiment = match ExperimentDir::create(&exp_config) {
+        Ok(e) => e,
+        Err(e) => {
+            eprintln!("Error creating experiment directory: {}", e);
+            process::exit(1);
+        }
+    };
 
-    let plots_dir = exp_dir.join("plots");
-    fs::create_dir_all(&plots_dir).unwrap_or_else(|e| {
-        eprintln!("Error creating plots directory: {}", e);
-        process::exit(1);
-    });
-
-    println!("📁 Experiment directory: {:?}", exp_dir);
+    println!("📁 Experiment directory: {:?}", experiment.root);
     println!("🔖 Engine version: {}", version::version_string());
     println!();
 
     // Save version info for reproducibility
-    let version_info = VersionInfo::current();
-    let version_path = exp_dir.join("version.toml");
-    if let Ok(toml_str) = toml::to_string_pretty(&version_info) {
-        let _ = fs::write(&version_path, toml_str);
+    if let Err(e) = experiment.save_version() {
+        eprintln!("Warning: Could not save version info: {}", e);
     }
 
     // Load card database
@@ -295,7 +289,7 @@ fn main() {
     println!("Mode: {}", args.mode);
     println!("Parallel: {}", args.parallel);
     println!("Generations: {}", args.generations);
-    println!("Population: {}", cmaes_config.population_size.unwrap_or(4 + (3.0 * (initial_weights.len() as f64).ln()).floor() as usize));
+    println!("Population: {}", cmaes_config.population_size.unwrap_or(4 + (3.0_f64 * (initial_weights.len() as f64).ln()).floor() as usize));
     println!("Games/eval: {}", args.games);
     println!("MCTS sims: {}", args.mcts_sims);
     println!("Initial sigma: {:.3}", args.sigma);
@@ -306,20 +300,23 @@ fn main() {
     println!();
 
     // Create log file
-    let log_path = exp_dir.join("train.log");
-    let mut log_file = fs::File::create(&log_path).unwrap_or_else(|e| {
-        eprintln!("Error creating log file: {}", e);
-        process::exit(1);
-    });
+    let log_path = experiment.root.join("train.log");
+    let mut log_file = match std::fs::File::create(&log_path) {
+        Ok(f) => f,
+        Err(e) => {
+            eprintln!("Error creating log file: {}", e);
+            process::exit(1);
+        }
+    };
 
     // Write config to log
     writeln!(log_file, "Weight Tuning Configuration").unwrap();
     writeln!(log_file, "===========================").unwrap();
-    writeln!(log_file, "Experiment ID: {}", exp_id).unwrap();
+    writeln!(log_file, "Experiment ID: {}", experiment.id).unwrap();
     writeln!(log_file, "Mode: {}", args.mode).unwrap();
     writeln!(log_file, "Parallel: {}", args.parallel).unwrap();
     writeln!(log_file, "Generations: {}", args.generations).unwrap();
-    writeln!(log_file, "Population: {}", cmaes_config.population_size.unwrap_or(4 + (3.0 * (initial_weights.len() as f64).ln()).floor() as usize)).unwrap();
+    writeln!(log_file, "Population: {}", cmaes_config.population_size.unwrap_or(4 + (3.0_f64 * (initial_weights.len() as f64).ln()).floor() as usize)).unwrap();
     writeln!(log_file, "Games/eval: {}", args.games).unwrap();
     writeln!(log_file, "Initial sigma: {:.3}", args.sigma).unwrap();
     writeln!(log_file, "Seed: {}", args.seed).unwrap();
@@ -425,18 +422,10 @@ Best win rate: {:.1}%\n",
         };
 
         // Save weights to experiment directory
-        let weights_path = exp_dir.join("weights.toml");
-        let bot_weights = BotWeights {
-            name: weight_name.clone(),
-            version: 1,
-            default: WeightSet { greedy: tuned_weights.clone() },
-            deck_specific: std::collections::HashMap::new(),
-        };
-
-        match bot_weights.save(&weights_path) {
-            Ok(_) => {
-                println!("\n✓ Weights saved to {:?}", weights_path);
-                writeln!(log_file, "\nWeights saved to {:?}", weights_path).unwrap();
+        match experiment.save_weights(&tuned_weights, &weight_name) {
+            Ok(path) => {
+                println!("\n✓ Weights saved to {:?}", path);
+                writeln!(log_file, "\nWeights saved to {:?}", path).unwrap();
             }
             Err(e) => {
                 eprintln!("\n❌ Error saving weights: {}", e);
@@ -445,59 +434,20 @@ Best win rate: {:.1}%\n",
         }
 
         // Auto-deploy: Copy weights to data/weights/ for easy access
-        let deploy_path = match args.mode.as_str() {
-            "generalist" | "agent-generalist" => {
-                Some(PathBuf::from("data/weights/generalist.toml"))
+        match deploy_weights(
+            &tuned_weights,
+            &weight_name,
+            &args.mode,
+            args.faction.as_deref(),
+            args.deck.as_deref(),
+        ) {
+            Ok(Some(path)) => {
+                println!("✅ Auto-deployed to {:?}", path);
+                writeln!(log_file, "Auto-deployed to {:?}", path).unwrap();
             }
-            "faction-specialist" => {
-                if let Some(ref faction_str) = args.faction {
-                    // Ensure specialists directory exists
-                    let specialists_dir = PathBuf::from("data/weights/specialists");
-                    if let Err(e) = fs::create_dir_all(&specialists_dir) {
-                        eprintln!("⚠️  Warning: Could not create specialists directory: {}", e);
-                        None
-                    } else {
-                        Some(specialists_dir.join(format!("{}.toml", faction_str.to_lowercase())))
-                    }
-                } else {
-                    None
-                }
-            }
-            "specialist" => {
-                // For single-deck specialists, infer faction from deck name
-                if let Some(ref deck_name) = args.deck {
-                    let specialists_dir = PathBuf::from("data/weights/specialists");
-                    if let Err(e) = fs::create_dir_all(&specialists_dir) {
-                        eprintln!("⚠️  Warning: Could not create specialists directory: {}", e);
-                        None
-                    } else {
-                        // Extract faction from deck name (e.g., "argentum_control" -> "argentum")
-                        let faction = deck_name.split('_').next().unwrap_or(deck_name);
-                        Some(specialists_dir.join(format!("{}.toml", faction.to_lowercase())))
-                    }
-                } else {
-                    None
-                }
-            }
-            _ => None,
-        };
-
-        if let Some(canonical_path) = deploy_path {
-            let canonical_weights = BotWeights {
-                name: weight_name,
-                version: 1,
-                default: WeightSet { greedy: tuned_weights },
-                deck_specific: std::collections::HashMap::new(),
-            };
-
-            match canonical_weights.save(&canonical_path) {
-                Ok(_) => {
-                    println!("✅ Auto-deployed to {:?}", canonical_path);
-                    writeln!(log_file, "Auto-deployed to {:?}", canonical_path).unwrap();
-                }
-                Err(e) => {
-                    eprintln!("⚠️  Warning: Could not auto-deploy weights: {}", e);
-                }
+            Ok(None) => {} // No deployment path for this mode
+            Err(e) => {
+                eprintln!("⚠️  Warning: Could not auto-deploy weights: {}", e);
             }
         }
     } else {
@@ -505,17 +455,21 @@ Best win rate: {:.1}%\n",
     }
 
     // Save summary metadata
-    let summary_path = exp_dir.join("summary.txt");
-    let mut summary_file = fs::File::create(&summary_path).unwrap();
-    writeln!(summary_file, "Experiment: {}", exp_id).unwrap();
-    writeln!(summary_file, "Mode: {}", args.mode).unwrap();
-    writeln!(summary_file, "Best Fitness: {:.2}", best_fitness).unwrap();
-    writeln!(summary_file, "Best Win Rate: {:.1}%", best_win_rate * 100.0).unwrap();
-    writeln!(summary_file, "Total Time: {:.1}s", total_time.as_secs_f64()).unwrap();
-    writeln!(summary_file, "Generations: {}", cmaes.generation()).unwrap();
-    
-    println!("\n📁 All results saved to: {:?}", exp_dir);
-    println!("   Run 'python python/scripts/analyze_tuning.py {:?}' to generate visualizations", exp_dir);
+    if let Err(e) = experiment.save_summary(
+        &args.mode,
+        best_fitness,
+        best_win_rate,
+        total_time.as_secs_f64(),
+        cmaes.generation(),
+    ) {
+        eprintln!("Warning: Could not save summary: {}", e);
+    }
+
+    println!("\n📁 All results saved to: {:?}", experiment.root);
+    println!(
+        "   Run 'python python/scripts/analyze_tuning.py {:?}' to generate visualizations",
+        experiment.root
+    );
 }
 
 /// Create matchups for generalist mode using all available decks.
