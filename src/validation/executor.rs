@@ -2,15 +2,22 @@
 //!
 //! Runs matchup games using the shared execution infrastructure.
 
+use std::sync::atomic::Ordering;
 use std::time::Instant;
+
+use rayon::prelude::*;
 
 use crate::bots::{create_bot, BotType, MctsConfig};
 use crate::cards::CardDatabase;
 use crate::engine::GameEngine;
-use crate::execution::{run_batch_parallel, BatchConfig, GameSeeds, ProgressStyle};
+use crate::execution::{GameSeeds, ProgressReporter, ProgressStyle};
 use crate::types::PlayerId;
 
-use super::types::{DirectionResults, FactionWeights, MatchupDefinition, MatchupResult};
+use super::game_diagnostics::{GameDiagnosticCollector, GameDiagnosticData};
+use super::types::{
+    DirectionDiagnostics, DirectionResults, FactionWeights, MatchupDefinition, MatchupDiagnostics,
+    MatchupResult,
+};
 
 /// Executor for running validation matchups.
 pub struct ValidationExecutor<'a> {
@@ -120,6 +127,16 @@ impl<'a> ValidationExecutor<'a> {
 
         let decisive_games = total_games - total_draws;
 
+        // Build P1/P2 diagnostics
+        // Total P1 wins = F1's P1 wins (when F1 is P1) + F2's P1 wins (when F2 is P1)
+        let total_p1_wins = f1_p1_results.p1_wins + f2_p1_results.p1_wins;
+        let diagnostics = MatchupDiagnostics::from_directions(
+            &f1_p1_results.diagnostics,
+            &f2_p1_results.diagnostics,
+            total_games,
+        )
+        .with_p1_stats(total_p1_wins, decisive_games);
+
         MatchupResult {
             faction1: matchup.faction1.as_tag().to_string(),
             faction2: matchup.faction2.as_tag().to_string(),
@@ -145,6 +162,7 @@ impl<'a> ValidationExecutor<'a> {
             },
             avg_turns: total_turns as f64 / total_games as f64,
             total_time_secs: total_time,
+            diagnostics,
         }
     }
 
@@ -160,30 +178,73 @@ impl<'a> ValidationExecutor<'a> {
     ) -> DirectionResults {
         let start_time = Instant::now();
 
-        // Configure batch execution
-        let batch_config = if self.show_progress {
-            BatchConfig::new(games, base_seed).with_progress(ProgressStyle::Simple)
+        // Set up progress reporting
+        let progress = if self.show_progress {
+            Some(
+                ProgressReporter::new(games)
+                    .with_style(ProgressStyle::Simple)
+                    .start(),
+            )
         } else {
-            BatchConfig::new(games, base_seed)
+            None
         };
 
-        // Run games in parallel
-        let result = run_batch_parallel(&batch_config, |seeds| {
-            self.run_single_game(deck1, deck2, weights1, weights2, seeds)
-        });
+        let counter = progress.as_ref().map(|p| p.counter());
 
-        // Aggregate results
+        // Run games in parallel, collecting outcomes and diagnostics
+        let results: Vec<(Option<PlayerId>, u32, GameDiagnosticData)> = (0..games)
+            .into_par_iter()
+            .map(|i| {
+                let seeds = GameSeeds::for_game(base_seed, i);
+                let (winner, turns, diag) =
+                    self.run_single_game_with_diagnostics(deck1, deck2, weights1, weights2, seeds);
+                if let Some(ref c) = counter {
+                    c.fetch_add(1, Ordering::Relaxed);
+                }
+                (winner, turns, diag)
+            })
+            .collect();
+
+        // Finish progress reporting
+        if let Some(p) = progress {
+            p.finish();
+        }
+
+        // Aggregate results and diagnostics
         let mut p1_wins = 0u32;
         let mut total_turns = 0u32;
         let mut draws = 0u32;
+        let mut diagnostics = DirectionDiagnostics::default();
 
-        for outcome in &result.outcomes {
-            match outcome.winner {
+        for (winner, turns, diag) in results {
+            match winner {
                 Some(PlayerId::PLAYER_ONE) => p1_wins += 1,
                 None => draws += 1,
                 _ => {}
             }
-            total_turns += outcome.turns;
+            total_turns += turns;
+
+            // Aggregate diagnostic data
+            match diag.first_blood {
+                Some(PlayerId::PLAYER_ONE) => diagnostics.p1_first_blood_count += 1,
+                Some(PlayerId::PLAYER_TWO) => diagnostics.p2_first_blood_count += 1,
+                _ => {}
+            }
+
+            diagnostics.total_board_advantage += diag.board_advantage_sum;
+            diagnostics.total_turns_p1_ahead += diag.turns_p1_ahead;
+            diagnostics.total_turns_p2_ahead += diag.turns_p2_ahead;
+            diagnostics.total_turns_even += diag.turns_even;
+            diagnostics.total_turn_count += diag.turn_count;
+            diagnostics.total_p1_essence += diag.p1_essence_spent;
+            diagnostics.total_p2_essence += diag.p2_essence_spent;
+            diagnostics.total_p1_face_damage += diag.p1_face_damage;
+            diagnostics.total_p2_face_damage += diag.p2_face_damage;
+            diagnostics.total_p1_kills += diag.p1_creatures_killed;
+            diagnostics.total_p2_kills += diag.p2_creatures_killed;
+            diagnostics.total_p1_losses += diag.p1_creatures_lost;
+            diagnostics.total_p2_losses += diag.p2_creatures_lost;
+            diagnostics.game_lengths.push(turns);
         }
 
         DirectionResults {
@@ -192,20 +253,19 @@ impl<'a> ValidationExecutor<'a> {
             draws,
             games: games as u32,
             duration_secs: start_time.elapsed().as_secs_f64(),
+            diagnostics,
         }
     }
 
-    /// Run a single game between two MCTS bots.
-    fn run_single_game(
+    /// Run a single game between two MCTS bots with diagnostic collection.
+    fn run_single_game_with_diagnostics(
         &self,
         deck1: &[crate::types::CardId],
         deck2: &[crate::types::CardId],
         weights1: Option<&crate::bots::BotWeights>,
         weights2: Option<&crate::bots::BotWeights>,
         seeds: GameSeeds,
-    ) -> crate::execution::GameOutcome {
-        let start = Instant::now();
-
+    ) -> (Option<PlayerId>, u32, GameDiagnosticData) {
         // Create MCTS bots using the factory
         let mut bot1 = create_bot(
             self.card_db,
@@ -226,6 +286,9 @@ impl<'a> ValidationExecutor<'a> {
         bot1.reset();
         bot2.reset();
 
+        // Create diagnostic collector
+        let mut collector = GameDiagnosticCollector::new();
+
         // Create and start game
         let mut engine = GameEngine::new(self.card_db);
         engine.start_game(deck1.to_vec(), deck2.to_vec(), seeds.game);
@@ -233,8 +296,16 @@ impl<'a> ValidationExecutor<'a> {
         // Main game loop
         let max_actions = 1000;
         let mut action_count = 0;
+        let mut last_turn = 0;
 
         while !engine.is_game_over() && action_count < max_actions {
+            // Record turn state at start of each new turn
+            let current_turn = engine.turn_number();
+            if current_turn != last_turn {
+                collector.record_turn(&engine);
+                last_turn = current_turn;
+            }
+
             let action = if engine.current_player() == PlayerId::PLAYER_ONE {
                 bot1.select_action_with_engine(&engine)
             } else {
@@ -247,10 +318,13 @@ impl<'a> ValidationExecutor<'a> {
             action_count += 1;
         }
 
-        crate::execution::GameOutcome::new(
+        // Final state capture
+        collector.record_turn(&engine);
+
+        (
             engine.winner(),
             engine.turn_number() as u32,
-            start.elapsed(),
+            collector.finalize(),
         )
     }
 }

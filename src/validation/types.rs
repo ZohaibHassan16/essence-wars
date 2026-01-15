@@ -82,6 +82,8 @@ pub struct MatchupResult {
     pub avg_turns: f64,
     /// Total time in seconds.
     pub total_time_secs: f64,
+    /// P1/P2 diagnostic analysis.
+    pub diagnostics: MatchupDiagnostics,
 }
 
 /// Balance status classification.
@@ -123,6 +125,34 @@ pub struct BalanceSummary {
     pub overall_status: BalanceStatus,
     /// Warning messages.
     pub warnings: Vec<String>,
+    /// P1/P2 diagnostic summary.
+    pub p1_p2_diagnostics: P1P2Summary,
+}
+
+/// Summary of P1/P2 asymmetry analysis across all matchups.
+#[derive(Debug, Clone, Serialize)]
+pub struct P1P2Summary {
+    /// Overall P1 win rate across all matchups.
+    pub overall_p1_win_rate: f64,
+    /// 95% confidence interval lower bound.
+    pub overall_p1_ci_lower: f64,
+    /// 95% confidence interval upper bound.
+    pub overall_p1_ci_upper: f64,
+    /// Significance level.
+    pub significance: String,
+    /// Balance assessment.
+    pub assessment: String,
+    /// Per-matchup P1 statistics.
+    pub by_matchup: HashMap<String, MatchupP1Stats>,
+}
+
+/// P1 statistics for a single matchup.
+#[derive(Debug, Clone, Serialize)]
+pub struct MatchupP1Stats {
+    /// P1 win rate for this matchup.
+    pub p1_rate: f64,
+    /// Significance level.
+    pub significance: String,
 }
 
 /// Complete validation results (for JSON output).
@@ -239,4 +269,277 @@ pub struct DirectionResults {
     pub games: u32,
     /// Time taken.
     pub duration_secs: f64,
+    /// Aggregated diagnostic data for this direction.
+    pub diagnostics: DirectionDiagnostics,
+}
+
+/// Aggregated diagnostic data for games in one direction.
+#[derive(Debug, Clone, Default)]
+pub struct DirectionDiagnostics {
+    /// Number of games where P1 got first blood.
+    pub p1_first_blood_count: u32,
+    /// Number of games where P2 got first blood.
+    pub p2_first_blood_count: u32,
+    /// Sum of board advantage scores across all games.
+    pub total_board_advantage: f64,
+    /// Total turns where P1 was ahead.
+    pub total_turns_p1_ahead: u32,
+    /// Total turns where P2 was ahead.
+    pub total_turns_p2_ahead: u32,
+    /// Total turns even.
+    pub total_turns_even: u32,
+    /// Total turn count (for averaging).
+    pub total_turn_count: u32,
+    /// Total essence spent by P1.
+    pub total_p1_essence: u32,
+    /// Total essence spent by P2.
+    pub total_p2_essence: u32,
+    /// Total face damage by P1.
+    pub total_p1_face_damage: u32,
+    /// Total face damage by P2.
+    pub total_p2_face_damage: u32,
+    /// Total creatures killed by P1.
+    pub total_p1_kills: u32,
+    /// Total creatures killed by P2.
+    pub total_p2_kills: u32,
+    /// Total creatures lost by P1.
+    pub total_p1_losses: u32,
+    /// Total creatures lost by P2.
+    pub total_p2_losses: u32,
+    /// Game lengths for percentile calculation.
+    pub game_lengths: Vec<u32>,
+}
+
+/// P1/P2 diagnostic analysis for a matchup.
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct MatchupDiagnostics {
+    // P1/P2 win rate with statistical analysis
+    /// P1 win rate (excluding draws).
+    pub p1_win_rate: f64,
+    /// 95% confidence interval lower bound.
+    pub p1_win_rate_ci_lower: f64,
+    /// 95% confidence interval upper bound.
+    pub p1_win_rate_ci_upper: f64,
+    /// Chi-square statistic.
+    pub p1_chi_square: f64,
+    /// P-value for significance test.
+    pub p1_p_value: f64,
+    /// Significance level string.
+    pub p1_significance: String,
+
+    // First blood metrics
+    /// P1 first blood rate.
+    pub first_blood_p1_rate: f64,
+    /// First blood CI lower bound.
+    pub first_blood_p1_ci_lower: f64,
+    /// First blood CI upper bound.
+    pub first_blood_p1_ci_upper: f64,
+
+    // Board advantage
+    /// Average board advantage score (positive = P1 ahead).
+    pub avg_board_advantage: f64,
+    /// Percentage of turns P1 was ahead.
+    pub p1_ahead_pct: f64,
+    /// Percentage of turns P2 was ahead.
+    pub p2_ahead_pct: f64,
+    /// Percentage of turns even.
+    pub even_pct: f64,
+
+    // Resource efficiency
+    /// Average essence spent per game by P1.
+    pub p1_essence_avg: f64,
+    /// Average essence spent per game by P2.
+    pub p2_essence_avg: f64,
+
+    // Combat efficiency
+    /// Average face damage per game by P1.
+    pub p1_face_damage_avg: f64,
+    /// Average face damage per game by P2.
+    pub p2_face_damage_avg: f64,
+    /// P1 trade ratio (kills / losses).
+    pub p1_trade_ratio: f64,
+    /// P2 trade ratio (kills / losses).
+    pub p2_trade_ratio: f64,
+
+    // Game length percentiles
+    /// 10th percentile game length.
+    pub game_length_p10: u32,
+    /// 50th percentile game length (median).
+    pub game_length_p50: u32,
+    /// 90th percentile game length.
+    pub game_length_p90: u32,
+}
+
+impl MatchupDiagnostics {
+    /// Build matchup diagnostics from two direction results.
+    pub fn from_directions(
+        dir1: &DirectionDiagnostics,
+        dir2: &DirectionDiagnostics,
+        total_games: u32,
+    ) -> Self {
+        use crate::diagnostics::statistics::{percentile, wilson_score_interval};
+
+        // Combine data from both directions
+        let p1_first_blood = dir1.p1_first_blood_count + dir2.p1_first_blood_count;
+        let p2_first_blood = dir1.p2_first_blood_count + dir2.p2_first_blood_count;
+        let total_first_blood = p1_first_blood + p2_first_blood;
+
+        let total_board_advantage = dir1.total_board_advantage + dir2.total_board_advantage;
+        let total_turns_p1_ahead = dir1.total_turns_p1_ahead + dir2.total_turns_p1_ahead;
+        let total_turns_p2_ahead = dir1.total_turns_p2_ahead + dir2.total_turns_p2_ahead;
+        let total_turns_even = dir1.total_turns_even + dir2.total_turns_even;
+        let total_turn_count = dir1.total_turn_count + dir2.total_turn_count;
+
+        let total_p1_essence = dir1.total_p1_essence + dir2.total_p1_essence;
+        let total_p2_essence = dir1.total_p2_essence + dir2.total_p2_essence;
+        let total_p1_face_damage = dir1.total_p1_face_damage + dir2.total_p1_face_damage;
+        let total_p2_face_damage = dir1.total_p2_face_damage + dir2.total_p2_face_damage;
+        let total_p1_kills = dir1.total_p1_kills + dir2.total_p1_kills;
+        let total_p2_kills = dir1.total_p2_kills + dir2.total_p2_kills;
+        let total_p1_losses = dir1.total_p1_losses + dir2.total_p1_losses;
+        let total_p2_losses = dir1.total_p2_losses + dir2.total_p2_losses;
+
+        // Combine game lengths and sort for percentiles
+        let mut all_lengths: Vec<f64> = dir1
+            .game_lengths
+            .iter()
+            .chain(dir2.game_lengths.iter())
+            .map(|&x| x as f64)
+            .collect();
+        all_lengths.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+        // P1 win rate calculation - we need p1_wins from parent context
+        // For now, use first blood as proxy or calculate from direction totals
+        // This will be properly calculated in run_matchup
+        let p1_win_rate = 0.5; // Placeholder - filled in by caller
+        let (p1_ci_lower, p1_ci_upper) = (0.0, 1.0); // Placeholder
+        let (p1_chi, p1_p) = (0.0, 1.0); // Placeholder
+
+        // First blood statistics
+        let (fb_ci_lower, fb_ci_upper) = if total_first_blood > 0 {
+            wilson_score_interval(p1_first_blood as usize, total_first_blood as usize, 0.95)
+        } else {
+            (0.0, 1.0)
+        };
+        let first_blood_p1_rate = if total_first_blood > 0 {
+            p1_first_blood as f64 / total_first_blood as f64
+        } else {
+            0.5
+        };
+
+        // Board advantage
+        let avg_board_advantage = if total_turn_count > 0 {
+            total_board_advantage / total_turn_count as f64
+        } else {
+            0.0
+        };
+        let total_turns_tracked = total_turns_p1_ahead + total_turns_p2_ahead + total_turns_even;
+        let (p1_ahead_pct, p2_ahead_pct, even_pct) = if total_turns_tracked > 0 {
+            (
+                total_turns_p1_ahead as f64 / total_turns_tracked as f64,
+                total_turns_p2_ahead as f64 / total_turns_tracked as f64,
+                total_turns_even as f64 / total_turns_tracked as f64,
+            )
+        } else {
+            (0.0, 0.0, 1.0)
+        };
+
+        // Resource efficiency
+        let games_f64 = total_games as f64;
+        let p1_essence_avg = if total_games > 0 {
+            total_p1_essence as f64 / games_f64
+        } else {
+            0.0
+        };
+        let p2_essence_avg = if total_games > 0 {
+            total_p2_essence as f64 / games_f64
+        } else {
+            0.0
+        };
+
+        // Combat efficiency
+        let p1_face_damage_avg = if total_games > 0 {
+            total_p1_face_damage as f64 / games_f64
+        } else {
+            0.0
+        };
+        let p2_face_damage_avg = if total_games > 0 {
+            total_p2_face_damage as f64 / games_f64
+        } else {
+            0.0
+        };
+        let p1_trade_ratio = if total_p1_losses > 0 {
+            total_p1_kills as f64 / total_p1_losses as f64
+        } else if total_p1_kills > 0 {
+            f64::INFINITY
+        } else {
+            1.0
+        };
+        let p2_trade_ratio = if total_p2_losses > 0 {
+            total_p2_kills as f64 / total_p2_losses as f64
+        } else if total_p2_kills > 0 {
+            f64::INFINITY
+        } else {
+            1.0
+        };
+
+        // Game length percentiles
+        let game_length_p10 = percentile(&all_lengths, 10.0).unwrap_or(0.0) as u32;
+        let game_length_p50 = percentile(&all_lengths, 50.0).unwrap_or(0.0) as u32;
+        let game_length_p90 = percentile(&all_lengths, 90.0).unwrap_or(0.0) as u32;
+
+        Self {
+            p1_win_rate,
+            p1_win_rate_ci_lower: p1_ci_lower,
+            p1_win_rate_ci_upper: p1_ci_upper,
+            p1_chi_square: p1_chi,
+            p1_p_value: p1_p,
+            p1_significance: "not_calculated".to_string(),
+            first_blood_p1_rate,
+            first_blood_p1_ci_lower: fb_ci_lower,
+            first_blood_p1_ci_upper: fb_ci_upper,
+            avg_board_advantage,
+            p1_ahead_pct,
+            p2_ahead_pct,
+            even_pct,
+            p1_essence_avg,
+            p2_essence_avg,
+            p1_face_damage_avg,
+            p2_face_damage_avg,
+            p1_trade_ratio,
+            p2_trade_ratio,
+            game_length_p10,
+            game_length_p50,
+            game_length_p90,
+        }
+    }
+
+    /// Update with P1 win rate statistics (called after combining directions).
+    pub fn with_p1_stats(mut self, p1_wins: u32, total_decisive: u32) -> Self {
+        use crate::diagnostics::statistics::{chi_square_test, wilson_score_interval};
+
+        if total_decisive > 0 {
+            self.p1_win_rate = p1_wins as f64 / total_decisive as f64;
+            let (ci_lower, ci_upper) =
+                wilson_score_interval(p1_wins as usize, total_decisive as usize, 0.95);
+            self.p1_win_rate_ci_lower = ci_lower;
+            self.p1_win_rate_ci_upper = ci_upper;
+
+            let (chi, p_value) =
+                chi_square_test(p1_wins as usize, total_decisive as usize, 0.5);
+            self.p1_chi_square = chi;
+            self.p1_p_value = p_value;
+
+            self.p1_significance = if p_value < 0.01 {
+                "highly_significant".to_string()
+            } else if p_value < 0.05 {
+                "significant".to_string()
+            } else if p_value < 0.10 {
+                "marginal".to_string()
+            } else {
+                "not_significant".to_string()
+            };
+        }
+        self
+    }
 }

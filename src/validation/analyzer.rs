@@ -4,7 +4,9 @@
 
 use std::collections::HashMap;
 
-use super::types::{BalanceStatus, BalanceSummary, MatchupResult};
+use crate::diagnostics::statistics::{chi_square_test, wilson_score_interval};
+
+use super::types::{BalanceStatus, BalanceSummary, MatchupP1Stats, MatchupResult, P1P2Summary};
 
 /// Analyzer for balance validation results.
 pub struct BalanceAnalyzer {
@@ -95,6 +97,9 @@ impl BalanceAnalyzer {
             _ => BalanceStatus::Balanced,
         };
 
+        // Build P1/P2 diagnostic summary
+        let p1_p2_diagnostics = self.build_p1_p2_summary(matchups);
+
         BalanceSummary {
             p1_win_rate,
             p1_status,
@@ -103,6 +108,85 @@ impl BalanceAnalyzer {
             faction_status,
             overall_status,
             warnings,
+            p1_p2_diagnostics,
+        }
+    }
+
+    /// Build P1/P2 diagnostic summary from matchup results.
+    fn build_p1_p2_summary(&self, matchups: &[MatchupResult]) -> P1P2Summary {
+        // Calculate overall P1 wins
+        let mut total_p1_wins = 0u32;
+        let mut total_decisive = 0u32;
+        let mut by_matchup = HashMap::new();
+
+        for m in matchups {
+            // P1 wins from both directions
+            let matchup_p1_wins = m.f1_as_p1_wins + (m.total_games / 2 - m.f1_as_p2_wins - m.draws / 2);
+            let matchup_decisive = m.total_games - m.draws;
+
+            total_p1_wins += matchup_p1_wins;
+            total_decisive += matchup_decisive;
+
+            // Per-matchup stats from diagnostics
+            let matchup_key = format!("{}-{}", m.faction1, m.faction2);
+            by_matchup.insert(
+                matchup_key,
+                MatchupP1Stats {
+                    p1_rate: m.diagnostics.p1_win_rate,
+                    significance: m.diagnostics.p1_significance.clone(),
+                },
+            );
+        }
+
+        // Calculate overall statistics
+        let overall_p1_win_rate = if total_decisive > 0 {
+            total_p1_wins as f64 / total_decisive as f64
+        } else {
+            0.5
+        };
+
+        let (ci_lower, ci_upper) = if total_decisive > 0 {
+            wilson_score_interval(total_p1_wins as usize, total_decisive as usize, 0.95)
+        } else {
+            (0.0, 1.0)
+        };
+
+        let (_, p_value) = if total_decisive > 0 {
+            chi_square_test(total_p1_wins as usize, total_decisive as usize, 0.5)
+        } else {
+            (0.0, 1.0)
+        };
+
+        let significance = if p_value < 0.01 {
+            "highly_significant".to_string()
+        } else if p_value < 0.05 {
+            "significant".to_string()
+        } else if p_value < 0.10 {
+            "marginal".to_string()
+        } else {
+            "not_significant".to_string()
+        };
+
+        // Determine assessment
+        let assessment = if ci_upper < 0.48 {
+            "p2_favored".to_string()
+        } else if ci_lower > 0.52 && ci_lower <= 0.55 {
+            "slight_p1_advantage".to_string()
+        } else if ci_lower > 0.55 {
+            "p1_favored".to_string()
+        } else if (0.48..0.52).contains(&ci_upper) {
+            "slight_p2_advantage".to_string()
+        } else {
+            "balanced".to_string()
+        };
+
+        P1P2Summary {
+            overall_p1_win_rate,
+            overall_p1_ci_lower: ci_lower,
+            overall_p1_ci_upper: ci_upper,
+            significance,
+            assessment,
+            by_matchup,
         }
     }
 
@@ -218,6 +302,7 @@ impl BalanceAnalyzer {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::validation::MatchupDiagnostics;
 
     fn create_test_matchup(
         f1: &str,
@@ -253,6 +338,7 @@ mod tests {
             },
             avg_turns: 25.0,
             total_time_secs: 1.0,
+            diagnostics: MatchupDiagnostics::default(),
         }
     }
 

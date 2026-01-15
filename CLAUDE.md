@@ -4,7 +4,7 @@
 
 **Essence Wars** is a deterministic, perfect-information card game engine designed for AI research (reinforcement learning, MCTS). The engine is written in Rust with a focus on performance and correctness.
 
-**Current Version:** 0.4.0
+**Current Version:** 0.5.0
 
 **Author: Christian Wissmann (Chris), Best Friends with Claude
 
@@ -15,7 +15,7 @@
 cargo build --release
 
 # Run all tests
-cargo nextest run --status-level=fail  # ~485 tests (only shows failures)
+cargo nextest run --status-level=fail  # ~556 tests (only shows failures)
 cargo test                              # Alternative: use standard cargo test
 
 # Run Linter (production code only, excludes tests)
@@ -46,6 +46,12 @@ cargo run --release --bin tune -- --mode faction-specialist --faction argentum -
 # Run balance validation
 cargo run --release --bin validate -- --games 100              # Quick local check
 cargo run --release --bin validate -- --games 500 --output results.json  # Full validation
+
+# Run P1/P2 asymmetry diagnostics
+cargo run --release --bin diagnose -- 200                                  # Basic analysis
+cargo run --release --bin diagnose -- 500 --export json --output ./results # Export to JSON
+cargo run --release --bin diagnose -- 500 --export csv --output ./diag     # Export to CSV
+cargo run --release --bin diagnose -- 500 --export all --include-turns     # Full export with per-turn data
 
 # Run benchmarks
 cargo bench
@@ -91,7 +97,13 @@ ai-cardgame/
 │   │   ├── random.rs       # RandomBot - uniform random selection
 │   │   ├── greedy.rs       # GreedyBot - heuristic evaluation
 │   │   ├── mcts.rs         # MctsBot - Monte Carlo Tree Search
-│   │   └── weights.rs      # BotWeights, GreedyWeights (24 params)
+│   │   ├── weights.rs      # BotWeights, GreedyWeights (24 params)
+│   │   └── factory.rs      # BotType enum, create_bot(), resolve_weights()
+│   ├── execution/          # Shared parallel execution utilities
+│   │   ├── mod.rs          # Module exports
+│   │   ├── seeds.rs        # GameSeeds for deterministic parallel execution
+│   │   ├── progress.rs     # ProgressReporter with background thread
+│   │   └── parallel.rs     # BatchConfig, run_batch_parallel()
 │   ├── arena/
 │   │   ├── mod.rs          # Arena module exports
 │   │   ├── runner.rs       # GameRunner for executing matches
@@ -101,10 +113,19 @@ ai-cardgame/
 │   │   ├── mod.rs          # Tuning module exports
 │   │   ├── cmaes.rs        # CMA-ES optimizer implementation
 │   │   └── evaluator.rs    # Fitness evaluation via game matches
+│   ├── diagnostics/        # P1/P2 asymmetry analysis tools
+│   │   ├── mod.rs          # Module exports
+│   │   ├── collector.rs    # DiagnosticRunner, GameDiagnostics, TurnSnapshot
+│   │   ├── analyzer.rs     # AggregatedStats, BalanceAssessment
+│   │   ├── metrics.rs      # BoardAdvantage, TempoMetrics, ResourceEfficiency
+│   │   ├── statistics.rs   # Wilson CI, chi-square, percentiles
+│   │   ├── export.rs       # CSV/JSON export functionality
+│   │   └── report.rs       # Console report printing
 │   └── bin/
 │       ├── arena.rs        # CLI for running bot matches
 │       ├── tune.rs         # CLI for weight optimization
 │       ├── validate.rs     # CLI for balance validation
+│       ├── diagnose.rs     # CLI for P1/P2 asymmetry analysis
 │       └── profile_mcts.rs # MCTS performance profiling
 ├── data/
 │   ├── cards/core_set/         # 60 cards (4 faction files)
@@ -443,6 +464,37 @@ cargo run --release --bin arena -- \
   --games 10 --debug --log-file arena.log
 ```
 
+### Diagnostics CLI
+
+The `diagnose` binary analyzes P1/P2 asymmetry with statistical rigor:
+
+```bash
+# Basic analysis (200 games)
+cargo run --release --bin diagnose -- 200
+
+# Export to JSON with full game metadata
+cargo run --release --bin diagnose -- 500 --export json --output ./results.json
+
+# Export to CSV (creates aggregate_stats.csv and game_metadata.csv)
+cargo run --release --bin diagnose -- 500 --export csv --output ./diagnostics
+
+# Export all formats with per-turn data (can be large)
+cargo run --release --bin diagnose -- 500 --export all --include-turns --output ./full_export
+
+# Use specific deck and seed for reproducibility
+cargo run --release --bin diagnose -- 500 --deck argentum_control --seed 12345
+```
+
+**Output includes:**
+- Win rates with 95% Wilson confidence intervals
+- Chi-square significance testing (★★★ highly significant, ★★ significant, ★ marginal)
+- Tempo metrics (first creature, first blood timing)
+- Board advantage tracking (turns ahead/behind)
+- Resource efficiency (essence spent vs board impact)
+- Combat efficiency (trade ratios, face damage)
+- Game length percentiles (P10, P50, P90)
+- Balance assessment (Balanced, P1/P2 Favored, etc.)
+
 ## Faction System
 
 ### True Factions (3)
@@ -608,10 +660,12 @@ cargo bench                    # Criterion benchmarks
 - Deck system with 6 TOML definitions (organized by faction)
 - Weight tuning pipeline with CMA-ES optimizer
 - Analysis pipeline with visualizations
+- P1/P2 asymmetry diagnostics with statistical analysis
+- CSV/JSON export for external analysis tools
 - Version tracking for ML reproducibility
 - Criterion benchmarks
 - CI/CD with GitHub Actions (nightly + weekly)
-- ~485 tests passing
+- ~556 tests passing
 
 **Current Focus (see PROJECT-300.md):**
 - Card expansion to 300 cards (Project 300)

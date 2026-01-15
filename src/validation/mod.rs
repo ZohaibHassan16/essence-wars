@@ -32,15 +32,20 @@
 
 mod analyzer;
 mod executor;
+mod game_diagnostics;
 mod matchup;
 mod report;
 mod types;
 
 // Re-export types
 pub use types::{
-    BalanceStatus, BalanceSummary, DirectionResults, FactionWeights, MatchupDefinition,
-    MatchupResult, ValidationConfig, ValidationResults,
+    BalanceStatus, BalanceSummary, DirectionDiagnostics, DirectionResults, FactionWeights,
+    MatchupDefinition, MatchupDiagnostics, MatchupP1Stats, MatchupResult, P1P2Summary,
+    ValidationConfig, ValidationResults,
 };
+
+// Re-export diagnostic types
+pub use game_diagnostics::{GameDiagnosticCollector, GameDiagnosticData};
 
 // Re-export matchup builder
 pub use matchup::{filter_matchups, MatchupBuilder};
