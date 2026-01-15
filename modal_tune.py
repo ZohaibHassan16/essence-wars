@@ -27,11 +27,11 @@ CPU_COUNT = 16  # 16 cores per training job (excellent parallel performance)
 MEMORY_MB = 8192  # 8 GB RAM (sufficient for MCTS)
 TIMEOUT_SECONDS = 7200  # 2 hours max (usually finishes in 10-15 min)
 
-# Validation configuration
-VALIDATION_CPU = 16
+# Validation configuration (defaults, can be overridden via CLI)
+VALIDATION_CPU = 32  # 32 cores for faster validation (adjustable via --cores)
 VALIDATION_MEMORY = 16384  # 16 GB
-VALIDATION_TIMEOUT = 3600  # 1 hour
-VALIDATION_GAMES = 500  # Games per matchup
+VALIDATION_TIMEOUT = 3600  # 1 hour (adjustable via --validation-timeout)
+VALIDATION_GAMES = 500  # Games per matchup (adjustable via --validation-games)
 VALIDATION_MCTS_SIMS = 100
 
 # Training configurations
@@ -285,13 +285,16 @@ def run_training(config: dict, workspace_snapshot: bytes):
     timeout=VALIDATION_TIMEOUT,
     volumes={"/experiments": volume},
     )
-def run_validation(workspace_snapshot: bytes, run_id: str = None):
+def run_validation(workspace_snapshot: bytes, run_id: str = None, games: int = None, mcts_sims: int = None, cores: int = None):
     """
     Run balance validation with trained weights.
 
     Args:
         workspace_snapshot: Tarball of workspace directory
         run_id: Optional run identifier for naming output
+        games: Number of games per matchup (overrides VALIDATION_GAMES)
+        mcts_sims: MCTS simulations per move (overrides VALIDATION_MCTS_SIMS)
+        cores: Number of CPU cores (for display only, set via decorator)
 
     Returns:
         Dict with validation results
@@ -303,9 +306,15 @@ def run_validation(workspace_snapshot: bytes, run_id: str = None):
     import time
     from datetime import datetime
 
+    # Use passed parameters or fall back to module defaults
+    games = games or VALIDATION_GAMES
+    mcts_sims = mcts_sims or VALIDATION_MCTS_SIMS
+    cores = cores or VALIDATION_CPU
+
     print("=" * 70)
     print("🔍 BALANCE VALIDATION")
     print("=" * 70)
+    print(f"⚙️  Games: {games}, MCTS sims: {mcts_sims}, Cores: {cores}")
 
     start_time = time.time()
 
@@ -369,8 +378,8 @@ def run_validation(workspace_snapshot: bytes, run_id: str = None):
 
     # Run validation
     print("\n🧪 Running validation...")
-    print(f"   Games per matchup: {VALIDATION_GAMES}")
-    print(f"   MCTS simulations: {VALIDATION_MCTS_SIMS}")
+    print(f"   Games per matchup: {games}")
+    print(f"   MCTS simulations: {mcts_sims}")
 
     validation_start = time.time()
 
@@ -378,8 +387,8 @@ def run_validation(workspace_snapshot: bytes, run_id: str = None):
 
     cmd = [
         str(workspace_path / "target/release/validate"),
-        "--games", str(VALIDATION_GAMES),
-        "--mcts-sims", str(VALIDATION_MCTS_SIMS),
+        "--games", str(games),
+        "--mcts-sims", str(mcts_sims),
         "--output", str(output_file),
     ]
 
@@ -548,7 +557,14 @@ def deploy_weights_locally(weights: dict, workspace_path: Path) -> int:
 # ============================================================================
 
 @app.local_entrypoint()
-def main(single: str = None, mode: str = "full", no_deploy: bool = False):
+def main(
+    single: str = None,
+    mode: str = "full",
+    no_deploy: bool = False,
+    validation_games: int = None,
+    validation_timeout: int = None,
+    cores: int = None,
+):
     """
     Run training on Modal.
 
@@ -556,6 +572,9 @@ def main(single: str = None, mode: str = "full", no_deploy: bool = False):
         single: Run single configuration (e.g., 'generalist', 'argentum', 'symbiote', 'obsidion')
         mode: Pipeline mode - 'full' (train+validate), 'train-only', or 'validate-only'
         no_deploy: If True, skip auto-deploying weights to local data/weights/
+        validation_games: Number of games per matchup (default: 500)
+        validation_timeout: Timeout in seconds (default: 3600)
+        cores: Number of CPU cores for validation (default: 32, note: also update VALIDATION_CPU constant)
     """
     import tarfile
     import io
@@ -564,14 +583,20 @@ def main(single: str = None, mode: str = "full", no_deploy: bool = False):
 
     run_id = datetime.now().strftime("%Y-%m-%d_%H%M")
 
+    # Apply defaults for optional parameters
+    val_games = validation_games or VALIDATION_GAMES
+    val_timeout = validation_timeout or VALIDATION_TIMEOUT
+    val_cores = cores or VALIDATION_CPU
+
     print("\n" + "=" * 70)
     print("🚀 ESSENCE WARS - MODAL CLOUD TRAINING")
     print("=" * 70)
     print(f"⏰ Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"🆔 Run ID: {run_id}")
     print(f"📋 Mode: {mode}")
-    print(f"💻 Resources: {CPU_COUNT} cores per job, {MEMORY_MB}MB RAM")
-    print(f"⏱️  Timeout: {TIMEOUT_SECONDS}s per job")
+    print(f"💻 Training: {CPU_COUNT} cores per job, {MEMORY_MB}MB RAM")
+    print(f"💻 Validation: {val_cores} cores, {val_games} games/matchup")
+    print(f"⏱️  Timeout: Training {TIMEOUT_SECONDS}s, Validation {val_timeout}s")
     print("=" * 70 + "\n")
 
     # Create workspace snapshot (exclude target/, experiments/, .git/)
@@ -674,9 +699,15 @@ def main(single: str = None, mode: str = "full", no_deploy: bool = False):
         print("🔍 PHASE 2: VALIDATION")
         print("=" * 70 + "\n")
 
-        print(f"🎯 Running balance validation ({VALIDATION_GAMES} games/matchup)...\n")
+        print(f"🎯 Running balance validation ({val_games} games/matchup, {val_cores} cores)...\n")
 
-        validation_result = run_validation.remote(workspace_snapshot, run_id)
+        validation_result = run_validation.remote(
+            workspace_snapshot,
+            run_id,
+            games=val_games,
+            mcts_sims=VALIDATION_MCTS_SIMS,
+            cores=val_cores,
+        )
 
         if validation_result.get('success'):
             # Print validation summary
