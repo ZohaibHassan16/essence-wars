@@ -483,10 +483,10 @@ impl MatchupDiagnostics {
             1.0
         };
 
-        // Game length percentiles
-        let game_length_p10 = percentile(&all_lengths, 10.0).unwrap_or(0.0) as u32;
-        let game_length_p50 = percentile(&all_lengths, 50.0).unwrap_or(0.0) as u32;
-        let game_length_p90 = percentile(&all_lengths, 90.0).unwrap_or(0.0) as u32;
+        // Game length percentiles (percentile function expects 0.0-1.0)
+        let game_length_p10 = percentile(&all_lengths, 0.10).unwrap_or(0.0) as u32;
+        let game_length_p50 = percentile(&all_lengths, 0.50).unwrap_or(0.0) as u32;
+        let game_length_p90 = percentile(&all_lengths, 0.90).unwrap_or(0.0) as u32;
 
         Self {
             p1_win_rate,

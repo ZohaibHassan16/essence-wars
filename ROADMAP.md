@@ -28,7 +28,7 @@
 
 - [ ] Expand card pool to 300 cards (New Horizons Edition)
 - [ ] Balance all faction matchups (45-55% win rates)
-- [ ] Set up Modal cloud tuning (internal tooling)
+- [x] Set up Modal cloud tuning (internal tooling)
 - [ ] Update documentation (`docs/essence-wars-design.md`, `docs/design-engine.md`)
 - [ ] Create card database reference (`docs/cards-new-horizons.md`)
 - [ ] Clean up and document tuning scripts
