@@ -8,11 +8,13 @@ mod random;
 mod greedy;
 mod mcts;
 pub mod weights;
+pub mod factory;
 
 pub use random::RandomBot;
 pub use greedy::GreedyBot;
 pub use mcts::{MctsBot, MctsConfig, MctsNode};
 pub use weights::{BotWeights, GreedyWeights, WeightSet};
+pub use factory::{BotType, BotTypeParseError, create_bot, resolve_weights, resolve_weights_verbose, WeightResolutionError};
 
 use crate::actions::Action;
 use crate::engine::GameEngine;
