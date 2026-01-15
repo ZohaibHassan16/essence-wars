@@ -16,13 +16,13 @@ use std::process;
 use clap::Parser;
 
 use cardgame::arena::{
-    run_match_parallel, run_match_sequential, ActionLogger, MatchConfig, SequentialConfig,
+    load_deck, run_match_parallel, run_match_sequential, validate_faction_deck_binding,
+    ActionLogger, MatchConfig, SequentialConfig,
 };
 use cardgame::bots::{BotType, MctsConfig};
 use cardgame::cards::CardDatabase;
 use cardgame::decks::DeckRegistry;
 use cardgame::execution::configure_thread_pool;
-use cardgame::types::CardId;
 
 /// Arena - Run matches between card game bots
 #[derive(Parser, Debug)]
@@ -199,12 +199,40 @@ fn main() {
     });
 
     // Load decks
-    let (deck1, deck1_name) = load_deck(&args.deck1, &deck_registry, &card_db, "1");
-    let (deck2, deck2_name) = load_deck(&args.deck2, &deck_registry, &card_db, "2");
+    let loaded1 = match load_deck(args.deck1.as_deref(), &deck_registry, &card_db, "1") {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("{}", e);
+            process::exit(1);
+        }
+    };
+    let loaded2 = match load_deck(args.deck2.as_deref(), &deck_registry, &card_db, "2") {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("{}", e);
+            process::exit(1);
+        }
+    };
+    let (deck1, deck1_name) = (loaded1.cards, loaded1.name);
+    let (deck2, deck2_name) = (loaded2.cards, loaded2.name);
 
     // Validate faction-deck binding for specialist agents
-    validate_faction_deck_binding(&bot1_type, &args.deck1, &deck_registry, "Bot 1");
-    validate_faction_deck_binding(&bot2_type, &args.deck2, &deck_registry, "Bot 2");
+    if let Some(warning) = validate_faction_deck_binding(
+        &bot1_type,
+        args.deck1.as_deref(),
+        &deck_registry,
+        "Bot 1",
+    ) {
+        eprintln!("{}", warning);
+    }
+    if let Some(warning) = validate_faction_deck_binding(
+        &bot2_type,
+        args.deck2.as_deref(),
+        &deck_registry,
+        "Bot 2",
+    ) {
+        eprintln!("{}", warning);
+    }
 
     // Get current working directory for weight resolution
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
@@ -349,107 +377,4 @@ fn main() {
 
     // Print results
     println!("{}", stats.summary());
-}
-
-/// Load a deck by ID or use default.
-fn load_deck(
-    deck_id: &Option<String>,
-    registry: &DeckRegistry,
-    card_db: &CardDatabase,
-    player: &str,
-) -> (Vec<CardId>, String) {
-    match deck_id {
-        Some(id) => match registry.get(id) {
-            Some(deck) => {
-                if let Err(e) = deck.validate(card_db) {
-                    eprintln!("Deck '{}' validation error: {}", id, e);
-                    process::exit(1);
-                }
-                (deck.to_card_ids(), deck.name.clone())
-            }
-            None => {
-                eprintln!(
-                    "Deck '{}' not found. Use --list-decks to see available decks.",
-                    id
-                );
-                process::exit(1);
-            }
-        },
-        None => (create_default_deck(), format!("Default Deck {}", player)),
-    }
-}
-
-/// Validate that specialist agents are paired with their faction's decks.
-///
-/// Specialist agents should only play decks of their faction.
-/// Prints a warning if there's a mismatch but allows the game to continue.
-fn validate_faction_deck_binding(
-    bot_type: &BotType,
-    deck_id: &Option<String>,
-    deck_registry: &DeckRegistry,
-    bot_label: &str,
-) {
-    // Only validate for specialist agents
-    let specialist_faction = match bot_type {
-        BotType::AgentSpecialist(faction) => faction,
-        _ => return,
-    };
-
-    // Only validate if a specific deck was chosen
-    let deck_id = match deck_id {
-        Some(id) => id,
-        None => return,
-    };
-
-    // Get the deck and check its faction
-    if let Some(deck) = deck_registry.get(deck_id) {
-        match deck.faction() {
-            Some(deck_faction) => {
-                if deck_faction != *specialist_faction {
-                    eprintln!(
-                        "Warning: {} ({}) is using a {} deck ('{}'), but specialists work best with their faction's decks.",
-                        bot_label,
-                        bot_type.name(),
-                        deck_faction.display_name(),
-                        deck_id
-                    );
-                    eprintln!(
-                        "  Recommended: Use a {} deck for {} specialists.",
-                        specialist_faction.display_name(),
-                        specialist_faction.display_name()
-                    );
-                }
-            }
-            None => {
-                eprintln!(
-                    "Warning: {} ({}) is using a non-faction deck ('{}').",
-                    bot_label,
-                    bot_type.name(),
-                    deck_id
-                );
-                eprintln!(
-                    "  Recommended: Use a {} deck for {} specialists.",
-                    specialist_faction.display_name(),
-                    specialist_faction.display_name()
-                );
-            }
-        }
-    }
-}
-
-/// Create a default deck for testing.
-fn create_default_deck() -> Vec<CardId> {
-    // Aggressive Assault deck from design doc (simplified)
-    let card_ids = [
-        1, 1, // Eager Recruit x2
-        3, 3, // Nimble Scout x2
-        6, 6, // Frontier Ranger x2
-        8, 8, // Shielded Squire x2
-        11, 11, // Centaur Charger x2
-        12, 12, // Blade Dancer x2
-        16, 16, // Piercing Striker x2
-        20, 20, // Siege Breaker x2
-        34, 34, // Lightning Bolt x2
-    ];
-    card_ids.iter().map(|&id| CardId(id)).collect()
 }

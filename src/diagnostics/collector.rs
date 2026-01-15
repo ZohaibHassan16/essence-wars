@@ -8,6 +8,10 @@ use crate::engine::GameEngine;
 use crate::execution::GameSeeds;
 use crate::types::{CardId, PlayerId};
 
+use super::metrics::{
+    CombatEfficiency, GameMetrics, ResourceEfficiency, TempoMetrics, TurnMetrics,
+};
+
 /// Snapshot of game state at a specific point.
 #[derive(Clone, Debug)]
 pub struct TurnSnapshot {
@@ -100,6 +104,8 @@ pub struct GameDiagnostics {
     pub p1_actions: usize,
     /// Total actions taken by Player 2.
     pub p2_actions: usize,
+    /// Game metrics (board advantage, tempo, efficiency).
+    pub metrics: GameMetrics,
 }
 
 /// Configuration for diagnostic runs.
@@ -237,9 +243,26 @@ impl<'a> DiagnosticRunner<'a> {
         let mut p1_actions = 0;
         let mut p2_actions = 0;
 
+        // Tempo tracking
+        let mut tempo = TempoMetrics::default();
+
+        // Resource efficiency tracking
+        let mut p1_essence_spent: u32 = 0;
+        let mut p2_essence_spent: u32 = 0;
+        let mut p1_board_impact: i32 = 0;
+        let mut p2_board_impact: i32 = 0;
+
+        // Combat efficiency tracking
+        let mut combat = CombatEfficiency::default();
+
+        // Per-turn metrics
+        let mut turn_metrics = Vec::new();
+
         let initial_p1_life = engine.state.players[0].life as i32;
         let initial_p2_life = engine.state.players[1].life as i32;
         let mut last_turn = 0;
+        let mut last_p1_life = initial_p1_life;
+        let mut last_p2_life = initial_p2_life;
 
         // Capture initial state
         snapshots.push(TurnSnapshot::capture(&engine));
@@ -253,13 +276,36 @@ impl<'a> DiagnosticRunner<'a> {
 
             // Capture state at start of new turn
             if current_turn != last_turn {
-                snapshots.push(TurnSnapshot::capture(&engine));
+                let snapshot = TurnSnapshot::capture(&engine);
+                snapshots.push(snapshot.clone());
+
+                // Record per-turn metrics
+                turn_metrics.push(TurnMetrics::from_snapshot(
+                    &snapshot,
+                    p1_essence_spent,
+                    p2_essence_spent,
+                ));
+
                 last_turn = current_turn;
             }
 
-            // Track creature count before action
+            // Track creature count and stats before action
             let p1_creatures_before = engine.state.players[0].creatures.len();
             let p2_creatures_before = engine.state.players[1].creatures.len();
+            let p1_essence_before = engine.state.players[0].current_essence;
+            let p2_essence_before = engine.state.players[1].current_essence;
+            let p1_board_stats_before: (i32, i32) = engine.state.players[0]
+                .creatures
+                .iter()
+                .fold((0, 0), |(a, h), c| {
+                    (a + c.attack as i32, h + c.current_health as i32)
+                });
+            let p2_board_stats_before: (i32, i32) = engine.state.players[1]
+                .creatures
+                .iter()
+                .fold((0, 0), |(a, h), c| {
+                    (a + c.attack as i32, h + c.current_health as i32)
+                });
 
             // Select and apply action
             let action = if current_player == PlayerId::PLAYER_ONE {
@@ -274,25 +320,84 @@ impl<'a> DiagnosticRunner<'a> {
                 break;
             }
 
+            // Track essence spent
+            let p1_essence_after = engine.state.players[0].current_essence;
+            let p2_essence_after = engine.state.players[1].current_essence;
+            if p1_essence_before > p1_essence_after {
+                p1_essence_spent += (p1_essence_before - p1_essence_after) as u32;
+            }
+            if p2_essence_before > p2_essence_after {
+                p2_essence_spent += (p2_essence_before - p2_essence_after) as u32;
+            }
+
+            // Track board impact (new creatures added)
+            let p1_board_stats_after: (i32, i32) = engine.state.players[0]
+                .creatures
+                .iter()
+                .fold((0, 0), |(a, h), c| {
+                    (a + c.attack as i32, h + c.current_health as i32)
+                });
+            let p2_board_stats_after: (i32, i32) = engine.state.players[1]
+                .creatures
+                .iter()
+                .fold((0, 0), |(a, h), c| {
+                    (a + c.attack as i32, h + c.current_health as i32)
+                });
+
+            // Only count positive impact (creature plays)
+            let p1_attack_gain = (p1_board_stats_after.0 - p1_board_stats_before.0).max(0);
+            let p1_health_gain = (p1_board_stats_after.1 - p1_board_stats_before.1).max(0);
+            let p2_attack_gain = (p2_board_stats_after.0 - p2_board_stats_before.0).max(0);
+            let p2_health_gain = (p2_board_stats_after.1 - p2_board_stats_before.1).max(0);
+
+            p1_board_impact += p1_attack_gain + p1_health_gain;
+            p2_board_impact += p2_attack_gain + p2_health_gain;
+
+            // Track first creature play
+            let p1_creatures_after = engine.state.players[0].creatures.len();
+            let p2_creatures_after = engine.state.players[1].creatures.len();
+
+            if tempo.p1_first_creature_turn.is_none() && p1_creatures_after > p1_creatures_before {
+                tempo.p1_first_creature_turn = Some(current_turn);
+            }
+            if tempo.p2_first_creature_turn.is_none() && p2_creatures_after > p2_creatures_before {
+                tempo.p2_first_creature_turn = Some(current_turn);
+            }
+
             // Check for first damage
-            if first_damage_to_p1_turn.is_none()
-                && (engine.state.players[0].life as i32) < initial_p1_life
-            {
+            let current_p1_life = engine.state.players[0].life as i32;
+            let current_p2_life = engine.state.players[1].life as i32;
+
+            if first_damage_to_p1_turn.is_none() && current_p1_life < initial_p1_life {
                 first_damage_to_p1_turn = Some(current_turn);
             }
-            if first_damage_to_p2_turn.is_none()
-                && (engine.state.players[1].life as i32) < initial_p2_life
-            {
+            if first_damage_to_p2_turn.is_none() && current_p2_life < initial_p2_life {
                 first_damage_to_p2_turn = Some(current_turn);
             }
 
-            // Check for first creature death
-            if first_creature_death_turn.is_none() {
-                let p1_creatures_after = engine.state.players[0].creatures.len();
-                let p2_creatures_after = engine.state.players[1].creatures.len();
-                if p1_creatures_after < p1_creatures_before
-                    || p2_creatures_after < p2_creatures_before
-                {
+            // Track combat damage
+            let p1_life_lost = (last_p1_life - current_p1_life).max(0) as u32;
+            let p2_life_lost = (last_p2_life - current_p2_life).max(0) as u32;
+            combat.p2_face_damage += p1_life_lost; // P2 dealt damage to P1
+            combat.p1_face_damage += p2_life_lost; // P1 dealt damage to P2
+
+            last_p1_life = current_p1_life;
+            last_p2_life = current_p2_life;
+
+            // Check for creature death
+            if p1_creatures_after < p1_creatures_before {
+                let lost = (p1_creatures_before - p1_creatures_after) as u32;
+                combat.p1_creatures_lost += lost;
+                combat.p2_creatures_killed += lost;
+                if first_creature_death_turn.is_none() {
+                    first_creature_death_turn = Some(current_turn);
+                }
+            }
+            if p2_creatures_after < p2_creatures_before {
+                let lost = (p2_creatures_before - p2_creatures_after) as u32;
+                combat.p2_creatures_lost += lost;
+                combat.p1_creatures_killed += lost;
+                if first_creature_death_turn.is_none() {
                     first_creature_death_turn = Some(current_turn);
                 }
             }
@@ -302,6 +407,20 @@ impl<'a> DiagnosticRunner<'a> {
 
         // Final snapshot
         snapshots.push(TurnSnapshot::capture(&engine));
+
+        // Build resource efficiency
+        let resource_efficiency = ResourceEfficiency {
+            p1_essence_spent,
+            p2_essence_spent,
+            p1_board_impact,
+            p2_board_impact,
+        };
+
+        // Summarize game metrics
+        let mut metrics = GameMetrics::summarize(&turn_metrics, 2.0);
+        metrics.tempo = tempo;
+        metrics.resource_efficiency = resource_efficiency;
+        metrics.combat_efficiency = combat;
 
         GameDiagnostics {
             seed: seeds.game,
@@ -313,6 +432,7 @@ impl<'a> DiagnosticRunner<'a> {
             first_creature_death_turn,
             p1_actions,
             p2_actions,
+            metrics,
         }
     }
 }

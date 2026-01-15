@@ -13,8 +13,13 @@ pub fn print_report(stats: &AggregatedStats) {
     print_overall_statistics(stats);
     print_win_rate_by_length(stats);
     print_first_blood(stats);
+    print_tempo_metrics(stats);
+    print_board_advantage(stats);
+    print_resource_efficiency(stats);
+    print_combat_efficiency(stats);
     print_first_creature_death(stats);
     print_actions_per_game(stats);
+    print_statistical_summary(stats);
     print_resource_curves(stats);
     print_essence_curves(stats);
     print_board_health_curves(stats);
@@ -25,10 +30,15 @@ pub fn print_report(stats: &AggregatedStats) {
 fn print_overall_statistics(stats: &AggregatedStats) {
     println!("=== Overall Statistics ===");
     println!("Total games: {}", stats.total_games);
+
+    // Get statistical analysis for P1 win rate
+    let p1_stats = stats.p1_win_rate_stats();
+
     println!(
-        "P1 wins: {} ({:.1}%)",
+        "P1 wins: {} ({}) {}",
         stats.p1_wins,
-        stats.p1_win_rate() * 100.0
+        p1_stats.format_with_ci(),
+        p1_stats.significance.symbol()
     );
     println!(
         "P2 wins: {} ({:.1}%)",
@@ -40,6 +50,24 @@ fn print_overall_statistics(stats: &AggregatedStats) {
         stats.draws,
         stats.draw_rate() * 100.0
     );
+
+    // Balance assessment
+    let assessment = stats.balance_assessment();
+    println!(
+        "\nBalance Assessment: {} {}",
+        assessment.symbol(),
+        assessment.description()
+    );
+
+    // Show statistical details if significant
+    if p1_stats.significance != super::statistics::SignificanceLevel::NotSignificant {
+        println!(
+            "  Chi-square: {:.2}, p-value: {:.4} ({})",
+            p1_stats.chi_square,
+            p1_stats.p_value,
+            p1_stats.significance.description()
+        );
+    }
 }
 
 fn print_win_rate_by_length(stats: &AggregatedStats) {
@@ -74,15 +102,162 @@ fn print_first_blood(stats: &AggregatedStats) {
     println!("\n=== First Blood (First to Deal Damage) ===");
     let first_blood_total = stats.p1_first_blood + stats.p2_first_blood;
     if first_blood_total > 0 {
+        let fb_stats = stats.first_blood_stats();
         println!(
-            "P1 first blood: {} ({:.1}%)",
+            "P1 first blood: {} ({}) {}",
             stats.p1_first_blood,
-            100.0 * stats.p1_first_blood as f64 / first_blood_total as f64
+            fb_stats.format_with_ci(),
+            fb_stats.significance.symbol()
         );
         println!(
             "P2 first blood: {} ({:.1}%)",
             stats.p2_first_blood,
             100.0 * stats.p2_first_blood as f64 / first_blood_total as f64
+        );
+
+        if fb_stats.significance != super::statistics::SignificanceLevel::NotSignificant {
+            println!(
+                "  → First blood advantage is {} (p = {:.4})",
+                fb_stats.significance.description(),
+                fb_stats.p_value
+            );
+        }
+    }
+}
+
+fn print_tempo_metrics(stats: &AggregatedStats) {
+    println!("\n=== Tempo Metrics ===");
+
+    // First creature play with confidence interval
+    let first_creature_total = stats.p1_first_creature + stats.p2_first_creature;
+    if first_creature_total > 0 {
+        let fc_stats = stats.first_creature_stats();
+        println!(
+            "First creature played: P1 {} ({}) {}, P2 {} ({:.1}%)",
+            stats.p1_first_creature,
+            fc_stats.format_with_ci(),
+            fc_stats.significance.symbol(),
+            stats.p2_first_creature,
+            100.0 * stats.p2_first_creature as f64 / first_creature_total as f64
+        );
+
+        if fc_stats.significance != super::statistics::SignificanceLevel::NotSignificant {
+            println!(
+                "  → First creature advantage is {} (p = {:.4})",
+                fc_stats.significance.description(),
+                fc_stats.p_value
+            );
+        }
+    }
+
+    // Average first creature turn
+    let p1_avg = stats.p1_avg_first_creature_turn();
+    let p2_avg = stats.p2_avg_first_creature_turn();
+    match (p1_avg, p2_avg) {
+        (Some(t1), Some(t2)) => {
+            println!("Avg first creature turn: P1 {:.2}, P2 {:.2}", t1, t2);
+            let diff = t1 - t2;
+            if diff.abs() > 0.5 {
+                if diff > 0.0 {
+                    println!("  → P2 plays first creature {:.2} turns earlier on average", diff);
+                } else {
+                    println!(
+                        "  → P1 plays first creature {:.2} turns earlier on average",
+                        -diff
+                    );
+                }
+            }
+        }
+        (Some(t1), None) => println!("Avg first creature turn: P1 {:.2}, P2 N/A", t1),
+        (None, Some(t2)) => println!("Avg first creature turn: P1 N/A, P2 {:.2}", t2),
+        (None, None) => {}
+    }
+}
+
+fn print_board_advantage(stats: &AggregatedStats) {
+    println!("\n=== Board Advantage ===");
+    println!(
+        "Average board advantage score: {:.2} (positive = P1 ahead)",
+        stats.avg_board_advantage()
+    );
+
+    let total_turns =
+        stats.total_turns_p1_ahead + stats.total_turns_p2_ahead + stats.total_turns_even;
+    if total_turns > 0 {
+        println!(
+            "Turns P1 ahead: {} ({:.1}%)",
+            stats.total_turns_p1_ahead,
+            stats.pct_turns_p1_ahead() * 100.0
+        );
+        println!(
+            "Turns P2 ahead: {} ({:.1}%)",
+            stats.total_turns_p2_ahead,
+            stats.pct_turns_p2_ahead() * 100.0
+        );
+        println!(
+            "Turns even: {} ({:.1}%)",
+            stats.total_turns_even,
+            (1.0 - stats.pct_turns_p1_ahead() - stats.pct_turns_p2_ahead()) * 100.0
+        );
+    }
+}
+
+fn print_resource_efficiency(stats: &AggregatedStats) {
+    println!("\n=== Resource Efficiency ===");
+
+    // Essence spent
+    println!(
+        "Avg essence spent/game: P1 {:.1}, P2 {:.1}",
+        stats.p1_avg_essence_spent(),
+        stats.p2_avg_essence_spent()
+    );
+
+    // Efficiency ratio
+    let p1_eff = stats.p1_resource_efficiency();
+    let p2_eff = stats.p2_resource_efficiency();
+    println!(
+        "Board impact per essence: P1 {:.2}, P2 {:.2}",
+        p1_eff, p2_eff
+    );
+
+    if p1_eff > 0.0 && p2_eff > 0.0 {
+        let diff = p1_eff - p2_eff;
+        if diff.abs() > 0.1 {
+            if diff > 0.0 {
+                println!("  → P1 is {:.1}% more efficient with essence", (diff / p2_eff) * 100.0);
+            } else {
+                println!("  → P2 is {:.1}% more efficient with essence", (-diff / p1_eff) * 100.0);
+            }
+        }
+    }
+}
+
+fn print_combat_efficiency(stats: &AggregatedStats) {
+    println!("\n=== Combat Efficiency ===");
+
+    // Face damage
+    println!(
+        "Avg face damage/game: P1 {:.1}, P2 {:.1}",
+        stats.p1_avg_face_damage(),
+        stats.p2_avg_face_damage()
+    );
+
+    // Trade ratios
+    let p1_tr = stats.p1_trade_ratio();
+    let p2_tr = stats.p2_trade_ratio();
+    println!(
+        "Trade ratio (kills/losses): P1 {:.2}, P2 {:.2}",
+        p1_tr, p2_tr
+    );
+
+    // Total creatures killed/lost
+    if stats.p1_total_creatures_killed > 0 || stats.p2_total_creatures_killed > 0 {
+        println!(
+            "Total creatures: P1 killed {}, lost {} | P2 killed {}, lost {}",
+            stats.p1_total_creatures_killed,
+            stats.p1_total_creatures_lost,
+            stats.p2_total_creatures_killed,
+            stats.p2_total_creatures_lost
         );
     }
 }
@@ -188,17 +363,62 @@ fn print_notable_games(stats: &AggregatedStats) {
     }
 }
 
+fn print_statistical_summary(stats: &AggregatedStats) {
+    println!("\n=== Statistical Summary ===");
+
+    // Game length percentiles
+    if let Some((p10, p50, p90)) = stats.game_length_percentiles() {
+        println!(
+            "Game length: P10={:.0}, P50={:.0}, P90={:.0} turns",
+            p10, p50, p90
+        );
+    }
+
+    // Board advantage percentiles
+    if let Some((p10, p50, p90)) = stats.board_advantage_percentiles() {
+        println!(
+            "Board advantage: P10={:.1}, P50={:.1}, P90={:.1} (positive = P1 ahead)",
+            p10, p50, p90
+        );
+    }
+}
+
 fn print_analysis_hints(stats: &AggregatedStats) {
     println!("\n=== Analysis Hints ===");
-    let p1_wr = stats.p1_win_rate();
-    if p1_wr < 0.45 {
-        println!(
-            "⚠ P1 win rate ({:.1}%) is below expected 50%",
-            p1_wr * 100.0
-        );
+    let p1_stats = stats.p1_win_rate_stats();
+    let p1_wr = p1_stats.proportion;
 
-        if stats.p2_first_blood > stats.p1_first_blood {
-            println!("  → P2 gets first blood more often - possible tempo advantage");
+    // Use statistical significance for hints
+    if stats.has_significant_imbalance() {
+        if p1_wr < 0.5 {
+            println!(
+                "⚠ P1 win rate ({}) is significantly below 50%",
+                p1_stats.format_with_ci()
+            );
+        } else {
+            println!(
+                "⚠ P1 win rate ({}) is significantly above 50%",
+                p1_stats.format_with_ci()
+            );
+        }
+
+        // Analyze contributing factors
+        let fb_stats = stats.first_blood_stats();
+        if fb_stats.significance != super::statistics::SignificanceLevel::NotSignificant {
+            if fb_stats.proportion > 0.5 && p1_wr > 0.5 {
+                println!("  → P1's first blood advantage correlates with higher win rate");
+            } else if fb_stats.proportion < 0.5 && p1_wr < 0.5 {
+                println!("  → P2's first blood advantage correlates with higher win rate");
+            }
+        }
+
+        let fc_stats = stats.first_creature_stats();
+        if fc_stats.significance != super::statistics::SignificanceLevel::NotSignificant {
+            if fc_stats.proportion > 0.5 && p1_wr > 0.5 {
+                println!("  → P1's tempo advantage (first creature) correlates with wins");
+            } else if fc_stats.proportion < 0.5 && p1_wr < 0.5 {
+                println!("  → P2's tempo advantage (first creature) correlates with wins");
+            }
         }
 
         if stats.games_early > 0
@@ -206,10 +426,8 @@ fn print_analysis_hints(stats: &AggregatedStats) {
         {
             println!("  → P1 struggles especially in early game");
         }
-
-        if stats.p2_actions_total > stats.p1_actions_total {
-            println!("  → P2 takes more actions on average");
-        }
+    } else {
+        println!("✓ No significant P1/P2 imbalance detected");
     }
 }
 

@@ -27,6 +27,7 @@
 //! ```
 
 mod config;
+mod deck_utils;
 mod executor;
 mod logger;
 mod runner;
@@ -34,6 +35,9 @@ mod stats;
 
 // Configuration types
 pub use config::{MatchConfig, SequentialConfig};
+
+// Deck utilities
+pub use deck_utils::{create_default_deck, load_deck, validate_faction_deck_binding, LoadedDeck};
 
 // Execution functions
 pub use executor::{run_match_parallel, run_match_sequential};
