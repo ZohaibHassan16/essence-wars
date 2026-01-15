@@ -595,6 +595,7 @@ impl EffectQueue {
             keywords,
             status: Default::default(),
             turn_played: state.current_turn,
+            frenzy_stacks: 0,
         };
 
         state.players[owner.index()].creatures.push(creature);

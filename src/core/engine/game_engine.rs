@@ -304,6 +304,11 @@ impl<'a> GameEngine<'a> {
         // Process Ephemeral - creatures with this keyword die at end of turn
         self.process_ephemeral_deaths(current_player);
 
+        // Reset Frenzy stacks - bonus resets at end of turn
+        for creature in &mut self.state.players[current_player.index()].creatures {
+            creature.frenzy_stacks = 0;
+        }
+
         // Switch to opponent
         self.state.active_player = self.state.active_player.opponent();
 
@@ -503,6 +508,7 @@ impl<'a> GameEngine<'a> {
                     keywords,
                     status: CreatureStatus::default(),
                     turn_played: self.state.current_turn,
+                    frenzy_stacks: 0,
                 };
 
                 // Add creature to board

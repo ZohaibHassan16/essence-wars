@@ -48,6 +48,7 @@ pub struct Creature {
     pub keywords: Keywords,
     pub status: CreatureStatus,
     pub turn_played: u16,
+    pub frenzy_stacks: u8,    // Frenzy bonus: +1 attack per stack (resets at end of turn)
 }
 
 impl Creature {

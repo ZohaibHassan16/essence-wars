@@ -24,6 +24,8 @@ keyword_ephemeral = -1.6142817735671997
 keyword_regenerate = 0.7172998189926147
 keyword_stealth = 4.537453651428223
 keyword_charge = 0.6456339359283447
+keyword_frenzy = 3.5
+keyword_volatile = 4.0
 win_bonus = 999.5003051757813
 lose_penalty = -1000.3958740234375
 

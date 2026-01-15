@@ -118,6 +118,7 @@ fn test_turn_start_creatures_can_attack() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 0, // Played on a previous turn
+        frenzy_stacks: 0,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -172,6 +173,7 @@ fn test_win_by_damage() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 0, // Not summoning sick
+        frenzy_stacks: 0,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -371,6 +373,7 @@ fn test_creature_combat() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 0,
+        frenzy_stacks: 0,
     };
     engine.state.players[0].creatures.push(p1_creature);
 
@@ -387,6 +390,7 @@ fn test_creature_combat() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 0,
+        frenzy_stacks: 0,
     };
     engine.state.players[1].creatures.push(p2_creature);
 
@@ -432,6 +436,7 @@ fn test_direct_face_attack() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 0,
+        frenzy_stacks: 0,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -579,6 +584,7 @@ fn test_use_ability_basic() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 0,
+        frenzy_stacks: 0,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -596,6 +602,7 @@ fn test_use_ability_basic() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 0,
+        frenzy_stacks: 0,
     };
     engine.state.players[1].creatures.push(target_creature);
 
@@ -635,6 +642,7 @@ fn test_use_ability_silenced_fails() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 0,
+        frenzy_stacks: 0,
     };
     // Silence the creature
     creature.status.set_silenced(true);
@@ -654,6 +662,7 @@ fn test_use_ability_silenced_fails() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 0,
+        frenzy_stacks: 0,
     };
     engine.state.players[1].creatures.push(target_creature);
 
@@ -713,6 +722,7 @@ fn test_use_ability_invalid_ability_index() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 0,
+        frenzy_stacks: 0,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -747,6 +757,7 @@ fn test_use_ability_self_target() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 0,
+        frenzy_stacks: 0,
     };
     engine.state.players[0].creatures.push(creature);
 

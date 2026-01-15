@@ -117,6 +117,7 @@ fn make_creature(
         keywords,
         status: CreatureStatus::default(),
         turn_played,
+        frenzy_stacks: 0,
     }
 }
 

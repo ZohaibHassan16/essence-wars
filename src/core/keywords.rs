@@ -27,11 +27,15 @@ impl Keywords {
     pub const STEALTH: u16     = 0x0400;  // bit 10 - untargetable by enemy attacks/spells
     pub const CHARGE: u16      = 0x0800;  // bit 11 - +2 attack when attacking
 
+    // Symbiote keywords (bits 12-13) - added in v0.5.0 for balance
+    pub const FRENZY: u16      = 0x1000;  // bit 12 - +1 attack after each attack this turn
+    pub const VOLATILE: u16    = 0x2000;  // bit 13 - deal 2 damage to all enemy creatures on death
+
     /// Create empty keywords
     pub const fn none() -> Self { Self(0) }
 
-    /// Create with all keywords (12 keywords currently defined)
-    pub const fn all() -> Self { Self(0x0FFF) }
+    /// Create with all keywords (14 keywords currently defined)
+    pub const fn all() -> Self { Self(0x3FFF) }
 
     // Fast keyword checks for original keywords - single bitwise AND
     #[inline(always)] pub const fn has_rush(self) -> bool { self.0 & Self::RUSH != 0 }
@@ -48,6 +52,10 @@ impl Keywords {
     #[inline(always)] pub const fn has_regenerate(self) -> bool { self.0 & Self::REGENERATE != 0 }
     #[inline(always)] pub const fn has_stealth(self) -> bool { self.0 & Self::STEALTH != 0 }
     #[inline(always)] pub const fn has_charge(self) -> bool { self.0 & Self::CHARGE != 0 }
+
+    // Fast keyword checks for Symbiote keywords
+    #[inline(always)] pub const fn has_frenzy(self) -> bool { self.0 & Self::FRENZY != 0 }
+    #[inline(always)] pub const fn has_volatile(self) -> bool { self.0 & Self::VOLATILE != 0 }
 
     // Generic check
     #[inline(always)]
@@ -74,6 +82,10 @@ impl Keywords {
     pub const fn with_stealth(self) -> Self { Self(self.0 | Self::STEALTH) }
     pub const fn with_charge(self) -> Self { Self(self.0 | Self::CHARGE) }
 
+    // Builder pattern for Symbiote keywords
+    pub const fn with_frenzy(self) -> Self { Self(self.0 | Self::FRENZY) }
+    pub const fn with_volatile(self) -> Self { Self(self.0 | Self::VOLATILE) }
+
     /// Combine keywords from two sources
     pub const fn union(self, other: Keywords) -> Keywords {
         Keywords(self.0 | other.0)
@@ -98,6 +110,9 @@ impl Keywords {
                 "regenerate" => kw.add(Self::REGENERATE),
                 "stealth" => kw.add(Self::STEALTH),
                 "charge" => kw.add(Self::CHARGE),
+                // Symbiote keywords
+                "frenzy" => kw.add(Self::FRENZY),
+                "volatile" => kw.add(Self::VOLATILE),
                 _ => {} // Ignore unknown keywords
             }
         }
@@ -121,6 +136,9 @@ impl Keywords {
         if self.has_regenerate() { names.push("Regenerate"); }
         if self.has_stealth() { names.push("Stealth"); }
         if self.has_charge() { names.push("Charge"); }
+        // Symbiote keywords
+        if self.has_frenzy() { names.push("Frenzy"); }
+        if self.has_volatile() { names.push("Volatile"); }
         names
     }
 }

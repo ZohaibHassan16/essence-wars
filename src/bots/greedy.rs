@@ -155,6 +155,9 @@ impl<'a> GreedyBot<'a> {
             if kw.has_regenerate() { score += w.keyword_regenerate; }
             if kw.has_stealth() { score += w.keyword_stealth; }
             if kw.has_charge() { score += w.keyword_charge; }
+            // Keyword bonuses (Symbiote v0.5.0)
+            if kw.has_frenzy() { score += w.keyword_frenzy; }
+            if kw.has_volatile() { score += w.keyword_volatile; }
         }
 
         // Enemy creatures (these weights are typically negative)

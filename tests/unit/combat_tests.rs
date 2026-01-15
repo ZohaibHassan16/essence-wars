@@ -158,6 +158,7 @@ fn create_test_creature(
         keywords,
         status: CreatureStatus::default(),
         turn_played: 1, // Played last turn, so no summoning sickness
+        frenzy_stacks: 0,
     }
 }
 

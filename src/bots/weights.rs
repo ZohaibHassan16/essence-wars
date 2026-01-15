@@ -146,6 +146,12 @@ pub struct GreedyWeights {
     /// Value for each creature with Charge (+2 attack when attacking)
     pub keyword_charge: f32,
 
+    // === Keyword Values (Symbiote - v0.5.0) ===
+    /// Value for each creature with Frenzy (+1 attack after each attack this turn)
+    pub keyword_frenzy: f32,
+    /// Value for each creature with Volatile (deal 2 damage to all enemies on death)
+    pub keyword_volatile: f32,
+
     // === Strategic Bonuses ===
     /// Bonus for winning the game (should be very high)
     pub win_bonus: f32,
@@ -179,6 +185,8 @@ impl GreedyWeights {
             keyword_regenerate: 0.0,
             keyword_stealth: 0.0,
             keyword_charge: 0.0,
+            keyword_frenzy: 0.0,
+            keyword_volatile: 0.0,
             win_bonus: 0.0,
             lose_penalty: 0.0,
         }
@@ -209,6 +217,8 @@ impl GreedyWeights {
             self.keyword_regenerate,
             self.keyword_stealth,
             self.keyword_charge,
+            self.keyword_frenzy,
+            self.keyword_volatile,
             self.win_bonus,
             self.lose_penalty,
         ]
@@ -242,8 +252,10 @@ impl GreedyWeights {
             keyword_regenerate: v[19],
             keyword_stealth: v[20],
             keyword_charge: v[21],
-            win_bonus: v[22],
-            lose_penalty: v[23],
+            keyword_frenzy: v[22],
+            keyword_volatile: v[23],
+            win_bonus: v[24],
+            lose_penalty: v[25],
         })
     }
 
@@ -272,13 +284,15 @@ impl GreedyWeights {
             (0.0, 5.0),    // keyword_regenerate (positive - survivability)
             (0.0, 5.0),    // keyword_stealth (positive - evasion)
             (0.0, 5.0),    // keyword_charge (positive - burst damage)
+            (0.0, 5.0),    // keyword_frenzy (positive - multi-attack aggro)
+            (0.0, 5.0),    // keyword_volatile (positive - death trigger AOE)
             (100.0, 10000.0), // win_bonus
             (-10000.0, -100.0), // lose_penalty
         ]
     }
 
     /// Number of weight parameters.
-    pub const PARAM_COUNT: usize = 24;
+    pub const PARAM_COUNT: usize = 26;
 }
 
 impl Default for GreedyWeights {
@@ -318,6 +332,10 @@ impl Default for GreedyWeights {
             keyword_regenerate: 3.0,  // Positive - survivability
             keyword_stealth: 3.0,     // Positive - evasion
             keyword_charge: 2.0,      // Positive - burst damage
+
+            // Symbiote keywords (v0.5.0)
+            keyword_frenzy: 2.5,      // Positive - multi-attack aggro
+            keyword_volatile: 3.0,    // Positive - death trigger AOE
 
             // Win/Lose - must be high to ensure bot prioritizes winning
             win_bonus: 1000.0,

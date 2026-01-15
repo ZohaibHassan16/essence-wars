@@ -165,6 +165,70 @@ cards:
         amount: 3
     rarity: Uncommon
 
+  # === SYMBIOTE FRENZY CREATURES (v0.5.0) ===
+  # Frenzy: +1 attack after each attack this turn
+  - id: 2015
+    name: "Feral Striker"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: [Frenzy]
+    rarity: Uncommon
+    tags: [Beast]
+
+  - id: 2016
+    name: "Frenzied Brood"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: [Rush, Frenzy]
+    rarity: Uncommon
+    tags: [Swarm]
+
+  - id: 2017
+    name: "Ravager Alpha"
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords: [Frenzy]
+    rarity: Rare
+    tags: [Beast]
+
+  # === SYMBIOTE VOLATILE CREATURES (v0.5.0) ===
+  # Volatile: Deal 2 damage to all enemy creatures on death
+  - id: 2018
+    name: "Unstable Spore"
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 1
+    keywords: [Volatile]
+    rarity: Common
+    tags: [Parasite]
+
+  - id: 2019
+    name: "Explosive Broodling"
+    cost: 2
+    card_type: creature
+    attack: 1
+    health: 2
+    keywords: [Rush, Volatile]
+    rarity: Uncommon
+    tags: [Swarm]
+
+  - id: 2020
+    name: "Deathburst Lurker"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: [Volatile]
+    rarity: Rare
+    tags: [Beast]
+
   # === SYMBIOTE SUPPORTS ===
   - id: 2014
     name: "Spawning Pool"

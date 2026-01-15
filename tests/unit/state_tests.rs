@@ -45,6 +45,7 @@ fn test_player_state_creature_slots() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 1,
+        frenzy_stacks: 0,
     });
 
     // Next empty slot should be 1
@@ -82,6 +83,7 @@ fn test_creature_can_attack() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 1,
+        frenzy_stacks: 0,
     };
 
     // Can attack on turn 2 (no summoning sickness)
@@ -134,6 +136,7 @@ fn test_debug_validate_with_creatures() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 1,
+        frenzy_stacks: 0,
     });
 
     state.debug_validate(); // Should not panic
@@ -159,6 +162,7 @@ fn test_debug_validate_catches_wrong_owner() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 1,
+        frenzy_stacks: 0,
     });
 
     state.debug_validate(); // Should panic
@@ -184,6 +188,7 @@ fn test_debug_validate_catches_dead_creature() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 1,
+        frenzy_stacks: 0,
     });
 
     state.debug_validate(); // Should panic
@@ -209,6 +214,7 @@ fn test_debug_validate_catches_duplicate_slot() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 1,
+        frenzy_stacks: 0,
     });
     state.players[0].creatures.push(Creature {
         instance_id: CreatureInstanceId(1),
@@ -223,6 +229,7 @@ fn test_debug_validate_catches_duplicate_slot() {
         keywords: Keywords::none(),
         status: CreatureStatus::default(),
         turn_played: 1,
+        frenzy_stacks: 0,
     });
 
     state.debug_validate(); // Should panic

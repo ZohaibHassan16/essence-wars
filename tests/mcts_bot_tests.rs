@@ -62,6 +62,7 @@ fn test_mcts_finds_lethal() {
         keywords: Keywords::none().with_rush(),
         status: CreatureStatus::default(), // Not exhausted
         turn_played: engine.turn_number(),
+        frenzy_stacks: 0,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -131,6 +132,7 @@ fn test_attack_face_ends_game() {
         keywords: Keywords::none().with_rush(),
         status: CreatureStatus::default(),
         turn_played: engine.turn_number(),
+        frenzy_stacks: 0,
     };
     engine.state.players[0].creatures.push(creature);
 

@@ -77,11 +77,16 @@ pub fn resolve_combat(
     // CHARGE BONUS: +2 attack when attacking
     const CHARGE_BONUS: u8 = 2;
     let base_attack = attacker.attack.max(0) as u8;
-    let attacker_attack = if attacker.keywords.has_charge() {
-        base_attack.saturating_add(CHARGE_BONUS)
-    } else {
-        base_attack
-    };
+
+    // Apply combat bonuses: Charge (+2) and Frenzy (accumulated stacks from prior attacks this turn)
+    let mut attacker_attack = base_attack;
+    if attacker.keywords.has_charge() {
+        attacker_attack = attacker_attack.saturating_add(CHARGE_BONUS);
+    }
+    // FRENZY BONUS: +1 attack per stack (earned from previous attacks this turn)
+    if attacker.keywords.has_frenzy() {
+        attacker_attack = attacker_attack.saturating_add(attacker.frenzy_stacks);
+    }
     let attacker_keywords = attacker.keywords;
 
     // STEALTH BREAK: When a creature attacks, it loses Stealth
@@ -573,9 +578,15 @@ fn apply_combat_damage(
 }
 
 /// Mark a creature as having attacked this turn.
+/// Also increments frenzy_stacks if the creature has Frenzy keyword.
 fn mark_attacked(state: &mut GameState, player: PlayerId, slot: Slot) {
     if let Some(creature) = state.players[player.index()].get_creature_mut(slot) {
         creature.status.set_exhausted(true);
+
+        // FRENZY: Gain +1 attack stack for subsequent attacks this turn
+        if creature.keywords.has_frenzy() {
+            creature.frenzy_stacks = creature.frenzy_stacks.saturating_add(1);
+        }
     }
 }
 
@@ -769,10 +780,34 @@ fn process_creature_death(
     slot: Slot,
 ) {
     // Get creature info before removal
-    let (card_id, is_silenced) = match state.players[player.index()].get_creature(slot) {
-        Some(c) => (c.card_id, c.status.is_silenced()),
+    let (card_id, is_silenced, has_volatile) = match state.players[player.index()].get_creature(slot) {
+        Some(c) => (c.card_id, c.status.is_silenced(), c.keywords.has_volatile()),
         None => return,
     };
+
+    // VOLATILE: Deal 2 damage to all enemy creatures on death (if not silenced)
+    const VOLATILE_DAMAGE: i8 = 2;
+    let enemy_player = player.opponent();
+    let mut enemies_killed: Vec<Slot> = Vec::new();
+
+    if has_volatile && !is_silenced {
+        // Collect enemy creature slots first to avoid borrow issues
+        let enemy_slots: Vec<Slot> = state.players[enemy_player.index()]
+            .creatures
+            .iter()
+            .map(|c| c.slot)
+            .collect();
+
+        // Deal 2 damage to each enemy creature
+        for enemy_slot in enemy_slots {
+            if let Some(enemy) = state.players[enemy_player.index()].get_creature_mut(enemy_slot) {
+                enemy.current_health -= VOLATILE_DAMAGE;
+                if enemy.current_health <= 0 {
+                    enemies_killed.push(enemy_slot);
+                }
+            }
+        }
+    }
 
     // Trigger OnDeath effects (if not silenced)
     if !is_silenced {
@@ -833,6 +868,11 @@ fn process_creature_death(
 
     // Remove the dead creature from the board
     state.players[player.index()].creatures.retain(|c| c.slot != slot);
+
+    // Process deaths of enemy creatures killed by Volatile (can chain!)
+    for enemy_slot in enemies_killed {
+        process_creature_death(state, card_db, effect_queue, enemy_player, enemy_slot);
+    }
 }
 
 /// Check if the game is over due to a player reaching 0 life.
