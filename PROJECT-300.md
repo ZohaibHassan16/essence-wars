@@ -1,19 +1,19 @@
 # The "Project 300" Roadmap
 
-**Mission**: Design and implement 300 Cards for the initial `New Horizons` Edition of Essence Wars. 
+**Mission**: Design and implement 300 Cards for the initial `New Horizons` Edition of Essence Wars.
 
-## Current State (v0.5.0)
+## Current State (v0.5.0 - Phase 2B Complete)
 
 ### Card Pool Summary
 | Category | Count | Target |
 |----------|-------|--------|
-| **Total Cards** | 57 | 300 |
+| **Total Cards** | 80 | 300 |
 | Argentum Combine | 15 | ~75 |
-| Symbiote Circles | 13 | ~75 |
+| Symbiote Circles | 35 | ~75 |
 | Obsidion Syndicate | 15 | ~75 |
-| Free-Walkers (Neutral) | 14 | ~75 |
-| **Support Cards** | 3 | ~30 |
-| **Legendary Cards** | 2 | ~12 |
+| Free-Walkers (Neutral) | 15 | ~75 |
+| **Support Cards** | 7 | ~30 |
+| **Legendary Cards** | 3 | ~12 |
 
 ### Balance Baseline (20,000 games, validated 2026-01-15)
 | Metric | Value | Status |
@@ -34,8 +34,8 @@
 **Key Finding:** Symbiote is the weakest faction and needs targeted help.
 
 ### Keyword Slots
-- **Used:** 12 of 16 (Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick, Ephemeral, Regenerate, Stealth, Charge)
-- **Available:** 4 slots reserved for balance tuning
+- **Used:** 14 of 16 (Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick, Ephemeral, Regenerate, Stealth, Charge, **Frenzy**, **Volatile**)
+- **Available:** 2 slots reserved for future balance tuning
 
 ---
 
@@ -56,7 +56,7 @@
 data/
 ├── cards/core_set/
 │   ├── argentum.yaml   (IDs 1000-1014)
-│   ├── symbiote.yaml   (IDs 2000-2014)
+│   ├── symbiote.yaml   (IDs 2000-2034)
 │   ├── obsidion.yaml   (IDs 3000-3014)
 │   └── neutral.yaml    (IDs 4000-4014)
 ├── decks/
@@ -65,7 +65,9 @@ data/
 │   │   └── midrange.toml
 │   ├── symbiote/
 │   │   ├── aggro.toml
-│   │   └── tempo.toml
+│   │   ├── tempo.toml
+│   │   ├── frenzy_aggro.toml
+│   │   └── volatile_swarm.toml
 │   └── obsidion/
 │       ├── burst.toml
 │       └── control.toml
@@ -76,11 +78,11 @@ data/
 
 ---
 
-## Milestone 2: Symbiote Rising (Balance Fix)
+## Milestone 2: Symbiote Rising (Balance Fix) [COMPLETED]
 
 **Goal:** Address Symbiote's 41.7% win rate through new keywords and targeted card additions.
 
-### Phase 2A: New Keywords (Symbiote Focus)
+### Phase 2A: New Keywords (Symbiote Focus) [DONE]
 
 **Strategy:** Use 2 of 4 remaining keyword slots to give Symbiote aggressive tools.
 
@@ -89,34 +91,35 @@ data/
 | **Frenzy** | +1 attack after each attack this turn | Symbiote | Rewards aggressive multi-attack strategies |
 | **Volatile** | Deal 2 damage to all enemy creatures on death | Symbiote | Punishes Argentum's board-centric control |
 
-**Implementation:**
-1. Add keywords to `src/core/keywords.rs` (bits 12-13)
-2. Implement Frenzy in combat resolution
-3. Implement Volatile as OnDeath trigger
-4. Create 4-6 cards using each keyword
-5. Run 20k game validation via Modal
+**Completed Implementation:**
+- Added keywords to `src/core/keywords.rs` (bits 12-13)
+- Frenzy: +1 attack per stack after each attack, stacks reset at end of turn
+- Volatile: Deals 2 damage to all enemy creatures on death, can chain
+- Created 6 initial cards using the keywords (IDs 2015-2020)
+- Updated bot weights with keyword_frenzy and keyword_volatile parameters
 
 **Reserved Keywords (Phase 2 later):**
 - 2 slots kept for fine-tuning after initial balance pass
 - Candidates: Fortify (Argentum defense), Siphon (Obsidion utility)
 
-### Phase 2B: Symbiote Card Wave (+20 cards)
+### Phase 2B: Symbiote Card Wave (+14 cards) [DONE]
 
 **Focus:** "Sticky" minions and anti-control tools
 
 | Card Type | Count | Theme |
 |-----------|-------|-------|
-| Frenzy creatures | 4-6 | Multi-attack aggro |
-| Volatile creatures | 4-6 | Death synergy / board punish |
-| Token generators | 3-4 | Swarm enablers |
-| Buff spells | 2-3 | Combat tricks |
-| Support cards | 2-3 | Passive swarm buffs |
+| Frenzy creatures | 7 | Multi-attack aggro (IDs 2015-2017, 2021-2024) |
+| Volatile creatures | 7 | Death synergy / board punish (IDs 2018-2020, 2025-2028) |
+| Buff spells | 3 | Combat tricks (IDs 2029-2031) |
+| Support cards | 3 | Passive swarm buffs (IDs 2032-2034) |
 
-**New Decks:**
-- `symbiote/frenzy_aggro.toml` - All-in attack deck
-- `symbiote/volatile_swarm.toml` - Death trigger synergy
+**Note:** Token generators deferred - requires engine support for Summon in YAML effects.
 
-### Phase 2C: Validation & Tuning
+**New Decks Created:**
+- `symbiote/frenzy_aggro.toml` - All-in attack deck with Frenzy synergy
+- `symbiote/volatile_swarm.toml` - Death trigger synergy deck
+
+### Phase 2C: Validation & Tuning [PENDING]
 
 1. Run 20k game validation (Modal cloud)
 2. Target: Symbiote 47-53% win rate
@@ -322,23 +325,22 @@ cargo run --release --bin validate -- --games 20000 --output validation.json
 
 ## Summary: Card Targets by Milestone
 
-| Milestone | Cards Added | Running Total |
-|-----------|-------------|---------------|
-| M1 (Complete) | 0 | 57 |
-| M2: Symbiote Rising | +20 | 77 |
-| M3: Support Wave | +33 | 110 |
-| M4: Engine Work | 0 | 110 |
-| M5: Tactical Evolution | +60 | 170 |
-| M6: Legends | +130 | **300** |
+| Milestone | Cards Added | Running Total | Status |
+|-----------|-------------|---------------|--------|
+| M1 (Complete) | 0 | 60 | Done |
+| M2: Symbiote Rising | +20 | **80** | **Phase 2A/2B Done, 2C Pending** |
+| M3: Support Wave | +30 | 110 | Planned |
+| M4: Engine Work | 0 | 110 | Planned |
+| M5: Tactical Evolution | +60 | 170 | Planned |
+| M6: Legends | +130 | **300** | Planned |
 
 ---
 
 ## Immediate Next Steps
 
-1. **Implement Frenzy keyword** in `src/core/keywords.rs`
-2. **Implement Volatile keyword** with OnDeath damage
-3. **Design 10-12 cards** using new keywords
-4. **Run 20k validation** to measure impact
-5. **Iterate** based on results
+1. **Run Phase 2C validation** - 20k games via Modal cloud
+2. **Measure Symbiote win rate** - Target 47-53%
+3. **Retune specialist weights** if needed
+4. **Begin Milestone 3** - Support Card Expansion
 
-Let's make Symbiote great again!
+Let's validate the Symbiote changes!
