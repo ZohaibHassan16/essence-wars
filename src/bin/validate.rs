@@ -4,9 +4,9 @@
 //! using MCTS agents with faction-specific weights.
 //!
 //! Usage:
-//!   cargo run --release --bin validate -- --games 100
+//!   cargo run --release --bin validate -- --games 100              # Quiet output (default)
 //!   cargo run --release --bin validate -- --games 500 --output results.json
-//!   cargo run --release --bin validate -- --games 50 --quiet
+//!   cargo run --release --bin validate -- --games 100 --interactive  # Show progress spinner
 
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -43,9 +43,9 @@ struct Args {
     #[arg(long, short = 'o')]
     output: Option<PathBuf>,
 
-    /// Quiet mode for scripted usage (minimal output)
-    #[arg(long, short = 'q')]
-    quiet: bool,
+    /// Interactive mode - show progress spinners (for terminal use)
+    #[arg(long, short = 'i')]
+    interactive: bool,
 
     /// Random seed for reproducibility
     #[arg(long, short = 's', default_value = "42")]
@@ -207,7 +207,7 @@ fn main() {
     };
 
     // Load faction weights
-    let faction_weights = load_faction_weights(&args.weights, args.quiet);
+    let faction_weights = load_faction_weights(&args.weights, !args.interactive);
 
     // Build matchups (3 faction pairs, no mirrors)
     let matchups = build_matchups(&deck_registry, &card_db);
@@ -216,17 +216,15 @@ fn main() {
         process::exit(1);
     }
 
-    // Print header
-    if !args.quiet {
-        println!("=== Balance Validation ===");
-        println!("Version: {}", version::version_string());
-        println!(
-            "Config: {} games/matchup, {} MCTS sims, {} threads",
-            args.games, args.mcts_sims, num_threads
-        );
-        println!("Matchups: {} pairs", matchups.len());
-        println!();
-    }
+    // Print header (always shown)
+    println!("=== Balance Validation ===");
+    println!("Version: {}", version::version_string());
+    println!(
+        "Config: {} games/matchup, {} MCTS sims, {} threads",
+        args.games, args.mcts_sims, num_threads
+    );
+    println!("Matchups: {} pairs", matchups.len());
+    println!();
 
     // Run validation
     let start_time = Instant::now();
@@ -237,7 +235,7 @@ fn main() {
         args.games,
         args.seed,
         args.mcts_sims,
-        !args.quiet,
+        args.interactive,
     );
     let total_time = start_time.elapsed();
 
@@ -258,10 +256,8 @@ fn main() {
         summary,
     };
 
-    // Output results
-    if !args.quiet {
-        print_results(&results, total_time);
-    }
+    // Output results (always shown, interactive only affects progress)
+    print_results(&results, total_time);
 
     // Save JSON if requested
     if let Some(ref output_path) = args.output {
@@ -271,9 +267,7 @@ fn main() {
                     eprintln!("Error writing JSON to {:?}: {}", output_path, e);
                     process::exit(1);
                 }
-                if !args.quiet {
-                    println!("\nResults saved to: {:?}", output_path);
-                }
+                println!("\nResults saved to: {:?}", output_path);
             }
             Err(e) => {
                 eprintln!("Error serializing results: {}", e);
@@ -381,14 +375,13 @@ fn run_validation(
     for (matchup_idx, matchup) in matchups.iter().enumerate() {
         let matchup_seed = base_seed.wrapping_add((matchup_idx * 1_000_000) as u64);
 
-        if show_progress {
-            println!(
-                "{} vs {} ({} games each direction)...",
-                matchup.faction1.display_name(),
-                matchup.faction2.display_name(),
-                games_per_matchup
-            );
-        }
+        // Always announce matchup (show_progress only controls spinner)
+        println!(
+            "{} vs {} ({} games each direction)...",
+            matchup.faction1.display_name(),
+            matchup.faction2.display_name(),
+            games_per_matchup
+        );
 
         // Run F1 as P1 vs F2 as P2
         let (f1_p1_wins, f1_p1_turns, f1_p1_time, f1_p1_draws) = run_matchup_games(
