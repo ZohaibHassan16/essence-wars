@@ -47,19 +47,22 @@ case $TIER in
     medium)
         echo "=== Running quick + medium tier tests (~15 min) ==="
         # Exclude 100k tests and coverage 10k
-        cargo nextest run --release --status-level=fail -- --ignored \
-            -E 'not (test(/100k/) | test(/coverage_10k/) | test(/500_games/) | test(/high_sims/) | test(/generate_golden/))'
+        cargo nextest run --release --status-level=fail \
+            -E 'not (test(/100k/) | test(/coverage_10k/) | test(/500_games/) | test(/high_sims/) | test(/generate_golden/))' \
+            -- --ignored
         ;;
     long)
         echo "=== Running quick + medium + long tier tests (~45 min) ==="
         # Exclude only 100k tests
-        cargo nextest run --release --status-level=fail -- --ignored \
-            -E 'not (test(/100k/) | test(/generate_golden/))'
+        cargo nextest run --release --status-level=fail \
+            -E 'not (test(/100k/) | test(/generate_golden/))' \
+            -- --ignored
         ;;
     overnight|all)
         echo "=== Running ALL stress tests (~2 hours) ==="
-        cargo nextest run --release --status-level=fail -- --ignored \
-            -E 'not test(/generate_golden/)'
+        cargo nextest run --release --status-level=fail \
+            -E 'not test(/generate_golden/)' \
+            -- --ignored
         ;;
     *)
         echo "Unknown tier: $TIER"
