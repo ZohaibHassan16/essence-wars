@@ -578,11 +578,18 @@ def run_matchup_validation(
 
     # Load results
     validation_data = None
+    has_valid_data = False
     if output_file.exists():
         with open(output_file) as f:
             validation_data = json.load(f)
+            # Check if we got actual matchup data
+            has_valid_data = bool(validation_data and validation_data.get("matchups"))
 
     total_time = time.time() - start_time
+
+    # Determine success: we succeeded if we got valid data
+    # (exit code 1 just means "imbalanced", which is still valid data)
+    success = has_valid_data
 
     print("\n" + "=" * 70)
     print(f"✅ {matchup.upper()} COMPLETE!")
@@ -590,13 +597,14 @@ def run_matchup_validation(
     print("=" * 70 + "\n")
 
     return {
-        "success": result.returncode == 0,
+        "success": success,
         "matchup": matchup,
         "results": validation_data,
         "validation_time": validation_time,
         "total_time": total_time,
+        "balance_status": validation_data.get("summary", {}).get("overall_status", "unknown") if validation_data else "unknown",
         "stdout": result.stdout,
-        "stderr": result.stderr if result.returncode != 0 else "",
+        "stderr": result.stderr if result.returncode != 0 and not has_valid_data else "",
     }
 
 
@@ -616,11 +624,17 @@ def merge_matchup_results(matchup_results: list, run_id: str) -> dict:
     # Collect all matchup data
     all_matchups = []
     total_validation_time = 0
-    all_succeeded = True
+    failed_matchups = []
 
     for result in matchup_results:
+        matchup_name = result.get("matchup", "unknown")
+
         if not result.get("success"):
-            all_succeeded = False
+            failed_matchups.append(matchup_name)
+            # Still try to get data even if marked as failed
+            data = result.get("results", {})
+            if data and "matchups" in data:
+                all_matchups.extend(data["matchups"])
             continue
 
         data = result.get("results", {})
@@ -629,7 +643,7 @@ def merge_matchup_results(matchup_results: list, run_id: str) -> dict:
         total_validation_time = max(total_validation_time, result.get("validation_time", 0))
 
     if not all_matchups:
-        return {"success": False, "error": "No matchup results collected"}
+        return {"success": False, "error": f"No matchup results collected. Failed: {failed_matchups}"}
 
     # Calculate combined summary
     faction_wins = {}
@@ -693,11 +707,14 @@ def merge_matchup_results(matchup_results: list, run_id: str) -> dict:
         },
         "timing": {
             "wall_time_seconds": total_validation_time,
-            "matchup_times": {r["matchup"]: r["validation_time"] for r in matchup_results if r.get("success")},
+            "matchup_times": {r["matchup"]: r["validation_time"] for r in matchup_results if r.get("validation_time")},
         },
     }
 
-    return {"success": all_succeeded, "results": combined}
+    # Success = we got all matchup data (3 matchups expected)
+    # Balance status (balanced/imbalanced) is separate from execution success
+    data_complete = len(all_matchups) == 3
+    return {"success": data_complete, "results": combined, "balance_status": overall_status}
 
 
 # ============================================================================
@@ -1121,9 +1138,12 @@ def main(
 
         validation_time = time.time() - validation_start
 
-        if validation_result and validation_result.get('success'):
+        # Check if we have results to display/save
+        results = validation_result.get('results', {}) if validation_result else {}
+        has_results = bool(results and results.get('matchups'))
+
+        if has_results:
             # Print validation summary
-            results = validation_result.get('results', {})
             summary = results.get('summary', {})
 
             print("\n" + "=" * 70)
@@ -1159,7 +1179,7 @@ def main(
 
             print()
 
-            # Save results locally
+            # Always save results locally when we have data
             save_validation_results(workspace_path, run_id, results)
         else:
             error_msg = validation_result.get('error', 'Unknown') if validation_result else 'No result'
