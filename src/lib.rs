@@ -29,6 +29,9 @@ pub mod execution;
 // Validation module for balance testing
 pub mod validation;
 
+// Diagnostics module for P1/P2 asymmetry analysis
+pub mod diagnostics;
+
 // Re-export modules from core at crate root for backward compatibility
 pub use core::types;
 pub use core::keywords;
