@@ -1,0 +1,40 @@
+# Argentum Anti-Swarm Deck
+# Faction: Argentum Combine - "The Wall"
+# Composition: 21 Argentum Core + 9 Free-Walker Splash
+# Strategy: Counter aggressive swarm strategies with AoE damage and high-health Guards.
+
+id = "argentum_anti_swarm"
+name = "Argentum Anti-Swarm"
+description = "Defensive deck designed to counter swarm strategies with AoE damage and massive Guards."
+
+tags = ["control", "anti-swarm", "faction", "argentum"]
+
+# 30 cards total (21 Argentum + 9 Free-Walker)
+cards = [
+    # === ARGENTUM CORE (21 cards) ===
+    # -- 2-cost (4 cards) --
+    1021, 1021, # Bronze Gatekeeper (1/4 Guard) - cheap wall
+    1023, 1023, # Field Medic (1/3, heal 3) - sustain
+
+    # -- 3-cost (6 cards) --
+    1022, 1022, # Armored Sentinel (2/5 Guard+Shield) - durable
+    1018, 1018, # Reinforced Walls (support, +2 health) - buff all
+    1024, 1024, # Barricade (spell, +0/+4 and Guard)
+
+    # -- 4-cost (6 cards) --
+    1015, 1015, # Forge Master (2/4, AoE 1 dmg/turn) - anti-swarm
+    1020, 1020, # Ironclad Bulwark (1/8 Guard) - massive wall
+    1019, 1019, # Shield Generator (support, grant Shield) - protection
+
+    # -- 5-6 cost (5 cards) --
+    1017, 1017, # Artillery Tower (1/6, AoE 2 dmg/turn) - strong anti-swarm
+    1016,       # Steam Cannon (2/7 Guard, AoE 1 dmg/turn)
+    1004, 1004, # Iron Colossus (3/7 Guard) - finisher
+
+    # === FREE-WALKER SPLASH (9 cards) ===
+    4008, 4008, # Scrap Golem (5-cost 4/6 vanilla) - solid body
+    4005, 4005, # Siege Giant (6-cost 6/5 Piercing) - finisher
+    4011, 4011, # Precision Shot (2-cost spell, 3 damage) - removal
+    4010, 4010, # Hired Help (3-cost spell, +2/+2) - buff
+    4009,       # The Warbringer (7-cost 7/7 Charge+Piercing) - finisher
+]

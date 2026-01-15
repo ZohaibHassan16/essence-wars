@@ -184,3 +184,137 @@ cards:
       - modifier:
           health_bonus: 1
     rarity: Uncommon
+
+  # === PHASE 3A: ARGENTUM RECOVERY WAVE (v0.5.0) ===
+  # Anti-swarm tools to counter Symbiote's 67.6% win rate
+
+  # --- AoE Damage Creatures (anti-swarm) ---
+  - id: 1015
+    name: "Forge Master"
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Rare
+    tags: [Engineer]
+    abilities:
+      - trigger: StartOfTurn
+        targeting: NoTarget
+        effects:
+          - type: damage
+            amount: 1
+
+  - id: 1016
+    name: "Steam Cannon"
+    cost: 6
+    card_type: creature
+    attack: 2
+    health: 7
+    keywords: [Guard]
+    rarity: Rare
+    tags: [Construct]
+    abilities:
+      - trigger: StartOfTurn
+        targeting: NoTarget
+        effects:
+          - type: damage
+            amount: 1
+
+  - id: 1017
+    name: "Artillery Tower"
+    cost: 5
+    card_type: creature
+    attack: 1
+    health: 6
+    keywords: []
+    rarity: Legendary
+    tags: [Construct]
+    abilities:
+      - trigger: StartOfTurn
+        targeting: NoTarget
+        effects:
+          - type: damage
+            amount: 2
+
+  # --- Defensive Supports ---
+  - id: 1018
+    name: "Reinforced Walls"
+    cost: 3
+    card_type: support
+    durability: 4
+    passive_effects:
+      - modifier:
+          health_bonus: 2
+    rarity: Uncommon
+
+  - id: 1019
+    name: "Shield Generator"
+    cost: 4
+    card_type: support
+    durability: 3
+    passive_effects:
+      - modifier:
+          grant_keyword: Shield
+    rarity: Rare
+
+  # --- Big Guard Creatures ---
+  - id: 1020
+    name: "Ironclad Bulwark"
+    cost: 4
+    card_type: creature
+    attack: 1
+    health: 8
+    keywords: [Guard]
+    rarity: Uncommon
+    tags: [Construct]
+
+  - id: 1021
+    name: "Bronze Gatekeeper"
+    cost: 2
+    card_type: creature
+    attack: 1
+    health: 4
+    keywords: [Guard]
+    rarity: Common
+    tags: [Construct]
+
+  - id: 1022
+    name: "Armored Sentinel"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 5
+    keywords: [Guard, Shield]
+    rarity: Uncommon
+    tags: [Construct]
+
+  # --- Utility ---
+  - id: 1023
+    name: "Field Medic"
+    cost: 2
+    card_type: creature
+    attack: 1
+    health: 3
+    keywords: []
+    rarity: Common
+    tags: [Soldier]
+    abilities:
+      - trigger: OnPlay
+        targeting: TargetAllyCreature
+        effects:
+          - type: heal
+            amount: 3
+
+  - id: 1024
+    name: "Barricade"
+    cost: 3
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: buff_stats
+        attack: 0
+        health: 4
+      - type: grant_keyword
+        keyword: Guard
+    rarity: Uncommon

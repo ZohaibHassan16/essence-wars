@@ -89,19 +89,19 @@ cargo run --release --bin profile_mcts
 ## ☁️ Modal Cloud (Remote Training)
 ```bash
 # Full pipeline (train + validate)
-modal run modal_tune.py
+modal run modal_tune.py::main
 
 # Train only
-modal run modal_tune.py --mode train-only
+modal run modal_tune.py::main --mode train-only
 
 # Validate with existing weights
-modal run modal_tune.py --mode validate-only --validation-games 5000
+modal run modal_tune.py::main --mode validate-only --validation-games 5000
 
 # Single training config
-modal run modal_tune.py --single generalist
+modal run modal_tune.py::main --single generalist
 
 # Deploy as persistent app
-modal deploy modal_tune.py
+modal deploy modal_tune.py::main
 
 # Check status
 modal app list

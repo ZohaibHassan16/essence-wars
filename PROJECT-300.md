@@ -128,34 +128,48 @@ data/
 
 ---
 
-## Milestone 3: Support & Structure Wave
+## Milestone 3: Argentum Recovery Wave [IN PROGRESS]
 
-**Goal:** Address the severe support card shortage (3 → 20+) and fill cost curve gaps.
+**Goal:** Fix Argentum's 40.5% win rate (32.4% vs Symbiote) with targeted anti-swarm tools.
 
-### Phase 3A: Support Card Expansion (+15-18 supports)
+**Data-Driven Revision:** Original plan distributed supports evenly, but post-Phase 2B validation showed:
+- Argentum: 40.5% (needs significant help)
+- Symbiote: 58.7% (already strong, skip buffing)
+- Obsidion: 50.9% (balanced, minimal changes)
 
-| Faction | Supports | Theme |
-|---------|----------|-------|
-| Argentum | 4-5 | Defensive auras, healing |
-| Symbiote | 4-5 | Swarm buffs, token generation |
-| Obsidion | 3-4 | Life manipulation, draw |
-| Neutral | 4-5 | Utility (draw, cost reduction) |
+### Phase 3A: Argentum Priority Wave (+10-12 cards)
 
-### Phase 3B: Cost Curve Filling (+15 cards)
+| Faction | Cards | Priority | Rationale |
+|---------|-------|----------|-----------|
+| **Argentum** | 8-10 | **HIGH** | Anti-swarm tools, healing, board control |
+| Neutral | 2-3 | Medium | Utility that helps defensive strategies |
+| Obsidion | 0-2 | Low | Already balanced |
+| Symbiote | 0 | Skip | Already 58.7%, don't buff |
 
-**Current Gaps:**
-- 1-cost: Only 5 cards (need more aggro enablers)
-- 6+ cost: Limited finishers
+**Argentum Card Themes:**
 
-| Cost | Current | Target | Focus |
-|------|---------|--------|-------|
-| 1 | 5 | 12 | Cheap tempo plays |
-| 6 | 7 | 15 | Faction finishers |
-| 7+ | 3 | 8 | Legendary tier |
+| Type | Count | Effect | Anti-Symbiote Purpose |
+|------|-------|--------|----------------------|
+| Board Clear Spells | 2 | "Deal 2 damage to all enemies" | Kills small Frenzy/Volatile creatures |
+| Healing Supports | 2-3 | "Start of turn: Heal all allies 1" | Sustain against chip damage |
+| Guard Synergy | 2 | Guard buffs, "Give all allies Guard" | Wall up against swarm |
+| Anti-Swarm Tech | 2 | "Deal damage = enemy creature count" | Punishes wide boards |
 
-### Phase 3C: New Deck Archetypes
+### Phase 3B: Balance Validation
 
-**Target:** 2-3 new archetypes per faction
+1. Run 1k validation after Argentum cards
+2. **Target:** Argentum 45-55% win rate
+3. If still weak: Add more tools or stat buffs
+4. If balanced: Proceed to Phase 3C
+
+### Phase 3C: Fill Remaining Gaps (Post-Balance)
+
+**Deferred until Argentum is balanced:**
+- Obsidion supports (if needed)
+- Cost curve filling
+- New deck archetypes
+
+**Original Phase 3C New Archetypes (reference):**
 
 | Faction | New Archetypes |
 |---------|----------------|

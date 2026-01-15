@@ -192,12 +192,12 @@ fn test_load_from_directory() {
         CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards from directory");
 
     // Verify we loaded all card sets:
-    // - Core Set: 80 cards
-    //   - Argentum: IDs 1000-1014 (15 cards)
+    // - Core Set: 90 cards
+    //   - Argentum: IDs 1000-1024 (25 cards) - includes Phase 3A recovery wave
     //   - Symbiote: IDs 2000-2034 (35 cards) - includes v0.5.0 Frenzy/Volatile cards + Phase 2B wave
     //   - Obsidion: IDs 3000-3014 (15 cards)
     //   - Free-Walkers: IDs 4000-4014 (15 cards)
-    assert_eq!(db.len(), 80);
+    assert_eq!(db.len(), 90);
 
     // Verify specific cards exist from each faction
     let brass_sentinel = db.get(CardId(1000)).expect("Card 1000 not found");

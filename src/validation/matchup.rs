@@ -99,6 +99,75 @@ impl<'a> MatchupBuilder<'a> {
         }
         None
     }
+
+    /// Build all deck combinations for faction matchups (round-robin).
+    ///
+    /// Returns ALL valid deck combinations for each faction pair.
+    /// E.g., if Argentum has 3 decks and Symbiote has 4, returns 12 matchups for that pair.
+    pub fn build_all_deck_matchups(&self) -> Vec<MatchupDefinition> {
+        let factions = [Faction::Argentum, Faction::Symbiote, Faction::Obsidion];
+        let mut matchups = Vec::new();
+
+        // Get ALL valid decks for each faction
+        let faction_decks = self.get_all_faction_decks(&factions);
+
+        // Create all pairs (no mirrors)
+        for i in 0..factions.len() {
+            for j in (i + 1)..factions.len() {
+                let f1 = factions[i];
+                let f2 = factions[j];
+
+                if let (Some(decks1), Some(decks2)) =
+                    (faction_decks.get(&f1), faction_decks.get(&f2))
+                {
+                    // Create all combinations of decks
+                    for (id1, cards1) in decks1 {
+                        for (id2, cards2) in decks2 {
+                            matchups.push(MatchupDefinition {
+                                faction1: f1,
+                                faction2: f2,
+                                deck1_id: id1.clone(),
+                                deck1_cards: cards1.clone(),
+                                deck2_id: id2.clone(),
+                                deck2_cards: cards2.clone(),
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        matchups
+    }
+
+    /// Get ALL valid decks for each faction.
+    fn get_all_faction_decks(&self, factions: &[Faction]) -> HashMap<Faction, Vec<(String, Vec<CardId>)>> {
+        let mut faction_decks = HashMap::new();
+
+        for faction in factions {
+            let decks = self.get_all_valid_decks(*faction);
+            if !decks.is_empty() {
+                faction_decks.insert(*faction, decks);
+            }
+        }
+
+        faction_decks
+    }
+
+    /// Get all valid decks for a faction.
+    fn get_all_valid_decks(&self, faction: Faction) -> Vec<(String, Vec<CardId>)> {
+        self.registry
+            .decks_for_faction(faction)
+            .iter()
+            .filter_map(|deck| {
+                if deck.validate(self.card_db).is_ok() {
+                    Some((deck.id.clone(), deck.to_card_ids()))
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
 }
 
 /// Filter matchups by name pattern.
@@ -186,5 +255,36 @@ mod tests {
 
         // Should match 2: A-S and A-O
         assert_eq!(filtered.len(), 2);
+    }
+
+    #[test]
+    fn test_build_all_deck_matchups() {
+        let card_db = test_card_db();
+        let registry = test_deck_registry();
+        let builder = MatchupBuilder::new(&registry, &card_db);
+
+        let matchups = builder.build_all_deck_matchups();
+
+        // Should have more matchups than build_faction_matchups (all deck combinations)
+        let single_matchups = builder.build_faction_matchups();
+        assert!(matchups.len() >= single_matchups.len());
+
+        // Each matchup should have valid decks
+        for m in &matchups {
+            assert!(!m.deck1_cards.is_empty());
+            assert!(!m.deck2_cards.is_empty());
+        }
+
+        // Count unique faction pairs - should still be 3
+        let mut faction_pairs: std::collections::HashSet<(Faction, Faction)> = std::collections::HashSet::new();
+        for m in &matchups {
+            let pair = if m.faction1 < m.faction2 {
+                (m.faction1, m.faction2)
+            } else {
+                (m.faction2, m.faction1)
+            };
+            faction_pairs.insert(pair);
+        }
+        assert_eq!(faction_pairs.len(), 3);
     }
 }

@@ -1,11 +1,11 @@
 # Argentum Midrange Deck
 # Faction: Argentum Combine - "The Wall"
 # Composition: 21 Argentum Core + 9 Free-Walker Splash
-# Strategy: Balanced offense/defense with Piercing damage. Trade efficiently while maintaining board presence.
+# Strategy: Balanced offense/defense with Piercing damage AND anti-swarm tools.
 
 id = "argentum_midrange"
 name = "Argentum Midrange"
-description = "Balanced deck featuring Argentum Combine soldiers with Piercing damage."
+description = "Balanced deck with Piercing attackers and anti-swarm AoE tools."
 
 tags = ["midrange", "balanced", "faction", "argentum"]
 
@@ -13,28 +13,28 @@ tags = ["midrange", "balanced", "faction", "argentum"]
 cards = [
     # === ARGENTUM CORE (21 cards) ===
     # -- 2-cost (4 cards) --
-    1000, 1000, # Brass Sentinel (2/4 Guard)
-    1006, 1006, # Shield Bearer (2/3 Shield)
+    1000, 1000, # Brass Sentinel (2/4 Guard) - early defense
+    1021, 1021, # Bronze Gatekeeper (1/4 Guard) - cheap wall
 
-    # -- 3-cost (10 cards) --
-    1001, 1001, # Steam Knight (3/3 Piercing)
-    1005, 1005, # Pressure Trooper (4/2 Piercing)
-    1002, 1002, # Cogwork Defender (2/5 Guard)
-    1007, 1007, # Clockwork Medic (1/4, heal 2)
-    1011, 1011, # Emergency Repairs spell (heal 5)
+    # -- 3-cost (6 cards) --
+    1001, 1001, # Steam Knight (3/3 Piercing) - offense
+    1005, 1005, # Pressure Trooper (4/2 Piercing) - burst
+    1022, 1022, # Armored Sentinel (2/5 Guard+Shield) - durable
 
-    # -- 4-cost (4 cards) --
+    # -- 4-cost (6 cards) --
+    1015, 1015, # Forge Master (2/4, AoE 1 dmg/turn) - anti-swarm
     1003, 1003, # Factory Foreman (2/4, buff ally +0/+2)
-    1012, 1012, # Construct Protocol spell (+1/+2 and Guard)
+    1020, 1020, # Ironclad Bulwark (1/8 Guard) - massive wall
 
-    # -- 5-6 cost (3 cards) --
-    1004,       # Iron Colossus (3/7 Guard)
-    1008, 1008, # Siege Engine (4/7 Guard+Piercing)
+    # -- 5-6 cost (5 cards) --
+    1017,       # Artillery Tower (1/6, AoE 2 dmg/turn) - anti-swarm
+    1008, 1008, # Siege Engine (4/7 Guard+Piercing) - finisher
+    1004, 1004, # Iron Colossus (3/7 Guard) - solid body
 
     # === FREE-WALKER SPLASH (9 cards) ===
-    4001, 4001, # Berserker (3-cost 3/2 Charge) - offensive push
-    4004, 4004, # War Veteran (4-cost 4/4 Charge) - mid-game threat
     4005, 4005, # Siege Giant (6-cost 6/5 Piercing) - finisher
-    4008, 4008, # Scrap Golem (5-cost 4/6 vanilla) - solid body
-    4010,       # Hired Help (3-cost spell, +2/+2) - buff
+    4011, 4011, # Precision Shot (2-cost spell, 3 damage) - removal
+    4001, 4001, # Berserker (3-cost 3/2 Charge) - offense
+    4004, 4004, # War Veteran (4-cost 4/4 Charge) - mid-game
+    4009,       # The Warbringer (7-cost 7/7 Charge+Piercing) - finisher
 ]

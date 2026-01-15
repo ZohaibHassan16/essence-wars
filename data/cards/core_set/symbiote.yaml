@@ -183,7 +183,7 @@ cards:
     card_type: creature
     attack: 2
     health: 3
-    keywords: [Rush, Frenzy]
+    keywords: [Frenzy]
     rarity: Uncommon
     tags: [Swarm]
 
@@ -257,7 +257,7 @@ cards:
     card_type: creature
     attack: 3
     health: 5
-    keywords: [Rush, Frenzy]
+    keywords: [Frenzy]
     rarity: Rare
     tags: [Beast]
 
@@ -277,7 +277,7 @@ cards:
     card_type: creature
     attack: 1
     health: 1
-    keywords: [Frenzy, Rush]
+    keywords: [Frenzy]
     rarity: Common
     tags: [Swarm]
 

@@ -32,8 +32,8 @@ cards:
     name: "Blood Acolyte"
     cost: 2
     card_type: creature
-    attack: 3
-    health: 4
+    attack: 2
+    health: 3
     keywords: [Lifesteal]
     rarity: Common
     tags: [Cultist]

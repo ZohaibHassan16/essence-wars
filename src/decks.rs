@@ -21,7 +21,7 @@ use crate::types::CardId;
 ///
 /// Faction decks contain a core of faction cards (typically 14) plus
 /// a splash of neutral Free-Walker cards (typically 6).
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Faction {
     /// Argentum Combine - "The Wall"

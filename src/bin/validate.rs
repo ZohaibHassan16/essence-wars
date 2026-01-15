@@ -1,7 +1,8 @@
 //! Balance Validation CLI - Run comprehensive faction matchup testing.
 //!
-//! Tests all faction pairs (Argentum, Symbiote, Obsidion) in both player orders
-//! using MCTS agents with faction-specific weights.
+//! Tests all deck combinations across faction pairs (Argentum, Symbiote, Obsidion)
+//! in both player orders using MCTS agents with faction-specific weights.
+//! Uses round-robin matchup generation to test ALL valid deck combinations.
 //!
 //! Usage:
 //!   cargo run --release --bin validate -- --games 100              # Quiet output (default)
@@ -96,9 +97,9 @@ fn main() {
     // Load faction weights
     let faction_weights = FactionWeights::load_from_directory(&args.weights, !args.interactive);
 
-    // Build matchups
+    // Build matchups (all deck combinations, round-robin)
     let builder = MatchupBuilder::new(&deck_registry, &card_db);
-    let mut matchups = builder.build_faction_matchups();
+    let mut matchups = builder.build_all_deck_matchups();
 
     if matchups.is_empty() {
         eprintln!("Error: No valid faction matchups found. Need decks for at least 2 factions.");
@@ -124,7 +125,7 @@ fn main() {
         "Config: {} games/matchup, {} MCTS sims, {} threads",
         args.games, args.mcts_sims, num_threads
     );
-    println!("Matchups: {} pairs", matchups.len());
+    println!("Matchups: {} deck pairs (round-robin)", matchups.len());
     println!();
 
     // Run validation
