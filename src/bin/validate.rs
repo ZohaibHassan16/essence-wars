@@ -4,10 +4,14 @@
 //! in both player orders using MCTS agents with faction-specific weights.
 //! Uses round-robin matchup generation to test ALL valid deck combinations.
 //!
+//! Current deck counts: Argentum (3), Symbiote (4), Obsidion (4)
+//! Total matchups: 40 deck combinations (3×4 + 3×4 + 4×4)
+//! Total games: matchups × 2 directions × games parameter
+//!
 //! Usage:
-//!   cargo run --release --bin validate -- --games 100              # Quiet output (default)
-//!   cargo run --release --bin validate -- --games 500 --output results.json
-//!   cargo run --release --bin validate -- --games 100 --interactive  # Show progress spinner
+//!   cargo run --release --bin validate -- --games 100              # 8k total - quick check
+//!   cargo run --release --bin validate -- --games 500 --output results.json  # 40k total - full test
+//!   cargo run --release --bin validate -- --games 1500             # 120k total - comprehensive
 
 use std::path::PathBuf;
 use std::process;

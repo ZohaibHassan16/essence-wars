@@ -169,3 +169,180 @@ cards:
       - modifier:
           grant_keyword: Lifesteal
     rarity: Rare
+
+  # =============================================================================
+  # OBSIDION EXPANSION WAVE (IDs 3015-3029)
+  # Focus: More Quick, Stealth, Ephemeral, and Lifesteal options
+  # =============================================================================
+
+  # === EXPANSION CREATURES ===
+  - id: 3015
+    name: "Phantom Striker"
+    cost: 1
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: [Quick]
+    rarity: Common
+    tags: [Spirit]
+
+  - id: 3016
+    name: "Shade Lurker"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: [Stealth]
+    rarity: Common
+    tags: [Assassin]
+
+  - id: 3017
+    name: "Blood Seeker"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: [Lifesteal]
+    rarity: Common
+    tags: [Cultist]
+
+  - id: 3018
+    name: "Spectral Assassin"
+    cost: 3
+    card_type: creature
+    attack: 4
+    health: 3
+    keywords: [Ephemeral, Quick]
+    rarity: Uncommon
+    tags: [Spirit, Assassin]
+
+  - id: 3019
+    name: "Nightstalker"
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords: [Stealth, Lifesteal]
+    rarity: Rare
+    tags: [Assassin]
+
+  - id: 3020
+    name: "Soul Reaver"
+    cost: 5
+    card_type: creature
+    attack: 5
+    health: 4
+    keywords: [Quick, Lifesteal]
+    rarity: Rare
+    tags: [Undead]
+
+  - id: 3021
+    name: "Void Devourer"
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags: [Spirit]
+    abilities:
+      - trigger: OnPlay
+        targeting: TargetEnemyCreature
+        effects:
+          - type: damage
+            amount: 4
+
+  - id: 3022
+    name: "Twilight Executioner"
+    cost: 6
+    card_type: creature
+    attack: 6
+    health: 5
+    keywords: [Quick, Lethal]
+    rarity: Legendary
+    tags: [Assassin]
+
+  - id: 3023
+    name: "Blood Ritualist"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Common
+    tags: [Cultist]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: heal
+            amount: 4
+
+  - id: 3024
+    name: "Shadowmeld"
+    cost: 2
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: [Stealth, Ephemeral]
+    rarity: Uncommon
+    tags: [Spirit]
+
+  # === EXPANSION SPELLS ===
+  - id: 3025
+    name: "Life Tap"
+    cost: 1
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 2
+      - type: heal
+        amount: 2
+    rarity: Common
+
+  - id: 3026
+    name: "Dark Empowerment"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: buff_stats
+        attack: 2
+        health: 1
+      - type: grant_keyword
+        keyword: Quick
+    rarity: Uncommon
+
+  - id: 3027
+    name: "Void Rift"
+    cost: 4
+    card_type: spell
+    targeting: TargetAny
+    effects:
+      - type: damage
+        amount: 5
+    rarity: Rare
+
+  # === EXPANSION SUPPORTS ===
+  - id: 3028
+    name: "Shadow Sanctum"
+    cost: 3
+    card_type: support
+    durability: 3
+    passive_effects:
+      - modifier:
+          grant_keyword: Stealth
+    rarity: Rare
+
+  - id: 3029
+    name: "Blood Font"
+    cost: 4
+    card_type: support
+    durability: 4
+    triggered_effects:
+      - trigger: StartOfTurn
+        effects:
+          - type: heal
+            amount: 2
+    rarity: Uncommon

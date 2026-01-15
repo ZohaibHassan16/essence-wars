@@ -43,8 +43,10 @@ modal run modal_tune.py::main --mode train-only
 # Validate only (use existing trained weights) - PARALLEL by default
 modal run modal_tune.py::main --mode validate-only
 
-# Validate with custom parameters (e.g., 20k games for balance testing)
-modal run modal_tune.py::main --mode validate-only --validation-games 20000 --validation-timeout 7200
+# Validate with custom game counts (round-robin: 40 matchups × 2 directions × games)
+modal run modal_tune.py::main --mode validate-only --validation-games 1500  # 120k total
+modal run modal_tune.py::main --mode validate-only --validation-games 500   # 40k total (default)
+modal run modal_tune.py::main --mode validate-only --validation-games 250   # 20k total - quick
 
 # Use sequential validation (original single-container mode)
 modal run modal_tune.py::main --mode validate-only --sequential
@@ -76,6 +78,21 @@ modal run modal_tune.py::main --no-deploy
 ```
 
 **Note:** Validation-only mode doesn't deploy weights (it only reads existing weights for testing).
+
+**⚡ Round-Robin Game Count Guide:**
+
+With round-robin validation (40 deck matchups × 2 directions), the total game count scales significantly:
+
+| `--validation-games` | Total Games | Use Case | Runtime* |
+|---------------------|-------------|----------|----------|
+| 100 | 8,000 | Quick smoke test | ~1 min |
+| 250 | 20,000 | Fast balance check | ~2 min |
+| 500 (default) | 40,000 | Standard validation | ~3 min |
+| 1000 | 80,000 | Thorough analysis | ~6 min |
+| 1500 | 120,000 | High-confidence metrics | ~10 min |
+| 2000 | 160,000 | Research-grade data | ~13 min |
+
+*Runtime with 32-core parallel validation
 
 ### 5. Download Experiment Logs (Optional)
 
@@ -156,8 +173,9 @@ Local Machine                 Modal Cloud
      - Results merged automatically
    - **Sequential mode (--sequential):** Single 32-core instance
      - Uses trained weights from Modal volume (or local if none exist)
-   - Test all 3 faction matchups (both player orders)
-   - 500 games per matchup by default (configurable via --validation-games)
+   - **Round-robin testing:** ALL deck combinations (40 total) across 3 faction pairs
+   - 500 games per matchup per direction by default = 40,000 TOTAL games
+   - Configurable via --validation-games (e.g., 1500 = 120k total games)
    - Output JSON results with balance summary
 
 5. **Cloud: Save Results**
@@ -198,11 +216,13 @@ Local Machine                 Modal Cloud
 **Total CPU Time:** 4 jobs × 12 min = 48 minutes  
 **Total Cost:** ~$0.32 per full training run
 
-### Validation Only (500 games)
+### Validation Only (500 games/matchup = 40k total)
 
 **Instance:** 32 vCPU (default for validation)  
-**Typical Runtime:** ~3 minutes (build + validate)  
+**Typical Runtime:** ~3 minutes (build + validate 40k games)  
 **Cost:** ~$0.025/CPU-hour × 32 cores × 0.05 hours = **~$0.04 per validation**
+
+**Note:** With round-robin, `--validation-games 500` now runs 40,000 total games (40 deck matchups × 2 directions × 500).
 
 ### Monthly Estimate
 
@@ -441,8 +461,12 @@ modal run modal_tune.py::main --single generalist     # Single config + deploy
 modal run modal_tune.py::main --no-deploy             # Skip auto-deploy to local repo
 
 # Custom validation parameters (parallel by default - ~3x faster!)
-modal run modal_tune.py::main --mode validate-only --validation-games 20000  # 20k games, parallel
+# Round-robin: 40 deck matchups × 2 directions × games = total games
+modal run modal_tune.py::main --mode validate-only --validation-games 1500   # 120k total, parallel
+modal run modal_tune.py::main --mode validate-only --validation-games 500    # 40k total (default)
+modal run modal_tune.py::main --mode validate-only --validation-games 250    # 20k total - quick
 modal run modal_tune.py::main --mode validate-only --sequential              # Force sequential (1 container)
+modal run modal_tune.py::main --mode validate-only --validation-timeout 7200 # 2hr timeout per matchup
 modal run modal_tune.py::main --mode validate-only --validation-timeout 7200 # 2hr timeout per matchup
 
 # Download experiment logs (optional)
@@ -458,10 +482,11 @@ modal app logs essence-wars-tuning
 # Check usage/billing
 # https://modal.com/settings/billing
 
-# Local validation (no Modal required)
-cargo run --release --bin validate -- --games 100
-cargo run --release --bin validate -- --games 500 --output results.json
-cargo run --release --bin validate -- --matchup argentum-symbiote --games 100  # Single matchup
+# Local validation (no Modal required - round-robin: 40 matchups × 2 directions)
+cargo run --release --bin validate -- --games 100                             # 8k total - quick
+cargo run --release --bin validate -- --games 500 --output results.json       # 40k total - full test
+cargo run --release --bin validate -- --games 1500                            # 120k total - comprehensive
+cargo run --release --bin validate -- --matchup argentum-symbiote --games 100 # Single faction pair
 ```
 
 ---

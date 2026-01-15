@@ -2,36 +2,31 @@
 
 **Mission**: Design and implement 300 Cards for the initial `New Horizons` Edition of Essence Wars.
 
-## Current State (v0.5.0 - Phase 2B Complete)
+## Current State (v0.5.0 - Obsidion Expansion Complete)
 
 ### Card Pool Summary
 | Category | Count | Target |
 |----------|-------|--------|
-| **Total Cards** | 80 | 300 |
-| Argentum Combine | 15 | ~75 |
+| **Total Cards** | 105 | 300 |
+| Argentum Combine | 25 | ~75 |
 | Symbiote Circles | 35 | ~75 |
-| Obsidion Syndicate | 15 | ~75 |
+| Obsidion Syndicate | 30 | ~75 |
 | Free-Walkers (Neutral) | 15 | ~75 |
-| **Support Cards** | 7 | ~30 |
-| **Legendary Cards** | 3 | ~12 |
+| **Support Cards** | 12 | ~30 |
+| **Legendary Cards** | 5 | ~12 |
 
-### Balance Baseline (20,000 games, validated 2026-01-15)
+### Balance Baseline (Round-Robin Validation, 2026-01-15)
 | Metric | Value | Status |
 |--------|-------|--------|
-| P1 Win Rate | 51.9% | BALANCED |
-| Argentum | 58.8% | **Strongest** |
-| Obsidion | 49.5% | Balanced |
-| Symbiote | 41.7% | **Weakest** |
-| Max Delta | 17.2% | Needs work |
+| P1 Win Rate | 54.7% | BALANCED |
+| Argentum | 56.1% | Slightly High |
+| Symbiote | 49.7% | Balanced |
+| Obsidion | 45.1% | Slightly Low |
+| Max Delta | 11.0% | **NEEDS TUNING** |
 
-**Matchup Matrix:**
-| Matchup | Result |
-|---------|--------|
-| Argentum vs Symbiote | 60.2% / 39.8% |
-| Argentum vs Obsidion | 57.5% / 42.5% |
-| Symbiote vs Obsidion | 43.6% / 56.4% |
+**Validation Method:** Round-robin across all 40 deck combinations (50 games/matchup/direction = 4,000 total games).
 
-**Key Finding:** Symbiote is the weakest faction and needs targeted help.
+**Next Step:** Run comprehensive validation on Modal (1500 games/matchup = 120k total) for higher confidence metrics, then fine-tune.
 
 ### Keyword Slots
 - **Used:** 14 of 16 (Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick, Ephemeral, Regenerate, Stealth, Charge, **Frenzy**, **Volatile**)
@@ -55,14 +50,15 @@
 ```
 data/
 ├── cards/core_set/
-│   ├── argentum.yaml   (IDs 1000-1014)
-│   ├── symbiote.yaml   (IDs 2000-2034)
-│   ├── obsidion.yaml   (IDs 3000-3014)
-│   └── neutral.yaml    (IDs 4000-4014)
+│   ├── argentum.yaml   (IDs 1000-1024, 25 cards)
+│   ├── symbiote.yaml   (IDs 2000-2034, 35 cards)
+│   ├── obsidion.yaml   (IDs 3000-3029, 30 cards)
+│   └── neutral.yaml    (IDs 4000-4014, 15 cards)
 ├── decks/
 │   ├── argentum/
 │   │   ├── control.toml
-│   │   └── midrange.toml
+│   │   ├── midrange.toml
+│   │   └── anti_swarm.toml
 │   ├── symbiote/
 │   │   ├── aggro.toml
 │   │   ├── tempo.toml
@@ -70,7 +66,9 @@ data/
 │   │   └── volatile_swarm.toml
 │   └── obsidion/
 │       ├── burst.toml
-│       └── control.toml
+│       ├── control.toml
+│       ├── assassin.toml
+│       └── lifedrain.toml
 └── weights/
     ├── generalist.toml
     └── specialists/{faction}.toml
@@ -119,64 +117,99 @@ data/
 - `symbiote/frenzy_aggro.toml` - All-in attack deck with Frenzy synergy
 - `symbiote/volatile_swarm.toml` - Death trigger synergy deck
 
-### Phase 2C: Validation & Tuning [PENDING]
+### Phase 2C: Validation & Tuning [COMPLETED]
 
-1. Run 20k game validation (Modal cloud)
-2. Target: Symbiote 47-53% win rate
-3. Retune specialist weights if needed
-4. Iterate on card stats if balance is off
+**Outcome:** Rush+Frenzy combo identified as problematic (60.2% P1 win rate).
+
+**Nerf Applied:** Removed Rush from 3 cards:
+- Frenzied Brood (2016): Rush+Frenzy → Frenzy only
+- Savage Swarmling (2024): Rush+Frenzy → Frenzy only
+- Frenzy Pack Leader (2022): Rush+Frenzy → Frenzy only
+
+**Result:** P1 advantage fixed, but Symbiote now dominated Argentum (67.6% vs 32.4%).
 
 ---
 
-## Milestone 3: Argentum Recovery Wave [IN PROGRESS]
+## Milestone 3: Argentum Recovery Wave [COMPLETED]
 
-**Goal:** Fix Argentum's 40.5% win rate (32.4% vs Symbiote) with targeted anti-swarm tools.
+**Goal:** Fix Argentum's 32.4% win rate vs Symbiote with anti-swarm tools.
 
-**Data-Driven Revision:** Original plan distributed supports evenly, but post-Phase 2B validation showed:
-- Argentum: 40.5% (needs significant help)
-- Symbiote: 58.7% (already strong, skip buffing)
-- Obsidion: 50.9% (balanced, minimal changes)
+### Phase 3A: Argentum Priority Wave (+10 cards) [DONE]
 
-### Phase 3A: Argentum Priority Wave (+10-12 cards)
+**Added 10 new Argentum cards (IDs 1015-1024):**
 
-| Faction | Cards | Priority | Rationale |
-|---------|-------|----------|-----------|
-| **Argentum** | 8-10 | **HIGH** | Anti-swarm tools, healing, board control |
-| Neutral | 2-3 | Medium | Utility that helps defensive strategies |
-| Obsidion | 0-2 | Low | Already balanced |
-| Symbiote | 0 | Skip | Already 58.7%, don't buff |
+| Card | Cost | Stats | Effect | Purpose |
+|------|------|-------|--------|---------|
+| Forge Master | 4 | 2/4 | StartOfTurn: 1 damage to all enemies | Anti-swarm AoE |
+| Steam Cannon | 5 | 2/7 Guard | StartOfTurn: 1 damage to all enemies | Durable AoE |
+| Artillery Tower | 6 | 1/6 | StartOfTurn: 2 damage to all enemies | Heavy AoE |
+| Reinforced Walls | 3 | Support | All allies +0/+2 | Board-wide buff |
+| Shield Generator | 4 | Support | All allies gain Shield | Protection |
+| Ironclad Bulwark | 4 | 1/8 Guard | - | Massive wall |
+| Bronze Gatekeeper | 2 | 1/4 Guard | - | Cheap wall |
+| Armored Sentinel | 3 | 2/5 Guard+Shield | - | Durable defender |
+| Field Medic | 2 | 1/3 | OnPlay: Heal 3 | Sustain |
+| Barricade | 3 | Spell | +0/+4 and Guard | Defensive trick |
 
-**Argentum Card Themes:**
+**Additional Adjustments:**
+- Nerfed Obsidion Blood Acolyte: 3/4 → 2/3 (was too efficient vs Argentum)
 
-| Type | Count | Effect | Anti-Symbiote Purpose |
-|------|-------|--------|----------------------|
-| Board Clear Spells | 2 | "Deal 2 damage to all enemies" | Kills small Frenzy/Volatile creatures |
-| Healing Supports | 2-3 | "Start of turn: Heal all allies 1" | Sustain against chip damage |
-| Guard Synergy | 2 | Guard buffs, "Give all allies Guard" | Wall up against swarm |
-| Anti-Swarm Tech | 2 | "Deal damage = enemy creature count" | Punishes wide boards |
+**New Decks Created:**
+- `argentum/midrange.toml` - Balanced offense/defense with Piercing and AoE
+- `argentum/anti_swarm.toml` - Pure counter-swarm with maximum AoE
 
-### Phase 3B: Balance Validation
+### Phase 3B: Balance Validation [DONE]
 
-1. Run 1k validation after Argentum cards
-2. **Target:** Argentum 45-55% win rate
-3. If still weak: Add more tools or stat buffs
-4. If balanced: Proceed to Phase 3C
+**Validation System Improved:**
+- Implemented round-robin matchup generation (tests ALL deck combinations)
+- Removed need for `--all-decks` flag - now default behavior
+- 26 deck pairs tested vs previous 3
 
-### Phase 3C: Fill Remaining Gaps (Post-Balance)
+**Final Results (100 games/matchup, round-robin):**
+| Metric | Value | Status |
+|--------|-------|--------|
+| P1 Win Rate | 54.0% | BALANCED |
+| Obsidion | 52.9% | Balanced |
+| Argentum | 50.7% | Balanced |
+| Symbiote | 47.4% | Balanced |
+| Max Delta | 5.5% | BALANCED |
 
-**Deferred until Argentum is balanced:**
-- Obsidion supports (if needed)
+### Phase 3C: Obsidion Parity Wave (+15 cards) [DONE]
+
+**Goal:** Bring Obsidion to card count parity with other factions.
+
+**Added 15 new Obsidion cards (IDs 3015-3029):**
+
+| Card | Cost | Stats | Keywords | Purpose |
+|------|------|-------|----------|---------|
+| Phantom Striker | 1 | 2/2 | Quick | Aggressive opener |
+| Shade Lurker | 2 | 2/3 | Stealth | Cheap infiltrator |
+| Blood Seeker | 3 | 3/3 | Lifesteal | Reliable sustain |
+| Spectral Assassin | 3 | 4/3 | Ephemeral, Quick | Burst damage |
+| Nightstalker | 4 | 4/4 | Stealth, Lifesteal | Mid-game threat |
+| Soul Reaver | 5 | 5/4 | Quick, Lifesteal | Late finisher |
+| Void Devourer | 5 | 4/4 | OnPlay: 4 damage | Burst removal |
+| Twilight Executioner | 6 | 6/5 | Quick, Lethal | Legendary finisher |
+| Blood Ritualist | 3 | 2/4 | OnPlay: Heal 4 | Sustain support |
+| Shadowmeld | 2 | 3/2 | Stealth, Ephemeral | Aggressive burst |
+| Life Tap | 1 | Spell | 2 dmg + 2 heal | Efficient removal |
+| Dark Empowerment | 2 | Spell | +2/+1, grant Quick | Combat trick |
+| Void Rift | 4 | Spell | 5 damage | Big removal |
+| Shadow Sanctum | 3 | Support | Grant Stealth | Aggressive support |
+| Blood Font | 4 | Support | Heal 2/turn | Sustain support |
+
+**New Decks Created:**
+- `obsidion/assassin.toml` - Stealth+Lethal hit-and-run strategy
+- `obsidion/lifedrain.toml` - Lifesteal synergy for sustained attrition
+
+**Balance Note:** Health buffs applied to several creatures to survive Argentum AoE better.
+
+### Phase 3D: Future Expansion (Deferred)
+
+**Available when ready:**
+- New deck archetypes (Ramp, Token Swarm, Combo, etc.)
 - Cost curve filling
-- New deck archetypes
-
-**Original Phase 3C New Archetypes (reference):**
-
-| Faction | New Archetypes |
-|---------|----------------|
-| Argentum | Ramp (essence acceleration), Fatigue (outlast) |
-| Symbiote | Token Swarm, Sacrifice (death triggers) |
-| Obsidion | Combo (burst damage), Drain (lifesteal synergy) |
-| Neutral | Toolbox splash options |
+- Additional supports
 
 **Deck Composition Rule:** Maintain 70% faction / 30% neutral splash ratio.
 
@@ -321,10 +354,11 @@ Fill remaining gaps to reach 300:
 **Standard validation for each milestone:**
 ```bash
 # Run via Modal cloud (recommended)
-modal run modal_tune.py::main --mode validate-only
+# Round-robin: 40 deck matchups × 2 directions × games = total games
+modal run modal_tune.py::main --mode validate-only --validation-games 1500  # 120k total
 
 # Or locally (slower)
-cargo run --release --bin validate -- --games 20000 --output validation.json
+cargo run --release --bin validate -- --games 1500 --output validation.json  # 120k total
 ```
 
 **Balance Targets:**
@@ -341,20 +375,43 @@ cargo run --release --bin validate -- --games 20000 --output validation.json
 
 | Milestone | Cards Added | Running Total | Status |
 |-----------|-------------|---------------|--------|
-| M1 (Complete) | 0 | 60 | Done |
-| M2: Symbiote Rising | +20 | **80** | **Phase 2A/2B Done, 2C Pending** |
-| M3: Support Wave | +30 | 110 | Planned |
-| M4: Engine Work | 0 | 110 | Planned |
-| M5: Tactical Evolution | +60 | 170 | Planned |
-| M6: Legends | +130 | **300** | Planned |
+| M1: Foundation Refactor | 0 | 60 | ✅ Done |
+| M2: Symbiote Rising | +20 | 80 | ✅ Done |
+| M3: Argentum Recovery + Obsidion Parity | +25 | **105** | ✅ Done |
+| M4: Engine Enhancements | 0 | 105 | Planned |
+| M5: Tactical Evolution | +45 | 150 | Planned |
+| M6: Legends of Omyra | +150 | **300** | Planned |
+
+---
+
+## Current Deck Inventory
+
+| Faction | Decks | Files |
+|---------|-------|-------|
+| Argentum | 3 | control.toml, midrange.toml, anti_swarm.toml |
+| Symbiote | 4 | aggro.toml, tempo.toml, frenzy_aggro.toml, volatile_swarm.toml |
+| Obsidion | 4 | burst.toml, control.toml, assassin.toml, lifedrain.toml |
+| **Total** | **11** | - |
 
 ---
 
 ## Immediate Next Steps
 
-1. **Run Phase 2C validation** - 20k games via Modal cloud
-2. **Measure Symbiote win rate** - Target 47-53%
-3. **Retune specialist weights** if needed
-4. **Begin Milestone 3** - Support Card Expansion
+**Option A: Large Validation (Recommended)**
+1. Run 20k game validation via Modal cloud
+2. Retune specialist weights for all factions
+3. Higher confidence balance metrics
+4. Fine-tune any outlier cards based on results
 
-Let's validate the Symbiote changes!
+**Option B: Engine Work (Milestone 4)**
+1. Implement creature filters in YAML
+2. Add conditional triggers
+3. New effect types (bounce, copy, transform)
+4. Enables more interesting card designs
+
+**Option C: Neutral Expansion**
+1. Add 10-15 Neutral cards to reach parity
+2. More utility options for all factions
+3. Better deck variety
+
+**Current Focus:** Run 20k Modal validation to get high-confidence balance metrics before more card additions.

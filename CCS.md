@@ -94,8 +94,8 @@ modal run modal_tune.py::main
 # Train only
 modal run modal_tune.py::main --mode train-only
 
-# Validate with existing weights
-modal run modal_tune.py::main --mode validate-only --validation-games 5000
+# Validate with existing weights (round-robin: 40 matchups × 2 directions × games)
+modal run modal_tune.py::main --mode validate-only --validation-games 1500 --validation-timeout 7200  # 120k total games
 
 # Single training config
 modal run modal_tune.py::main --single generalist

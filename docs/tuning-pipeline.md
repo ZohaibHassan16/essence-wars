@@ -359,7 +359,7 @@ modal run modal_tune.py --single argentum
 ### What Happens
 
 1. **Phase 1:** 4 parallel training jobs (generalist + 3 faction specialists)
-2. **Phase 2:** Balance validation across all faction matchups
+2. **Phase 2:** Balance validation (round-robin: 40 deck matchups × 2 directions × games)
 3. **Auto-deploy:** Trained weights automatically copied to `data/weights/`
 
 ### When to Use Cloud vs Local

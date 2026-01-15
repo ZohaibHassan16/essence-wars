@@ -31,7 +31,8 @@ TIMEOUT_SECONDS = 7200  # 2 hours max (usually finishes in 10-15 min)
 VALIDATION_CPU = 32  # 32 cores for faster validation (adjustable via --cores)
 VALIDATION_MEMORY = 16384  # 16 GB
 VALIDATION_TIMEOUT = 3600  # 1 hour (adjustable via --validation-timeout)
-VALIDATION_GAMES = 500  # Games per matchup (adjustable via --validation-games)
+VALIDATION_GAMES = 500  # Games per matchup per direction (adjustable via --validation-games)
+                        # Round-robin: 40 deck matchups × 2 directions = 40k total games at default
 VALIDATION_MCTS_SIMS = 100
 
 # Training configurations
@@ -289,10 +290,13 @@ def run_validation(workspace_snapshot: bytes, run_id: str = None, games: int = N
     """
     Run balance validation with trained weights.
 
+    Validates all faction matchups using round-robin deck testing (40 total matchups).
+    Each matchup tests both player orders for comprehensive balance analysis.
+
     Args:
         workspace_snapshot: Tarball of workspace directory
         run_id: Optional run identifier for naming output
-        games: Number of games per matchup (overrides VALIDATION_GAMES)
+        games: Number of games per matchup per direction (total = 40 × 2 × games)
         mcts_sims: MCTS simulations per move (overrides VALIDATION_MCTS_SIMS)
         cores: Number of CPU cores (for display only, set via decorator)
 
@@ -470,11 +474,14 @@ def run_matchup_validation(
     """
     Run validation for a single matchup in parallel.
 
+    Part of parallel validation system - each matchup runs in its own container.
+    Uses round-robin deck testing (all deck combinations within faction matchup).
+
     Args:
         matchup: Matchup identifier (e.g., "argentum-symbiote")
         workspace_snapshot: Tarball of workspace directory
         run_id: Run identifier for naming output
-        games: Number of games per direction
+        games: Number of games per deck matchup per direction
         mcts_sims: MCTS simulations per move
         cores: Number of CPU cores (for display)
 
@@ -953,11 +960,19 @@ def main(
     """
     Run training on Modal.
 
+    Modes:
+    - full (default): Train all configs + validate + deploy weights
+    - train-only: Train only (skip validation) + deploy weights
+    - validate-only: Skip training, only validate with existing weights
+
+    Validation uses round-robin testing: 40 deck matchups × 2 directions × games.
+    Default 500 games = 40,000 total games tested.
+
     Args:
         single: Run single configuration (e.g., 'generalist', 'argentum', 'symbiote', 'obsidion')
         mode: Pipeline mode - 'full' (train+validate), 'train-only', or 'validate-only'
         no_deploy: If True, skip auto-deploying weights to local data/weights/
-        validation_games: Number of games per matchup (default: 500)
+        validation_games: Games per matchup per direction (total = 40 × 2 × games, default: 500)
         validation_timeout: Timeout in seconds (default: 3600)
         cores: Number of CPU cores for validation (default: 32, note: also update VALIDATION_CPU constant)
         sequential: If True, run validation sequentially instead of parallel (default: False)

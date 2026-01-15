@@ -43,9 +43,10 @@ cargo run --release --bin tune -- --mode faction-specialist --faction argentum -
 ./scripts/analyze-tuning.sh --latest
 ./scripts/analyze-tuning.sh --all
 
-# Run balance validation
-cargo run --release --bin validate -- --games 100              # Quick local check
-cargo run --release --bin validate -- --games 500 --output results.json  # Full validation
+# Run balance validation (round-robin: 40 deck matchups × 2 directions × games)
+cargo run --release --bin validate -- --games 100              # 8k total games - quick check
+cargo run --release --bin validate -- --games 500 --output results.json  # 40k total - full validation
+cargo run --release --bin validate -- --games 1500             # 120k total games - comprehensive
 
 # Run P1/P2 asymmetry diagnostics
 cargo run --release --bin diagnose -- 200                                  # Basic analysis

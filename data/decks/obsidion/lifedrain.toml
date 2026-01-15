@@ -1,0 +1,42 @@
+# Obsidion Lifedrain Deck
+# Faction: Obsidion Syndicate - "The Glass Cannon"
+# Composition: 21 Obsidion Core + 9 Free-Walker Splash
+# Strategy: Lifesteal creatures and healing effects for sustained attrition.
+
+id = "obsidion_lifedrain"
+name = "Obsidion Lifedrain"
+description = "Sustain deck featuring Lifesteal synergy and healing to outlast opponents."
+
+tags = ["midrange", "lifesteal", "faction", "obsidion"]
+
+# 30 cards total (21 Obsidion + 9 Free-Walker)
+cards = [
+    # === OBSIDION CORE (21 cards) ===
+    # -- 1-cost (2 cards) --
+    3025, 3025, # Life Tap spell (2 damage + heal 2)
+
+    # -- 2-cost (4 cards) --
+    3002, 3002, # Blood Acolyte (2/3 Lifesteal) - early sustain
+    3008, 3008, # Soul Drain spell (3 damage) - removal
+
+    # -- 3-cost (6 cards) --
+    3017, 3017, # Blood Seeker (3/3 Lifesteal) - reliable sustain
+    3023, 3023, # Blood Ritualist (2/4, heal 4) - big heal
+    3009, 3009, # Dark Insight spell (draw 2) - card advantage
+
+    # -- 4-cost (6 cards) --
+    3004, 3004, # Hemomancer (3/5 Lifesteal) - durable
+    3019, 3019, # Nightstalker (4/3 Stealth+Lifesteal) - evasive
+    3014, 3014, # Dark Altar (grant Lifesteal) - synergy
+
+    # -- 5+ cost (3 cards) --
+    3020, 3020, # Soul Reaver (5/4 Quick+Lifesteal) - finisher
+    3007,       # The Eternal One (6/7 Lifesteal+Regenerate) - ultimate sustain
+
+    # === FREE-WALKER SPLASH (9 cards) ===
+    4012, 4012, # Supply Depot (3-cost support, heal 1/turn) - more sustain
+    4008, 4008, # Scrap Golem (5-cost 4/6 vanilla) - solid body
+    4002, 4002, # Wasteland Scout (2-cost 2/3 Ranged) - early game
+    4006, 4006, # Sharpshooter (4-cost 3/3 Ranged) - flexible
+    4003,       # Hired Blade (3-cost 3/3 vanilla) - efficient
+]
