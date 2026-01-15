@@ -66,6 +66,10 @@ struct Args {
     /// Path to weights directory
     #[arg(long, default_value = "data/weights")]
     weights: PathBuf,
+
+    /// Run only a specific matchup (e.g., "argentum-symbiote", "argentum-obsidion", "symbiote-obsidion")
+    #[arg(long, short = 'm')]
+    matchup: Option<String>,
 }
 
 /// Configuration for validation run (for JSON output)
@@ -75,6 +79,8 @@ struct ValidationConfig {
     mcts_simulations: u32,
     seed: u64,
     threads: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    matchup_filter: Option<String>,
 }
 
 /// Results for a single faction pair (both player orders)
@@ -210,10 +216,22 @@ fn main() {
     let faction_weights = load_faction_weights(&args.weights, !args.interactive);
 
     // Build matchups (3 faction pairs, no mirrors)
-    let matchups = build_matchups(&deck_registry, &card_db);
+    let mut matchups = build_matchups(&deck_registry, &card_db);
     if matchups.is_empty() {
         eprintln!("Error: No valid faction matchups found. Need decks for at least 2 factions.");
         process::exit(1);
+    }
+
+    // Filter to specific matchup if requested
+    if let Some(ref matchup_filter) = args.matchup {
+        matchups = filter_matchups(matchups, matchup_filter);
+        if matchups.is_empty() {
+            eprintln!(
+                "Error: No matchup found matching '{}'. Valid options: argentum-symbiote, argentum-obsidion, symbiote-obsidion",
+                matchup_filter
+            );
+            process::exit(1);
+        }
     }
 
     // Print header (always shown)
@@ -251,6 +269,7 @@ fn main() {
             mcts_simulations: args.mcts_sims,
             seed: args.seed,
             threads: num_threads,
+            matchup_filter: args.matchup.clone(),
         },
         matchups: matchup_results,
         summary,
@@ -350,6 +369,28 @@ fn build_matchups(registry: &DeckRegistry, card_db: &CardDatabase) -> Vec<Matchu
     }
 
     matchups
+}
+
+/// Filter matchups by name (e.g., "argentum-symbiote")
+fn filter_matchups(matchups: Vec<Matchup>, filter: &str) -> Vec<Matchup> {
+    let filter_lower = filter.to_lowercase();
+    let parts: Vec<&str> = filter_lower.split('-').collect();
+
+    matchups
+        .into_iter()
+        .filter(|m| {
+            let f1 = m.faction1.as_tag().to_lowercase();
+            let f2 = m.faction2.as_tag().to_lowercase();
+
+            // Match either order: "argentum-symbiote" or "symbiote-argentum"
+            if parts.len() == 2 {
+                (f1 == parts[0] && f2 == parts[1]) || (f1 == parts[1] && f2 == parts[0])
+            } else {
+                // Single faction name matches any matchup involving that faction
+                f1.contains(&filter_lower) || f2.contains(&filter_lower)
+            }
+        })
+        .collect()
 }
 
 /// Run all validation matchups

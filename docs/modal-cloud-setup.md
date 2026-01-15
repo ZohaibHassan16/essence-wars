@@ -35,19 +35,25 @@ Follow the browser prompts to authenticate with GitHub or Google.
 
 ```bash
 # Full pipeline: train all 4 configs + run balance validation
-modal run modal_tune.py
+modal run modal_tune.py::main
 
 # Train only (skip validation)
-modal run modal_tune.py --mode train-only
+modal run modal_tune.py::main --mode train-only
 
-# Validate only (use existing trained weights)
-modal run modal_tune.py --mode validate-only
+# Validate only (use existing trained weights) - PARALLEL by default
+modal run modal_tune.py::main --mode validate-only
+
+# Validate with custom parameters (e.g., 20k games for balance testing)
+modal run modal_tune.py::main --mode validate-only --validation-games 20000 --validation-timeout 7200
+
+# Use sequential validation (original single-container mode)
+modal run modal_tune.py::main --mode validate-only --sequential
 
 # Run single configuration
-modal run modal_tune.py --single generalist
-modal run modal_tune.py --single argentum
-modal run modal_tune.py --single symbiote
-modal run modal_tune.py --single obsidion
+modal run modal_tune.py::main --single generalist
+modal run modal_tune.py::main --single argentum
+modal run modal_tune.py::main --single symbiote
+modal run modal_tune.py::main --single obsidion
 ```
 
 ### 4. Auto-Deploy Weights
@@ -66,8 +72,10 @@ data/weights/
 To skip auto-deploy (e.g., for testing):
 
 ```bash
-modal run modal_tune.py --no-deploy
+modal run modal_tune.py::main --no-deploy
 ```
+
+**Note:** Validation-only mode doesn't deploy weights (it only reads existing weights for testing).
 
 ### 5. Download Experiment Logs (Optional)
 
@@ -102,12 +110,13 @@ Local Machine                 Modal Cloud
                              └──────────────────────────────────┘
                                             │
                                             ▼
-                             Phase 2: Validation
+                             Phase 2: Validation (3x Parallel)
                              ┌──────────────────────────────────┐
-                             │  Instance 5: 16 cores            │
-                             │  → Balance testing (3 matchups)  │
-                             │  → 500 games per matchup         │
-                             │  → JSON results output           │
+                             │  Instance 5-7: 32 cores each     │
+                             │  → Argentum vs Symbiote          │
+                             │  → Argentum vs Obsidion          │
+                             │  → Symbiote vs Obsidion          │
+                             │  → ~3x faster than sequential!   │
                              └──────────────────────────────────┘
 
                              Modal Persistent Volume (Shared)
@@ -140,10 +149,15 @@ Local Machine                 Modal Cloud
    - CMA-ES optimization with Rayon parallelism (16 cores)
    - Auto-deploy weights to data/weights/
 
-4. **Cloud: Phase 2 - Balance Validation (~10 min)**
-   - Run `validate` binary with trained weights
+4. **Cloud: Phase 2 - Balance Validation (~3 min default, scales with game count)**
+   - **PARALLEL mode (default):** Spawn 3 containers, one per matchup
+     - Each matchup runs on dedicated 32-core instance
+     - ~3x faster than sequential for large game counts
+     - Results merged automatically
+   - **Sequential mode (--sequential):** Single 32-core instance
+     - Uses trained weights from Modal volume (or local if none exist)
    - Test all 3 faction matchups (both player orders)
-   - 500 games per matchup for statistical confidence
+   - 500 games per matchup by default (configurable via --validation-games)
    - Output JSON results with balance summary
 
 5. **Cloud: Save Results**
@@ -158,7 +172,12 @@ Local Machine                 Modal Cloud
    - Deploy specialists to `data/weights/specialists/*.toml`
    - Ready for immediate use (no manual copying!)
 
-7. **Local: Download Logs (Optional)**
+7. **Local: Auto-Save Validation Results**
+   - Validation results automatically saved to `experiments/validation/{run_id}/`
+   - Includes `results.json`, `summary.txt`, and `config.toml`
+   - No manual download required!
+
+8. **Local: Download Training Logs (Optional)**
    - Retrieve full experiment logs as tarball
    - Extract to local experiments/ directory
    - Analyze with `./scripts/analyze-tuning.sh`
@@ -178,6 +197,12 @@ Local Machine                 Modal Cloud
 **Wall Time:** ~15 minutes (all 4 run simultaneously)  
 **Total CPU Time:** 4 jobs × 12 min = 48 minutes  
 **Total Cost:** ~$0.32 per full training run
+
+### Validation Only (500 games)
+
+**Instance:** 32 vCPU (default for validation)  
+**Typical Runtime:** ~3 minutes (build + validate)  
+**Cost:** ~$0.025/CPU-hour × 32 cores × 0.05 hours = **~$0.04 per validation**
 
 ### Monthly Estimate
 
@@ -409,11 +434,16 @@ uv tool install modal
 modal token new
 
 # Run full pipeline (train + validate + auto-deploy)
-modal run modal_tune.py                         # All 4 + validation + deploy
-modal run modal_tune.py --mode train-only       # Training only + deploy
-modal run modal_tune.py --mode validate-only    # Validation only (no deploy)
-modal run modal_tune.py --single generalist     # Single config + deploy
-modal run modal_tune.py --no-deploy             # Skip auto-deploy to local repo
+modal run modal_tune.py::main                         # All 4 + validation + deploy
+modal run modal_tune.py::main --mode train-only       # Training only + deploy
+modal run modal_tune.py::main --mode validate-only    # Validation only (reads existing weights)
+modal run modal_tune.py::main --single generalist     # Single config + deploy
+modal run modal_tune.py::main --no-deploy             # Skip auto-deploy to local repo
+
+# Custom validation parameters (parallel by default - ~3x faster!)
+modal run modal_tune.py::main --mode validate-only --validation-games 20000  # 20k games, parallel
+modal run modal_tune.py::main --mode validate-only --sequential              # Force sequential (1 container)
+modal run modal_tune.py::main --mode validate-only --validation-timeout 7200 # 2hr timeout per matchup
 
 # Download experiment logs (optional)
 modal run modal_tune.py::list_experiments
@@ -431,6 +461,7 @@ modal app logs essence-wars-tuning
 # Local validation (no Modal required)
 cargo run --release --bin validate -- --games 100
 cargo run --release --bin validate -- --games 500 --output results.json
+cargo run --release --bin validate -- --matchup argentum-symbiote --games 100  # Single matchup
 ```
 
 ---

@@ -441,6 +441,266 @@ def run_validation(workspace_snapshot: bytes, run_id: str = None, games: int = N
 
 
 # ============================================================================
+# Parallel Matchup Validation Function
+# ============================================================================
+
+# Define all matchups for parallel validation
+MATCHUPS = [
+    "argentum-symbiote",
+    "argentum-obsidion",
+    "symbiote-obsidion",
+]
+
+
+@app.function(
+    image=rust_image,
+    cpu=VALIDATION_CPU,
+    memory=VALIDATION_MEMORY,
+    timeout=VALIDATION_TIMEOUT,
+    volumes={"/experiments": volume},
+)
+def run_matchup_validation(
+    matchup: str,
+    workspace_snapshot: bytes,
+    run_id: str,
+    games: int,
+    mcts_sims: int,
+    cores: int,
+):
+    """
+    Run validation for a single matchup in parallel.
+
+    Args:
+        matchup: Matchup identifier (e.g., "argentum-symbiote")
+        workspace_snapshot: Tarball of workspace directory
+        run_id: Run identifier for naming output
+        games: Number of games per direction
+        mcts_sims: MCTS simulations per move
+        cores: Number of CPU cores (for display)
+
+    Returns:
+        Dict with matchup results
+    """
+    import subprocess
+    import tarfile
+    import io
+    import json
+    import time
+
+    print("=" * 70)
+    print(f"🎯 MATCHUP VALIDATION: {matchup.upper()}")
+    print("=" * 70)
+    print(f"⚙️  Games: {games}, MCTS sims: {mcts_sims}, Cores: {cores}")
+
+    start_time = time.time()
+
+    # Extract workspace snapshot
+    print("\n📦 Extracting workspace...")
+    workspace_path = Path("/tmp/essence-wars")
+    workspace_path.mkdir(exist_ok=True)
+
+    with tarfile.open(fileobj=io.BytesIO(workspace_snapshot), mode='r:gz') as tar:
+        tar.extractall(workspace_path)
+
+    print(f"✓ Workspace extracted to {workspace_path}")
+
+    # Build validate binary
+    print("\n🔨 Building validate binary...")
+    build_start = time.time()
+
+    result = subprocess.run(
+        ["cargo", "build", "--release", "--bin", "validate"],
+        cwd=workspace_path,
+        capture_output=True,
+        text=True,
+    )
+
+    build_time = time.time() - build_start
+    print(f"✓ Build completed in {build_time:.1f}s")
+
+    if result.returncode != 0:
+        print(f"❌ Build failed:\n{result.stderr}")
+        return {"success": False, "matchup": matchup, "error": f"Build failed: {result.stderr[-1000:]}"}
+
+    # Set up weights
+    print("\n📂 Setting up weights...")
+    weights_dest = workspace_path / "data" / "weights"
+    specialists_dest = weights_dest / "specialists"
+    specialists_dest.mkdir(parents=True, exist_ok=True)
+
+    trained_weights = Path("/experiments/trained_weights")
+    weights_found = 0
+
+    if trained_weights.exists():
+        import shutil
+
+        gen_weights = trained_weights / "generalist.toml"
+        if gen_weights.exists():
+            shutil.copy2(gen_weights, weights_dest / "generalist.toml")
+            weights_found += 1
+
+        spec_dir = trained_weights / "specialists"
+        if spec_dir.exists():
+            for spec_file in spec_dir.glob("*.toml"):
+                shutil.copy2(spec_file, specialists_dest / spec_file.name)
+                weights_found += 1
+
+    print(f"  Found {weights_found} weight files")
+
+    # Run validation for this matchup only
+    print(f"\n🧪 Running validation for {matchup}...")
+    validation_start = time.time()
+
+    output_file = workspace_path / f"validation_{matchup}.json"
+
+    cmd = [
+        str(workspace_path / "target/release/validate"),
+        "--games", str(games),
+        "--mcts-sims", str(mcts_sims),
+        "--matchup", matchup,
+        "--output", str(output_file),
+    ]
+
+    print(f"   Command: {' '.join(cmd)}")
+
+    result = subprocess.run(
+        cmd,
+        cwd=workspace_path,
+        capture_output=True,
+        text=True,
+    )
+
+    validation_time = time.time() - validation_start
+
+    # Print validation output
+    if result.stdout:
+        print("\n" + result.stdout)
+
+    # Load results
+    validation_data = None
+    if output_file.exists():
+        with open(output_file) as f:
+            validation_data = json.load(f)
+
+    total_time = time.time() - start_time
+
+    print("\n" + "=" * 70)
+    print(f"✅ {matchup.upper()} COMPLETE!")
+    print(f"⏱️  Validation Time: {validation_time:.1f}s ({validation_time/60:.1f}m)")
+    print("=" * 70 + "\n")
+
+    return {
+        "success": result.returncode == 0,
+        "matchup": matchup,
+        "results": validation_data,
+        "validation_time": validation_time,
+        "total_time": total_time,
+        "stdout": result.stdout,
+        "stderr": result.stderr if result.returncode != 0 else "",
+    }
+
+
+def merge_matchup_results(matchup_results: list, run_id: str) -> dict:
+    """
+    Merge individual matchup results into a combined validation result.
+
+    Args:
+        matchup_results: List of individual matchup result dicts
+        run_id: Run identifier
+
+    Returns:
+        Combined validation results dict
+    """
+    from datetime import datetime
+
+    # Collect all matchup data
+    all_matchups = []
+    total_validation_time = 0
+    all_succeeded = True
+
+    for result in matchup_results:
+        if not result.get("success"):
+            all_succeeded = False
+            continue
+
+        data = result.get("results", {})
+        if data and "matchups" in data:
+            all_matchups.extend(data["matchups"])
+        total_validation_time = max(total_validation_time, result.get("validation_time", 0))
+
+    if not all_matchups:
+        return {"success": False, "error": "No matchup results collected"}
+
+    # Calculate combined summary
+    faction_wins = {}
+    faction_games = {}
+    total_p1_wins = 0
+    total_games = 0
+    total_draws = 0
+
+    for m in all_matchups:
+        f1 = m["faction1"]
+        f2 = m["faction2"]
+
+        faction_wins[f1] = faction_wins.get(f1, 0) + m["faction1_total_wins"]
+        faction_wins[f2] = faction_wins.get(f2, 0) + m["faction2_total_wins"]
+        faction_games[f1] = faction_games.get(f1, 0) + m["total_games"] - m["draws"]
+        faction_games[f2] = faction_games.get(f2, 0) + m["total_games"] - m["draws"]
+
+        total_p1_wins += m["f1_as_p1_wins"]
+        total_p1_wins += m["total_games"] // 2 - m["f1_as_p2_wins"] - m["draws"] // 2
+        total_games += m["total_games"]
+        total_draws += m["draws"]
+
+    decisive_games = total_games - total_draws
+    p1_win_rate = total_p1_wins / decisive_games if decisive_games > 0 else 0.5
+
+    faction_win_rates = {
+        f: wins / faction_games.get(f, 1)
+        for f, wins in faction_wins.items()
+    }
+
+    rates = list(faction_win_rates.values())
+    max_faction_delta = max(rates) - min(rates) if len(rates) >= 2 else 0
+
+    # Determine status
+    warnings = []
+
+    if not (0.50 <= p1_win_rate <= 0.55):
+        warnings.append(f"P1 win rate {p1_win_rate*100:.1f}% is outside ideal range (50-55%)")
+
+    if max_faction_delta >= 0.15:
+        warnings.append(f"Faction delta {max_faction_delta*100:.1f}% indicates significant imbalance")
+
+    p1_status = "balanced" if 0.50 <= p1_win_rate <= 0.55 else ("warning" if 0.45 <= p1_win_rate <= 0.60 else "imbalanced")
+    faction_status = "balanced" if max_faction_delta < 0.10 else ("warning" if max_faction_delta < 0.15 else "imbalanced")
+    overall_status = "imbalanced" if "imbalanced" in [p1_status, faction_status] else ("warning" if "warning" in [p1_status, faction_status] else "balanced")
+
+    # Build combined result
+    combined = {
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "run_id": run_id,
+        "parallel_execution": True,
+        "matchups": all_matchups,
+        "summary": {
+            "p1_win_rate": p1_win_rate,
+            "p1_status": p1_status,
+            "faction_win_rates": faction_win_rates,
+            "max_faction_delta": max_faction_delta,
+            "faction_status": faction_status,
+            "overall_status": overall_status,
+            "warnings": warnings,
+        },
+        "timing": {
+            "wall_time_seconds": total_validation_time,
+            "matchup_times": {r["matchup"]: r["validation_time"] for r in matchup_results if r.get("success")},
+        },
+    }
+
+    return {"success": all_succeeded, "results": combined}
+
+
+# ============================================================================
 # Download Results Function
 # ============================================================================
 
@@ -553,6 +813,113 @@ def deploy_weights_locally(weights: dict, workspace_path: Path) -> int:
 
 
 # ============================================================================
+# Local Utilities
+# ============================================================================
+
+def save_validation_results(workspace_path: Path, run_id: str, results: dict) -> Path:
+    """
+    Save validation results to the local experiments/validation/ directory.
+
+    Args:
+        workspace_path: Path to the workspace root
+        run_id: Run identifier (e.g., "2026-01-15_0747")
+        results: Validation results dict
+
+    Returns:
+        Path to the saved results directory
+    """
+    import json
+
+    # Create validation results directory
+    validation_dir = workspace_path / "experiments" / "validation" / run_id
+    validation_dir.mkdir(parents=True, exist_ok=True)
+
+    # Save full JSON results
+    results_file = validation_dir / "results.json"
+    with open(results_file, "w") as f:
+        json.dump(results, f, indent=2)
+
+    # Create human-readable summary
+    summary = results.get("summary", {})
+    summary_lines = [
+        "=" * 60,
+        f"VALIDATION SUMMARY - {run_id}",
+        "=" * 60,
+        "",
+        f"Timestamp: {results.get('timestamp', 'N/A')}",
+        f"Parallel Execution: {results.get('parallel_execution', False)}",
+        "",
+        "--- Balance Status ---",
+        f"Overall Status: {summary.get('overall_status', 'unknown').upper()}",
+        f"P1 Win Rate: {summary.get('p1_win_rate', 0) * 100:.1f}%",
+        f"Max Faction Delta: {summary.get('max_faction_delta', 0) * 100:.1f}%",
+        "",
+        "--- Faction Win Rates ---",
+    ]
+
+    for faction, rate in summary.get("faction_win_rates", {}).items():
+        summary_lines.append(f"  {faction.capitalize()}: {rate * 100:.1f}%")
+
+    if warnings := summary.get("warnings", []):
+        summary_lines.append("")
+        summary_lines.append("--- Warnings ---")
+        for w in warnings:
+            summary_lines.append(f"  - {w}")
+
+    # Add timing info if available
+    timing = results.get("timing", {})
+    if timing:
+        summary_lines.append("")
+        summary_lines.append("--- Timing ---")
+        summary_lines.append(f"Wall Time: {timing.get('wall_time_seconds', 0):.1f}s")
+        matchup_times = timing.get("matchup_times", {})
+        if matchup_times:
+            for matchup, t in matchup_times.items():
+                summary_lines.append(f"  {matchup}: {t:.1f}s")
+
+    # Add matchup details
+    summary_lines.append("")
+    summary_lines.append("--- Matchup Details ---")
+    for m in results.get("matchups", []):
+        f1 = m.get("faction1", "?").capitalize()
+        f2 = m.get("faction2", "?").capitalize()
+        f1_wr = m.get("faction1_win_rate", 0) * 100
+        f2_wr = m.get("faction2_win_rate", 0) * 100
+        summary_lines.append(f"{f1} vs {f2}: {f1_wr:.1f}% / {f2_wr:.1f}%")
+
+    summary_lines.append("")
+    summary_lines.append("=" * 60)
+
+    summary_file = validation_dir / "summary.txt"
+    with open(summary_file, "w") as f:
+        f.write("\n".join(summary_lines))
+
+    # Save config as TOML
+    config_lines = [
+        "# Validation Run Configuration",
+        f'run_id = "{run_id}"',
+        f'timestamp = "{results.get("timestamp", "")}"',
+        f'parallel_execution = {str(results.get("parallel_execution", False)).lower()}',
+        "",
+        "[summary]",
+        f'overall_status = "{summary.get("overall_status", "unknown")}"',
+        f"p1_win_rate = {summary.get('p1_win_rate', 0):.4f}",
+        f"max_faction_delta = {summary.get('max_faction_delta', 0):.4f}",
+    ]
+
+    config_file = validation_dir / "config.toml"
+    with open(config_file, "w") as f:
+        f.write("\n".join(config_lines))
+
+    print(f"\n💾 Validation results saved to: {validation_dir}")
+    print(f"   📄 results.json - Full JSON data")
+    print(f"   📝 summary.txt  - Human-readable summary")
+    print(f"   ⚙️  config.toml  - Run configuration")
+
+    return validation_dir
+
+
+# ============================================================================
 # Local Entry Points
 # ============================================================================
 
@@ -564,6 +931,7 @@ def main(
     validation_games: int = None,
     validation_timeout: int = None,
     cores: int = None,
+    sequential: bool = False,
 ):
     """
     Run training on Modal.
@@ -575,6 +943,7 @@ def main(
         validation_games: Number of games per matchup (default: 500)
         validation_timeout: Timeout in seconds (default: 3600)
         cores: Number of CPU cores for validation (default: 32, note: also update VALIDATION_CPU constant)
+        sequential: If True, run validation sequentially instead of parallel (default: False)
     """
     import tarfile
     import io
@@ -588,6 +957,8 @@ def main(
     val_timeout = validation_timeout or VALIDATION_TIMEOUT
     val_cores = cores or VALIDATION_CPU
 
+    parallel_mode = not sequential
+
     print("\n" + "=" * 70)
     print("🚀 ESSENCE WARS - MODAL CLOUD TRAINING")
     print("=" * 70)
@@ -596,6 +967,7 @@ def main(
     print(f"📋 Mode: {mode}")
     print(f"💻 Training: {CPU_COUNT} cores per job, {MEMORY_MB}MB RAM")
     print(f"💻 Validation: {val_cores} cores, {val_games} games/matchup")
+    print(f"🔀 Validation Mode: {'PARALLEL (3 containers)' if parallel_mode else 'SEQUENTIAL (1 container)'}")
     print(f"⏱️  Timeout: Training {TIMEOUT_SECONDS}s, Validation {val_timeout}s")
     print("=" * 70 + "\n")
 
@@ -694,22 +1066,62 @@ def main(
     # ========================================================================
     # Phase 2: Validation
     # ========================================================================
+    validation_result = None
+
     if mode in ("full", "validate-only"):
         print("=" * 70)
         print("🔍 PHASE 2: VALIDATION")
         print("=" * 70 + "\n")
 
-        print(f"🎯 Running balance validation ({val_games} games/matchup, {val_cores} cores)...\n")
+        validation_start = time.time()
 
-        validation_result = run_validation.remote(
-            workspace_snapshot,
-            run_id,
-            games=val_games,
-            mcts_sims=VALIDATION_MCTS_SIMS,
-            cores=val_cores,
-        )
+        if parallel_mode:
+            # Run matchups in parallel (3 containers)
+            print(f"🚀 Launching {len(MATCHUPS)} parallel validation workers...")
+            print(f"   Games per matchup: {val_games}")
+            print(f"   Cores per worker: {val_cores}")
+            print()
 
-        if validation_result.get('success'):
+            # Launch all matchup validations in parallel
+            matchup_results = list(run_matchup_validation.map(
+                MATCHUPS,
+                [workspace_snapshot] * len(MATCHUPS),
+                [run_id] * len(MATCHUPS),
+                [val_games] * len(MATCHUPS),
+                [VALIDATION_MCTS_SIMS] * len(MATCHUPS),
+                [val_cores] * len(MATCHUPS),
+            ))
+
+            # Merge results
+            validation_result = merge_matchup_results(matchup_results, run_id)
+
+            # Print individual matchup times
+            if validation_result.get("success"):
+                timing = validation_result.get("results", {}).get("timing", {})
+                matchup_times = timing.get("matchup_times", {})
+                if matchup_times:
+                    print("\n⏱️  Individual Matchup Times:")
+                    for matchup, t in matchup_times.items():
+                        print(f"   {matchup}: {t:.1f}s ({t/60:.1f}m)")
+        else:
+            # Run sequentially (original behavior)
+            print(f"🎯 Running balance validation sequentially ({val_games} games/matchup, {val_cores} cores)...\n")
+
+            seq_result = run_validation.remote(
+                workspace_snapshot,
+                run_id,
+                games=val_games,
+                mcts_sims=VALIDATION_MCTS_SIMS,
+                cores=val_cores,
+            )
+            validation_result = {
+                "success": seq_result.get("success"),
+                "results": seq_result.get("results"),
+            }
+
+        validation_time = time.time() - validation_start
+
+        if validation_result and validation_result.get('success'):
             # Print validation summary
             results = validation_result.get('results', {})
             summary = results.get('summary', {})
@@ -736,9 +1148,22 @@ def main(
                 for w in warnings:
                     print(f"   - {w}")
 
+            print(f"\n⏱️  Validation Time: {validation_time:.1f}s ({validation_time/60:.1f}m)")
+            if parallel_mode:
+                # Calculate speedup
+                matchup_times = results.get("timing", {}).get("matchup_times", {})
+                if matchup_times:
+                    sequential_time = sum(matchup_times.values())
+                    speedup = sequential_time / validation_time if validation_time > 0 else 1
+                    print(f"⚡ Parallel Speedup: {speedup:.1f}x vs sequential")
+
             print()
+
+            # Save results locally
+            save_validation_results(workspace_path, run_id, results)
         else:
-            print(f"❌ Validation failed: {validation_result.get('error', validation_result.get('stderr', 'Unknown'))}")
+            error_msg = validation_result.get('error', 'Unknown') if validation_result else 'No result'
+            print(f"❌ Validation failed: {error_msg}")
 
     # ========================================================================
     # Final Summary
