@@ -1,0 +1,13 @@
+id = "grove_regenerate"
+name = "The Eternal Grove"
+description = "Regenerating midrange"
+tags = ["commander", "symbiote"]
+
+cards = [
+    2063, 2052, 2053, 2058, 2066,
+    2034, 2050, 2002, 2004, 2011,
+    2072, 2009, 2007, 2047, 2041,
+    2008, 2022, 2027, 2059, 2000,
+    2003, 2006, 2018, 4040, 4050,
+    4053, 4060, 4061, 4062, 4073,
+]

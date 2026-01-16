@@ -1,0 +1,13 @@
+id = "sovereign_lifesteal"
+name = "The Blood Sovereign"
+description = "Lifesteal sustain"
+tags = ["commander", "obsidion"]
+
+cards = [
+    3055, 3002, 3047, 3059, 3017,
+    3038, 3004, 3019, 3037, 3051,
+    3060, 3020, 3048, 3043, 3007,
+    3000, 3010, 3015, 3025, 3072,
+    3001, 3008, 3016, 4029, 4030,
+    4031, 4044, 4054, 4066, 4067,
+]

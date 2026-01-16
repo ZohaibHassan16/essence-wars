@@ -1,0 +1,13 @@
+id = "broodmother_swarm"
+name = "The Broodmother"
+description = "Rush tokens and swarm tactics"
+tags = ["commander", "symbiote"]
+
+cards = [
+    2060, 2003, 2005, 2019, 2042,
+    2038, 2049, 2064, 2043, 2008,
+    2000, 2006, 2018, 2024, 2029,
+    2045, 2001, 2012, 2015, 2023,
+    2025, 2030, 2036, 4022, 4035,
+    4036, 4037, 4047, 4048, 4049,
+]

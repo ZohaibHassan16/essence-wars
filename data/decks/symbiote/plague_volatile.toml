@@ -1,0 +1,13 @@
+id = "plague_volatile"
+name = "Plague Sovereign"
+description = "Volatile death triggers"
+tags = ["commander", "symbiote"]
+
+cards = [
+    2061, 2048, 2026, 2067, 2020,
+    2028, 2068, 2027, 2040, 2046,
+    2050, 2054, 2055, 2065, 2069,
+    2071, 2074, 2002, 2007, 2010,
+    2013, 2016, 2031, 4052, 4058,
+    4059, 4070, 4074, 4004, 4006,
+]

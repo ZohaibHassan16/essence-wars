@@ -1,0 +1,13 @@
+id = "alpha_frenzy"
+name = "Alpha of the Hunt"
+description = "Aggressive Frenzy attacks"
+tags = ["commander", "symbiote"]
+
+cards = [
+    2062, 2070, 2021, 2017, 2022,
+    2004, 2072, 2009, 2059, 2032,
+    2035, 2039, 2044, 2047, 2051,
+    2056, 2057, 2073, 2011, 2014,
+    2033, 2037, 2041, 4013, 4021,
+    4025, 4026, 4028, 4038, 4039,
+]

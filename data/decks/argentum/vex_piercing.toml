@@ -1,0 +1,13 @@
+id = "vex_piercing"
+name = "Siege Marshal Vex"
+description = "Aggressive Piercing damage"
+tags = ["commander", "argentum"]
+
+cards = [
+    1058, 1005, 1065, 1070, 1011,
+    1014, 1018, 1024, 1028, 1029,
+    1033, 1049, 1054, 1066, 1071,
+    1073, 1074, 1012, 1013, 1019,
+    1026, 1034, 1039, 4055, 4056,
+    4057, 4068, 4069, 4071, 4072,
+]

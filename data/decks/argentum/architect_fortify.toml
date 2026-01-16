@@ -1,0 +1,13 @@
+id = "architect_fortify"
+name = "The Grand Architect"
+description = "Fortified control strategy"
+tags = ["commander", "argentum"]
+
+cards = [
+    1059, 1030, 1040, 1048, 1055,
+    1062, 1041, 1035, 1037, 1042,
+    1064, 1036, 1043, 1038, 1044,
+    1053, 1072, 1010, 1025, 1045,
+    1052, 1065, 1070, 4001, 4003,
+    4010, 4012, 4015, 4017, 4020,
+]

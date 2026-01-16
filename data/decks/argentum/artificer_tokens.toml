@@ -1,0 +1,13 @@
+id = "artificer_tokens"
+name = "The High Artificer"
+description = "Construct tokens and board presence"
+tags = ["commander", "argentum"]
+
+cards = [
+    1056, 1000, 1021, 1041, 1060,
+    1002, 1007, 1022, 1050, 1051,
+    1063, 1020, 1061, 1064, 1067,
+    1004, 1017, 1032, 1036, 1047,
+    1068, 1008, 1016, 4000, 4002,
+    4007, 4011, 4016, 4018, 4019,
+]

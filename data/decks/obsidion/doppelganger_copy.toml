@@ -1,0 +1,13 @@
+id = "doppelganger_copy"
+name = "The Doppelganger King"
+description = "Copy and clone effects"
+tags = ["commander", "obsidion"]
+
+cards = [
+    3057, 3068, 3041, 3030, 3035,
+    3040, 3044, 3049, 3061, 3066,
+    3067, 3073, 3006, 3011, 3014,
+    3027, 3029, 3031, 3046, 3054,
+    3071, 3074, 3021, 4064, 4005,
+    4043, 4065, 4009, 4000, 4002,
+]

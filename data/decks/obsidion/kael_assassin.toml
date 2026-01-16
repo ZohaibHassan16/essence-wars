@@ -1,0 +1,13 @@
+id = "kael_assassin"
+name = "Shadow Emperor Kael"
+description = "Stealth assassination"
+tags = ["commander", "obsidion"]
+
+cards = [
+    3056, 3024, 3052, 3063, 3005,
+    3042, 3064, 3022, 3026, 3033,
+    3036, 3045, 3050, 3053, 3062,
+    3065, 3070, 3003, 3009, 3012,
+    3018, 3023, 3028, 4008, 4014,
+    4023, 4027, 4041, 4042, 4063,
+]

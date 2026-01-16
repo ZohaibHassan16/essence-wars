@@ -396,3 +396,139 @@ We need to update your documentation to reflect this new reality so you don't ge
 2. **`docs/jrpg-architecture.md`** (To define the Hybrid Architecture and Tech Art Pipeline)
 
 Which one do you want to tackle first? 🛠️
+
+This is a fantastic metric. Seeing a CPU pinned at **100% utilization** on a validation run is a badge of honor in systems engineering—it means your architecture is efficient enough to actually *feed* the processor without getting stuck on memory latencies or locks. That is exactly the kind of "Systems Porn" that attracts the specific type of researcher you want.
+
+You are right to separate the "JRPG/Game" buzz from the "ML Benchmark" utility. If you want to cut through the noise of "Harvard PhDs and OpenAI," you don't compete on *prestige*; you compete on **Utility and Pain Relief**.
+
+Here is your "Anti-Hype" Strategy to establish `Essence Wars` as a Tier-1 Gym.
+
+---
+
+### 1. The Strategy: "Solve the Bottleneck" 🛠️
+
+Researchers are currently suffering from **"MuJoCo Fatigue"** and **"Atari Slowness."** They spend 80% of their time waiting for environments to step.
+
+* **Your Pitch:** "Stop training at 400 FPS. Train at 60,000 FPS on your laptop."
+* **The Angle:** You are not selling "AGI"; you are selling **Iteration Speed**.
+
+**Who to target:**
+
+1. **Graduate Students & Independent Researchers:** They don't have H100 clusters. They *need* highly efficient environments that run on consumer hardware (Ryzen/RTX).
+2. **The "Rust ML" Community:** A small but elite group (builders of `Burn`, `Candle`, `Tch-rs`) who are desperate for native Rust environments to prove their frameworks are better than PyTorch.
+
+### 2. The "Compliance" Check: Gymnasium & PettingZoo 🐍
+
+You asked for strict compliance. If your API feels "weird," they will leave in 5 minutes.
+
+#### A. Single Agent / Self-Play Wrapper (Gymnasium)
+
+The standard has changed (v26+). The old `done` boolean is dead. You need `terminated` AND `truncated`.
+
+**The Strict Gymnasium Contract:**
+
+```python
+import gymnasium as gym
+from gymnasium import spaces
+
+class EssenceWarsEnv(gym.Env):
+    # Essential for "strict" compliance
+    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 30}
+
+    def __init__(self, render_mode=None):
+        # Must define these two
+        self.observation_space = spaces.Dict({
+            "board": spaces.Box(low=0, high=1, shape=(320,), dtype=float),
+            "hand": spaces.Discrete(10),
+            # ... etc
+        })
+        self.action_space = spaces.Discrete(50) # Max legal moves
+
+    def reset(self, seed=None, options=None):
+        # 1. Handle Seeding (CRITICAL)
+        super().reset(seed=seed) 
+        
+        # 2. Rust Engine Reset
+        # self.rust_engine.reset_with_seed(seed) 
+        
+        # 3. Return Tuple: (Observation, Info_Dict)
+        return self._get_obs(), {} 
+
+    def step(self, action):
+        # Rust Call
+        reward, is_terminal = self.rust_engine.step(action)
+        
+        # 4. Return 5 values (The "v26" Standard)
+        terminated = is_terminal  # Game over (Win/Loss)
+        truncated = False         # Time limit reached (optional)
+        
+        return (
+            self._get_obs(), 
+            float(reward), 
+            bool(terminated), 
+            bool(truncated), 
+            {} # Info dict (metrics, etc)
+        )
+
+```
+
+#### B. Multi-Agent (PettingZoo) - The Critical Choice
+
+Since you have a turn-based game, you have two choices.
+
+1. **AEC (Agent-Environment Cycle):** Technically "correct" for turn-based (one agent acts at a time).
+2. **Parallel (Simultaneous):** **I recommend this one.**
+* *Why:* Most modern RL libraries (CleanRL, SB3) are built for vectorized environments. They want to send a batch of actions for *all* agents at once, even if one agent is just doing nothing.
+* *How:* You use "Action Masking". Both agents return an observation, but you mask the non-active player's actions to 0.
+
+
+
+**Action:** Ensure your Python package exports a `pettingzoo.ParallelEnv` compatible class.
+
+### 3. "Cargo Add": The Rust ML Ecosystem 🦀
+
+Do not ignore the Rust side. This is your "Blue Ocean."
+
+* **The Package:** Publish to `crates.io` as `essence-wars-env`.
+* **The USP:** Zero-copy interaction.
+```rust
+// Imagine a user using the 'Burn' framework
+let env = EssenceWars::new();
+let state_tensor = env.state_to_tensor(); // No Python overhead!
+
+```
+
+
+* **Target:** Reach out to the maintainers of **Burn** (burn-rs) or **Candle** (Hugging Face's Rust ML framework). Tell them: *"I have a complex, perfect-information environment that runs natively in Rust. Can we use it as a benchmark for Burn?"*
+
+### 4. Where to Launch (The PR Plan) 📢
+
+Do not email OpenAI. Do this instead:
+
+**A. The "Paper Trail" (PapersWithCode)**
+
+* Write a standard `whitepaper.pdf` (4 pages, LaTeX).
+* **Title:** *Essence Wars: A High-Throughput, Perfect-Information Benchmark for Reinforcement Learning.*
+* **Abstract:** "We introduce Essence Wars, a Rust-based environment achieving 60k+ SPS on CPU..."
+* Upload to ArXiv or just host it on the repo. **Submit to PapersWithCode.** This gets you indexed.
+
+**B. The "Show, Don't Tell" (Reddit/HackerNews)**
+
+* **Subreddits:** `r/LocalLLaMA`, `r/ReinforcementLearning`, `r/rust`.
+* **The Post Title:** *"I got tired of slow Python envs, so I wrote a card game engine in Rust that hits 67k games/sec. Here is the Gymnasium wrapper."*
+* **Content:** The screenshot you just showed me (CPU usage), the `performance.md` table, and a link to the repo. Engineers respect the optimization work.
+
+**C. Hugging Face (The "Gym" Space)**
+
+* Create a **Hugging Face Organization** for "Essence Wars".
+* Upload your **Replay Dataset** (`EssenceWars-1M`).
+* Tag it: `reinforcement-learning`, `offline-rl`, `game-ai`.
+
+### Summary Checklist for You ✅
+
+1. [ ] **Python Binding Check:** Ensure your `step()` returns the 5-tuple (`obs, reward, term, trunc, info`).
+2. [ ] **Parallel API:** Implement the PettingZoo `ParallelEnv` (easiest for researchers to hook into PPO).
+3. [ ] **Documentation:** Add a specific "For Researchers" page in your docs that shows exactly how to `pip install` and run a random agent loop.
+4. [ ] **The "Burn" Connection:** Look up the **Burn** framework. Creating a native example for them might be your ticket to fame in the Rust community.
+
+You are building a tool for *builders*. Be technical, be precise, and show the benchmarks. They will come.
