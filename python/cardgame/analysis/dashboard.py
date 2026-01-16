@@ -10,6 +10,7 @@ from datetime import datetime
 from typing import Optional
 
 import pandas as pd
+import plotly.graph_objects as go
 from jinja2 import Template
 
 logger = logging.getLogger(__name__)
@@ -290,32 +291,42 @@ class MCTSDashboard:
 
         async function loadData() {
             try {
+                console.log('Loading CSV files...');
                 const [fullCsv, summaryCsv] = await Promise.all([
                     loadCSV('aggregated_data.csv'),
                     loadCSV('summary.csv')
                 ]);
+                console.log(`Loaded CSVs: ${fullCsv.length} bytes, ${summaryCsv.length} bytes`);
 
                 fullData = Papa.parse(fullCsv, { header: true, dynamicTyping: true }).data;
                 summaryData = Papa.parse(summaryCsv, { header: true, dynamicTyping: true }).data;
+                console.log(`Parsed: ${fullData.length} rows, ${summaryData.length} summary rows`);
                 
                 fullData = fullData.filter(row => row.experiment_id);
                 summaryData = summaryData.filter(row => row.experiment_id);
+                console.log(`Filtered: ${fullData.length} data points, ${summaryData.length} experiments`);
+                
+                if (fullData.length === 0) {
+                    throw new Error('No valid data found in CSV files');
+                }
                 
                 populateExperimentFilter();
                 filteredData = fullData;
+                console.log('Rendering plots...');
                 renderPlots();
                 updateTopExperimentsTable();
                 
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('plots-container').style.display = 'block';
                 
-                console.log(`Loaded ${fullData.length} data points from ${summaryData.length} experiments`);
+                console.log(`✓ Dashboard loaded successfully: ${fullData.length} data points from ${summaryData.length} experiments`);
             } catch (error) {
                 console.error('Error loading data:', error);
                 document.getElementById('loading').innerHTML = 
                     '<div class="error"><strong>Error loading data</strong><br>' + 
                     'Make sure the CSV files (aggregated_data.csv and summary.csv) are in the same directory as this HTML file.<br>' +
-                    'Error details: ' + error.message + '</div>';
+                    'Error details: ' + error.message + '<br><br>' +
+                    'Check browser console (F12) for more details.</div>';
             }
         }
 
@@ -566,7 +577,7 @@ class MCTSDashboard:
         }
 
     # Legacy methods kept for backwards compatibility but not used
-    def create_all_plots(self
+    def create_all_plots(self):
         """Create all interactive plots."""
         self.figures = []
 
