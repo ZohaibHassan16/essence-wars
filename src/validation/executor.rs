@@ -49,6 +49,7 @@ impl<'a> ValidationExecutor<'a> {
     }
 
     /// Run all matchups and return results.
+    /// Uses parallel execution to maximize CPU utilization.
     pub fn run_all(
         &self,
         matchups: &[MatchupDefinition],
@@ -56,28 +57,44 @@ impl<'a> ValidationExecutor<'a> {
         games_per_matchup: usize,
         base_seed: u64,
     ) -> Vec<MatchupResult> {
-        let mut results = Vec::new();
-
-        for (matchup_idx, matchup) in matchups.iter().enumerate() {
-            let matchup_seed = base_seed.wrapping_add((matchup_idx * 1_000_000) as u64);
-
-            // Always announce matchup
-            println!(
-                "{} vs {} ({} games each direction)...",
-                matchup.faction1.display_name(),
-                matchup.faction2.display_name(),
-                games_per_matchup
-            );
-
-            let result = self.run_matchup(matchup, faction_weights, games_per_matchup, matchup_seed);
-            results.push(result);
-
-            if self.show_progress {
-                println!();
-            }
-        }
-
-        results
+        use std::sync::Mutex;
+        
+        // Track completion for progress reporting
+        let completed = Mutex::new(0usize);
+        let total = matchups.len();
+        
+        // Run matchups in parallel
+        let mut results: Vec<(usize, MatchupResult)> = matchups
+            .par_iter()
+            .enumerate()
+            .map(|(matchup_idx, matchup)| {
+                let matchup_seed = base_seed.wrapping_add((matchup_idx * 1_000_000) as u64);
+                
+                let result = self.run_matchup(matchup, faction_weights, games_per_matchup, matchup_seed);
+                
+                // Thread-safe progress reporting
+                let mut count = completed.lock().unwrap();
+                *count += 1;
+                let current = *count;
+                drop(count); // Release lock before printing
+                
+                // Print progress with matchup info
+                println!(
+                    "[{}/{}] {} vs {} - {:.1}% F1 win rate",
+                    current,
+                    total,
+                    matchup.faction1.display_name(),
+                    matchup.faction2.display_name(),
+                    result.faction1_win_rate * 100.0
+                );
+                
+                (matchup_idx, result)
+            })
+            .collect();
+        
+        // Sort by original index to maintain deterministic order
+        results.sort_by_key(|(idx, _)| *idx);
+        results.into_iter().map(|(_, result)| result).collect()
     }
 
     /// Run a single matchup (both player orders).

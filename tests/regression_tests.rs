@@ -37,7 +37,7 @@ struct GoldenTestCase {
 /// Note: These values were regenerated after the Core Set card ID migration (2026-01-14).
 /// Cards now use faction-specific ID ranges (Argentum 1000+, Symbiote 2000+, etc.).
 /// Using GameEngine directly instead of GameRunner due to a known GameRunner bug.
-/// Note: Golden values updated for v0.5.0 deck updates (Phase 4-6 cards added to decks)
+/// Note: Golden values updated for v0.5.1 balance patch (Frenzy nerfs, Fortify buffs)
 const GOLDEN_TESTS: &[GoldenTestCase] = &[
     GoldenTestCase {
         name: "greedy_mirror_seed_100",
@@ -54,8 +54,8 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
         deck1_id: "symbiote_aggro",
         deck2_id: "symbiote_aggro",
         expected_winner: Some(1), // P2 wins
-        expected_turns: 12,
-        expected_action_count: 60,
+        expected_turns: 14,
+        expected_action_count: 76,
     },
     GoldenTestCase {
         name: "greedy_mirror_seed_600",
