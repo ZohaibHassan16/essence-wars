@@ -2,31 +2,38 @@
 
 **Mission**: Design and implement 300 Cards for the initial `New Horizons` Edition of Essence Wars.
 
-## Current State (v0.5.0 - Phase 5 Engine Expansion Complete)
+## Current State (v0.5.1 - Phase 6 Complete + Balance Patch)
 
 ### Card Pool Summary
 | Category | Count | Target |
 |----------|-------|--------|
-| **Total Cards** | 155 | 300 |
+| **Total Cards** | 180 | 300 |
 | Argentum Combine | 41 | ~75 |
 | Symbiote Circles | 45 | ~75 |
 | Obsidion Syndicate | 40 | ~75 |
-| Free-Walkers (Neutral) | 29 | ~75 |
+| Free-Walkers (Neutral) | 54 | ~75 |
 | **Support Cards** | 17 | ~30 |
 | **Legendary Cards** | 7 | ~12 |
 
-### Balance Baseline (Post-Phase 5, 2026-01-16)
+### Balance Baseline (Post-v0.5.1 Balance Patch, 2026-01-16)
 | Metric | Value | Status |
 |--------|-------|--------|
-| P1 Win Rate | 54.3% | BALANCED |
-| Argentum | 48.8% | Balanced |
-| Symbiote | 49.2% | Balanced |
-| Obsidion | 51.8% | Balanced |
-| Max Delta | 3.0% | **EXCELLENT** |
+| P1 Win Rate | 48.5% | WARNING |
+| Argentum | 47.2% | Balanced |
+| Symbiote | 56.7% | Balanced |
+| Obsidion | 46.3% | Balanced |
+| Max Delta | 10.4% | WARNING |
 
-**Validation Method:** Round-robin across all 40 deck combinations after Modal cloud tuning with retuned specialist weights.
+**Balance Patch v0.5.1 Summary:**
+- 3 rounds of targeted stat adjustments after Phase 6 cards caused imbalance
+- Started at 24.1% faction delta → reduced to 10.4%
+- Argentum buffs: Steam Knight, Iron Colossus, Ironclad Bulwark, Bronze Gatekeeper, Hardened Vanguard, Armored Titan, Fortress Wall
+- Symbiote nerfs: Bloodrage Berserker, Frenzy Pack Leader, Ravager Alpha, Deathburst Lurker, Regenerating Ooze
+- Created 4th Argentum deck (Piercing) to match other factions
 
-**Status:** Milestone 6 ready. All 16 keyword slots used. Engine supports summon, transform, and copy effects.
+**Validation Method:** Round-robin across all 48 deck combinations (12 decks × 4 factions, 100 games/matchup).
+
+**Status:** Milestone 6 complete. Ready for Phase 7 (Faction Deepening) and Modal retuning.
 
 ### Keyword Slots
 - **Used:** 16 of 16 (Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick, Ephemeral, Regenerate, Stealth, Charge, Frenzy, Volatile, **Fortify**, **Ward**)
@@ -448,26 +455,64 @@ effects:
 
 ---
 
-## Milestone 6: Neutral Foundation (+25-30 cards)
+## Milestone 6: Neutral Foundation (+25 cards) [COMPLETED]
 
-**Goal:** Expand neutral pool from 20 to ~50 cards.
+**Goal:** Expand neutral pool from 29 to ~54 cards.
 
-### Phase 6A: Neutral Creatures (+15 cards)
+**Status:** Done (v0.5.0 → v0.5.1)
 
-Fill cost curve gaps with flexible bodies:
-- 1-2 cost efficient creatures
-- 3-4 cost utility creatures
-- 5+ cost finishers
+### Phase 6A: Neutral Creatures (+15 cards) [DONE]
 
-### Phase 6B: Neutral Spells & Supports (+10-15 cards)
+**Added 15 new neutral creatures (IDs 4029-4043):**
 
-- Card draw options
-- Flexible removal
-- Utility supports
+| Card | Cost | Stats | Keywords/Effects |
+|------|------|-------|------------------|
+| Pathfinder Scout | 1 | 1/2 | Charge |
+| Street Urchin | 1 | 2/1 | - |
+| Traveling Merchant | 2 | 2/2 | OnPlay: Draw 1 |
+| Frontier Guard | 2 | 1/3 | Guard |
+| Sellsword | 3 | 3/3 | - |
+| Caravan Guard | 3 | 2/4 | Guard |
+| Wandering Sage | 3 | 2/3 | OnPlay: Heal 3 |
+| Border Sentinel | 4 | 3/5 | Guard |
+| Duelist | 4 | 4/3 | Quick |
+| Mercenary Captain | 4 | 3/4 | OnPlay: +1/+1 to ally |
+| Wandering Champion | 5 | 4/5 | Charge |
+| Hired Blade | 5 | 5/4 | Rush |
+| Siege Giant | 6 | 6/5 | Piercing |
+| War Elephant | 6 | 5/7 | Guard |
+| The Warbringer | 7 | 7/7 | Charge, Piercing (Legendary) |
 
-### Phase 6C: Validation
+### Phase 6B: Neutral Spells (+10 cards) [DONE]
 
-Target: Neutral cards used in ~30% of all decks (splash ratio).
+**Added 10 new neutral spells (IDs 4044-4053):**
+
+| Card | Cost | Type | Effect |
+|------|------|------|--------|
+| Quick Strike | 1 | Spell | Deal 2 damage |
+| Minor Heal | 1 | Spell | Heal 3 |
+| Precision Shot | 2 | Spell | Deal 3 damage |
+| Scout Ahead | 2 | Spell | Draw 2 cards |
+| Disarm | 3 | Spell | -2/-0 debuff |
+| Battle Cry | 3 | Spell | +2/+0 to all allies |
+| Lightning Bolt | 4 | Spell | Deal 4 damage |
+| Mass Healing | 4 | Spell | Heal 3 to all allies |
+| Devastate | 5 | Spell | Deal 5 damage |
+| Cataclysm | 6 | Spell | Deal 3 damage to all creatures |
+
+### Phase 6C: Validation & Balance Patch [DONE]
+
+**Initial Results (after adding Phase 6 cards):**
+- Faction Delta: 24.1% (Symbiote dominating at 61.9%)
+
+**Balance Patch v0.5.1 (3 rounds):**
+| Round | Changes | Result |
+|-------|---------|--------|
+| 1 | Buff Fortify creatures (+1 atk), Nerf Frenzy health | 17.4% delta |
+| 2 | Buff more Argentum Guards (+1 atk), Nerf more Symbiote | 13.0% delta |
+| 3 | Buff Steam Knight, Nerf Regenerating Ooze | **10.4% delta** |
+
+**Created 4th Argentum deck:** `argentum/piercing.toml` - Aggressive Piercing creatures with Fortify sustain.
 
 ---
 
@@ -546,7 +591,7 @@ High-impact cards for late-game strategies.
 
 ### Phase 9D: Golden Master Balance Pass
 
-1. Final 20k validation on all matchups
+1. Final modal validation on all matchups
 2. Individual card stat adjustments
 3. Weight retuning for all agents
 4. Documentation freeze
@@ -583,11 +628,11 @@ cargo run --release --bin validate -- --games 1500 --output validation.json  # 1
 | M2: Symbiote Rising | +20 | 80 | ✅ Done |
 | M3: Argentum Recovery + Obsidion Parity | +25 | 105 | ✅ Done |
 | M4: Engine Enhancements (Phase 4) | +35 | 140 | ✅ Done |
-| M5: Engine Expansion (Phase 5) | +15 | **155** | ✅ Done |
-| M6: Neutral Foundation | +30 | 185 | 🔜 Next |
-| M7: Faction Deepening | +45 | 230 | Planned |
-| M8: Legendary Commanders | +12 | 242 | Planned |
-| M9: Final Polish | +58 | **300** | Planned |
+| M5: Engine Expansion (Phase 5) | +15 | 155 | ✅ Done |
+| M6: Neutral Foundation | +25 | **180** | ✅ Done |
+| M7: Faction Deepening | +45 | 225 | 🔜 Next |
+| M8: Legendary Commanders | +12 | 237 | Planned |
+| M9: Final Polish | +63 | **300** | Planned |
 
 ---
 
@@ -595,33 +640,46 @@ cargo run --release --bin validate -- --games 1500 --output validation.json  # 1
 
 | Faction | Decks | Files |
 |---------|-------|-------|
-| Argentum | 3 | control.toml, midrange.toml, anti_swarm.toml |
+| Argentum | 4 | control.toml, midrange.toml, anti_swarm.toml, **piercing.toml** |
 | Symbiote | 4 | aggro.toml, tempo.toml, frenzy_aggro.toml, volatile_swarm.toml |
 | Obsidion | 4 | burst.toml, control.toml, assassin.toml, lifedrain.toml |
-| **Total** | **11** | - |
+| **Total** | **12** | - |
 
 ---
 
 ## Immediate Next Steps
 
-**Current Focus: Milestone 6 - Neutral Foundation**
+**Current Focus: Milestone 7 - Faction Deepening**
 
-### Phase 6A: Neutral Creatures (+15 cards)
-1. Fill 1-2 cost slots with efficient bodies
-2. Add 3-4 cost utility creatures with Ward synergies
-3. Create 5+ cost finishers with token generation
+### Pre-Phase 7: Modal Retuning (Optional)
+Run Modal tuning job to retrain specialist weights with updated card pool:
+```bash
+modal run modal_tune.py::main  # Full pipeline: train + validate + auto-deploy
+```
+This should further improve balance after the v0.5.1 stat adjustments.
 
-### Phase 6B: Neutral Spells & Supports (+10-15 cards)
-1. Add card draw options
-2. Create flexible removal spells
-3. Design utility supports
+### Phase 7A: Argentum Wave (+15 cards)
+1. More Fortify synergies (Fortify + keyword combos)
+2. Construct token generation (Assembly Line payoffs)
+3. Additional defensive tech (anti-Rush, anti-Stealth)
 
-### Phase 6C: Validation
+### Phase 7B: Symbiote Wave (+15 cards)
+1. Token swarm support (Broodling generators)
+2. Death trigger synergies (Volatile payoffs)
+3. Frenzy finishers (balanced post-nerf)
+
+### Phase 7C: Obsidion Wave (+15 cards)
+1. Copy synergies (duplicate high-value threats)
+2. Transformation tricks (removal + board presence)
+3. Life manipulation (Lifesteal/burst combos)
+
+### Phase 7D: Validation
 1. Run full test suite
-2. Balance validation
-3. Target: Neutral cards used in ~30% of all decks
+2. Balance validation (target: <10% faction delta)
+3. Modal retuning if needed
 
 **Notes:**
-- All 16 keyword slots are now used
+- All 16 keyword slots are used
 - Engine supports: filters, conditionals, bounce, summon, transform, copy
-- Ready to design cards using full feature set
+- 180 cards complete, 120 remaining to reach 300 target
+- Current balance: 10.4% faction delta (needs Modal retuning after Phase 7)

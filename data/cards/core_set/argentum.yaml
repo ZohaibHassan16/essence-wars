@@ -22,7 +22,7 @@ cards:
     name: "Steam Knight"
     cost: 3
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.5.1 round 3)
     health: 4
     keywords: [Piercing]
     rarity: Common
@@ -59,7 +59,7 @@ cards:
     name: "Iron Colossus"
     cost: 5
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.5.1 round 2)
     health: 7
     keywords: [Guard]
     rarity: Uncommon
@@ -259,11 +259,12 @@ cards:
     rarity: Rare
 
   # --- Big Guard Creatures ---
+  # Balance v0.5.1 round 2: Buffed attack to improve trading
   - id: 1020
     name: "Ironclad Bulwark"
     cost: 4
     card_type: creature
-    attack: 1
+    attack: 2  # Buffed from 1 (v0.5.1 round 2)
     health: 8
     keywords: [Guard]
     rarity: Uncommon
@@ -273,7 +274,7 @@ cards:
     name: "Bronze Gatekeeper"
     cost: 2
     card_type: creature
-    attack: 1
+    attack: 2  # Buffed from 1 (v0.5.1 round 2)
     health: 4
     keywords: [Guard]
     rarity: Common
@@ -464,11 +465,12 @@ cards:
   # Fortify: Takes 1 less damage from all sources (min 1)
 
   # --- Fortify Creatures ---
+  # Balance v0.5.1: Buffed attack to make Fortify creatures more threatening
   - id: 1035
     name: "Hardened Vanguard"
     cost: 3
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.5.1)
     health: 4
     keywords: [Guard, Fortify]
     rarity: Common
@@ -478,7 +480,7 @@ cards:
     name: "Armored Titan"
     cost: 5
     card_type: creature
-    attack: 3
+    attack: 4  # Buffed from 3 (v0.5.1)
     health: 7
     keywords: [Fortify]
     rarity: Uncommon
@@ -506,7 +508,7 @@ cards:
     name: "Fortress Wall"
     cost: 6
     card_type: creature
-    attack: 1
+    attack: 2  # Buffed from 1 (v0.5.1)
     health: 10
     keywords: [Guard, Fortify, Shield]
     rarity: Legendary

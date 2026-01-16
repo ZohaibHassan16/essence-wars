@@ -33,7 +33,7 @@ cards:
     cost: 3
     card_type: creature
     attack: 3
-    health: 5
+    health: 4  # Nerfed from 5 (v0.5.1 round 3)
     keywords: [Regenerate]
     rarity: Uncommon
     tags: [Ooze]
@@ -192,7 +192,7 @@ cards:
     cost: 5
     card_type: creature
     attack: 4
-    health: 4
+    health: 3  # Nerfed from 4 (v0.5.1 round 2)
     keywords: [Frenzy]
     rarity: Rare
     tags: [Beast]
@@ -224,7 +224,7 @@ cards:
     cost: 4
     card_type: creature
     attack: 3
-    health: 4
+    health: 3  # Nerfed from 4 (v0.5.1 round 2)
     keywords: [Volatile]
     rarity: Rare
     tags: [Beast]
@@ -241,12 +241,13 @@ cards:
     rarity: Rare
 
   # === PHASE 2B: ADDITIONAL FRENZY CREATURES (v0.5.0) ===
+  # Balance v0.5.1: Reduced health to make Frenzy creatures easier to remove
   - id: 2021
     name: "Bloodrage Berserker"
     cost: 4
     card_type: creature
     attack: 3
-    health: 3
+    health: 2  # Nerfed from 3 (v0.5.1)
     keywords: [Frenzy]
     rarity: Uncommon
     tags: [Beast]
@@ -256,7 +257,7 @@ cards:
     cost: 5
     card_type: creature
     attack: 3
-    health: 5
+    health: 4  # Nerfed from 5 (v0.5.1)
     keywords: [Frenzy]
     rarity: Rare
     tags: [Beast]
