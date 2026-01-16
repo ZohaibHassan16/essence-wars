@@ -165,3 +165,77 @@ cards:
           - type: damage
             amount: 2
     rarity: Rare
+
+  # === PHASE 4: NEUTRAL UTILITY CARDS (v0.5.0) ===
+  # Generic utility cards using filters, bounce, and conditionals
+
+  # --- Bounce Utility ---
+  - id: 4015
+    name: "Temporal Shift"
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: bounce
+    rarity: Common
+
+  # --- Filtered Heal ---
+  - id: 4016
+    name: "Triage"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: heal
+        amount: 4
+        filter:
+          max_health: 3
+    rarity: Uncommon
+
+  # --- Conditional Creature ---
+  - id: 4017
+    name: "Opportunist"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: []
+    rarity: Uncommon
+    tags: [Mercenary]
+    abilities:
+      - trigger: OnPlay
+        targeting: TargetEnemyCreature
+        effects:
+          - type: damage
+            amount: 2
+            filter:
+              max_health: 3
+
+  # --- Filtered Silence ---
+  - id: 4018
+    name: "Silencing Shot"
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: silence
+        filter:
+          max_health: 4
+    rarity: Common
+
+  # --- Death Trigger ---
+  - id: 4019
+    name: "Scavenger"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: []
+    rarity: Uncommon
+    tags: [Mercenary]
+    abilities:
+      - trigger: OnAllyDeath
+        targeting: NoTarget
+        effects:
+          - type: draw
+            count: 1

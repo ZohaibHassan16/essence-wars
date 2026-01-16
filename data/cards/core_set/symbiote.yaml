@@ -392,3 +392,151 @@ cards:
       - modifier:
           grant_keyword: Rush
     rarity: Rare
+
+  # === PHASE 4: SYMBIOTE CONDITIONAL & FILTER CARDS (v0.5.0) ===
+  # Using conditionals for card advantage and tempo plays
+
+  # --- Kill Reward Spells ---
+  - id: 2035
+    name: "Soul Reaper"
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 3
+    conditional_effects:
+      - condition: target_died
+        effects:
+          - type: draw
+            count: 1
+    rarity: Uncommon
+
+  - id: 2036
+    name: "Feast"
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 2
+    conditional_effects:
+      - condition: target_died
+        effects:
+          - type: buff_stats
+            attack: 2
+            health: 2
+    rarity: Uncommon
+
+  - id: 2037
+    name: "Predatory Strike"
+    cost: 4
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 4
+    conditional_effects:
+      - condition: target_died
+        effects:
+          - type: heal
+            amount: 4
+    rarity: Rare
+
+  # --- Rush Synergy ---
+  - id: 2038
+    name: "Pounce Hunter"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: [Rush]
+    rarity: Uncommon
+    tags: [Beast]
+    abilities:
+      - trigger: OnKill
+        targeting: NoTarget
+        effects:
+          - type: draw
+            count: 1
+
+  - id: 2039
+    name: "Evolution Burst"
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: buff_stats
+        attack: 2
+        health: 1
+        filter:
+          has_keyword: 8  # Rush keyword bit
+    rarity: Uncommon
+
+  # --- Bounce Synergy ---
+  - id: 2040
+    name: "Pack Recall"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: bounce
+      - type: draw
+        count: 1
+    rarity: Common
+
+  - id: 2041
+    name: "Spawn Caller"
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags: [Beast]
+    abilities:
+      - trigger: OnPlay
+        targeting: TargetEnemyCreature
+        effects:
+          - type: damage
+            amount: 2
+            filter:
+              max_health: 2
+
+  # --- Aggressive Creatures ---
+  - id: 2042
+    name: "Feral Striker"
+    cost: 2
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: [Rush]
+    rarity: Common
+    tags: [Beast]
+
+  - id: 2043
+    name: "Swarm Ambusher"
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 3
+    keywords: [Rush, Lethal]
+    rarity: Rare
+    tags: [Beast]
+
+  - id: 2044
+    name: "Consume the Fallen"
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: destroy
+        filter:
+          max_health: 3
+    conditional_effects:
+      - condition: target_died
+        effects:
+          - type: buff_stats
+            attack: 1
+            health: 1
+    rarity: Uncommon

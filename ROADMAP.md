@@ -32,6 +32,7 @@
 - [ ] Update documentation (`docs/essence-wars-design.md`, `docs/design-engine.md`)
 - [ ] Create card database reference (`docs/cards-new-horizons.md`)
 - [ ] Clean up and document tuning scripts
+- [ ] Fix, rework or refactor `scripts/analyze-mcts.sh`
 - [x] Remove TUI code (deferred indefinitely)
 
 ---

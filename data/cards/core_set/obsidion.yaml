@@ -346,3 +346,156 @@ cards:
           - type: heal
             amount: 3
     rarity: Uncommon
+
+  # === PHASE 4: OBSIDION CONDITIONAL & FILTER CARDS (v0.5.0) ===
+  # Using conditionals for life manipulation and kill rewards
+
+  # --- Kill Reward Spells ---
+  - id: 3030
+    name: "Soul Harvest"
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 3
+    conditional_effects:
+      - condition: target_died
+        effects:
+          - type: heal
+            amount: 3
+    rarity: Uncommon
+
+  - id: 3031
+    name: "Consume Essence"
+    cost: 4
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: destroy
+        filter:
+          max_health: 4
+    conditional_effects:
+      - condition: target_died
+        effects:
+          - type: draw
+            count: 2
+    rarity: Rare
+
+  - id: 3032
+    name: "Vampiric Execution"
+    cost: 5
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 5
+    conditional_effects:
+      - condition: target_died
+        effects:
+          - type: heal
+            amount: 5
+          - type: draw
+            count: 1
+    rarity: Rare
+
+  # --- Bounce Effects ---
+  - id: 3033
+    name: "Shadow Return"
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: bounce
+      - type: damage
+        amount: 1
+    rarity: Common
+
+  - id: 3034
+    name: "Mass Dispersion"
+    cost: 5
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: bounce
+        filter:
+          max_health: 3
+    rarity: Rare
+
+  # --- Lifesteal Synergy ---
+  - id: 3035
+    name: "Vampiric Surge"
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: buff_stats
+        attack: 2
+        health: 0
+        filter:
+          has_keyword: 4  # Lifesteal keyword bit
+    rarity: Uncommon
+
+  - id: 3036
+    name: "Blood Pact"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: buff_stats
+        attack: 1
+        health: 2
+      - type: grant_keyword
+        keyword: Lifesteal
+    rarity: Uncommon
+
+  # --- Kill Reward Creatures ---
+  - id: 3037
+    name: "Reaper's Due"
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 3
+    keywords: [Lifesteal, Quick]
+    rarity: Rare
+    tags: [Assassin]
+    abilities:
+      - trigger: OnKill
+        targeting: NoTarget
+        effects:
+          - type: heal
+            amount: 4
+
+  - id: 3038
+    name: "Soul Collector"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: [Lifesteal]
+    rarity: Uncommon
+    tags: [Cultist]
+    abilities:
+      - trigger: OnKill
+        targeting: NoTarget
+        effects:
+          - type: draw
+            count: 1
+
+  # --- Aggressive Creatures with Conditionals ---
+  - id: 3039
+    name: "Void Executioner"
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords: [Quick]
+    rarity: Rare
+    tags: [Assassin]
+    abilities:
+      - trigger: OnPlay
+        targeting: TargetEnemyCreature
+        effects:
+          - type: destroy
+            filter:
+              max_health: 3

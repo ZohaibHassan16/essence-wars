@@ -318,3 +318,144 @@ cards:
       - type: grant_keyword
         keyword: Guard
     rarity: Uncommon
+
+  # === PHASE 4: ARGENTUM FILTER & BOUNCE CARDS (v0.5.0) ===
+  # Using creature filters and bounce for control tools
+
+  # --- Execute-style Removal ---
+  - id: 1025
+    name: "Execute"
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: destroy
+        filter:
+          max_health: 3
+    rarity: Common
+
+  - id: 1026
+    name: "Purge the Weak"
+    cost: 4
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: damage
+        amount: 2
+        filter:
+          max_health: 3
+    rarity: Uncommon
+
+  # --- Guard Synergy ---
+  - id: 1027
+    name: "Shield Wall Captain"
+    cost: 3
+    card_type: creature
+    attack: 1
+    health: 5
+    keywords: [Guard]
+    rarity: Uncommon
+    tags: [Soldier]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: grant_keyword
+            keyword: Shield
+            filter:
+              has_keyword: 1  # Guard keyword bit
+
+  - id: 1028
+    name: "Rally the Guards"
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: buff_stats
+        attack: 1
+        health: 1
+        filter:
+          has_keyword: 1  # Guard keyword bit
+    rarity: Uncommon
+
+  # --- Bounce/Tempo Control ---
+  - id: 1029
+    name: "Temporal Displacement"
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: bounce
+    rarity: Common
+
+  - id: 1030
+    name: "Mass Recall"
+    cost: 5
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: bounce
+        filter:
+          max_health: 3
+    rarity: Rare
+
+  # --- Defensive Creatures ---
+  - id: 1031
+    name: "Stalwart Defender"
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 7
+    keywords: [Guard]
+    rarity: Uncommon
+    tags: [Soldier]
+
+  - id: 1032
+    name: "Siege Breaker"
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords: [Piercing]
+    rarity: Rare
+    tags: [Construct]
+    abilities:
+      - trigger: OnPlay
+        targeting: TargetEnemyCreature
+        effects:
+          - type: damage
+            amount: 2
+            filter:
+              max_health: 4
+
+  # --- Conditional Effects ---
+  - id: 1033
+    name: "Judgment Strike"
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 3
+    conditional_effects:
+      - condition: target_died
+        effects:
+          - type: heal
+            amount: 3
+    rarity: Uncommon
+
+  - id: 1034
+    name: "Culling Blade"
+    cost: 4
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: destroy
+        filter:
+          max_health: 4
+    conditional_effects:
+      - condition: target_died
+        effects:
+          - type: draw
+            count: 1
+    rarity: Rare
