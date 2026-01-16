@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use crate::core::types::*;
 use crate::core::keywords::Keywords;
-use crate::core::effects::{Trigger, TargetingRule};
+use crate::core::effects::{Trigger, TargetingRule, CreatureFilter};
 
 /// Definition of a triggered ability on a creature
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -25,14 +25,41 @@ pub struct AbilityDefinition {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum EffectDefinition {
-    Damage { amount: u8 },
-    Heal { amount: u8 },
+    Damage {
+        amount: u8,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        filter: Option<CreatureFilter>,
+    },
+    Heal {
+        amount: u8,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        filter: Option<CreatureFilter>,
+    },
     Draw { count: u8 },
-    BuffStats { attack: i8, health: i8 },
-    Destroy,
-    GrantKeyword { keyword: String },
-    RemoveKeyword { keyword: String },
-    Silence,
+    BuffStats {
+        attack: i8,
+        health: i8,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        filter: Option<CreatureFilter>,
+    },
+    Destroy {
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        filter: Option<CreatureFilter>,
+    },
+    GrantKeyword {
+        keyword: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        filter: Option<CreatureFilter>,
+    },
+    RemoveKeyword {
+        keyword: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        filter: Option<CreatureFilter>,
+    },
+    Silence {
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        filter: Option<CreatureFilter>,
+    },
     GainEssence { amount: u8 },
     RefreshCreature,
 }

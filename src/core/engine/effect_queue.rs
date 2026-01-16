@@ -5,7 +5,7 @@
 
 use std::collections::VecDeque;
 use crate::core::cards::{CardDatabase, CardType, EffectDefinition};
-use crate::core::effects::{Effect, EffectSource, EffectTarget, PendingEffect, Trigger};
+use crate::core::effects::{CreatureFilter, Effect, EffectSource, EffectTarget, PendingEffect, Trigger};
 use crate::core::keywords::Keywords;
 use crate::core::state::{Creature, GameResult, GameState, WinReason};
 use crate::core::tracing::EffectTracer;
@@ -129,35 +129,35 @@ impl EffectQueue {
         };
 
         match pending.effect {
-            Effect::Damage { target, amount } => {
-                self.apply_damage(target, amount, source_player, state, card_db);
+            Effect::Damage { target, amount, ref filter } => {
+                self.apply_damage(target, amount, filter.as_ref(), source_player, state, card_db);
             }
-            Effect::Heal { target, amount } => {
-                self.apply_heal(target, amount, state, card_db);
+            Effect::Heal { target, amount, ref filter } => {
+                self.apply_heal(target, amount, filter.as_ref(), state, card_db);
             }
             Effect::Draw { player, count } => {
                 self.apply_draw(player, count, state);
             }
-            Effect::BuffStats { target, attack, health } => {
-                self.apply_buff(target, attack, health, state);
+            Effect::BuffStats { target, attack, health, ref filter } => {
+                self.apply_buff(target, attack, health, filter.as_ref(), state);
             }
             Effect::SetStats { target, attack, health } => {
                 self.apply_set_stats(target, attack, health, state);
             }
-            Effect::Destroy { target } => {
-                self.apply_destroy(target, state);
+            Effect::Destroy { target, ref filter } => {
+                self.apply_destroy(target, filter.as_ref(), state);
             }
             Effect::Summon { owner, card_id, slot } => {
                 self.apply_summon(owner, card_id, slot, state, card_db);
             }
-            Effect::GrantKeyword { target, keyword } => {
-                self.apply_grant_keyword(target, keyword, source_player, state);
+            Effect::GrantKeyword { target, keyword, ref filter } => {
+                self.apply_grant_keyword(target, keyword, filter.as_ref(), source_player, state);
             }
-            Effect::RemoveKeyword { target, keyword } => {
-                self.apply_remove_keyword(target, keyword, state);
+            Effect::RemoveKeyword { target, keyword, ref filter } => {
+                self.apply_remove_keyword(target, keyword, filter.as_ref(), state);
             }
-            Effect::Silence { target } => {
-                self.apply_silence(target, state);
+            Effect::Silence { target, ref filter } => {
+                self.apply_silence(target, filter.as_ref(), state);
             }
             Effect::GainEssence { player, amount } => {
                 self.apply_gain_essence(player, amount, state);
@@ -173,6 +173,7 @@ impl EffectQueue {
         &mut self,
         target: EffectTarget,
         amount: u8,
+        filter: Option<&CreatureFilter>,
         _source_player: PlayerId,
         state: &mut GameState,
         card_db: &CardDatabase,
@@ -190,7 +191,9 @@ impl EffectQueue {
                     .enumerate()
                     .flat_map(|(i, p)| {
                         let owner = PlayerId(i as u8);
-                        p.creatures.iter().map(move |c| (owner, c.slot))
+                        p.creatures.iter()
+                            .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                            .map(move |c| (owner, c.slot))
                     })
                     .collect();
 
@@ -201,6 +204,7 @@ impl EffectQueue {
             EffectTarget::AllAllyCreatures(player) => {
                 let creatures: Vec<_> = state.players[player.index()]
                     .creatures.iter()
+                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
 
@@ -212,6 +216,7 @@ impl EffectQueue {
                 let enemy = player.opponent();
                 let creatures: Vec<_> = state.players[enemy.index()]
                     .creatures.iter()
+                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
 
@@ -304,6 +309,7 @@ impl EffectQueue {
         &mut self,
         target: EffectTarget,
         amount: u8,
+        filter: Option<&CreatureFilter>,
         state: &mut GameState,
         card_db: &CardDatabase,
     ) {
@@ -320,7 +326,9 @@ impl EffectQueue {
                     .enumerate()
                     .flat_map(|(i, p)| {
                         let owner = PlayerId(i as u8);
-                        p.creatures.iter().map(move |c| (owner, c.slot))
+                        p.creatures.iter()
+                            .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                            .map(move |c| (owner, c.slot))
                     })
                     .collect();
 
@@ -331,6 +339,7 @@ impl EffectQueue {
             EffectTarget::AllAllyCreatures(player) => {
                 let creatures: Vec<_> = state.players[player.index()]
                     .creatures.iter()
+                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
 
@@ -342,6 +351,7 @@ impl EffectQueue {
                 let enemy = player.opponent();
                 let creatures: Vec<_> = state.players[enemy.index()]
                     .creatures.iter()
+                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
 
@@ -397,6 +407,7 @@ impl EffectQueue {
         target: EffectTarget,
         attack: i8,
         health: i8,
+        filter: Option<&CreatureFilter>,
         state: &mut GameState,
     ) {
         match target {
@@ -408,7 +419,9 @@ impl EffectQueue {
                     .enumerate()
                     .flat_map(|(i, p)| {
                         let owner = PlayerId(i as u8);
-                        p.creatures.iter().map(move |c| (owner, c.slot))
+                        p.creatures.iter()
+                            .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                            .map(move |c| (owner, c.slot))
                     })
                     .collect();
 
@@ -419,6 +432,7 @@ impl EffectQueue {
             EffectTarget::AllAllyCreatures(player) => {
                 let creatures: Vec<_> = state.players[player.index()]
                     .creatures.iter()
+                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
 
@@ -430,6 +444,7 @@ impl EffectQueue {
                 let enemy = player.opponent();
                 let creatures: Vec<_> = state.players[enemy.index()]
                     .creatures.iter()
+                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
 
@@ -493,6 +508,7 @@ impl EffectQueue {
     fn apply_destroy(
         &mut self,
         target: EffectTarget,
+        filter: Option<&CreatureFilter>,
         state: &mut GameState,
     ) {
         match target {
@@ -507,7 +523,9 @@ impl EffectQueue {
                     .enumerate()
                     .flat_map(|(i, p)| {
                         let owner = PlayerId(i as u8);
-                        p.creatures.iter().map(move |c| (owner, c.slot))
+                        p.creatures.iter()
+                            .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                            .map(move |c| (owner, c.slot))
                     })
                     .collect();
 
@@ -520,6 +538,7 @@ impl EffectQueue {
             EffectTarget::AllAllyCreatures(player) => {
                 let creatures: Vec<_> = state.players[player.index()]
                     .creatures.iter()
+                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
 
@@ -533,6 +552,7 @@ impl EffectQueue {
                 let enemy = player.opponent();
                 let creatures: Vec<_> = state.players[enemy.index()]
                     .creatures.iter()
+                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
 
@@ -609,6 +629,7 @@ impl EffectQueue {
         &mut self,
         target: EffectTarget,
         keyword: u16,
+        filter: Option<&CreatureFilter>,
         _source_player: PlayerId,
         state: &mut GameState,
     ) {
@@ -621,19 +642,25 @@ impl EffectQueue {
             EffectTarget::AllCreatures => {
                 for player in &mut state.players {
                     for creature in &mut player.creatures {
-                        creature.keywords.add(keyword);
+                        if filter.map_or(true, |f| f.matches(creature.current_health, creature.keywords.0)) {
+                            creature.keywords.add(keyword);
+                        }
                     }
                 }
             }
             EffectTarget::AllAllyCreatures(player) => {
                 for creature in &mut state.players[player.index()].creatures {
-                    creature.keywords.add(keyword);
+                    if filter.map_or(true, |f| f.matches(creature.current_health, creature.keywords.0)) {
+                        creature.keywords.add(keyword);
+                    }
                 }
             }
             EffectTarget::AllEnemyCreatures(player) => {
                 let enemy = player.opponent();
                 for creature in &mut state.players[enemy.index()].creatures {
-                    creature.keywords.add(keyword);
+                    if filter.map_or(true, |f| f.matches(creature.current_health, creature.keywords.0)) {
+                        creature.keywords.add(keyword);
+                    }
                 }
             }
             _ => {}
@@ -645,6 +672,7 @@ impl EffectQueue {
         &mut self,
         target: EffectTarget,
         keyword: u16,
+        filter: Option<&CreatureFilter>,
         state: &mut GameState,
     ) {
         match target {
@@ -656,7 +684,9 @@ impl EffectQueue {
             EffectTarget::AllCreatures => {
                 for player in &mut state.players {
                     for creature in &mut player.creatures {
-                        creature.keywords.remove(keyword);
+                        if filter.map_or(true, |f| f.matches(creature.current_health, creature.keywords.0)) {
+                            creature.keywords.remove(keyword);
+                        }
                     }
                 }
             }
@@ -668,8 +698,10 @@ impl EffectQueue {
     fn apply_silence(
         &mut self,
         target: EffectTarget,
+        _filter: Option<&CreatureFilter>,
         state: &mut GameState,
     ) {
+        // Note: filter not used for single-target silence, but accepted for API consistency
         if let EffectTarget::Creature { owner, slot } = target {
             if let Some(creature) = state.players[owner.index()].get_creature_mut(slot) {
                 creature.keywords.clear();
@@ -744,17 +776,19 @@ impl EffectQueue {
         source_slot: Slot,
     ) -> Option<Effect> {
         match def {
-            EffectDefinition::Damage { amount } => {
+            EffectDefinition::Damage { amount, filter } => {
                 // Default to targeting all enemy creatures for triggered abilities
                 Some(Effect::Damage {
                     target: EffectTarget::AllEnemyCreatures(source_owner),
                     amount: *amount,
+                    filter: filter.clone(),
                 })
             }
-            EffectDefinition::Heal { amount } => {
+            EffectDefinition::Heal { amount, filter } => {
                 Some(Effect::Heal {
                     target: EffectTarget::Creature { owner: source_owner, slot: source_slot },
                     amount: *amount,
+                    filter: filter.clone(),
                 })
             }
             EffectDefinition::Draw { count } => {
@@ -763,34 +797,38 @@ impl EffectQueue {
                     count: *count,
                 })
             }
-            EffectDefinition::BuffStats { attack, health } => {
+            EffectDefinition::BuffStats { attack, health, filter } => {
                 Some(Effect::BuffStats {
                     target: EffectTarget::Creature { owner: source_owner, slot: source_slot },
                     attack: *attack,
                     health: *health,
+                    filter: filter.clone(),
                 })
             }
-            EffectDefinition::Destroy => {
+            EffectDefinition::Destroy { filter: _ } => {
                 // Would need targeting info from ability definition
                 None
             }
-            EffectDefinition::GrantKeyword { keyword } => {
+            EffectDefinition::GrantKeyword { keyword, filter } => {
                 let kw = Keywords::from_names(&[keyword.as_str()]);
                 Some(Effect::GrantKeyword {
                     target: EffectTarget::Creature { owner: source_owner, slot: source_slot },
                     keyword: kw.0,
+                    filter: filter.clone(),
                 })
             }
-            EffectDefinition::RemoveKeyword { keyword } => {
+            EffectDefinition::RemoveKeyword { keyword, filter } => {
                 let kw = Keywords::from_names(&[keyword.as_str()]);
                 Some(Effect::RemoveKeyword {
                     target: EffectTarget::Creature { owner: source_owner, slot: source_slot },
                     keyword: kw.0,
+                    filter: filter.clone(),
                 })
             }
-            EffectDefinition::Silence => {
+            EffectDefinition::Silence { filter } => {
                 Some(Effect::Silence {
                     target: EffectTarget::Creature { owner: source_owner, slot: source_slot },
+                    filter: filter.clone(),
                 })
             }
             EffectDefinition::GainEssence { amount } => {

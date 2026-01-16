@@ -571,28 +571,28 @@ impl EffectEvent {
 /// Format an effect for display
 fn format_effect(effect: &Effect) -> String {
     match effect {
-        Effect::Damage { target, amount } => {
+        Effect::Damage { target, amount, .. } => {
             format!("Damage({}, {})", format_target(target), amount)
         }
-        Effect::Heal { target, amount } => {
+        Effect::Heal { target, amount, .. } => {
             format!("Heal({}, {})", format_target(target), amount)
         }
-        Effect::BuffStats { target, attack, health } => {
+        Effect::BuffStats { target, attack, health, .. } => {
             format!("BuffStats({}, {:+}/{:+})", format_target(target), attack, health)
         }
         Effect::SetStats { target, attack, health } => {
             format!("SetStats({}, {}/{})", format_target(target), attack, health)
         }
-        Effect::GrantKeyword { target, keyword } => {
+        Effect::GrantKeyword { target, keyword, .. } => {
             format!("GrantKeyword({}, 0x{:02X})", format_target(target), keyword)
         }
-        Effect::RemoveKeyword { target, keyword } => {
+        Effect::RemoveKeyword { target, keyword, .. } => {
             format!("RemoveKeyword({}, 0x{:02X})", format_target(target), keyword)
         }
-        Effect::Destroy { target } => {
+        Effect::Destroy { target, .. } => {
             format!("Destroy({})", format_target(target))
         }
-        Effect::Silence { target } => {
+        Effect::Silence { target, .. } => {
             format!("Silence({})", format_target(target))
         }
         Effect::Draw { player, count } => {
@@ -955,6 +955,7 @@ mod tests {
                 slot: Slot(0),
             },
             amount: 5,
+            filter: None,
         };
         tracer.log_effect_queued(&effect, &EffectSource::System, 3);
         tracer.log_effect_start(&effect, 2);
@@ -1010,6 +1011,7 @@ mod tests {
         let damage = Effect::Damage {
             target: EffectTarget::Player(PlayerId::PLAYER_TWO),
             amount: 10,
+            filter: None,
         };
         assert_eq!(format_effect(&damage), "Damage(P2, 10)");
 
@@ -1019,6 +1021,7 @@ mod tests {
                 slot: Slot(2),
             },
             amount: 3,
+            filter: None,
         };
         assert_eq!(format_effect(&heal), "Heal(P1_Slot2, 3)");
 

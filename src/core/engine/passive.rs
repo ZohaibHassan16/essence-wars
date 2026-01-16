@@ -108,16 +108,16 @@ pub fn support_effect_def_to_effect(
     ability: &AbilityDefinition,
 ) -> Option<Effect> {
     match def {
-        EffectDefinition::Damage { amount } => {
+        EffectDefinition::Damage { amount, filter } => {
             let target = match &ability.targeting {
                 TargetingRule::NoTarget => EffectTarget::AllEnemyCreatures(source_owner),
                 TargetingRule::TargetEnemyCreature => EffectTarget::AllEnemyCreatures(source_owner),
                 TargetingRule::TargetEnemyPlayer => EffectTarget::Player(source_owner.opponent()),
                 _ => EffectTarget::AllEnemyCreatures(source_owner),
             };
-            Some(Effect::Damage { target, amount: *amount })
+            Some(Effect::Damage { target, amount: *amount, filter: filter.clone() })
         }
-        EffectDefinition::Heal { amount } => {
+        EffectDefinition::Heal { amount, filter } => {
             // For supports, NoTarget heals should heal the player
             let target = match &ability.targeting {
                 TargetingRule::NoTarget => EffectTarget::Player(source_owner),
@@ -125,35 +125,38 @@ pub fn support_effect_def_to_effect(
                 TargetingRule::TargetAllyCreature => EffectTarget::AllAllyCreatures(source_owner),
                 _ => EffectTarget::Player(source_owner),
             };
-            Some(Effect::Heal { target, amount: *amount })
+            Some(Effect::Heal { target, amount: *amount, filter: filter.clone() })
         }
         EffectDefinition::Draw { count } => {
             Some(Effect::Draw { player: source_owner, count: *count })
         }
-        EffectDefinition::BuffStats { attack, health } => {
+        EffectDefinition::BuffStats { attack, health, filter } => {
             // Buff all friendly creatures
             Some(Effect::BuffStats {
                 target: EffectTarget::AllAllyCreatures(source_owner),
                 attack: *attack,
                 health: *health,
+                filter: filter.clone(),
             })
         }
-        EffectDefinition::Destroy => None, // Needs specific targeting
-        EffectDefinition::GrantKeyword { keyword } => {
+        EffectDefinition::Destroy { filter: _ } => None, // Needs specific targeting
+        EffectDefinition::GrantKeyword { keyword, filter } => {
             let kw = Keywords::from_names(&[keyword.as_str()]);
             Some(Effect::GrantKeyword {
                 target: EffectTarget::AllAllyCreatures(source_owner),
                 keyword: kw.0,
+                filter: filter.clone(),
             })
         }
-        EffectDefinition::RemoveKeyword { keyword } => {
+        EffectDefinition::RemoveKeyword { keyword, filter } => {
             let kw = Keywords::from_names(&[keyword.as_str()]);
             Some(Effect::RemoveKeyword {
                 target: EffectTarget::AllEnemyCreatures(source_owner),
                 keyword: kw.0,
+                filter: filter.clone(),
             })
         }
-        EffectDefinition::Silence => None, // Needs specific targeting
+        EffectDefinition::Silence { filter: _ } => None, // Needs specific targeting
         EffectDefinition::GainEssence { amount } => {
             Some(Effect::GainEssence { player: source_owner, amount: *amount })
         }

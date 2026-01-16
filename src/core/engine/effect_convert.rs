@@ -113,16 +113,18 @@ pub fn effect_def_to_effect_with_target(
     source_player: PlayerId,
 ) -> Option<Effect> {
     match def {
-        EffectDefinition::Damage { amount } => {
+        EffectDefinition::Damage { amount, filter } => {
             Some(Effect::Damage {
                 target,
                 amount: *amount,
+                filter: filter.clone(),
             })
         }
-        EffectDefinition::Heal { amount } => {
+        EffectDefinition::Heal { amount, filter } => {
             Some(Effect::Heal {
                 target,
                 amount: *amount,
+                filter: filter.clone(),
             })
         }
         EffectDefinition::Draw { count } => {
@@ -132,32 +134,35 @@ pub fn effect_def_to_effect_with_target(
                 count: *count,
             })
         }
-        EffectDefinition::BuffStats { attack, health } => {
+        EffectDefinition::BuffStats { attack, health, filter } => {
             Some(Effect::BuffStats {
                 target,
                 attack: *attack,
                 health: *health,
+                filter: filter.clone(),
             })
         }
-        EffectDefinition::Destroy => {
-            Some(Effect::Destroy { target })
+        EffectDefinition::Destroy { filter } => {
+            Some(Effect::Destroy { target, filter: filter.clone() })
         }
-        EffectDefinition::GrantKeyword { keyword } => {
+        EffectDefinition::GrantKeyword { keyword, filter } => {
             let kw = Keywords::from_names(&[keyword.as_str()]);
             Some(Effect::GrantKeyword {
                 target,
                 keyword: kw.0,
+                filter: filter.clone(),
             })
         }
-        EffectDefinition::RemoveKeyword { keyword } => {
+        EffectDefinition::RemoveKeyword { keyword, filter } => {
             let kw = Keywords::from_names(&[keyword.as_str()]);
             Some(Effect::RemoveKeyword {
                 target,
                 keyword: kw.0,
+                filter: filter.clone(),
             })
         }
-        EffectDefinition::Silence => {
-            Some(Effect::Silence { target })
+        EffectDefinition::Silence { filter } => {
+            Some(Effect::Silence { target, filter: filter.clone() })
         }
         EffectDefinition::GainEssence { amount } => {
             Some(Effect::GainEssence {
@@ -186,7 +191,7 @@ pub fn effect_def_to_triggered_effect(
     };
 
     match def {
-        EffectDefinition::Damage { amount } => {
+        EffectDefinition::Damage { amount, filter } => {
             // For damage, check the targeting rule to determine who gets hit
             let target = match &ability.targeting {
                 TargetingRule::NoTarget => {
@@ -209,9 +214,10 @@ pub fn effect_def_to_triggered_effect(
             Some(Effect::Damage {
                 target,
                 amount: *amount,
+                filter: filter.clone(),
             })
         }
-        EffectDefinition::Heal { amount } => {
+        EffectDefinition::Heal { amount, filter } => {
             // Heal typically targets self or allies
             let target = match &ability.targeting {
                 TargetingRule::TargetAllyCreature | TargetingRule::NoTarget => {
@@ -225,6 +231,7 @@ pub fn effect_def_to_triggered_effect(
             Some(Effect::Heal {
                 target,
                 amount: *amount,
+                filter: filter.clone(),
             })
         }
         EffectDefinition::Draw { count } => {
@@ -233,36 +240,40 @@ pub fn effect_def_to_triggered_effect(
                 count: *count,
             })
         }
-        EffectDefinition::BuffStats { attack, health } => {
+        EffectDefinition::BuffStats { attack, health, filter } => {
             // Buff typically targets self
             Some(Effect::BuffStats {
                 target: default_target,
                 attack: *attack,
                 health: *health,
+                filter: filter.clone(),
             })
         }
-        EffectDefinition::Destroy => {
+        EffectDefinition::Destroy { filter: _ } => {
             // Destroy needs a specific target - this should be resolved differently
             // For now, return None as it needs targeting
             None
         }
-        EffectDefinition::GrantKeyword { keyword } => {
+        EffectDefinition::GrantKeyword { keyword, filter } => {
             let kw = Keywords::from_names(&[keyword.as_str()]);
             Some(Effect::GrantKeyword {
                 target: default_target,
                 keyword: kw.0,
+                filter: filter.clone(),
             })
         }
-        EffectDefinition::RemoveKeyword { keyword } => {
+        EffectDefinition::RemoveKeyword { keyword, filter } => {
             let kw = Keywords::from_names(&[keyword.as_str()]);
             Some(Effect::RemoveKeyword {
                 target: default_target,
                 keyword: kw.0,
+                filter: filter.clone(),
             })
         }
-        EffectDefinition::Silence => {
+        EffectDefinition::Silence { filter } => {
             Some(Effect::Silence {
                 target: default_target,
+                filter: filter.clone(),
             })
         }
         EffectDefinition::GainEssence { amount } => {

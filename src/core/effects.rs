@@ -57,14 +57,14 @@ pub enum EffectTarget {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Effect {
     // === Damage & Healing ===
-    /// Deal damage to target
-    Damage { target: EffectTarget, amount: u8 },
-    /// Heal target
-    Heal { target: EffectTarget, amount: u8 },
+    /// Deal damage to target (filter applies to AoE targets)
+    Damage { target: EffectTarget, amount: u8, filter: Option<CreatureFilter> },
+    /// Heal target (filter applies to AoE targets)
+    Heal { target: EffectTarget, amount: u8, filter: Option<CreatureFilter> },
 
     // === Stat Modification ===
-    /// Buff attack and/or health (can be negative for debuffs)
-    BuffStats { target: EffectTarget, attack: i8, health: i8 },
+    /// Buff attack and/or health (can be negative for debuffs, filter applies to AoE targets)
+    BuffStats { target: EffectTarget, attack: i8, health: i8, filter: Option<CreatureFilter> },
     /// Set stats to specific values
     SetStats { target: EffectTarget, attack: u8, health: u8 },
 
@@ -73,18 +73,18 @@ pub enum Effect {
     Draw { player: PlayerId, count: u8 },
 
     // === Creature Manipulation ===
-    /// Destroy target creature
-    Destroy { target: EffectTarget },
+    /// Destroy target creature (filter applies to AoE targets)
+    Destroy { target: EffectTarget, filter: Option<CreatureFilter> },
     /// Summon a creature (slot None = first available)
     Summon { owner: PlayerId, card_id: CardId, slot: Option<Slot> },
 
     // === Keyword Manipulation ===
-    /// Grant a keyword to target
-    GrantKeyword { target: EffectTarget, keyword: u16 },
-    /// Remove a keyword from target
-    RemoveKeyword { target: EffectTarget, keyword: u16 },
-    /// Silence target (remove all keywords and abilities)
-    Silence { target: EffectTarget },
+    /// Grant a keyword to target (filter applies to AoE targets)
+    GrantKeyword { target: EffectTarget, keyword: u16, filter: Option<CreatureFilter> },
+    /// Remove a keyword from target (filter applies to AoE targets)
+    RemoveKeyword { target: EffectTarget, keyword: u16, filter: Option<CreatureFilter> },
+    /// Silence target (remove all keywords and abilities, filter applies to AoE targets)
+    Silence { target: EffectTarget, filter: Option<CreatureFilter> },
 
     // === Resource Manipulation ===
     /// Gain essence this turn
@@ -184,5 +184,51 @@ impl CreatureFilter {
     pub fn without_keyword(mut self, keyword: u16) -> Self {
         self.lacks_keyword = Some(keyword);
         self
+    }
+
+    /// Check if a creature matches this filter.
+    /// Takes creature values directly to avoid circular module dependencies.
+    ///
+    /// # Arguments
+    /// * `health` - Current health of the creature
+    /// * `keywords` - Keyword bitfield of the creature (u16)
+    pub fn matches(&self, health: i8, keywords: u16) -> bool {
+        // Check max health filter
+        if let Some(max) = self.max_health {
+            if health > max as i8 {
+                return false;
+            }
+        }
+
+        // Check min health filter
+        if let Some(min) = self.min_health {
+            if health < min as i8 {
+                return false;
+            }
+        }
+
+        // Check has_keyword filter
+        if let Some(required_keyword) = self.has_keyword {
+            if keywords & required_keyword == 0 {
+                return false;
+            }
+        }
+
+        // Check lacks_keyword filter
+        if let Some(forbidden_keyword) = self.lacks_keyword {
+            if keywords & forbidden_keyword != 0 {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    /// Check if this filter is empty (matches any creature)
+    pub fn is_empty(&self) -> bool {
+        self.max_health.is_none()
+            && self.min_health.is_none()
+            && self.has_keyword.is_none()
+            && self.lacks_keyword.is_none()
     }
 }
