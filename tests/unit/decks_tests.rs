@@ -201,7 +201,7 @@ fn test_deck_faction_detection() {
 #[test]
 fn test_deck_specialist_compatibility() {
     let argentum_deck = DeckDefinition {
-        id: "argentum_control".to_string(),
+        id: "architect_fortify".to_string(),
         name: "Argentum Control".to_string(),
         description: String::new(),
         cards: vec![1000, 1001, 1002],
@@ -281,20 +281,20 @@ fn test_real_deck_factions() {
     let registry = DeckRegistry::load_from_directory("data/decks")
         .expect("Failed to load decks");
 
-    // Check argentum_control exists and has correct faction
-    if let Some(deck) = registry.get("argentum_control") {
+    // Check architect_fortify exists and has correct faction
+    if let Some(deck) = registry.get("architect_fortify") {
         assert_eq!(deck.faction(), Some(Faction::Argentum));
         assert!(deck.is_compatible_with_specialist(Faction::Argentum));
     }
 
-    // Check symbiote_aggro exists and has correct faction
-    if let Some(deck) = registry.get("symbiote_aggro") {
+    // Check broodmother_swarm exists and has correct faction
+    if let Some(deck) = registry.get("broodmother_swarm") {
         assert_eq!(deck.faction(), Some(Faction::Symbiote));
         assert!(deck.is_compatible_with_specialist(Faction::Symbiote));
     }
 
-    // Check obsidion_burst exists and has correct faction
-    if let Some(deck) = registry.get("obsidion_burst") {
+    // Check archon_burst exists and has correct faction
+    if let Some(deck) = registry.get("archon_burst") {
         assert_eq!(deck.faction(), Some(Faction::Obsidion));
         assert!(deck.is_compatible_with_specialist(Faction::Obsidion));
     }

@@ -27,12 +27,12 @@ fn test_bot_weights_deck_specific() {
     // Add specialist weights for aggressive deck
     let mut aggressive = WeightSet::default();
     aggressive.greedy.enemy_life_damage = 3.0; // More aggressive
-    weights.deck_specific.insert("symbiote_aggro".to_string(), aggressive);
+    weights.deck_specific.insert("broodmother_swarm".to_string(), aggressive);
 
     // Default should be different
     assert!((weights.for_deck("unknown").greedy.enemy_life_damage - 2.0).abs() < 0.001);
     // Specialist should override
-    assert!((weights.for_deck("symbiote_aggro").greedy.enemy_life_damage - 3.0).abs() < 0.001);
+    assert!((weights.for_deck("broodmother_swarm").greedy.enemy_life_damage - 3.0).abs() < 0.001);
 }
 
 #[test]

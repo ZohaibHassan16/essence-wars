@@ -643,15 +643,26 @@ All factions now at 75 cards:
 
 Cards added support commander archetypes: token generators, keyword synergy, curve fillers.
 
-### Phase 8C: Build 12 Commander Decks
+### Phase 8C: Build 12 Commander Decks [COMPLETE]
 
-Each deck built around its commander:
+All 12 Commander Decks built with 30 cards each, full 300-card coverage:
 
-| Faction | Deck 1 | Deck 2 | Deck 3 | Deck 4 |
-|---------|--------|--------|--------|--------|
-| Argentum | Artificer Constructs | Iron Wall | Siege Piercing | Architect Fortify |
-| Symbiote | Broodmother Swarm | Plague Death | Alpha Frenzy | Grove Regenerate |
-| Obsidion | Blood Sovereign | Shadow Assassin | Doppelganger Copy | Void Burst |
+| Faction | Deck ID | Commander | Cards |
+|---------|---------|-----------|-------|
+| Argentum | `artificer_tokens` | The High Artificer | 30 |
+| Argentum | `colossus_wall` | Iron Colossus Prime | 30 |
+| Argentum | `vex_piercing` | Siege Marshal Vex | 30 |
+| Argentum | `architect_fortify` | The Grand Architect | 30 |
+| Symbiote | `broodmother_swarm` | The Broodmother | 30 |
+| Symbiote | `plague_volatile` | Plague Sovereign | 30 |
+| Symbiote | `alpha_frenzy` | Alpha of the Hunt | 30 |
+| Symbiote | `grove_regenerate` | The Eternal Grove | 30 |
+| Obsidion | `sovereign_lifesteal` | The Blood Sovereign | 30 |
+| Obsidion | `kael_assassin` | Shadow Emperor Kael | 30 |
+| Obsidion | `doppelganger_copy` | The Doppelganger King | 30 |
+| Obsidion | `archon_burst` | Void Archon | 30 |
+
+**Deck Composition:** 1 Commander + 22 faction cards + 7 neutral cards = 30
 
 ### Phase 8D: Modal Validation & Tuning
 

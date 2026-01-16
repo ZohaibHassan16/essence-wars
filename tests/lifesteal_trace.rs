@@ -15,8 +15,8 @@ fn trace_single_game_detailed() {
     let deck_registry = DeckRegistry::load_from_directory("data/decks").expect("Failed to load decks");
 
     // Use Obsidion deck which has Lifesteal creatures
-    let obsidion_deck = deck_registry.get("obsidion_burst").expect("Deck should exist");
-    let aggressive_deck = deck_registry.get("symbiote_aggro").expect("Deck should exist");
+    let obsidion_deck = deck_registry.get("archon_burst").expect("Deck should exist");
+    let aggressive_deck = deck_registry.get("broodmother_swarm").expect("Deck should exist");
 
     let deck1_cards: Vec<CardId> = obsidion_deck.cards.iter().map(|&id| CardId(id)).collect();
     let deck2_cards: Vec<CardId> = aggressive_deck.cards.iter().map(|&id| CardId(id)).collect();
@@ -153,8 +153,8 @@ fn check_vampire_lord_in_starting_hands() {
     let deck_registry = DeckRegistry::load_from_directory("data/decks").expect("Failed to load decks");
 
     // Use Obsidion deck which has Lifesteal creatures
-    let obsidion_deck = deck_registry.get("obsidion_burst").expect("Deck should exist");
-    let aggressive_deck = deck_registry.get("symbiote_aggro").expect("Deck should exist");
+    let obsidion_deck = deck_registry.get("archon_burst").expect("Deck should exist");
+    let aggressive_deck = deck_registry.get("broodmother_swarm").expect("Deck should exist");
 
     let deck1_cards: Vec<CardId> = obsidion_deck.cards.iter().map(|&id| CardId(id)).collect();
     let deck2_cards: Vec<CardId> = aggressive_deck.cards.iter().map(|&id| CardId(id)).collect();

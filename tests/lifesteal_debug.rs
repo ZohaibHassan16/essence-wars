@@ -28,9 +28,9 @@ fn debug_lifesteal_investigation() {
     println!("Card 3004 (Hemomancer): {:?}", hemomancer.map(|c| (c.name.as_str(), c.keywords())));
     println!("Card 3007 (The Eternal One): {:?}", eternal_one.map(|c| (c.name.as_str(), c.keywords())));
 
-    // Verify obsidion_burst deck has Lifesteal
+    // Verify archon_burst deck has Lifesteal
     println!("\n=== DECK CHECK ===");
-    let obsidion_deck = deck_registry.get("obsidion_burst").expect("Deck should exist");
+    let obsidion_deck = deck_registry.get("archon_burst").expect("Deck should exist");
     println!("Obsidion Burst deck cards: {:?}", obsidion_deck.cards);
 
     let lifesteal_in_deck = obsidion_deck.cards.iter()
@@ -42,7 +42,7 @@ fn debug_lifesteal_investigation() {
     println!("\n=== RUNNING 100 GAMES WITH TRACING ===");
 
     let deck1_cards: Vec<CardId> = obsidion_deck.cards.iter().map(|&id| CardId(id)).collect();
-    let deck2 = deck_registry.get("symbiote_aggro").expect("Deck should exist");
+    let deck2 = deck_registry.get("broodmother_swarm").expect("Deck should exist");
     let deck2_cards: Vec<CardId> = deck2.cards.iter().map(|&id| CardId(id)).collect();
 
     let mut total_combats = 0;
@@ -120,8 +120,8 @@ fn debug_game_length_and_mana() {
     let card_db = CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks").expect("Failed to load decks");
 
-    let obsidion_deck = deck_registry.get("obsidion_burst").expect("Deck should exist");
-    let aggressive_deck = deck_registry.get("symbiote_aggro").expect("Deck should exist");
+    let obsidion_deck = deck_registry.get("archon_burst").expect("Deck should exist");
+    let aggressive_deck = deck_registry.get("broodmother_swarm").expect("Deck should exist");
 
     let deck1_cards: Vec<CardId> = obsidion_deck.cards.iter().map(|&id| CardId(id)).collect();
     let deck2_cards: Vec<CardId> = aggressive_deck.cards.iter().map(|&id| CardId(id)).collect();
@@ -173,7 +173,7 @@ fn debug_what_cards_are_played() {
     let card_db = CardDatabase::load_from_directory("data/cards/core_set").expect("Failed to load cards");
     let deck_registry = DeckRegistry::load_from_directory("data/decks").expect("Failed to load decks");
 
-    let obsidion_deck = deck_registry.get("obsidion_burst").expect("Deck should exist");
+    let obsidion_deck = deck_registry.get("archon_burst").expect("Deck should exist");
 
     // List all cards in obsidion deck with their costs
     println!("\n=== OBSIDION BURST DECK CARD COSTS ===");
