@@ -363,3 +363,304 @@ cards:
     effects:
       - type: copy
     rarity: Uncommon
+
+  # === PHASE 6: NEUTRAL FOUNDATION (v0.5.0) ===
+  # Expanding the neutral pool with utility creatures, spells, and supports
+  # Goal: Fill mana curve gaps and provide flexible options for all factions
+
+  # --- Phase 6A: 1-Cost Creatures (filling the gap) ---
+  - id: 4029
+    name: "Wandering Recruit"
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 1
+    keywords: []
+    rarity: Common
+    tags: [Soldier]
+
+  - id: 4030
+    name: "Scout Runner"
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 2
+    keywords: []
+    rarity: Common
+    tags: [Scout]
+
+  - id: 4031
+    name: "Eager Sellsword"
+    cost: 1
+    card_type: creature
+    attack: 2
+    health: 1
+    keywords: [Rush]
+    rarity: Uncommon
+    tags: [Mercenary]
+
+  # --- Phase 6A: 2-Cost Creatures ---
+  - id: 4032
+    name: "Caravan Guard"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: [Ward]
+    rarity: Common
+    tags: [Guardian]
+
+  - id: 4033
+    name: "Pack Mule"
+    cost: 2
+    card_type: creature
+    attack: 1
+    health: 3
+    keywords: []
+    rarity: Common
+    tags: [Beast]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: draw
+            count: 1
+
+  - id: 4034
+    name: "Crossbow Militia"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: [Ranged]
+    rarity: Common
+    tags: [Soldier]
+
+  # --- Phase 6A: 3-Cost Creatures ---
+  - id: 4035
+    name: "Wandering Mystic"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: [Regenerate]
+    rarity: Uncommon
+    tags: [Mage]
+
+  - id: 4036
+    name: "Contract Killer"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: [Lethal]
+    rarity: Uncommon
+    tags: [Mercenary]
+
+  - id: 4037
+    name: "Warded Scout"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: [Ward, Ranged]
+    rarity: Rare
+    tags: [Scout]
+
+  # --- Phase 6A: 4-Cost Creatures ---
+  - id: 4038
+    name: "Traveling Merchant"
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags: [Merchant]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: draw
+            count: 1
+
+  - id: 4039
+    name: "Battle Hardened Veteran"
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags: [Soldier]
+    abilities:
+      - trigger: OnDeath
+        targeting: NoTarget
+        effects:
+          - type: draw
+            count: 1
+
+  - id: 4040
+    name: "Runebound Guardian"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 5
+    keywords: [Ward]
+    rarity: Rare
+    tags: [Guardian]
+
+  # --- Phase 6A: 5-Cost Creatures ---
+  - id: 4041
+    name: "Wandering Champion"
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 5
+    keywords: [Charge]
+    rarity: Uncommon
+    tags: [Warrior]
+
+  - id: 4042
+    name: "Elder Mystic"
+    cost: 5
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: []
+    rarity: Rare
+    tags: [Mage]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: grant_keyword
+            keyword: Ward
+            target: all_ally_creatures
+
+  # --- Phase 6A: 6-Cost Creatures ---
+  - id: 4043
+    name: "Colossus of War"
+    cost: 6
+    card_type: creature
+    attack: 5
+    health: 7
+    keywords: [Guard]
+    rarity: Rare
+    tags: [Giant]
+
+  # === Phase 6B: Neutral Spells ===
+
+  - id: 4044
+    name: "Quick Strike"
+    cost: 1
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 2
+    rarity: Common
+
+  - id: 4045
+    name: "Second Wind"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: heal
+        amount: 3
+      - type: draw
+        count: 1
+    rarity: Uncommon
+
+  - id: 4046
+    name: "Weaken"
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: buff_stats
+        attack: -2
+        health: -1
+    rarity: Common
+
+  - id: 4047
+    name: "War Cry"
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: buff_stats
+        attack: 1
+        health: 1
+        target: all_ally_creatures
+    rarity: Uncommon
+
+  - id: 4048
+    name: "Recruitment Drive"
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: draw
+        count: 2
+    rarity: Uncommon
+
+  - id: 4049
+    name: "Arcane Barrier"
+    cost: 3
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: grant_keyword
+        keyword: Ward
+    rarity: Uncommon
+
+  - id: 4050
+    name: "Mercenary Ambush"
+    cost: 4
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 3
+      - type: damage
+        amount: 2
+        target: all_enemy_creatures
+    rarity: Rare
+
+  # === Phase 6B: Neutral Supports ===
+
+  - id: 4051
+    name: "Scout Post"
+    cost: 2
+    card_type: support
+    durability: 3
+    triggered_effects:
+      - trigger: StartOfTurn
+        effects:
+          - type: draw
+            count: 1
+    rarity: Uncommon
+
+  - id: 4052
+    name: "Training Grounds"
+    cost: 3
+    card_type: support
+    durability: 4
+    passive_effects:
+      - modifier:
+          health_bonus: 1
+    rarity: Uncommon
+
+  - id: 4053
+    name: "Sanctuary"
+    cost: 4
+    card_type: support
+    durability: 3
+    triggered_effects:
+      - trigger: StartOfTurn
+        effects:
+          - type: heal
+            amount: 2
+    rarity: Rare

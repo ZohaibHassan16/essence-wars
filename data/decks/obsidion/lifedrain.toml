@@ -34,9 +34,9 @@ cards = [
     3007,       # The Eternal One (6/7 Lifesteal+Regenerate) - ultimate sustain
 
     # === FREE-WALKER SPLASH (9 cards) ===
-    4012, 4012, # Supply Depot (3-cost support, heal 1/turn) - more sustain
-    4008, 4008, # Scrap Golem (5-cost 4/6 vanilla) - solid body
-    4002, 4002, # Wasteland Scout (2-cost 2/3 Ranged) - early game
-    4006, 4006, # Sharpshooter (4-cost 3/3 Ranged) - flexible
-    4003,       # Hired Blade (3-cost 3/3 vanilla) - efficient
+    4045, 4045, # Second Wind (heal 3 + draw 1) - Phase 6
+    4053, 4053, # Sanctuary (4-cost support, heal 2/turn) - Phase 6
+    4040, 4040, # Runebound Guardian (4-cost 3/5 Ward) - Phase 6
+    4035, 4035, # Wandering Mystic (3-cost 2/4 Regenerate) - Phase 6
+    4012,       # Supply Depot (3-cost support, heal 1/turn) - sustain
 ]

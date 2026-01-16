@@ -32,9 +32,9 @@ cards = [
     1004, 1004, # Iron Colossus (3/7 Guard) - finisher
 
     # === FREE-WALKER SPLASH (9 cards) ===
-    4008, 4008, # Scrap Golem (5-cost 4/6 vanilla) - solid body
-    4005, 4005, # Siege Giant (6-cost 6/5 Piercing) - finisher
-    4011, 4011, # Precision Shot (2-cost spell, 3 damage) - removal
-    4010, 4010, # Hired Help (3-cost spell, +2/+2) - buff
-    4009,       # The Warbringer (7-cost 7/7 Charge+Piercing) - finisher
+    4044, 4044, # Quick Strike (1-cost 2 dmg) - Phase 6
+    4046, 4046, # Weaken (-2/-1 debuff) - Phase 6
+    4050, 4050, # Mercenary Ambush (3 dmg + 2 AoE) - Phase 6
+    4043, 4043, # Colossus of War (6-cost 5/7 Guard) - Phase 6
+    4052,       # Training Grounds (3-cost support, +1 health) - Phase 6
 ]

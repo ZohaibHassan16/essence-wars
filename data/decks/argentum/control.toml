@@ -1,7 +1,8 @@
 # Argentum Control Deck
 # Faction: Argentum Combine - "The Wall"
 # Composition: 21 Argentum Core + 9 Free-Walker Splash
-# Strategy: Defensive, high-health creatures with Guard. Outlast opponents through durability.
+# Strategy: Defensive, high-health creatures with Guard/Fortify. Outlast opponents through durability.
+# Updated: Phase 4-6 cards included
 
 id = "argentum_control"
 name = "Argentum Control"
@@ -12,34 +13,34 @@ tags = ["control", "defensive", "faction", "argentum"]
 # 30 cards total (21 Argentum + 9 Free-Walker)
 cards = [
     # === ARGENTUM CORE (21 cards) ===
-    # -- 2-cost (6 cards) --
+    # -- 2-cost (4 cards) --
     1000, 1000, # Brass Sentinel (2/4 Guard)
     1006, 1006, # Shield Bearer (2/3 Shield)
-    1010, 1010, # Reinforce spell (+0/+3)
 
-    # -- 3-cost (8 cards) --
-    1001, 1001, # Steam Knight (3/3 Piercing)
+    # -- 3-cost (6 cards) --
     1002, 1002, # Cogwork Defender (2/5 Guard)
     1007, 1007, # Clockwork Medic (1/4, heal 2)
-    1005, 1005, # Pressure Trooper (4/2 Piercing)
+    1010, 1010, # Reinforce spell (+0/+3)
 
-    # -- 4-cost (2 cards) --
+    # -- 4-cost (4 cards) --
     1003, 1003, # Factory Foreman (2/4, buff ally +0/+2)
+    1035, 1035, # Hardened Vanguard (3/5 Guard+Fortify) - Phase 5
 
-    # -- 5-cost (2 cards) --
+    # -- 5-cost (4 cards) --
     1004, 1004, # Iron Colossus (3/7 Guard)
+    1036, 1036, # Armored Titan (4/6 Fortify+Piercing) - Phase 5
 
-    # -- 6-7 cost (2 cards) --
-    1008,       # Siege Engine (4/7 Guard+Piercing)
+    # -- 6+ cost (2 cards) --
+    1038,       # Fortress Wall (2/8 Guard+Fortify) - Phase 5
     1009,       # Grand Constructor (4/6 Guard, buff +1/+2)
 
-    # -- Support (1 card) --
-    1014,       # Fortification (3-cost, dur 4, +1 health)
+    # -- Spell (1 card) --
+    1025,       # Execute (destroy creature ≤4 health) - Phase 4
 
     # === FREE-WALKER SPLASH (9 cards) ===
-    4000, 4000, # Bounty Hunter (2-cost 2/2 Ranged) - answers Stealth
+    4032, 4032, # Caravan Guard (2-cost 2/3 Ward) - Phase 6
+    4044, 4044, # Quick Strike (1-cost spell, 2 damage) - Phase 6
     4011, 4011, # Precision Shot (2-cost spell, 3 damage) - removal
-    4006, 4006, # Sharpshooter (4-cost 3/3 Ranged) - flexible targeting
-    4010, 4010, # Hired Help (3-cost spell, +2/+2) - buff spell
-    4012,       # Supply Depot (3-cost support, heal 1/turn)
+    4043,       # Colossus of War (6-cost 5/7 Guard) - Phase 6
+    4052, 4052, # Training Grounds (3-cost support, +1 health) - Phase 6
 ]

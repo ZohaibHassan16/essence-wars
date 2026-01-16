@@ -2,6 +2,7 @@
 # Faction: Argentum Combine - "The Wall"
 # Composition: 21 Argentum Core + 9 Free-Walker Splash
 # Strategy: Balanced offense/defense with Piercing damage AND anti-swarm tools.
+# Updated: Phase 4-6 cards included
 
 id = "argentum_midrange"
 name = "Argentum Midrange"
@@ -16,25 +17,27 @@ cards = [
     1000, 1000, # Brass Sentinel (2/4 Guard) - early defense
     1021, 1021, # Bronze Gatekeeper (1/4 Guard) - cheap wall
 
-    # -- 3-cost (6 cards) --
+    # -- 3-cost (4 cards) --
     1001, 1001, # Steam Knight (3/3 Piercing) - offense
     1005, 1005, # Pressure Trooper (4/2 Piercing) - burst
-    1022, 1022, # Armored Sentinel (2/5 Guard+Shield) - durable
 
     # -- 4-cost (6 cards) --
     1015, 1015, # Forge Master (2/4, AoE 1 dmg/turn) - anti-swarm
-    1003, 1003, # Factory Foreman (2/4, buff ally +0/+2)
-    1020, 1020, # Ironclad Bulwark (1/8 Guard) - massive wall
+    1032, 1032, # Siege Breaker (4/4 Piercing, OnPlay 2 dmg to Guard) - Phase 4
+    1035, 1035, # Hardened Vanguard (3/5 Guard+Fortify) - Phase 5
 
     # -- 5-6 cost (5 cards) --
-    1017,       # Artillery Tower (1/6, AoE 2 dmg/turn) - anti-swarm
     1008, 1008, # Siege Engine (4/7 Guard+Piercing) - finisher
-    1004, 1004, # Iron Colossus (3/7 Guard) - solid body
+    1036, 1036, # Armored Titan (4/6 Fortify+Piercing) - Phase 5
+    1026,       # Purge the Weak (2 dmg AoE to ≤3 health) - Phase 4
+
+    # -- Spell (2 cards) --
+    1033, 1033, # Judgment Strike (3 dmg or destroy ≤3 health) - Phase 4
 
     # === FREE-WALKER SPLASH (9 cards) ===
-    4005, 4005, # Siege Giant (6-cost 6/5 Piercing) - finisher
-    4011, 4011, # Precision Shot (2-cost spell, 3 damage) - removal
-    4001, 4001, # Berserker (3-cost 3/2 Charge) - offense
-    4004, 4004, # War Veteran (4-cost 4/4 Charge) - mid-game
+    4041, 4041, # Wandering Champion (5-cost 4/5 Charge) - Phase 6
+    4044, 4044, # Quick Strike (1-cost 2 dmg) - Phase 6
+    4047, 4047, # War Cry (+1/+1 to all) - Phase 6
+    4040, 4040, # Runebound Guardian (4-cost 3/5 Ward) - Phase 6
     4009,       # The Warbringer (7-cost 7/7 Charge+Piercing) - finisher
 ]

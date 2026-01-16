@@ -36,9 +36,9 @@ cards = [
     2013, 2013, # Consume (3-cost, 3 damage)
 
     # === FREE-WALKER SPLASH (9 cards) ===
-    4007, 4007, # Reckless Charger (2-cost 4/1 Charge+Rush) - suicide attacker for Volatile
-    4001, 4001, # Berserker (3-cost 3/2 Charge) - trade fodder
-    4011, 4011, # Precision Shot (2-cost spell, 3 damage) - removal
-    4003, 4003, # Hired Blade (3-cost 3/3 vanilla) - efficient body
+    4019, 4019, # Scavenger (2-cost 2/2, OnAllyDeath draw) - Phase 4
+    4039, 4039, # Battle Hardened Veteran (4/4, OnDeath draw) - Phase 6
+    4044, 4044, # Quick Strike (1-cost 2 dmg) - Phase 6
+    4031, 4031, # Eager Sellsword (1-cost 2/1 Rush) - Phase 6
     4009,       # The Warbringer (7-cost 7/7 Charge+Piercing) - finisher
 ]

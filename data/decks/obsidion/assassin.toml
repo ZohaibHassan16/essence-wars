@@ -37,9 +37,9 @@ cards = [
     3028,       # Shadow Sanctum (grant Stealth) - all-in stealth
 
     # === FREE-WALKER SPLASH (9 cards) ===
-    4001, 4001, # Berserker (3-cost 3/2 Charge) - aggressive
-    4004, 4004, # War Veteran (4-cost 4/4 Charge) - mid-game
-    4011, 4011, # Precision Shot (2-cost spell, 3 damage) - removal
-    4005, 4005, # Siege Giant (6-cost 6/5 Piercing) - finisher
+    4044, 4044, # Quick Strike (1-cost 2 dmg) - Phase 6
+    4036, 4036, # Contract Killer (3-cost 3/2 Lethal) - Phase 6
+    4037, 4037, # Warded Scout (3-cost 2/3 Ward+Ranged) - Phase 6
+    4041, 4041, # Wandering Champion (5-cost 4/5 Charge) - Phase 6
     4009,       # The Warbringer (7-cost 7/7 Charge+Piercing) - closer
 ]
