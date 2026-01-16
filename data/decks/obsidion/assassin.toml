@@ -1,45 +1,45 @@
 # Obsidion Assassin Deck
 # Faction: Obsidion Syndicate - "The Glass Cannon"
 # Composition: 21 Obsidion Core + 9 Free-Walker Splash
-# Strategy: Stealth creatures strike from the shadows. Quick keyword for double-strikes.
+# Strategy: Stealth creatures strike from shadows. Shadow Network grants Stealth to all.
+# Updated: Phase 7C cards included
 
 id = "obsidion_assassin"
 name = "Obsidion Assassin"
-description = "Hit-and-run deck featuring Stealth assassins and Quick finishers."
+description = "Stealth aggro deck with Shadow Network support and Mirror Assassin copy shenanigans."
 
 tags = ["aggro", "stealth", "faction", "obsidion"]
 
 # 30 cards total (21 Obsidion + 9 Free-Walker)
 cards = [
     # === OBSIDION CORE (21 cards) ===
-    # -- 1-cost (4 cards) --
+    # -- 1-cost (2 cards) --
     3015, 3015, # Phantom Striker (2/1 Quick) - aggressive opener
-    3025, 3025, # Life Tap spell (2 damage + heal 2)
 
-    # -- 2-cost (6 cards) --
+    # -- 2-cost (4 cards) --
     3016, 3016, # Shade Lurker (2/2 Stealth) - cheap infiltrator
-    3024, 3024, # Shadowmeld (3/1 Stealth+Ephemeral) - burst
-    3001, 3001, # Shadow Blade (3/2 Stealth+Lethal) - premium removal
+    3053, 3053, # Cloak of Shadows (+1/+1, grant Stealth) - Phase 7C
 
-    # -- 3-cost (4 cards) --
+    # -- 3-cost (6 cards) --
+    3052, 3052, # Shadow Stalker (3/3 Stealth+Quick) - Phase 7C
     3018, 3018, # Spectral Assassin (4/2 Ephemeral+Quick) - burst
-    3026, 3026, # Dark Empowerment (+2/+1 and Quick) - buff
+    3001, 3001, # Shadow Blade (3/2 Stealth+Lethal) - removal
 
-    # -- 4-cost (4 cards) --
+    # -- 4-cost (6 cards) --
+    3042, 3042, # Mirror Assassin (3/3 Stealth, OnKill copy) - Phase 7C
+    3054, 3054, # Shadow Network (support, grant Stealth all) - Phase 7C
     3005, 3005, # Silent Assassin (5/3 Stealth+Quick) - star player
-    3019, 3019, # Nightstalker (4/3 Stealth+Lifesteal) - sustain
 
     # -- 5+ cost (2 cards) --
     3022,       # Twilight Executioner (6/5 Quick+Lethal) - finisher
     3020,       # Soul Reaver (5/4 Quick+Lifesteal) - late threat
 
-    # -- Support (1 card) --
-    3028,       # Shadow Sanctum (grant Stealth) - all-in stealth
+    # -- Spell (1 card) --
+    3040,       # Shadow Clone (copy ally creature) - Phase 7C
 
     # === FREE-WALKER SPLASH (9 cards) ===
     4044, 4044, # Quick Strike (1-cost 2 dmg) - Phase 6
     4036, 4036, # Contract Killer (3-cost 3/2 Lethal) - Phase 6
-    4037, 4037, # Warded Scout (3-cost 2/3 Ward+Ranged) - Phase 6
     4041, 4041, # Wandering Champion (5-cost 4/5 Charge) - Phase 6
     4009,       # The Warbringer (7-cost 7/7 Charge+Piercing) - closer
 ]

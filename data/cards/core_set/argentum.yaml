@@ -538,3 +538,226 @@ cards:
     effects:
       - type: copy
     rarity: Rare
+
+  # =============================================================================
+  # PHASE 7A: ARGENTUM FACTION DEEPENING (v0.5.1)
+  # Focus: Fortify synergies, Construct tokens, Defensive tech
+  # =============================================================================
+
+  # --- Fortify Synergies ---
+  - id: 1041
+    name: "Fortified Sentinel"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: [Fortify]
+    rarity: Common
+    tags: [Construct]
+
+  - id: 1042
+    name: "Steel Templar"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 5
+    keywords: [Fortify, Guard]
+    rarity: Uncommon
+    tags: [Soldier]
+
+  - id: 1043
+    name: "Unyielding Champion"
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 6
+    keywords: [Fortify]
+    rarity: Uncommon
+    tags: [Soldier]
+
+  - id: 1044
+    name: "Bastion Lord"
+    cost: 6
+    card_type: creature
+    attack: 3
+    health: 8
+    keywords: [Fortify, Guard]
+    rarity: Legendary
+    tags: [Soldier]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: grant_keyword
+            keyword: Fortify
+
+  - id: 1045
+    name: "Fortify Protocol"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: buff_stats
+        attack: 0
+        health: 2
+      - type: grant_keyword
+        keyword: Fortify
+    rarity: Uncommon
+
+  # --- Construct Token Generators ---
+  - id: 1046
+    name: "Assembly Overseer"
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags: [Engineer]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: summon_token
+            token:
+              name: "Brass Cog"
+              attack: 1
+              health: 1
+              keywords: []
+
+  - id: 1047
+    name: "Factory Heart"
+    cost: 5
+    card_type: creature
+    attack: 2
+    health: 5
+    keywords: []
+    rarity: Rare
+    tags: [Construct]
+    abilities:
+      - trigger: StartOfTurn
+        targeting: NoTarget
+        effects:
+          - type: summon_token
+            token:
+              name: "Brass Cog"
+              attack: 1
+              health: 1
+              keywords: []
+
+  - id: 1048
+    name: "Forge of Creation"
+    cost: 4
+    card_type: support
+    durability: 3
+    triggered_effects:
+      - trigger: StartOfTurn
+        effects:
+          - type: summon_token
+            token:
+              name: "Brass Sentinel"
+              attack: 1
+              health: 2
+              keywords: [Guard]
+    rarity: Rare
+
+  - id: 1049
+    name: "Mass Production"
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: summon_token
+        token:
+          name: "Brass Cog"
+          attack: 1
+          health: 1
+          keywords: []
+      - type: summon_token
+        token:
+          name: "Brass Cog"
+          attack: 1
+          health: 1
+          keywords: []
+    rarity: Uncommon
+
+  # --- Defensive Tech (Anti-Rush, Anti-Stealth) ---
+  - id: 1050
+    name: "Interceptor"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: [Guard]
+    rarity: Uncommon
+    tags: [Construct]
+    abilities:
+      - trigger: OnPlay
+        targeting: TargetEnemyCreature
+        effects:
+          - type: damage
+            amount: 2
+            filter:
+              has_keyword: 4  # Rush keyword bit
+
+  - id: 1051
+    name: "Spotlight Tower"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: []
+    rarity: Uncommon
+    tags: [Construct]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: remove_keyword
+            keyword: Stealth
+
+  - id: 1052
+    name: "Lockdown Protocol"
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: silence
+      - type: damage
+        amount: 2
+    rarity: Uncommon
+
+  - id: 1053
+    name: "Expose Weakness"
+    cost: 1
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: remove_keyword
+        keyword: Stealth
+      - type: draw
+        count: 1
+    rarity: Common
+
+  # --- Support Cards ---
+  - id: 1054
+    name: "Repair Station"
+    cost: 3
+    card_type: support
+    durability: 4
+    triggered_effects:
+      - trigger: StartOfTurn
+        effects:
+          - type: heal
+            amount: 2
+    rarity: Uncommon
+
+  - id: 1055
+    name: "Dampening Field"
+    cost: 5
+    card_type: support
+    durability: 3
+    passive_effects:
+      - modifier:
+          grant_keyword: Fortify
+    rarity: Rare

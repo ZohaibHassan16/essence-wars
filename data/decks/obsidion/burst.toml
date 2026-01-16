@@ -1,45 +1,47 @@
 # Obsidion Burst Deck
 # Faction: Obsidion Syndicate - "The Glass Cannon"
 # Composition: 21 Obsidion Core + 9 Free-Walker Splash
-# Strategy: High-damage burst with Lifesteal for sustain. Conditional triggers for value.
-# Updated: Phase 4-6 cards included
+# Strategy: High-damage burst with Copy effects to duplicate threats. Transform for removal.
+# Updated: Phase 7C cards included
 
 id = "obsidion_burst"
 name = "Obsidion Burst"
-description = "Burst damage deck featuring Obsidion Syndicate mages with Free-Walker precision."
+description = "Burst damage deck with Copy effects to duplicate high-value threats."
 
 tags = ["combo", "burst", "faction", "obsidion"]
 
 # 30 cards total (21 Obsidion + 9 Free-Walker)
 cards = [
     # === OBSIDION CORE (21 cards) ===
-    # -- 1-cost (4 cards) --
+    # -- 1-cost (2 cards) --
     3000, 3000, # Soul Fragment (3/2 Ephemeral)
-    3010, 3010, # Shadow Strike spell (2 damage + heal 1)
 
     # -- 2-cost (4 cards) --
-    3002, 3002, # Blood Acolyte (3/4 Lifesteal)
-    3001, 3001, # Shadow Blade (3/2 Stealth+Lethal)
+    3045, 3045, # Dark Metamorphosis (transform ally to 4/4 Quick) - Phase 7C
+    3050, 3050, # Bloodthirst (+2/+1, grant Lifesteal) - Phase 7C
 
-    # -- 3-cost (6 cards) --
-    3003, 3003, # Void Walker (5/3 Ephemeral+Rush)
-    3030, 3030, # Soul Harvest (3 dmg, if dies draw 1) - Phase 4
+    # -- 3-cost (4 cards) --
+    3040, 3040, # Shadow Clone (copy ally creature) - Phase 7C
+    3044, 3044, # Corruption (transform enemy to 2/2) - Phase 7C
 
     # -- 4-cost (4 cards) --
-    3004, 3004, # Hemomancer (4/5 Lifesteal)
-    3038, 3038, # Soul Collector (3/4 Lifesteal, OnKill heal 3) - Phase 5
+    3051, 3051, # Crimson Harvester (3/4 Lifesteal+Quick) - Phase 7C
+    3046, 3046, # Void Corruptor (3/4, transform ≤3 hp to 1/1) - Phase 7C
 
-    # -- 5+ cost (2 cards) --
-    3039,       # Void Executioner (4/5, destroy ≤3, if dies heal 5) - Phase 5
+    # -- 5-cost (4 cards) --
+    3041, 3041, # Doppelganger (3/4, OnPlay copy ally) - Phase 7C
+    3048, 3048, # Sanguine Lord (4/5 Lifesteal, grant Lifesteal all) - Phase 7C
+
+    # -- 6+ cost (2 cards) --
+    3043,       # Echo of the Void (4/4 Quick+Lifesteal, copy ally) - Phase 7C
     3007,       # The Eternal One (6/7 Lifesteal+Regenerate)
 
     # -- Spell (1 card) --
-    3035,       # Vampiric Surge (deal 4, heal 4) - Phase 5
+    3030,       # Soul Harvest (3 dmg, if dies heal 3) - Phase 4
 
     # === FREE-WALKER SPLASH (9 cards) ===
     4044, 4044, # Quick Strike (1-cost spell, 2 damage) - Phase 6
     4019, 4019, # Scavenger (2-cost 2/2, OnAllyDeath draw) - Phase 4
-    4036, 4036, # Contract Killer (3-cost 3/2 Lethal) - Phase 6
     4045, 4045, # Second Wind (2-cost heal 3 + draw 1) - Phase 6
-    4051,       # Scout Post (2-cost support, draw each turn) - Phase 6
+    4027,       # Mirror Image (copy ally creature) - Phase 5
 ]

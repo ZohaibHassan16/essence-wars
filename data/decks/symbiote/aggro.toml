@@ -2,7 +2,7 @@
 # Faction: Symbiote Circles - "The Swarm"
 # Composition: 21 Symbiote Core + 9 Free-Walker Splash
 # Strategy: Aggressive tempo with Rush, Lethal, and Frenzy creatures. Trade efficiently.
-# Updated: Phase 4-6 cards included
+# Updated: Phase 7B cards included
 
 id = "symbiote_aggro"
 name = "Symbiote Aggro"
@@ -17,22 +17,22 @@ cards = [
     2003, 2003, # Broodling (1/1 Rush)
     2006, 2006, # Parasitic Larva (1/2 Lethal)
 
-    # -- 2-cost (4 cards) --
+    # -- 2-cost (6 cards) --
     2001, 2001, # Venom Fang (2/3 Lethal)
     2005, 2005, # Pack Hunter (2/2 Rush)
+    2054, 2054, # Pack Tactics (+1/+1 and Rush) - Phase 7B
 
-    # -- 3-cost (6 cards) --
+    # -- 3-cost (4 cards) --
     2021, 2021, # Bloodrage Berserker (4/2 Frenzy) - Phase 4
-    2010, 2010, # Acid Spitter (3/3 Ranged)
     2035, 2035, # Soul Reaper (3/3, OnKill draw) - Phase 5
 
     # -- 4-cost (4 cards) --
-    2022, 2022, # Frenzy Pack Leader (3/4 Frenzy, grant Frenzy) - Phase 4
+    2053, 2053, # Brood Caller (2/3, summon 1/1 Rush) - Phase 7B
     2038, 2038, # Pounce Hunter (4/3 Rush, OnPlay damage) - Phase 5
 
     # -- 5-6 cost (2 cards) --
     2008,       # Alpha Predator (5/5 Rush+Lethal)
-    2009,       # Swarm Mother (4/6 Regenerate, +1/+0 each turn)
+    2059,       # Brood Overlord (5/6, grant Rush all) - Phase 7B
 
     # -- Spell (1 card) --
     2029,       # Primal Fury (+2/+0 and Frenzy) - Phase 4

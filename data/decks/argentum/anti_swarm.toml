@@ -1,40 +1,42 @@
 # Argentum Anti-Swarm Deck
 # Faction: Argentum Combine - "The Wall"
 # Composition: 21 Argentum Core + 9 Free-Walker Splash
-# Strategy: Counter aggressive swarm strategies with AoE damage and high-health Guards.
+# Strategy: Counter aggro with anti-Rush/anti-Stealth tech and high-health Guards.
+# Updated: Phase 7A cards included (Defensive tech)
 
 id = "argentum_anti_swarm"
 name = "Argentum Anti-Swarm"
-description = "Defensive deck designed to counter swarm strategies with AoE damage and massive Guards."
+description = "Defensive deck with anti-Rush, anti-Stealth tech and massive Guards."
 
 tags = ["control", "anti-swarm", "faction", "argentum"]
 
 # 30 cards total (21 Argentum + 9 Free-Walker)
 cards = [
     # === ARGENTUM CORE (21 cards) ===
+    # -- 1-cost (2 cards) --
+    1053, 1053, # Expose Weakness (remove Stealth, draw 1) - Phase 7A
+
     # -- 2-cost (4 cards) --
-    1021, 1021, # Bronze Gatekeeper (1/4 Guard) - cheap wall
-    1023, 1023, # Field Medic (1/3, heal 3) - sustain
+    1021, 1021, # Bronze Gatekeeper (2/4 Guard) - cheap wall
+    1052, 1052, # Lockdown Protocol (silence + 2 dmg) - Phase 7A
 
     # -- 3-cost (6 cards) --
-    1022, 1022, # Armored Sentinel (2/5 Guard+Shield) - durable
-    1018, 1018, # Reinforced Walls (support, +2 health) - buff all
-    1024, 1024, # Barricade (spell, +0/+4 and Guard)
+    1050, 1050, # Interceptor (2/4 Guard, 2 dmg to Rush) - Phase 7A
+    1051, 1051, # Spotlight Tower (2/3, remove Stealth) - Phase 7A
+    1054, 1054, # Repair Station (support, heal 2/turn) - Phase 7A
 
-    # -- 4-cost (6 cards) --
+    # -- 4-cost (4 cards) --
     1015, 1015, # Forge Master (2/4, AoE 1 dmg/turn) - anti-swarm
-    1020, 1020, # Ironclad Bulwark (1/8 Guard) - massive wall
-    1019, 1019, # Shield Generator (support, grant Shield) - protection
+    1020, 1020, # Ironclad Bulwark (2/8 Guard) - massive wall
 
     # -- 5-6 cost (5 cards) --
-    1017, 1017, # Artillery Tower (1/6, AoE 2 dmg/turn) - strong anti-swarm
+    1017, 1017, # Artillery Tower (1/6, AoE 1 dmg/turn) - strong anti-swarm
     1016,       # Steam Cannon (2/7 Guard, AoE 1 dmg/turn)
     1004, 1004, # Iron Colossus (3/7 Guard) - finisher
 
     # === FREE-WALKER SPLASH (9 cards) ===
     4044, 4044, # Quick Strike (1-cost 2 dmg) - Phase 6
-    4046, 4046, # Weaken (-2/-1 debuff) - Phase 6
-    4050, 4050, # Mercenary Ambush (3 dmg + 2 AoE) - Phase 6
-    4043, 4043, # Colossus of War (6-cost 5/7 Guard) - Phase 6
+    4046, 4046, # Disarm (-2/-0 debuff) - Phase 6
+    4043, 4043, # War Elephant (6-cost 5/7 Guard) - Phase 6
     4052,       # Training Grounds (3-cost support, +1 health) - Phase 6
 ]

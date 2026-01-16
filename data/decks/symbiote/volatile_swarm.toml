@@ -2,6 +2,7 @@
 # Faction: Symbiote Circles - "The Swarm"
 # Composition: 21 Symbiote Core + 9 Free-Walker Splash
 # Strategy: Leverage Volatile death triggers to punish board-centric opponents. Trade aggressively.
+# Updated: Phase 7B cards included
 
 id = "symbiote_volatile_swarm"
 name = "Symbiote Volatile Swarm"
@@ -18,12 +19,12 @@ cards = [
 
     # -- 2-cost (6 cards) --
     2019, 2019, # Explosive Broodling (1/2 Rush+Volatile)
-    2025, 2025, # Walking Bomb (2/1 Volatile+Ephemeral)
+    2048, 2048, # Volatile Drone (1/2 Volatile) - Phase 7B
     2005, 2005, # Pack Hunter (2/2 Rush)
 
     # -- 3-cost (4 cards) --
     2026, 2026, # Festering Plague (2/2 Volatile+Lethal)
-    2002, 2002, # Regenerating Ooze (2/5 Regenerate)
+    2049, 2049, # Volatile Stalker (2/2 Volatile+Rush) - Phase 7B
 
     # -- 4-cost (4 cards) --
     2020, 2020, # Deathburst Lurker (3/4 Volatile)

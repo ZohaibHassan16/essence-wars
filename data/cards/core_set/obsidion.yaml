@@ -499,3 +499,208 @@ cards:
           - type: destroy
             filter:
               max_health: 3
+
+  # =============================================================================
+  # PHASE 7C: OBSIDION FACTION DEEPENING (v0.5.1)
+  # Focus: Copy effects, Transform, Lifesteal synergy, Stealth support
+  # =============================================================================
+
+  # --- Copy/Clone Effects ---
+  - id: 3040
+    name: "Shadow Clone"
+    cost: 3
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: copy
+    rarity: Uncommon
+
+  - id: 3041
+    name: "Doppelganger"
+    cost: 5
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: []
+    rarity: Rare
+    tags: [Shade]
+    abilities:
+      - trigger: OnPlay
+        targeting: TargetAllyCreature
+        effects:
+          - type: copy
+
+  - id: 3042
+    name: "Mirror Assassin"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: [Stealth]
+    rarity: Rare
+    tags: [Assassin]
+    abilities:
+      - trigger: OnKill
+        targeting: NoTarget
+        effects:
+          - type: copy
+
+  - id: 3043
+    name: "Echo of the Void"
+    cost: 6
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords: [Quick, Lifesteal]
+    rarity: Legendary
+    tags: [Shade]
+    abilities:
+      - trigger: OnPlay
+        targeting: TargetAllyCreature
+        effects:
+          - type: copy
+
+  # --- Transform Effects ---
+  - id: 3044
+    name: "Corruption"
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: transform
+        into:
+          name: "Corrupted Shade"
+          attack: 2
+          health: 2
+          keywords: []
+    rarity: Uncommon
+
+  - id: 3045
+    name: "Dark Metamorphosis"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: transform
+        into:
+          name: "Shadow Beast"
+          attack: 4
+          health: 4
+          keywords: [Quick]
+    rarity: Rare
+
+  - id: 3046
+    name: "Void Corruptor"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags: [Cultist]
+    abilities:
+      - trigger: OnPlay
+        targeting: TargetEnemyCreature
+        effects:
+          - type: transform
+            into:
+              name: "Void Spawn"
+              attack: 1
+              health: 1
+              keywords: []
+            filter:
+              max_health: 3
+
+  # --- Lifesteal Synergy ---
+  - id: 3047
+    name: "Blood Cultist"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: [Lifesteal]
+    rarity: Common
+    tags: [Cultist]
+
+  - id: 3048
+    name: "Sanguine Lord"
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 5
+    keywords: [Lifesteal]
+    rarity: Rare
+    tags: [Noble]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: grant_keyword
+            keyword: Lifesteal
+
+  - id: 3049
+    name: "Life Drain Aura"
+    cost: 3
+    card_type: support
+    durability: 3
+    passive_effects:
+      - modifier:
+          grant_keyword: Lifesteal
+    rarity: Rare
+
+  - id: 3050
+    name: "Bloodthirst"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: buff_stats
+        attack: 2
+        health: 1
+      - type: grant_keyword
+        keyword: Lifesteal
+    rarity: Uncommon
+
+  - id: 3051
+    name: "Crimson Harvester"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: [Lifesteal, Quick]
+    rarity: Uncommon
+    tags: [Assassin]
+
+  # --- Stealth Support ---
+  - id: 3052
+    name: "Shadow Stalker"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: [Stealth, Quick]
+    rarity: Uncommon
+    tags: [Assassin]
+
+  - id: 3053
+    name: "Cloak of Shadows"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: buff_stats
+        attack: 1
+        health: 1
+      - type: grant_keyword
+        keyword: Stealth
+    rarity: Uncommon
+
+  - id: 3054
+    name: "Shadow Network"
+    cost: 4
+    card_type: support
+    durability: 3
+    passive_effects:
+      - modifier:
+          grant_keyword: Stealth
+    rarity: Rare

@@ -2,18 +2,18 @@
 
 **Mission**: Design and implement 300 Cards for the initial `New Horizons` Edition of Essence Wars.
 
-## Current State (v0.5.1 - Phase 6 Complete + Balance Patch)
+## Current State (v0.5.1 - Phase 7B Complete)
 
 ### Card Pool Summary
 | Category | Count | Target |
 |----------|-------|--------|
-| **Total Cards** | 180 | 300 |
-| Argentum Combine | 41 | ~75 |
-| Symbiote Circles | 45 | ~75 |
-| Obsidion Syndicate | 40 | ~75 |
+| **Total Cards** | 225 | 300 |
+| Argentum Combine | 56 | ~75 |
+| Symbiote Circles | 60 | ~75 |
+| Obsidion Syndicate | 55 | ~75 |
 | Free-Walkers (Neutral) | 54 | ~75 |
-| **Support Cards** | 17 | ~30 |
-| **Legendary Cards** | 7 | ~12 |
+| **Support Cards** | 25 | ~30 |
+| **Legendary Cards** | 10 | ~12 |
 
 ### Balance Baseline (Post-v0.5.1 Balance Patch, 2026-01-16)
 | Metric | Value | Status |
@@ -516,21 +516,66 @@ effects:
 
 ---
 
-## Milestone 7: Faction Deepening (+40-50 cards)
+## Milestone 7: Faction Deepening (+45 cards)
 
 **Goal:** Bring each faction to ~60 cards with archetype support.
 
-### Phase 7A: Argentum Wave (+15 cards)
+**Status:** In Progress (Phase 7A complete)
 
-Focus: Fortify synergies, construct tokens, defensive tech
+### Phase 7A: Argentum Wave (+15 cards) [DONE]
 
-### Phase 7B: Symbiote Wave (+15 cards)
+**Added 15 new Argentum cards (IDs 1041-1055):**
 
-Focus: Token swarm, death triggers, aggressive tempo
+| Category | Cards | Examples |
+|----------|-------|----------|
+| Fortify Synergies | 5 | Fortified Sentinel (2/3), Steel Templar (3/5 Guard+Fortify), Bastion Lord (3/8, grant Fortify all) |
+| Construct Tokens | 4 | Assembly Overseer, Factory Heart, Forge of Creation (support), Mass Production (2 tokens) |
+| Defensive Tech | 4 | Interceptor (anti-Rush), Spotlight Tower (anti-Stealth), Lockdown Protocol, Expose Weakness |
+| Support Cards | 2 | Repair Station (heal 2/turn), Dampening Field (grant Fortify all) |
 
-### Phase 7C: Obsidion Wave (+15 cards)
+**All 4 Argentum decks updated:**
+- `control.toml` - Heavy Fortify synergy focus
+- `midrange.toml` - Token generation focus
+- `anti_swarm.toml` - Anti-Rush/Stealth tech focus
+- `piercing.toml` - Fortify sustain focus
 
-Focus: Copy synergies, transformation tricks, life manipulation
+### Phase 7B: Symbiote Wave (+15 cards) [DONE]
+
+**Added 15 conservative Symbiote cards (IDs 2045-2059):**
+
+Note: Designed conservatively since Symbiote was at 54.0% win rate.
+
+| Category | Cards | Examples |
+|----------|-------|----------|
+| Basic Swarm Bodies | 3 | Hiveling (1/1), Brood Tender (1/3 +0/+1 ally), Spore Colony (2/4 vanilla) |
+| Volatile Options | 2 | Volatile Drone (1/2 Volatile), Volatile Stalker (2/2 Volatile+Rush) |
+| Regenerate/Defense | 4 | Regenerating Spawn (2/2 Regen), Carapace Scout (2/3 Ranged), Brood Protector (2/5 Guard), Brood Caller (2/3 summon token) |
+| Buff Spells | 3 | Pack Tactics (+1/+1 Rush), Adaptive Form (+0/+2 Regen), Swarm Fury (all +1/+0) |
+| Supports | 2 | Symbiotic Growth (+0/+1 aura), Hive Network (draw 1/turn) |
+| Finisher | 1 | Brood Overlord (5/6 grant Rush all) |
+
+**All 4 Symbiote decks updated:**
+- `aggro.toml` - Pack Tactics, Brood Caller, Brood Overlord
+- `tempo.toml` - Regenerating Spawn, Adaptive Form, Symbiotic Growth, defensive options
+- `frenzy_aggro.toml` - Hiveling, Pack Tactics, Swarm Fury
+- `volatile_swarm.toml` - Volatile Drone, Volatile Stalker
+
+### Phase 7C: Obsidion Wave (+15 cards) [DONE]
+
+**Added 15 new Obsidion cards (IDs 3040-3054):**
+
+| Category | Cards | Examples |
+|----------|-------|----------|
+| Copy/Clone | 4 | Shadow Clone, Doppelganger, Mirror Assassin (OnKill copy), Echo of the Void |
+| Transform | 3 | Corruption (enemy to 2/2), Dark Metamorphosis (ally to 4/4 Quick), Void Corruptor |
+| Lifesteal Synergy | 5 | Blood Cultist, Sanguine Lord (grant Lifesteal all), Life Drain Aura (support), Bloodthirst |
+| Stealth Support | 3 | Shadow Stalker (3/3 Stealth+Quick), Cloak of Shadows, Shadow Network (support) |
+
+**All 4 Obsidion decks updated:**
+- `burst.toml` - Copy effects to duplicate threats
+- `control.toml` - Transform removal + Lifesteal sustain
+- `assassin.toml` - Shadow Network grants Stealth to all
+- `lifedrain.toml` - Life Drain Aura grants Lifesteal to all
 
 ### Phase 7D: Validation
 
@@ -629,8 +674,8 @@ cargo run --release --bin validate -- --games 1500 --output validation.json  # 1
 | M3: Argentum Recovery + Obsidion Parity | +25 | 105 | ✅ Done |
 | M4: Engine Enhancements (Phase 4) | +35 | 140 | ✅ Done |
 | M5: Engine Expansion (Phase 5) | +15 | 155 | ✅ Done |
-| M6: Neutral Foundation | +25 | **180** | ✅ Done |
-| M7: Faction Deepening | +45 | 225 | 🔜 Next |
+| M6: Neutral Foundation | +25 | 180 | ✅ Done |
+| M7: Faction Deepening | +45 | 225 | 🔄 In Progress (210/225) |
 | M8: Legendary Commanders | +12 | 237 | Planned |
 | M9: Final Polish | +63 | **300** | Planned |
 

@@ -118,16 +118,32 @@ fn trace_single_game_detailed() {
     // Final board state
     println!("\nFinal P1 creatures:");
     for c in &engine.state.players[0].creatures {
-        let card = card_db.get(c.card_id).unwrap();
-        println!("  Slot {}: {} ({}/{}) {:?}",
-            c.slot.0, card.name, c.attack, c.current_health, card.keywords().to_names());
+        // Handle tokens (CardId(0)) which don't exist in card database
+        if c.card_id.0 == 0 {
+            println!("  Slot {}: Token ({}/{}) {:?}",
+                c.slot.0, c.attack, c.current_health, c.keywords.to_names());
+        } else if let Some(card) = card_db.get(c.card_id) {
+            println!("  Slot {}: {} ({}/{}) {:?}",
+                c.slot.0, card.name, c.attack, c.current_health, card.keywords().to_names());
+        } else {
+            println!("  Slot {}: Unknown[{}] ({}/{}) {:?}",
+                c.slot.0, c.card_id.0, c.attack, c.current_health, c.keywords.to_names());
+        }
     }
 
     println!("\nFinal P2 creatures:");
     for c in &engine.state.players[1].creatures {
-        let card = card_db.get(c.card_id).unwrap();
-        println!("  Slot {}: {} ({}/{}) {:?}",
-            c.slot.0, card.name, c.attack, c.current_health, card.keywords().to_names());
+        // Handle tokens (CardId(0)) which don't exist in card database
+        if c.card_id.0 == 0 {
+            println!("  Slot {}: Token ({}/{}) {:?}",
+                c.slot.0, c.attack, c.current_health, c.keywords.to_names());
+        } else if let Some(card) = card_db.get(c.card_id) {
+            println!("  Slot {}: {} ({}/{}) {:?}",
+                c.slot.0, card.name, c.attack, c.current_health, card.keywords().to_names());
+        } else {
+            println!("  Slot {}: Unknown[{}] ({}/{}) {:?}",
+                c.slot.0, c.card_id.0, c.attack, c.current_health, c.keywords.to_names());
+        }
     }
 }
 
