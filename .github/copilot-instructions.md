@@ -1,7 +1,7 @@
 # AI Coding Agent Instructions - Essence Wars
 
 ## Project Overview
-**Essence Wars** is a deterministic, perfect-information card game engine built in Rust for AI research (MCTS, RL). Think "Chess with Cards" - no hidden information, no RNG during play. The engine prioritizes performance (cloning speed for tree search) and correctness (243+ tests).
+**Essence Wars** is a deterministic, perfect-information card game engine built in Rust for AI research (MCTS, RL). Think "Chess with Cards" - no hidden information, no RNG during play. The engine prioritizes performance (cloning speed for tree search) and correctness (500+ tests).
 
 ## Architecture
 
@@ -21,6 +21,7 @@
 - **CMA-ES Optimizer**: tuning/cmaes module - Parallel fitness evaluation (14x speedup on 16 cores)
 - **Experiment Outputs**: `experiments/{mcts,ppo,alphazero}/YYYY-MM-DD_HHMM_tag/` (gitignored)
 - **GameRunner**: arena/runner module - Executes bot matches, optional ActionLogger for replay
+- **Modal Cloud**: modal_tune.py - Serverless parallel tuning/validation (4x faster than local)
 
 ### Python Tooling (`python/`)
 - **Analysis**: `python/cardgame/analysis/` - Parses tuning logs, generates plots
@@ -31,7 +32,7 @@
 ### Build & Test
 ```bash
 cargo build --release          # 14s typical
-cargo test                     # 243 tests, ~3s
+cargo test                     # 500+ tests, ~10s
 cargo bench                    # Criterion benchmarks
 ./scripts/run-clippy.sh        # Lint production code (excludes tests)
 ```
@@ -50,7 +51,7 @@ cargo run --release --bin arena -- \
 
 ### Tune Weights (Outputs to experiments/)
 ```bash
-# Basic tuning (vs random baseline)
+# Local tuning (vs random baseline)
 cargo run --release --bin tune -- --tag baseline --generations 50
 
 # Multi-opponent (most robust, recommended)
@@ -59,12 +60,25 @@ cargo run --release --bin tune -- --tag vs_all --mode multi-opponent --generatio
 # Specialist for specific matchup
 cargo run --release --bin tune -- --tag aggro_spec \
   --mode specialist --deck symbiote_aggro --opponent argentum_control
+
+# Cloud tuning via Modal (4x faster, parallel execution)
+modal run modal_tune.py::main --mode train-only
+modal run modal_tune.py::main --single argentum  # Single specialist
 ```
 
 ### Analyze Results
 ```bash
 ./scripts/analyze-tuning.sh --latest                    # Latest experiment
 ./scripts/analyze-tuning.sh experiments/mcts/2026-01-12_1430_baseline
+```
+
+### Validation
+```bash
+# Local validation (quick check)
+cargo run --release --bin validate -- --games 100 --output results.json
+
+# Cloud validation (high confidence, 1500 games per matchup)
+modal run modal_tune.py::main --mode validate-only --validation-games 1500
 ```
 
 ## Project-Specific Conventions
@@ -94,8 +108,8 @@ Every training run must:
 Use `docs/experiments/` for curated reports worth preserving in git.
 
 ### Card Definitions
-- **YAML format**: starter.yaml in data/cards/core_set - 43 cards with effects/abilities
-- **Deck format**: TOML files in data/decks - Card ID arrays (20-30 cards)
+- **YAML format**: data/cards/core_set - 107+ cards with effects/abilities (expanding to 300 for New Horizons Edition)
+- **Deck format**: TOML files in data/decks - Card ID arrays (20-30 cards), organized by faction (argentum, obsidion, symbiote)
 
 ### Python Environment
 Use `uv` for dependency management (no manual venv):

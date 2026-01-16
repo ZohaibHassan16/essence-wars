@@ -23,8 +23,9 @@ use cardgame::cards::CardDatabase;
 use cardgame::decks::DeckRegistry;
 use cardgame::execution::configure_thread_pool;
 use cardgame::validation::{
-    export_json, filter_matchups, print_results, BalanceAnalyzer, BalanceStatus,
-    FactionWeights, MatchupBuilder, ValidationConfig, ValidationExecutor, ValidationResults,
+    export_json, filter_matchups, print_results, save_validation_results, BalanceAnalyzer,
+    BalanceStatus, FactionWeights, MatchupBuilder, ValidationConfig, ValidationExecutor,
+    ValidationResults,
 };
 use cardgame::version::{self, VersionInfo};
 
@@ -44,6 +45,11 @@ struct Args {
     /// Output JSON file path
     #[arg(long, short = 'o')]
     output: Option<PathBuf>,
+
+    /// Output directory for validation results (creates experiments/validation/{run_id}/)
+    /// If not specified, uses timestamp: YYYY-MM-DD_HHMM
+    #[arg(long)]
+    run_id: Option<String>,
 
     /// Interactive mode - show progress spinners (for terminal use)
     #[arg(long, short = 'i')]
@@ -130,6 +136,7 @@ fn main() {
         args.games, args.mcts_sims, num_threads
     );
     println!("Matchups: {} deck pairs (round-robin)", matchups.len());
+    println!("Total games: {} (matchups × 2 directions × {})", matchups.len() * 2 * args.games, args.games);
     println!();
 
     // Run validation
@@ -158,10 +165,17 @@ fn main() {
     // Output results
     print_results(&results, total_time);
 
-    // Save JSON if requested
+    // Save to timestamped directory by default (or use specified output for backward compatibility)
     if let Some(ref output_path) = args.output {
+        // Legacy mode: save only JSON to specified path
         if let Err(e) = export_json(&results, output_path) {
             eprintln!("Error: {}", e);
+            process::exit(1);
+        }
+    } else {
+        // New mode: save full results to timestamped directory
+        if let Err(e) = save_validation_results(&results, total_time, args.run_id.as_deref()) {
+            eprintln!("Error saving results: {}", e);
             process::exit(1);
         }
     }

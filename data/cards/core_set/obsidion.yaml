@@ -34,7 +34,7 @@ cards:
     card_type: creature
     attack: 2
     health: 3
-    keywords: [Lifesteal]
+    keywords: [Quick, Lifesteal]
     rarity: Common
     tags: [Cultist]
 
@@ -52,8 +52,8 @@ cards:
     name: "Hemomancer"
     cost: 4
     card_type: creature
-    attack: 3
-    health: 5
+    attack: 5
+    health: 4
     keywords: [Lifesteal]
     rarity: Uncommon
     tags: [Mage]
@@ -91,7 +91,7 @@ cards:
     name: "The Eternal One"
     cost: 7
     card_type: creature
-    attack: 6
+    attack: 7
     health: 7
     keywords: [Lifesteal, Regenerate]
     rarity: Legendary
@@ -181,7 +181,7 @@ cards:
     cost: 1
     card_type: creature
     attack: 2
-    health: 2
+    health: 3
     keywords: [Quick]
     rarity: Common
     tags: [Spirit]
@@ -200,7 +200,7 @@ cards:
     name: "Blood Seeker"
     cost: 3
     card_type: creature
-    attack: 3
+    attack: 4
     health: 3
     keywords: [Lifesteal]
     rarity: Common
@@ -222,7 +222,7 @@ cards:
     card_type: creature
     attack: 4
     health: 4
-    keywords: [Stealth, Lifesteal]
+    keywords: [Stealth, Lifesteal, Regenerate]
     rarity: Rare
     tags: [Assassin]
 
@@ -232,7 +232,7 @@ cards:
     card_type: creature
     attack: 5
     health: 4
-    keywords: [Quick, Lifesteal]
+    keywords: [Quick, Lifesteal, Regenerate]
     rarity: Rare
     tags: [Undead]
 
@@ -266,7 +266,7 @@ cards:
     name: "Blood Ritualist"
     cost: 3
     card_type: creature
-    attack: 2
+    attack: 3
     health: 4
     keywords: []
     rarity: Common
@@ -276,7 +276,7 @@ cards:
         targeting: NoTarget
         effects:
           - type: heal
-            amount: 4
+            amount: 3
 
   - id: 3024
     name: "Shadowmeld"
@@ -344,5 +344,5 @@ cards:
       - trigger: StartOfTurn
         effects:
           - type: heal
-            amount: 2
+            amount: 3
     rarity: Uncommon

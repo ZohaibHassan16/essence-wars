@@ -44,9 +44,9 @@
 - [ ] Implement Gymnasium environment interface
 - [ ] Publish `essence-wars` package to PyPI (`pip install essence-wars`)
 - [ ] Publish Rust crate to crates.io (`cargo add essence-wars`)
-- [ ] Write researcher quickstart guide
-- [ ] Train proof-of-concept PPO agent
+- [ ] Train first proof-of-concept PPO agent
 - [ ] Validate Gym interface with standard RL libraries (Stable-Baselines3, CleanRL)
+- [ ] Write researcher quickstart guide
 
 ---
 

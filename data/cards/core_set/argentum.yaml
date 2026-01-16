@@ -22,8 +22,8 @@ cards:
     name: "Steam Knight"
     cost: 3
     card_type: creature
-    attack: 3
-    health: 3
+    attack: 2
+    health: 4
     keywords: [Piercing]
     rarity: Common
     tags: [Soldier]
@@ -59,7 +59,7 @@ cards:
     name: "Iron Colossus"
     cost: 5
     card_type: creature
-    attack: 3
+    attack: 2
     health: 7
     keywords: [Guard]
     rarity: Uncommon
@@ -69,7 +69,7 @@ cards:
     name: "Pressure Trooper"
     cost: 3
     card_type: creature
-    attack: 4
+    attack: 3
     health: 2
     keywords: [Piercing]
     rarity: Common
@@ -105,7 +105,7 @@ cards:
     cost: 6
     card_type: creature
     attack: 4
-    health: 7
+    health: 6
     keywords: [Guard, Piercing]
     rarity: Rare
     tags: [Construct]
@@ -191,7 +191,7 @@ cards:
   # --- AoE Damage Creatures (anti-swarm) ---
   - id: 1015
     name: "Forge Master"
-    cost: 4
+    cost: 5
     card_type: creature
     attack: 2
     health: 4
@@ -235,7 +235,7 @@ cards:
         targeting: NoTarget
         effects:
           - type: damage
-            amount: 2
+            amount: 1
 
   # --- Defensive Supports ---
   - id: 1018
