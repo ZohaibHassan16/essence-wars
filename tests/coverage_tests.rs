@@ -5,10 +5,13 @@
 //! - Keyword occurrence coverage (all 8 keywords)
 //! - Action type coverage (PlayCard, Attack, UseAbility, EndTurn)
 //! - Game outcome coverage (P1 win, P2 win, draw)
+//!
+//! Test failures are logged to experiments/test_failures/ for reproduction.
 
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
+use std::fs;
 
 use cardgame::actions::Action;
 use cardgame::arena::{GameRunner, GameResult};
@@ -204,6 +207,38 @@ enum BotType {
     Mcts,
 }
 
+/// Log a failing test seed for reproduction
+fn log_test_failure(seed: u64, deck1_id: &str, deck2_id: &str, bot1_type: &str, bot2_type: &str, error: &str) {
+    use std::io::Write;
+    
+    // Create failure log directory
+    let _ = fs::create_dir_all("experiments/test_failures");
+    
+    // Generate timestamp
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    
+    let filename = format!("experiments/test_failures/{}_seed_{}.txt", timestamp, seed);
+    
+    if let Ok(mut file) = fs::File::create(&filename) {
+        let _ = writeln!(file, "=== Test Failure Reproduction Info ===");
+        let _ = writeln!(file, "Seed: {}", seed);
+        let _ = writeln!(file, "Deck 1: {}", deck1_id);
+        let _ = writeln!(file, "Deck 2: {}", deck2_id);
+        let _ = writeln!(file, "Bot 1: {}", bot1_type);
+        let _ = writeln!(file, "Bot 2: {}", bot2_type);
+        let _ = writeln!(file, "Error: {}", error);
+        let _ = writeln!(file, "");
+        let _ = writeln!(file, "To reproduce:");
+        let _ = writeln!(file, "cargo test --test coverage_tests -- --exact --nocapture");
+        let _ = writeln!(file, "# Or use this seed in a custom test");
+        
+        eprintln!("⚠️  Test failure logged to: {}", filename);
+    }
+}
+
 /// Run games and collect coverage statistics
 fn run_coverage_games(
     card_db: &CardDatabase,
@@ -288,10 +323,34 @@ fn run_coverage_games(
         let result = runner.run_game(
             bot1,
             bot2,
-            deck1_cards,
-            deck2_cards,
+            deck1_cards.clone(),
+            deck2_cards.clone(),
             seed,
         );
+        
+        // Check for game errors/panics (if result has error info)
+        if result.turns == 0 {
+            // Suspicious - game ended immediately
+            let bot1_name = match bot1_type {
+                BotType::Random => "Random",
+                BotType::Greedy => "Greedy",
+                BotType::Mcts => "MCTS",
+            };
+            let bot2_name = match bot2_type {
+                BotType::Random => "Random",
+                BotType::Greedy => "Greedy",
+                BotType::Mcts => "MCTS",
+            };
+            
+            log_test_failure(
+                seed,
+                &deck_ids[deck1_idx],
+                &deck_ids[deck2_idx],
+                bot1_name,
+                bot2_name,
+                "Game ended with 0 turns (possible panic/error)"
+            );
+        }
 
         // Record keywords from combat traces
         for trace in &result.combat_traces {

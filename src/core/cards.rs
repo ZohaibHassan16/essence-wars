@@ -352,6 +352,74 @@ pub enum CardLoadError {
 }
 
 impl CardDatabase {
+    /// Validate an effect definition for problematic values
+    fn validate_effect_definition(card: &CardDefinition, effect: &EffectDefinition) -> Result<(), CardLoadError> {
+        match effect {
+            EffectDefinition::BuffStats { attack, health, .. } => {
+                // Check for extreme buff values (likely data entry errors)
+                if attack.abs() > 20 {
+                    return Err(CardLoadError::Validation(format!(
+                        "Card {} '{}' has extreme attack buff: {} (abs max 20)",
+                        card.id, card.name, attack
+                    )));
+                }
+                if health.abs() > 20 {
+                    return Err(CardLoadError::Validation(format!(
+                        "Card {} '{}' has extreme health buff: {} (abs max 20)",
+                        card.id, card.name, health
+                    )));
+                }
+            },
+            EffectDefinition::Transform { into, .. } => {
+                if into.health == 0 {
+                    return Err(CardLoadError::Validation(format!(
+                        "Card {} '{}' has Transform effect with invalid health: 0 (must be > 0)",
+                        card.id, card.name
+                    )));
+                }
+                if into.health > 50 {
+                    return Err(CardLoadError::Validation(format!(
+                        "Card {} '{}' has Transform effect with extreme health: {} (max 50)",
+                        card.id, card.name, into.health
+                    )));
+                }
+                if into.attack > 50 {
+                    return Err(CardLoadError::Validation(format!(
+                        "Card {} '{}' has Transform effect with extreme attack: {} (max 50)",
+                        card.id, card.name, into.attack
+                    )));
+                }
+            },
+            EffectDefinition::SummonToken { token } => {
+                if token.health == 0 {
+                    return Err(CardLoadError::Validation(format!(
+                        "Card {} '{}' has SummonToken effect with invalid health: 0 (must be > 0)",
+                        card.id, card.name
+                    )));
+                }
+                if token.health > 50 {
+                    return Err(CardLoadError::Validation(format!(
+                        "Card {} '{}' has SummonToken effect with extreme health: {} (max 50)",
+                        card.id, card.name, token.health
+                    )));
+                }
+                if token.attack > 50 {
+                    return Err(CardLoadError::Validation(format!(
+                        "Card {} '{}' has SummonToken effect with extreme attack: {} (max 50)",
+                        card.id, card.name, token.attack
+                    )));
+                }
+            },
+            EffectDefinition::Copy => {
+                // Copy creates a clone, so validation is deferred to the source creature
+            },
+            _ => {
+                // Other effect types don't create creatures or modify stats in dangerous ways
+            }
+        }
+        Ok(())
+    }
+
     /// Load cards from a directory containing YAML files.
     ///
     /// The directory should contain `.yaml` or `.yml` files with card definitions.
@@ -409,6 +477,70 @@ impl CardDatabase {
                     "Duplicate card ID: {}",
                     card.id
                 )));
+            }
+        }
+
+        // Validate card definitions for problematic values
+        for card in &all_cards {
+            match &card.card_type {
+                CardType::Creature { attack, health, abilities, .. } => {
+                    // Check creature base stats
+                    if *health == 0 {
+                        return Err(CardLoadError::Validation(format!(
+                            "Card {} '{}' has invalid base health: 0 (must be > 0)",
+                            card.id, card.name
+                        )));
+                    }
+                    // Sanity check for extreme values (likely data entry errors)
+                    if *health > 50 {
+                        return Err(CardLoadError::Validation(format!(
+                            "Card {} '{}' has suspiciously high health: {} (max 50)",
+                            card.id, card.name, health
+                        )));
+                    }
+                    if *attack > 50 {
+                        return Err(CardLoadError::Validation(format!(
+                            "Card {} '{}' has suspiciously high attack: {} (max 50)",
+                            card.id, card.name, attack
+                        )));
+                    }
+
+                    // Validate abilities
+                    for ability in abilities {
+                        for effect in &ability.effects {
+                            Self::validate_effect_definition(card, effect)?;
+                        }
+                        for conditional_group in &ability.conditional_effects {
+                            for effect in &conditional_group.effects {
+                                Self::validate_effect_definition(card, effect)?;
+                            }
+                        }
+                    }
+                },
+                CardType::Spell { effects, conditional_effects, .. } => {
+                    // Validate spell effects
+                    for effect in effects {
+                        Self::validate_effect_definition(card, effect)?;
+                    }
+                    for conditional_group in conditional_effects {
+                        for effect in &conditional_group.effects {
+                            Self::validate_effect_definition(card, effect)?;
+                        }
+                    }
+                },
+                CardType::Support { triggered_effects, .. } => {
+                    // Validate support triggered effects
+                    for ability in triggered_effects {
+                        for effect in &ability.effects {
+                            Self::validate_effect_definition(card, effect)?;
+                        }
+                        for conditional_group in &ability.conditional_effects {
+                            for effect in &conditional_group.effects {
+                                Self::validate_effect_definition(card, effect)?;
+                            }
+                        }
+                    }
+                }
             }
         }
 
