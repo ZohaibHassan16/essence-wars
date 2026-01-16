@@ -29,10 +29,10 @@
 - [ ] Expand card pool to 300 cards (New Horizons Edition)
 - [ ] Balance all faction matchups (45-55% win rates)
 - [x] Set up Modal cloud tuning (internal tooling)
-- [ ] Update documentation (`docs/essence-wars-design.md`, `docs/design-engine.md`)
+- [ ] Update documentation after the 300 Cards have been implemented (`docs/essence-wars-design.md`, `docs/design-engine.md`)
 - [ ] Create card database reference (`docs/cards-new-horizons.md`)
-- [ ] Clean up and document tuning scripts
-- [ ] Fix, rework or refactor `scripts/analyze-mcts.sh`
+- [ ] Analzye, Discuss the Data Pipeline, Clean up and document tuning/validation scripts
+- [ ] Fix, rework or refactor `scripts/analyze-mcts.sh` and the Analysis Pipeline
 - [x] Remove TUI code (deferred indefinitely)
 
 ---

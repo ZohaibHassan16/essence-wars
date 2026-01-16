@@ -158,6 +158,9 @@ impl<'a> GreedyBot<'a> {
             // Keyword bonuses (Symbiote v0.5.0)
             if kw.has_frenzy() { score += w.keyword_frenzy; }
             if kw.has_volatile() { score += w.keyword_volatile; }
+            // Keyword bonuses (Phase 5 v0.5.0)
+            if kw.has_fortify() { score += w.keyword_fortify; }
+            if kw.has_ward() { score += w.keyword_ward; }
         }
 
         // Enemy creatures (these weights are typically negative)

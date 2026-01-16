@@ -26,6 +26,8 @@ keyword_stealth = 3.0
 keyword_charge = 2.0
 keyword_frenzy = 2.5
 keyword_volatile = 3.0
+keyword_fortify = 3.0
+keyword_ward = 3.0
 win_bonus = 999.06884765625
 lose_penalty = -1000.3414916992188
 

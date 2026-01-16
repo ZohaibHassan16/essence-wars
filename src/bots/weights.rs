@@ -152,6 +152,12 @@ pub struct GreedyWeights {
     /// Value for each creature with Volatile (deal 2 damage to all enemies on death)
     pub keyword_volatile: f32,
 
+    // === Keyword Values (Phase 5 - v0.5.0) ===
+    /// Value for each creature with Fortify (takes 1 less damage from all sources)
+    pub keyword_fortify: f32,
+    /// Value for each creature with Ward (first spell/ability targeting has no effect)
+    pub keyword_ward: f32,
+
     // === Strategic Bonuses ===
     /// Bonus for winning the game (should be very high)
     pub win_bonus: f32,
@@ -187,6 +193,8 @@ impl GreedyWeights {
             keyword_charge: 0.0,
             keyword_frenzy: 0.0,
             keyword_volatile: 0.0,
+            keyword_fortify: 0.0,
+            keyword_ward: 0.0,
             win_bonus: 0.0,
             lose_penalty: 0.0,
         }
@@ -219,6 +227,8 @@ impl GreedyWeights {
             self.keyword_charge,
             self.keyword_frenzy,
             self.keyword_volatile,
+            self.keyword_fortify,
+            self.keyword_ward,
             self.win_bonus,
             self.lose_penalty,
         ]
@@ -254,8 +264,10 @@ impl GreedyWeights {
             keyword_charge: v[21],
             keyword_frenzy: v[22],
             keyword_volatile: v[23],
-            win_bonus: v[24],
-            lose_penalty: v[25],
+            keyword_fortify: v[24],
+            keyword_ward: v[25],
+            win_bonus: v[26],
+            lose_penalty: v[27],
         })
     }
 
@@ -286,13 +298,15 @@ impl GreedyWeights {
             (0.0, 5.0),    // keyword_charge (positive - burst damage)
             (0.0, 5.0),    // keyword_frenzy (positive - multi-attack aggro)
             (0.0, 5.0),    // keyword_volatile (positive - death trigger AOE)
+            (0.0, 5.0),    // keyword_fortify (positive - damage reduction)
+            (0.0, 5.0),    // keyword_ward (positive - spell protection)
             (100.0, 10000.0), // win_bonus
             (-10000.0, -100.0), // lose_penalty
         ]
     }
 
     /// Number of weight parameters.
-    pub const PARAM_COUNT: usize = 26;
+    pub const PARAM_COUNT: usize = 28;
 }
 
 impl Default for GreedyWeights {
@@ -336,6 +350,10 @@ impl Default for GreedyWeights {
             // Symbiote keywords (v0.5.0)
             keyword_frenzy: 2.5,      // Positive - multi-attack aggro
             keyword_volatile: 3.0,    // Positive - death trigger AOE
+
+            // Phase 5 keywords (v0.5.0)
+            keyword_fortify: 3.0,     // Positive - damage reduction (similar to Shield)
+            keyword_ward: 3.0,        // Positive - spell protection (similar to Stealth)
 
             // Win/Lose - must be high to ensure bot prioritizes winning
             win_bonus: 1000.0,
