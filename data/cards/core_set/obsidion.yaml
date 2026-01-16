@@ -704,3 +704,261 @@ cards:
       - modifier:
           grant_keyword: Stealth
     rarity: Rare
+
+  # =============================================================================
+  # PHASE 8A: LEGENDARY COMMANDERS (+4 cards)
+  # Each commander defines an archetype for Commander Decks
+  # =============================================================================
+
+  # --- The Blood Sovereign (Lifesteal/Sustain archetype) ---
+  - id: 3055
+    name: "The Blood Sovereign"
+    cost: 6
+    card_type: creature
+    attack: 4
+    health: 5
+    keywords: [Lifesteal]
+    rarity: Legendary
+    tags: [Commander, Noble]
+    passive_effects:
+      - modifier:
+          grant_keyword: Lifesteal
+    # Flavor: "Blood is such an inefficient fuel. Let me show you how to refine it."
+
+  # --- Shadow Emperor Kael (Stealth/Assassin archetype) ---
+  - id: 3056
+    name: "Shadow Emperor Kael"
+    cost: 6
+    card_type: creature
+    attack: 5
+    health: 4
+    keywords: [Stealth, Quick]
+    rarity: Legendary
+    tags: [Commander, Assassin]
+    abilities:
+      - trigger: OnKill
+        targeting: NoTarget
+        effects:
+          - type: bounce
+    # Returns to hand on kill - hit and run assassin
+    # Flavor: "You never see him twice. Once is enough."
+
+  # --- The Doppelganger King (Copy/Clone archetype) ---
+  - id: 3057
+    name: "The Doppelganger King"
+    cost: 7
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords: []
+    rarity: Legendary
+    tags: [Commander, Shapeshifter]
+    abilities:
+      - trigger: OnPlay
+        targeting: TargetEnemyCreature
+        effects:
+          - type: copy
+          - type: buff_stats
+            attack: 2
+            health: 2
+    # Becomes a copy of target enemy creature with +2/+2
+    # Flavor: "Why be yourself when you can be everyone?"
+
+  # --- Void Archon (Quick/Burst archetype) ---
+  - id: 3058
+    name: "Void Archon"
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 3
+    keywords: [Quick]
+    rarity: Legendary
+    tags: [Commander, Mage]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: grant_keyword
+            keyword: Quick
+    # Grants Quick to all ally creatures on play
+    # Flavor: "Time is just another resource to exploit."
+
+  # =============================================================================
+  # Phase 8B: Commander Support Cards (IDs 3059-3074)
+  # Supporting: Lifesteal/Sustain, Stealth/Assassin, Copy/Clone, Quick/Burst
+  # =============================================================================
+
+  # --- Lifesteal/Sustain Support ---
+  - id: 3059
+    name: "Blood Acolyte"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: [Lifesteal]
+    rarity: Common
+    tags: [Cultist]
+
+  - id: 3060
+    name: "Vampiric Knight"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: [Lifesteal]
+    rarity: Uncommon
+    tags: [Noble]
+
+  - id: 3061
+    name: "Blood Altar"
+    cost: 3
+    card_type: support
+    durability: 3
+    triggered_effects:
+      - trigger: StartOfTurn
+        effects:
+          - type: heal
+            amount: 2
+    rarity: Uncommon
+
+  - id: 3062
+    name: "Sanguine Blessing"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: grant_keyword
+        keyword: Lifesteal
+      - type: buff_stats
+        attack: 1
+        health: 0
+    rarity: Common
+
+  # --- Stealth/Assassin Support ---
+  - id: 3063
+    name: "Shadow Stalker"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: [Stealth]
+    rarity: Common
+    tags: [Assassin]
+
+  - id: 3064
+    name: "Nightblade"
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 2
+    keywords: [Stealth, Lethal]
+    rarity: Rare
+    tags: [Assassin]
+
+  - id: 3065
+    name: "Cloak of Shadows"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: grant_keyword
+        keyword: Stealth
+    rarity: Common
+
+  - id: 3066
+    name: "Ambush"
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 4
+    rarity: Uncommon
+
+  # --- Copy/Clone Support ---
+  - id: 3067
+    name: "Mirror Image"
+    cost: 3
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: copy
+    rarity: Uncommon
+
+  - id: 3068
+    name: "Shapeshifter Adept"
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: []
+    rarity: Uncommon
+    tags: [Shapeshifter]
+    abilities:
+      - trigger: OnPlay
+        targeting: TargetAllyCreature
+        effects:
+          - type: copy
+
+  - id: 3069
+    name: "Identity Theft"
+    cost: 5
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: copy
+    rarity: Rare
+
+  # --- Quick/Burst Support ---
+  - id: 3070
+    name: "Swift Shade"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 1
+    keywords: [Quick]
+    rarity: Common
+    tags: [Shade]
+
+  - id: 3071
+    name: "Temporal Adept"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: [Quick]
+    rarity: Uncommon
+    tags: [Mage]
+
+  - id: 3072
+    name: "Haste"
+    cost: 1
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: grant_keyword
+        keyword: Quick
+      - type: refresh_creature
+    rarity: Common
+
+  - id: 3073
+    name: "Void Strike"
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 3
+      - type: draw
+        count: 1
+    rarity: Uncommon
+
+  - id: 3074
+    name: "Shadow Nexus"
+    cost: 4
+    card_type: support
+    durability: 3
+    passive_effects:
+      - modifier:
+          attack_bonus: 1
+    rarity: Rare

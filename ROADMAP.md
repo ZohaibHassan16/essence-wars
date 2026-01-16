@@ -34,6 +34,7 @@
 - [ ] Analzye, Discuss the Data Pipeline, Clean up and document tuning/validation scripts
 - [ ] Fix, rework or refactor `scripts/analyze-mcts.sh` and the Analysis Pipeline
 - [x] Remove TUI code (deferred indefinitely)
+- [ ] Version Bump of the Engine after everything is done for Phase 2
 
 ---
 

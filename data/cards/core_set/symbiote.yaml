@@ -742,7 +742,7 @@ cards:
     attack: 5
     health: 6
     keywords: []
-    rarity: Legendary
+    rarity: Rare
     tags: [Beast]
     abilities:
       - trigger: OnPlay
@@ -751,3 +751,223 @@ cards:
           - type: grant_keyword
             keyword: Rush
     # Grants Rush to all ally creatures on play - swarm finisher
+
+  # =============================================================================
+  # PHASE 8A: LEGENDARY COMMANDERS (+4 cards)
+  # Each commander defines an archetype for Commander Decks
+  # =============================================================================
+
+  # --- The Broodmother (Rush/Swarm archetype) ---
+  - id: 2060
+    name: "The Broodmother"
+    cost: 6
+    card_type: creature
+    attack: 3
+    health: 5
+    keywords: [Rush]
+    rarity: Legendary
+    tags: [Commander, Beast]
+    abilities:
+      - trigger: OnAttack
+        targeting: NoTarget
+        effects:
+          - type: summon_token
+            token:
+              name: "Broodling"
+              attack: 1
+              health: 1
+              keywords: [Rush]
+    # Flavor: "Where she walks, the swarm follows."
+
+  # --- Plague Sovereign (Volatile/Death archetype) ---
+  - id: 2061
+    name: "Plague Sovereign"
+    cost: 6
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords: [Volatile]
+    rarity: Legendary
+    tags: [Commander, Parasite]
+    abilities:
+      - trigger: OnAllyDeath
+        targeting: NoTarget
+        effects:
+          - type: damage
+            amount: 1
+    # Deals 1 damage to all enemies on any ally death
+    # Flavor: "Every death feeds the plague."
+
+  # --- Alpha of the Hunt (Frenzy/Aggro archetype) ---
+  - id: 2062
+    name: "Alpha of the Hunt"
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 3
+    keywords: [Frenzy]
+    rarity: Legendary
+    tags: [Commander, Beast]
+    passive_effects:
+      - modifier:
+          attack_bonus: 1
+    # Flavor: "The pack hunts as one. The Alpha strikes first."
+
+  # --- The Eternal Grove (Regenerate/Midrange archetype) ---
+  - id: 2063
+    name: "The Eternal Grove"
+    cost: 7
+    card_type: creature
+    attack: 3
+    health: 7
+    keywords: [Regenerate]
+    rarity: Legendary
+    tags: [Commander, Structure]
+    passive_effects:
+      - modifier:
+          grant_keyword: Regenerate
+    # Flavor: "The forest remembers. The forest endures."
+
+  # =============================================================================
+  # Phase 8B: Commander Support Cards (IDs 2064-2074)
+  # Supporting: Rush/Swarm, Volatile/Death, Frenzy/Aggro, Regenerate/Midrange
+  # =============================================================================
+
+  # --- Rush/Swarm Support ---
+  - id: 2064
+    name: "Swarm Caller"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: [Rush]
+    rarity: Common
+    tags: [Beast]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: summon_token
+            token:
+              name: "Swarmling"
+              attack: 1
+              health: 1
+              keywords: [Rush]
+
+  - id: 2065
+    name: "Pack Tactics"
+    cost: 2
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: buff_stats
+        attack: 1
+        health: 0
+    rarity: Common
+
+  - id: 2066
+    name: "Brood Pit"
+    cost: 4
+    card_type: support
+    durability: 3
+    triggered_effects:
+      - trigger: StartOfTurn
+        effects:
+          - type: summon_token
+            token:
+              name: "Broodling"
+              attack: 1
+              health: 1
+              keywords: [Rush]
+    rarity: Rare
+
+  # --- Volatile/Death Support ---
+  - id: 2067
+    name: "Plague Bearer"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: [Volatile]
+    rarity: Common
+    tags: [Parasite]
+
+  - id: 2068
+    name: "Death Blossom"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: [Volatile, Lethal]
+    rarity: Uncommon
+    tags: [Parasite]
+
+  - id: 2069
+    name: "Toxic Spores"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: grant_keyword
+        keyword: Volatile
+    rarity: Common
+
+  # --- Frenzy/Aggro Support ---
+  - id: 2070
+    name: "Rabid Hunter"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: [Frenzy]
+    rarity: Common
+    tags: [Beast]
+
+  - id: 2071
+    name: "Bloodfury"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: buff_stats
+        attack: 2
+        health: 0
+      - type: grant_keyword
+        keyword: Frenzy
+    rarity: Uncommon
+
+  # --- Regenerate/Midrange Support ---
+  - id: 2072
+    name: "Grove Warden"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 5
+    keywords: [Regenerate]
+    rarity: Uncommon
+    tags: [Beast]
+
+  - id: 2073
+    name: "Living Roots"
+    cost: 3
+    card_type: support
+    durability: 4
+    triggered_effects:
+      - trigger: StartOfTurn
+        effects:
+          - type: heal
+            amount: 1
+    rarity: Common
+
+  - id: 2074
+    name: "Nature's Resilience"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: grant_keyword
+        keyword: Regenerate
+      - type: buff_stats
+        attack: 0
+        health: 2
+    rarity: Uncommon

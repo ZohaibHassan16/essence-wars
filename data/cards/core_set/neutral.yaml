@@ -664,3 +664,249 @@ cards:
           - type: heal
             amount: 2
     rarity: Rare
+
+  # =============================================================================
+  # Phase 8B: Neutral Expansion Cards (IDs 4054-4074)
+  # Versatile utility cards for all faction decks
+  # =============================================================================
+
+  # --- Low-Cost Utility Creatures ---
+  - id: 4054
+    name: "Hired Scout"
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 2
+    keywords: []
+    rarity: Common
+    tags: [Mercenary]
+
+  - id: 4055
+    name: "Traveling Merchant"
+    cost: 2
+    card_type: creature
+    attack: 1
+    health: 3
+    keywords: []
+    rarity: Common
+    tags: [Mercenary]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: draw
+            count: 1
+
+  - id: 4056
+    name: "Veteran Sellsword"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: []
+    rarity: Common
+    tags: [Mercenary]
+
+  - id: 4057
+    name: "Wandering Healer"
+    cost: 2
+    card_type: creature
+    attack: 1
+    health: 2
+    keywords: []
+    rarity: Common
+    tags: [Mercenary]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: heal
+            amount: 3
+
+  # --- Mid-Cost Utility Creatures ---
+  - id: 4058
+    name: "Caravan Guard"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: [Guard]
+    rarity: Common
+    tags: [Mercenary]
+
+  - id: 4059
+    name: "Frontier Ranger"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: [Ranged]
+    rarity: Common
+    tags: [Mercenary]
+
+  - id: 4060
+    name: "Bounty Hunter"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: [Rush]
+    rarity: Uncommon
+    tags: [Mercenary]
+
+  - id: 4061
+    name: "Arena Champion"
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 3
+    keywords: []
+    rarity: Uncommon
+    tags: [Mercenary]
+
+  - id: 4062
+    name: "Guild Enforcer"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: []
+    rarity: Common
+    tags: [Mercenary]
+
+  # --- High-Cost Utility Creatures ---
+  - id: 4063
+    name: "War Elephant"
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 5
+    keywords: [Charge]
+    rarity: Rare
+    tags: [Beast]
+
+  - id: 4064
+    name: "Siege Engineer"
+    cost: 5
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: [Ranged, Piercing]
+    rarity: Rare
+    tags: [Mercenary]
+
+  - id: 4065
+    name: "Legendary Mercenary"
+    cost: 6
+    card_type: creature
+    attack: 5
+    health: 5
+    keywords: []
+    rarity: Rare
+    tags: [Mercenary]
+
+  # --- Utility Spells ---
+  - id: 4066
+    name: "Emergency Supplies"
+    cost: 1
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: draw
+        count: 1
+    rarity: Common
+
+  - id: 4067
+    name: "Quick Patch"
+    cost: 1
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: heal
+        amount: 3
+    rarity: Common
+
+  - id: 4068
+    name: "Combat Training"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: buff_stats
+        attack: 1
+        health: 1
+    rarity: Common
+
+  - id: 4069
+    name: "Sabotage"
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 2
+    rarity: Common
+
+  - id: 4070
+    name: "Hired Muscle"
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: summon_token
+        token:
+          name: "Hired Thug"
+          attack: 2
+          health: 2
+          keywords: []
+    rarity: Uncommon
+
+  - id: 4071
+    name: "Strategic Retreat"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: bounce
+      - type: draw
+        count: 1
+    rarity: Uncommon
+
+  # --- Utility Supports ---
+  - id: 4072
+    name: "Supply Cache"
+    cost: 2
+    card_type: support
+    durability: 2
+    triggered_effects:
+      - trigger: StartOfTurn
+        effects:
+          - type: draw
+            count: 1
+    rarity: Common
+
+  - id: 4073
+    name: "Mercenary Camp"
+    cost: 4
+    card_type: support
+    durability: 3
+    triggered_effects:
+      - trigger: StartOfTurn
+        effects:
+          - type: summon_token
+            token:
+              name: "Mercenary"
+              attack: 1
+              health: 1
+              keywords: []
+    rarity: Uncommon
+
+  - id: 4074
+    name: "War Banner"
+    cost: 3
+    card_type: support
+    durability: 4
+    passive_effects:
+      - modifier:
+          attack_bonus: 1
+    rarity: Uncommon

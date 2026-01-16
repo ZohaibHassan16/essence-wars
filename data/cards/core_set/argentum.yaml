@@ -761,3 +761,266 @@ cards:
       - modifier:
           grant_keyword: Fortify
     rarity: Rare
+
+  # =============================================================================
+  # PHASE 8A: LEGENDARY COMMANDERS (+4 cards)
+  # Each commander defines an archetype for Commander Decks
+  # =============================================================================
+
+  # --- The High Artificer (Construct/Token archetype) ---
+  - id: 1056
+    name: "The High Artificer"
+    cost: 6
+    card_type: creature
+    attack: 3
+    health: 5
+    keywords: []
+    rarity: Legendary
+    tags: [Commander, Construct]
+    abilities:
+      - trigger: StartOfTurn
+        targeting: NoTarget
+        effects:
+          - type: summon_token
+            token:
+              name: "Brass Cog"
+              attack: 1
+              health: 1
+              keywords: []
+    passive_effects:
+      - modifier:
+          health_bonus: 1
+    # Flavor: "The Combine doesn't build soldiers. We manufacture victory."
+
+  # --- Iron Colossus Prime (Guard/Wall archetype) ---
+  - id: 1057
+    name: "Iron Colossus Prime"
+    cost: 7
+    card_type: creature
+    attack: 4
+    health: 8
+    keywords: [Guard, Fortify]
+    rarity: Legendary
+    tags: [Commander, Construct]
+    passive_effects:
+      - modifier:
+          grant_keyword: Guard
+    # Flavor: "Behind it, we are safe. Beyond it, nothing survives."
+
+  # --- Siege Marshal Vex (Piercing/Aggro archetype) ---
+  - id: 1058
+    name: "Siege Marshal Vex"
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords: [Piercing]
+    rarity: Legendary
+    tags: [Commander, Soldier]
+    passive_effects:
+      - modifier:
+          attack_bonus: 1
+    # Note: Attack bonus applies to all creatures (Piercing synergy)
+    # Flavor: "A wall is just a door that hasn't been opened hard enough."
+
+  # --- The Grand Architect (Fortify/Control archetype) ---
+  - id: 1059
+    name: "The Grand Architect"
+    cost: 6
+    card_type: creature
+    attack: 2
+    health: 6
+    keywords: [Fortify]
+    rarity: Legendary
+    tags: [Commander, Construct]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: grant_keyword
+            keyword: Fortify
+    # Flavor: "Every bolt placed with purpose. Every gear turning in harmony."
+
+  # =============================================================================
+  # Phase 8B: Commander Support Cards (IDs 1060-1074)
+  # Supporting: Token/Construct, Guard/Wall, Piercing/Aggro, Fortify/Control
+  # =============================================================================
+
+  # --- Token/Construct Support ---
+  - id: 1060
+    name: "Cog Assembler"
+    cost: 2
+    card_type: creature
+    attack: 1
+    health: 3
+    keywords: []
+    rarity: Common
+    tags: [Construct]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: summon_token
+            token:
+              name: "Brass Cog"
+              attack: 1
+              health: 1
+              keywords: []
+
+  - id: 1061
+    name: "Forge Overseer"
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags: [Construct]
+    passive_effects:
+      - modifier:
+          attack_bonus: 1
+
+  - id: 1062
+    name: "War Factory"
+    cost: 5
+    card_type: support
+    durability: 3
+    triggered_effects:
+      - trigger: StartOfTurn
+        effects:
+          - type: summon_token
+            token:
+              name: "Battle Drone"
+              attack: 2
+              health: 1
+              keywords: []
+    rarity: Rare
+
+  # --- Guard/Wall Support ---
+  - id: 1063
+    name: "Bulwark Sentinel"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: [Guard]
+    rarity: Common
+    tags: [Construct]
+
+  - id: 1064
+    name: "Iron Bastion"
+    cost: 4
+    card_type: creature
+    attack: 1
+    health: 6
+    keywords: [Guard, Fortify]
+    rarity: Uncommon
+    tags: [Construct]
+
+  - id: 1065
+    name: "Reinforced Chassis"
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: buff_stats
+        attack: 0
+        health: 3
+      - type: grant_keyword
+        keyword: Guard
+    rarity: Common
+
+  - id: 1066
+    name: "Shield Formation"
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: grant_keyword
+        keyword: Guard
+    rarity: Uncommon
+
+  # --- Piercing/Aggro Support ---
+  - id: 1067
+    name: "Siege Cannon"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: [Piercing, Ranged]
+    rarity: Uncommon
+    tags: [Construct]
+
+  - id: 1068
+    name: "Battering Ram"
+    cost: 5
+    card_type: creature
+    attack: 5
+    health: 3
+    keywords: [Piercing]
+    rarity: Rare
+    tags: [Construct]
+
+  - id: 1069
+    name: "Clockwork Dragon"
+    cost: 6
+    card_type: creature
+    attack: 5
+    health: 5
+    keywords: [Piercing, Charge]
+    rarity: Rare
+    tags: [Construct, Dragon]
+
+  - id: 1070
+    name: "Precision Strike"
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 3
+    rarity: Common
+
+  # --- Fortify/Control Support ---
+  - id: 1071
+    name: "Defensive Matrix"
+    cost: 3
+    card_type: support
+    durability: 3
+    passive_effects:
+      - modifier:
+          health_bonus: 1
+    rarity: Uncommon
+
+  - id: 1072
+    name: "Armor Plating"
+    cost: 1
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: buff_stats
+        attack: 0
+        health: 2
+    rarity: Common
+
+  - id: 1073
+    name: "Fortified Position"
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: grant_keyword
+        keyword: Fortify
+    rarity: Uncommon
+
+  - id: 1074
+    name: "Breaching Charge"
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 4
+        filter:
+          has_keyword: 3  # Guard keyword bit
+    rarity: Uncommon

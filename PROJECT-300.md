@@ -2,27 +2,32 @@
 
 **Mission**: Design and implement 300 Cards for the initial `New Horizons` Edition of Essence Wars.
 
-## Current State (v0.5.1 - Phase 7B Complete)
+## Current State (v0.5.2 - Phase 8B Complete)
 
 ### Card Pool Summary
-| Category | Count | Target |
-|----------|-------|--------|
-| **Total Cards** | 225 | 300 |
-| Argentum Combine | 56 | ~75 |
-| Symbiote Circles | 60 | ~75 |
-| Obsidion Syndicate | 55 | ~75 |
-| Free-Walkers (Neutral) | 54 | ~75 |
-| **Support Cards** | 25 | ~30 |
-| **Legendary Cards** | 10 | ~12 |
+| Category | Count | Target | Status |
+|----------|-------|--------|--------|
+| **Total Cards** | **300** | 300 | ✅ COMPLETE |
+| Argentum Combine | 75 | 75 | ✅ |
+| Symbiote Circles | 75 | 75 | ✅ |
+| Obsidion Syndicate | 75 | 75 | ✅ |
+| Free-Walkers (Neutral) | 75 | 75 | ✅ |
+| **Legendary Commanders** | 12 | 12 | ✅ |
 
-### Balance Baseline (Post-v0.5.1 Balance Patch, 2026-01-16)
+### Balance Baseline (Post-Phase 7, 2026-01-16)
 | Metric | Value | Status |
 |--------|-------|--------|
-| P1 Win Rate | 48.5% | WARNING |
-| Argentum | 47.2% | Balanced |
-| Symbiote | 56.7% | Balanced |
-| Obsidion | 46.3% | Balanced |
-| Max Delta | 10.4% | WARNING |
+| P1 Win Rate | 49.0% | WARNING |
+| Argentum | 49.6% | Balanced |
+| Symbiote | 46.9% | Balanced |
+| Obsidion | 53.8% | Balanced |
+| **Max Delta** | **6.9%** | **BALANCED** ✅ |
+
+**Phase 7 Balance Summary:**
+- Phase 7A: Argentum +15 cards → 49.6% (up from 44.9%)
+- Phase 7B: Symbiote +15 conservative cards → 46.9% (down from 54.0%)
+- Phase 7C: Obsidion +15 cards → 53.8% (up from 46.0%)
+- All factions now within 47-54% range - best balance achieved!
 
 **Balance Patch v0.5.1 Summary:**
 - 3 rounds of targeted stat adjustments after Phase 6 cards caused imbalance
@@ -33,7 +38,7 @@
 
 **Validation Method:** Round-robin across all 48 deck combinations (12 decks × 4 factions, 100 games/matchup).
 
-**Status:** Milestone 6 complete. Ready for Phase 7 (Faction Deepening) and Modal retuning.
+**Status:** Phase 8B complete. **300 cards achieved!** Ready for Phase 8C (Commander Decks) and 8D (Modal Validation).
 
 ### Keyword Slots
 - **Used:** 16 of 16 (Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick, Ephemeral, Regenerate, Stealth, Charge, Frenzy, Volatile, **Fortify**, **Ward**)
@@ -516,11 +521,11 @@ effects:
 
 ---
 
-## Milestone 7: Faction Deepening (+45 cards)
+## Milestone 7: Faction Deepening (+45 cards) [COMPLETED]
 
 **Goal:** Bring each faction to ~60 cards with archetype support.
 
-**Status:** In Progress (Phase 7A complete)
+**Status:** Complete - All phases done, balance achieved (6.9% max delta)
 
 ### Phase 7A: Argentum Wave (+15 cards) [DONE]
 
@@ -577,69 +582,88 @@ Note: Designed conservatively since Symbiote was at 54.0% win rate.
 - `assassin.toml` - Shadow Network grants Stealth to all
 - `lifedrain.toml` - Life Drain Aura grants Lifesteal to all
 
-### Phase 7D: Validation
+### Phase 7D: Validation [DONE]
 
-Target: All factions 45-55% win rate, no matchup worse than 40/60.
+**Final Results:** All factions within 47-54% win rate, Max Delta 6.9% ✅
 
----
-
-## Milestone 8: Legendary Commanders (+12 cards)
-
-**Goal:** Add iconic faction leaders with powerful abilities.
-
-### Phase 8A: Faction Legendaries (3 per faction)
-
-| Faction | Commander | Cost | Stats | Signature Ability |
-|---------|-----------|------|-------|-------------------|
-| Argentum | The High Artificer | 6 | 3/6 | "All Constructs gain +0/+2 and Guard" |
-| Argentum | Iron Colossus Prime | 8 | 6/10 | "Fortify. Cannot be destroyed by effects" |
-| Argentum | The Grand Architect | 5 | 2/4 | "Start of turn: Summon a 1/1 Construct" |
-| Symbiote | The Broodmother | 6 | 4/5 | "On ally death: Summon a 1/1 Spore with Rush" |
-| Symbiote | Alpha of the Pack | 5 | 4/4 | "Rush. All allies with Rush gain +2/+0" |
-| Symbiote | The Hivemind | 7 | 3/6 | "Your creatures share keywords" |
-| Obsidion | The Eternal One | 7 | 5/5 | "Lifesteal. On kill: Gain +2/+2 permanently" |
-| Obsidion | Shadow Emperor | 6 | 4/4 | "Stealth. On attack: Deal 2 to all enemies" |
-| Obsidion | The Soul Collector | 5 | 3/4 | "On any creature death: Draw a card" |
-
-### Phase 8B: Neutral Legendaries (3 cards)
-
-| Commander | Cost | Stats | Signature Ability |
-|-----------|------|-------|-------------------|
-| The Wanderer | 4 | 3/4 | "Ward. Start of turn: Gain a random keyword" |
-| Mercenary King | 6 | 5/5 | "Your neutral cards cost 1 less" |
-| The Arbiter | 7 | 4/6 | "On play: Silence all other creatures" |
-
-### Phase 8C: Legendary Balance Pass
-
-Ensure legendaries are powerful but not format-warping.
+Target achieved: All factions 45-55% win rate, max delta under 10%.
 
 ---
 
-## Milestone 9: Final Polish (+50-60 cards)
+## Milestone 8: Commander Foundation Set (+75 cards) [REVISED]
 
-**Goal:** Reach 300 cards with filler and final balance.
+**Goal:** Complete the 300-card Foundation Set with 12 Legendary Commanders and supporting cards.
 
-### Phase 9A: Cost Curve Filling (+30 cards)
+**Design Philosophy:**
+- Free-Walkers are mercenaries ("No Flag. Just Gold") - they don't have faction leaders
+- Each main faction gets 4 Legendary Commanders (one per archetype)
+- Each Commander defines a deck archetype
+- Final product: 12 Commander Decks ready for marketing/competitive play
 
-Common/Uncommon cards to ensure smooth draft curves.
+### Phase 8A: Design 12 Legendary Commanders (+12 cards) [COMPLETE]
 
-### Phase 9B: Tech Cards (+15 cards)
+**Argentum Combine** - "Precision. Protocol. Peace."
 
-Situational answers for specific matchups:
-- Anti-swarm tools
-- Anti-control tools
-- Keyword hate cards
+| Commander | Archetype | Cost | Stats | Signature Ability |
+|-----------|-----------|------|-------|-------------------|
+| **The High Artificer** | Construct/Token | 6 | 3/5 | "Start of turn: Summon a 1/1 Brass Cog. Constructs you control have +0/+1." |
+| **Iron Colossus Prime** | Guard/Wall | 7 | 4/8 | "Guard, Fortify. Adjacent creatures have Guard." |
+| **Siege Marshal Vex** | Piercing/Aggro | 5 | 4/4 | "Piercing. Your Piercing creatures have +1/+0." |
+| **The Grand Architect** | Fortify/Control | 6 | 2/6 | "Fortify. On play: Give all ally creatures Fortify." |
 
-### Phase 9C: Rare Finishers (+10 cards)
+**Symbiote Circles** - "Adapt or Perish."
 
-High-impact cards for late-game strategies.
+| Commander | Archetype | Cost | Stats | Signature Ability |
+|-----------|-----------|------|-------|-------------------|
+| **The Broodmother** | Rush/Swarm | 6 | 3/5 | "Rush. On attack: Summon a 1/1 Broodling with Rush." |
+| **Plague Sovereign** | Volatile/Death | 6 | 4/4 | "Volatile. On ally death: Deal 1 damage to all enemies." |
+| **Alpha of the Hunt** | Frenzy/Aggro | 5 | 4/3 | "Frenzy. Your Frenzy creatures have +1/+0." |
+| **The Eternal Grove** | Regenerate/Midrange | 7 | 3/7 | "Regenerate. Your creatures have Regenerate." |
 
-### Phase 9D: Golden Master Balance Pass
+**Obsidion Syndicate** - "Ambition Unbound."
 
-1. Final modal validation on all matchups
-2. Individual card stat adjustments
-3. Weight retuning for all agents
-4. Documentation freeze
+| Commander | Archetype | Cost | Stats | Signature Ability |
+|-----------|-----------|------|-------|-------------------|
+| **The Blood Sovereign** | Lifesteal/Sustain | 6 | 4/5 | "Lifesteal. Your creatures have Lifesteal." |
+| **Shadow Emperor Kael** | Stealth/Assassin | 6 | 5/4 | "Stealth, Quick. On kill: Return to hand." |
+| **The Doppelganger King** | Copy/Clone | 7 | 4/4 | "On play: Become a copy of target creature with +2/+2." |
+| **Void Archon** | Quick/Burst | 5 | 4/3 | "Quick. On play: Your creatures gain Quick this turn." |
+
+### Phase 8B: Fill Remaining Cards (+63 cards) [COMPLETE]
+
+All factions now at 75 cards:
+
+| Faction | Before | Commanders | Phase 8B | Final |
+|---------|--------|------------|----------|-------|
+| Argentum | 56 | +4 | +15 | **75** ✅ |
+| Symbiote | 60 | +4 | +11 | **75** ✅ |
+| Obsidion | 55 | +4 | +16 | **75** ✅ |
+| Free-Walkers | 54 | +0 | +21 | **75** ✅ |
+| **Total** | 225 | +12 | +63 | **300** ✅ |
+
+Cards added support commander archetypes: token generators, keyword synergy, curve fillers.
+
+### Phase 8C: Build 12 Commander Decks
+
+Each deck built around its commander:
+
+| Faction | Deck 1 | Deck 2 | Deck 3 | Deck 4 |
+|---------|--------|--------|--------|--------|
+| Argentum | Artificer Constructs | Iron Wall | Siege Piercing | Architect Fortify |
+| Symbiote | Broodmother Swarm | Plague Death | Alpha Frenzy | Grove Regenerate |
+| Obsidion | Blood Sovereign | Shadow Assassin | Doppelganger Copy | Void Burst |
+
+### Phase 8D: Modal Validation & Tuning
+
+```bash
+# Full pipeline: validate all 12 commander decks
+modal run modal_tune.py::main --mode validate-only
+
+# Retrain specialists if needed
+modal run modal_tune.py::main
+```
+
+Target: All factions 45-55%, max delta <10%, no commander >55% win rate.
 
 ---
 
@@ -675,9 +699,14 @@ cargo run --release --bin validate -- --games 1500 --output validation.json  # 1
 | M4: Engine Enhancements (Phase 4) | +35 | 140 | ✅ Done |
 | M5: Engine Expansion (Phase 5) | +15 | 155 | ✅ Done |
 | M6: Neutral Foundation | +25 | 180 | ✅ Done |
-| M7: Faction Deepening | +45 | 225 | 🔄 In Progress (210/225) |
-| M8: Legendary Commanders | +12 | 237 | Planned |
-| M9: Final Polish | +63 | **300** | Planned |
+| M7: Faction Deepening | +45 | 225 | ✅ Done |
+| **M8: Commander Foundation Set** | **+75** | **300** | 🔄 In Progress |
+
+**Milestone 8 Breakdown:**
+- Phase 8A: 12 Legendary Commanders (+12 cards)
+- Phase 8B: Fill to 75/faction (+63 cards)
+- Phase 8C: Build 12 Commander Decks
+- Phase 8D: Modal Validation & Tuning
 
 ---
 
@@ -694,37 +723,39 @@ cargo run --release --bin validate -- --games 1500 --output validation.json  # 1
 
 ## Immediate Next Steps
 
-**Current Focus: Milestone 7 - Faction Deepening**
+**Current Focus: Milestone 8 - Commander Foundation Set**
 
-### Pre-Phase 7: Modal Retuning (Optional)
-Run Modal tuning job to retrain specialist weights with updated card pool:
+### ✅ Milestone 7 Complete!
+- Phase 7A: Argentum Wave (+15 cards) ✓
+- Phase 7B: Symbiote Wave (+15 cards, conservative) ✓
+- Phase 7C: Obsidion Wave (+15 cards) ✓
+- Phase 7D: Validation ✓ → **6.9% max delta** (best balance achieved!)
+
+### 🎯 Milestone 8: Commander Foundation Set (+75 cards)
+
+**Phase 8A: Design 12 Legendary Commanders** ← CURRENT
+- 4 Argentum: Artificer, Iron Colossus, Siege Marshal, Grand Architect
+- 4 Symbiote: Broodmother, Plague Sovereign, Alpha of the Hunt, Eternal Grove
+- 4 Obsidion: Blood Sovereign, Shadow Emperor, Doppelganger King, Void Archon
+
+**Phase 8B: Fill Remaining Cards (+63)**
+- Argentum: +15 cards → 75 total
+- Symbiote: +11 cards → 75 total
+- Obsidion: +16 cards → 75 total
+- Free-Walkers: +21 cards → 75 total
+
+**Phase 8C: Build 12 Commander Decks**
+- Replace current decks with commander-focused builds
+- Each deck showcases its commander's archetype
+
+**Phase 8D: Modal Validation & Tuning**
 ```bash
-modal run modal_tune.py::main  # Full pipeline: train + validate + auto-deploy
+modal run modal_tune.py::main  # Full pipeline on Modal cloud
 ```
-This should further improve balance after the v0.5.1 stat adjustments.
-
-### Phase 7A: Argentum Wave (+15 cards)
-1. More Fortify synergies (Fortify + keyword combos)
-2. Construct token generation (Assembly Line payoffs)
-3. Additional defensive tech (anti-Rush, anti-Stealth)
-
-### Phase 7B: Symbiote Wave (+15 cards)
-1. Token swarm support (Broodling generators)
-2. Death trigger synergies (Volatile payoffs)
-3. Frenzy finishers (balanced post-nerf)
-
-### Phase 7C: Obsidion Wave (+15 cards)
-1. Copy synergies (duplicate high-value threats)
-2. Transformation tricks (removal + board presence)
-3. Life manipulation (Lifesteal/burst combos)
-
-### Phase 7D: Validation
-1. Run full test suite
-2. Balance validation (target: <10% faction delta)
-3. Modal retuning if needed
 
 **Notes:**
 - All 16 keyword slots are used
 - Engine supports: filters, conditionals, bounce, summon, transform, copy
-- 180 cards complete, 120 remaining to reach 300 target
-- Current balance: 10.4% faction delta (needs Modal retuning after Phase 7)
+- 225 cards complete, 75 remaining to reach 300 target
+- Current balance: 6.9% faction delta (within target!)
+- **Deliverable:** 300-card Foundation Set with 12 Commander Decks

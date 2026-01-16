@@ -45,8 +45,8 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
         deck1_id: "symbiote_aggro",
         deck2_id: "symbiote_aggro",
         expected_winner: Some(0), // P1 wins
-        expected_turns: 15,
-        expected_action_count: 62,
+        expected_turns: 13,
+        expected_action_count: 61,
     },
     GoldenTestCase {
         name: "greedy_mirror_seed_200",
@@ -55,7 +55,7 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
         deck2_id: "symbiote_aggro",
         expected_winner: Some(1), // P2 wins
         expected_turns: 14,
-        expected_action_count: 76,
+        expected_action_count: 77,
     },
     GoldenTestCase {
         name: "greedy_mirror_seed_600",
@@ -64,7 +64,7 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
         deck2_id: "symbiote_aggro",
         expected_winner: Some(0), // P1 wins
         expected_turns: 15,
-        expected_action_count: 64,
+        expected_action_count: 84,
     },
 ];
 
