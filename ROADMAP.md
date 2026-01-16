@@ -48,6 +48,8 @@
 - [ ] Train first proof-of-concept PPO agent
 - [ ] Validate Gym interface with standard RL libraries (Stable-Baselines3, CleanRL)
 - [ ] Write researcher quickstart guide
+- [ ] Design JRPG integration architecture (`docs/jrpg-architecture.md`)
+- [ ] Define clean API layer for external game clients
 
 ---
 
@@ -62,21 +64,67 @@
 - [ ] Create benchmark suite for reproducible comparisons
 - [ ] Publish dataset of self-play games
 - [ ] Write documentation for agent submission
+- [ ] Build minimal Bevy 3D integration prototype (validates JRPG tech stack)
+- [ ] Design analytics API for Glassbox Mode (decision trees, replay system)
 
 ---
 
-## Phase 5: Living Game
+## Phase 5A: Web Playable Game
 
-*Transform from research tool to playable game with community.*
+*Deploy interactive web experience on Huggingface Spaces.*
 
-- [ ] Develop lore, worldbuilding, and faction identities
-- [ ] Commission or create card artwork
+### Human Play Mode
+- [ ] Build web client UI (Bevy WASM or web-native)
+- [ ] Implement Human vs AI matches (select opponent: MCTS/PPO/AlphaZero/LLM)
+- [ ] Add AI hint system (limited charges per game, suggests strong moves)
+- [ ] Create deck builder interface
+- [ ] Add match history and statistics tracking
+- [ ] Deploy to Huggingface Spaces
+
+### Glassbox Mode (Research Visualization)
+- [ ] Implement AI vs AI spectator with replay controls
+- [ ] Visualize MCTS search trees (node visits, UCB values)
+- [ ] Display neural network policy/value outputs in real-time
+- [ ] Show decision-making rationale (top-N action probabilities)
+- [ ] Add variable playback speed and step-through controls
+- [ ] Export match analytics (turn-by-turn state tensors, action logs)
+- [ ] Create interactive tutorial explaining AI decision-making
+
+### Content & Community
+- [ ] Add basic lore and faction identities
+- [ ] Commission or create card artwork (priority: core set)
 - [ ] Add flavor text to all cards
-- [ ] Build web client (Huggingface Spaces)
-- [ ] Implement Human vs AI play mode
-- [ ] Implement AI vs AI spectator mode
-- [ ] Launch essence-wars.ai website
-- [ ] Add community features (accounts, match history)
+- [ ] Set up community feedback system
+- [ ] Collect human play data for offline RL research
+
+---
+
+## Phase 5B: JRPG Campaign
+
+*Expand into story-driven 3D game using Bevy engine.*
+
+**Conditional on Phase 5A success and resource availability.**
+
+### 3D Game Infrastructure
+- [ ] Build Bevy 3D overworld navigation system
+- [ ] Integrate card game as turn-based battle module
+- [ ] Implement third-person camera system
+- [ ] Create encounter system (trigger battles from 3D world)
+- [ ] Design progression system (unlock cards through story)
+
+### Story & Content
+- [ ] Write three faction campaigns (Argentum, Obsidion, Symbiote)
+- [ ] Design branching narrative with meaningful choices
+- [ ] Create 3D environments (towns, battle arenas, dungeons)
+- [ ] Implement story-driven deck progression
+- [ ] Add cutscenes and NPC dialogue system
+
+### Advanced Features
+- [ ] Build save/load system for campaign progress
+- [ ] Create side quests and optional battles
+- [ ] Add achievements and completion tracking
+- [ ] Design boss encounters with unique mechanics
+- [ ] Launch essence-wars.ai dedicated website (if distinct from Huggingface)
 
 ---
 
@@ -84,12 +132,14 @@
 
 *Advanced research directions and ongoing development.*
 
-- [ ] LLM agent integration (reasoning-based play)
+- [ ] LLM agent integration (reasoning-based play with narrative context)
 - [ ] Transfer learning experiments (new cards without retraining)
 - [ ] Deck-building agents (discover combos and strategies)
-- [ ] First expansion set (post-New Horizons)
-- [ ] Multi-agent research (team play, drafting)
-- [ ] Gather human play data for offline RL research
+- [ ] Procedural campaign generation (AI-driven story and encounters)
+- [ ] Multi-agent research (team play, drafting, cooperative battles)
+- [ ] First expansion set (post-New Horizons Edition)
+- [ ] Research on narrative-aware agents (JRPG context influences strategy)
+- [ ] Community-created campaigns and modding support
 
 ---
 

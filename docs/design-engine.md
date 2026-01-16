@@ -1,7 +1,7 @@
 # Card Game Engine Design Document
 
-> **Version:** 1.1 (Phase 1.5)
-> **Last Updated:** 2026-01-13
+> **Version:** 1.2 (Phase 4)
+> **Last Updated:** 2026-01-16
 > **Status:** Implementation Complete
 
 This document is the single source of truth for all game rules, parameters, and engine specifications.
@@ -593,6 +593,8 @@ Note: Playing a creature does NOT exhaust it (but summoning sickness
 | **Regenerate** | Heals 2 HP at start of owner's turn | ~1.0 |
 | **Stealth** | Cannot be targeted by enemy attacks/spells; breaks when attacking | ~1.5 |
 | **Charge** | +2 attack damage when attacking | ~1.0 |
+| **Frenzy** | After killing a creature in combat, can attack again | ~1.5 |
+| **Volatile** | Deals damage to all adjacent enemy creatures when it dies | ~0.5 |
 
 ### 7.2 Keyword Interaction Matrix
 
@@ -702,6 +704,10 @@ impl Keywords {
     pub const REGENERATE: u16  = 0x0200;  // bit 9
     pub const STEALTH: u16     = 0x0400;  // bit 10
     pub const CHARGE: u16      = 0x0800;  // bit 11
+
+    // Phase 4 keywords (bits 12-13)
+    pub const FRENZY: u16    = 0x1000;  // bit 12
+    pub const VOLATILE: u16  = 0x2000;  // bit 13
 }
 
 // Check with single bitwise AND: keywords.0 & Keywords::RUSH != 0
@@ -831,7 +837,7 @@ CARD FLOW
 
 CREATURE MANIPULATION
   • Destroy target creature
-  • Return target creature to owner's hand
+  • Bounce target creature (return to owner's hand)
   • Summon a [Token] creature
   • Move target creature to another slot
 
@@ -895,6 +901,94 @@ When a card or ability requires a target:
 
 4. If target becomes invalid before resolution (e.g., creature dies),
    the effect fizzles (does nothing)
+```
+
+### 9.5 Creature Filters (Phase 4)
+
+Effects can be filtered to only affect creatures matching specific criteria:
+
+```
+FILTER FIELDS
+─────────────
+  • max_health: u8    → Target must have current health ≤ value
+  • min_health: u8    → Target must have current health ≥ value
+  • has_keyword: u16  → Target must have the keyword (bit value)
+  • lacks_keyword: u16 → Target must NOT have the keyword
+
+USAGE IN YAML
+─────────────
+  effects:
+    - type: damage
+      amount: 3
+      filter:
+        max_health: 4
+        has_keyword: 1  # Guard (bit value)
+
+BEHAVIOR
+────────
+  • For targeted effects: Filter is applied during legal action generation
+  • For AoE effects: Filter is applied during effect resolution
+  • Filtering respects creature's CURRENT state, not base stats
+```
+
+### 9.6 Conditional Triggers (Phase 4)
+
+Spells and abilities can have bonus effects that trigger based on outcomes:
+
+```
+CONDITIONS
+──────────
+  • target_died    → Primary target was destroyed by this effect
+
+YAML SYNTAX
+───────────
+  effects:
+    - type: damage
+      amount: 3
+  conditional_effects:
+    - condition: target_died
+      effects:
+        - type: draw
+          count: 1
+
+BEHAVIOR
+────────
+  1. Primary effects resolve first
+  2. Engine tracks results (did target die?)
+  3. If condition is met, bonus effects are queued
+  4. Bonus effects resolve after primary effects
+```
+
+### 9.7 Bounce Effect (Phase 4)
+
+Return a creature from the battlefield to its owner's hand:
+
+```
+BOUNCE BEHAVIOR
+───────────────
+  1. Creature is removed from the board
+  2. Original card is added to owner's hand
+  3. If hand is full (20 cards), card is discarded
+  4. All buffs, damage, and applied effects are removed
+     (creature returns as a fresh card)
+
+YAML SYNTAX
+───────────
+  # Single target bounce
+  effects:
+    - type: bounce
+
+  # Mass bounce with filter
+  effects:
+    - type: bounce
+      filter:
+        max_health: 3
+
+USE CASES
+─────────
+  • Tempo-based control (remove blocker, enemy must replay)
+  • Self-bounce for value (re-trigger OnPlay effects)
+  • Removal for buffed creatures (reset to base stats)
 ```
 
 ---
@@ -1335,11 +1429,11 @@ Board:
 │  ──────────────                                                             │
 │  data/                                                                      │
 │    └── cards/                                                               │
-│        ├── sets/                                                            │
-│        │   ├── starter.yaml      (43 cards - core set)                     │
-│        │   ├── expansion1.yaml   (future expansion)                        │
-│        │   └── ...                                                         │
-│        └── schema.yaml           (validation schema)                       │
+│        └── core_set/                                                        │
+│            ├── argentum.yaml     (35 cards - IDs 1000-1034)                │
+│            ├── symbiote.yaml     (45 cards - IDs 2000-2044)                │
+│            ├── obsidion.yaml     (40 cards - IDs 3000-3039)                │
+│            └── neutral.yaml      (20 cards - IDs 4000-4019)                │
 │                                                                             │
 │  LOADING PROCESS                                                            │
 │  ───────────────                                                            │
@@ -1354,7 +1448,7 @@ Board:
 │  • Parsing: ~1-10ms (one time at startup)                                  │
 │  • Card lookup: O(1) array index (during gameplay)                         │
 │  • Memory: ~100 bytes per card definition                                  │
-│  • 1000 cards ≈ 100KB memory (trivial)                                     │
+│  • Current: 140 cards ≈ 14KB memory (trivial)                              │
 │                                                                             │
 │  BENEFITS                                                                   │
 │  ────────                                                                   │
@@ -1448,6 +1542,38 @@ spells:
     effects:
       - type: Destroy
 
+  # Phase 4: Spell with filter
+  - id: 1025
+    name: "Execute"
+    cost: 2
+    targeting: TargetEnemyCreature
+    effects:
+      - type: destroy
+        filter:
+          max_health: 4
+
+  # Phase 4: Spell with conditional trigger
+  - id: 3030
+    name: "Soul Harvest"
+    cost: 3
+    targeting: TargetEnemyCreature
+    effects:
+      - type: damage
+        amount: 3
+    conditional_effects:
+      - condition: target_died
+        effects:
+          - type: heal
+            amount: 3
+
+  # Phase 4: Bounce spell
+  - id: 4015
+    name: "Temporal Shift"
+    cost: 3
+    targeting: TargetEnemyCreature
+    effects:
+      - type: bounce
+
 supports:
   - id: 40
     name: "War Drums"
@@ -1511,13 +1637,18 @@ pub enum DeckVisibility {
 }
 ```
 
-### 12.5 Starter Set Reference
+### 12.5 Card Pool Reference
 
-See `cards.md` for the complete 43-card starter set with:
-- 24 Creatures
-- 8 Spells
-- 4 Supports
-- 2 Sample Decks (Aggressive Assault, Iron Fortress)
+Current card pool: **140 cards** across 4 factions
+
+| Faction | ID Range | Cards | Identity |
+|---------|----------|-------|----------|
+| Argentum Combine | 1000-1034 | 35 | Guard, Piercing, Shield - "The Wall" |
+| Symbiote Circles | 2000-2044 | 45 | Rush, Lethal, Regenerate - "The Swarm" |
+| Obsidion Syndicate | 3000-3039 | 40 | Lifesteal, Stealth, Quick - "The Shadow" |
+| Free-Walkers (Neutral) | 4000-4019 | 20 | Ranged, Charge - "The Toolbox" |
+
+See `data/cards/core_set/` for complete card definitions.
 
 ---
 
@@ -1526,6 +1657,8 @@ See `cards.md` for the complete 43-card starter set with:
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2026-01-12 | Initial consolidated design document |
+| 1.1 | 2026-01-13 | Phase 1.5 keywords (Ephemeral, Regenerate, Stealth, Charge) |
+| 1.2 | 2026-01-16 | Phase 4 engine enhancements: Creature Filters, Conditional Triggers, Bounce Effect, Frenzy/Volatile keywords |
 
 ---
 

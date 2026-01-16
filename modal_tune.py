@@ -92,6 +92,118 @@ rust_image = (
 volume = modal.Volume.from_name("essence-wars-experiments", create_if_missing=True)
 
 # ============================================================================
+# Helper Functions (used by Modal functions)
+# ============================================================================
+
+def extract_workspace(workspace_snapshot: bytes, path: str = "/tmp/essence-wars") -> Path:
+    """
+    Extract workspace snapshot tarball to specified path.
+    
+    Args:
+        workspace_snapshot: Gzipped tarball bytes
+        path: Destination path for extraction
+        
+    Returns:
+        Path object pointing to extracted workspace
+    """
+    import tarfile
+    import io
+    
+    print("\n📦 Extracting workspace...")
+    workspace_path = Path(path)
+    workspace_path.mkdir(exist_ok=True)
+    
+    with tarfile.open(fileobj=io.BytesIO(workspace_snapshot), mode='r:gz') as tar:
+        tar.extractall(workspace_path)
+    
+    print(f"✓ Workspace extracted to {workspace_path}")
+    return workspace_path
+
+
+def build_rust_binary(workspace: Path, binary: str) -> tuple[bool, str, float]:
+    """
+    Build Rust binary in release mode using cargo.
+    
+    Args:
+        workspace: Path to workspace with Cargo.toml
+        binary: Name of binary to build (e.g., 'tune', 'validate')
+        
+    Returns:
+        Tuple of (success: bool, stderr: str, build_time: float)
+    """
+    import subprocess
+    import time
+    
+    print(f"\n🔨 Building {binary} binary...")
+    build_start = time.time()
+    
+    result = subprocess.run(
+        ["cargo", "build", "--release", "--bin", binary],
+        cwd=workspace,
+        capture_output=True,
+        text=True,
+    )
+    
+    build_time = time.time() - build_start
+    
+    if result.returncode == 0:
+        print(f"✓ Build completed in {build_time:.1f}s")
+        return True, "", build_time
+    else:
+        print(f"❌ Build failed:\n{result.stderr}")
+        return False, result.stderr, build_time
+
+
+def setup_weights_from_volume(workspace: Path) -> int:
+    """
+    Copy trained weights from persistent volume to workspace data/weights.
+    
+    Args:
+        workspace: Path to workspace
+        
+    Returns:
+        Number of weight files copied
+    """
+    import shutil
+    
+    print("\n📂 Setting up weights...")
+    
+    weights_dest = workspace / "data" / "weights"
+    specialists_dest = weights_dest / "specialists"
+    specialists_dest.mkdir(parents=True, exist_ok=True)
+    
+    trained_weights = Path("/experiments/trained_weights")
+    weights_found = 0
+    
+    if not trained_weights.exists():
+        print("  ⚠️  No trained weights found in volume")
+        return 0
+    
+    # Copy generalist weights
+    gen_weights = trained_weights / "generalist.toml"
+    if gen_weights.exists():
+        shutil.copy2(gen_weights, weights_dest / "generalist.toml")
+        weights_found += 1
+    
+    # Copy specialist weights
+    spec_dir = trained_weights / "specialists"
+    if spec_dir.exists():
+        for spec_file in spec_dir.glob("*.toml"):
+            shutil.copy2(spec_file, specialists_dest / spec_file.name)
+            weights_found += 1
+    
+    print(f"  Found {weights_found} weight files")
+    return weights_found
+
+
+def print_banner(text: str, char: str = "=", width: int = 70):
+    """Print a formatted banner."""
+    print("\n" + char * width)
+    print(text)
+    print(char * width)
+
+
+# ============================================================================
 # Training Function
 # ============================================================================
 
@@ -111,14 +223,10 @@ def run_training(config: dict, workspace_snapshot: bytes):
         workspace_snapshot: Tarball of workspace directory
     """
     import subprocess
-    import tarfile
-    import io
     import shutil
     import time
-    from datetime import datetime
     
-    print("=" * 70)
-    print(f"🚀 Starting: {config['description']}")
+    print_banner(f"🚀 Starting: {config['description']}")
     print(f"📊 Tag: {config['tag']}")
     print(f"🔧 Mode: {config['mode']}")
     print(f"⚙️  Args: {' '.join(config['args'])}")
@@ -128,32 +236,12 @@ def run_training(config: dict, workspace_snapshot: bytes):
     start_time = time.time()
     
     # Extract workspace snapshot
-    print("\n📦 Extracting workspace...")
-    workspace_path = Path("/tmp/essence-wars")
-    workspace_path.mkdir(exist_ok=True)
-    
-    with tarfile.open(fileobj=io.BytesIO(workspace_snapshot), mode='r:gz') as tar:
-        tar.extractall(workspace_path)
-    
-    print(f"✓ Workspace extracted to {workspace_path}")
+    workspace_path = extract_workspace(workspace_snapshot)
     
     # Build in release mode
-    print("\n🔨 Building release binary...")
-    build_start = time.time()
-    
-    result = subprocess.run(
-        ["cargo", "build", "--release", "--bin", "tune"],
-        cwd=workspace_path,
-        capture_output=True,
-        text=True,
-    )
-    
-    build_time = time.time() - build_start
-    print(f"✓ Build completed in {build_time:.1f}s")
-    
-    if result.returncode != 0:
-        print(f"❌ Build failed:\n{result.stderr}")
-        raise RuntimeError(f"Build failed for {config['tag']}")
+    success, stderr, build_time = build_rust_binary(workspace_path, "tune")
+    if not success:
+        raise RuntimeError(f"Build failed for {config['tag']}: {stderr[-500:]}")
     
     # Run tuning
     print("\n🧠 Starting training...")
@@ -182,9 +270,7 @@ def run_training(config: dict, workspace_snapshot: bytes):
     
     # Parse results from output
     output = result.stdout
-    print("\n" + "=" * 70)
-    print("📈 TRAINING RESULTS")
-    print("=" * 70)
+    print_banner("📈 TRAINING RESULTS")
     
     # Extract key metrics
     best_wr = None
@@ -260,14 +346,25 @@ def run_training(config: dict, workspace_snapshot: bytes):
     
     total_time = time.time() - start_time
     
-    print("\n" + "=" * 70)
-    print(f"✅ {config['description']} COMPLETE!")
+    print_banner(f"✅ {config['description']} COMPLETE!")
     print(f"⏱️  Total Time: {total_time:.1f}s ({total_time/60:.1f}m)")
     print("=" * 70 + "\n")
+    
+    # Extract faction name for display (if applicable)
+    display_name = config['mode']
+    if config['mode'] == 'faction-specialist':
+        for i, arg in enumerate(config['args']):
+            if arg == '--faction' and i + 1 < len(config['args']):
+                faction = config['args'][i + 1]
+                display_name = faction.capitalize()
+                break
+    elif config['mode'] == 'generalist':
+        display_name = 'generalist'
     
     return {
         "tag": config['tag'],
         "mode": config['mode'],
+        "display_name": display_name,
         "best_wr": best_wr,
         "best_fitness": best_fitness,
         "training_time": training_time,
@@ -304,81 +401,33 @@ def run_validation(workspace_snapshot: bytes, run_id: str = None, games: int = N
         Dict with validation results
     """
     import subprocess
-    import tarfile
-    import io
-    import json
     import time
-    from datetime import datetime
+    import json
 
     # Use passed parameters or fall back to module defaults
     games = games or VALIDATION_GAMES
     mcts_sims = mcts_sims or VALIDATION_MCTS_SIMS
     cores = cores or VALIDATION_CPU
 
-    print("=" * 70)
-    print("🔍 BALANCE VALIDATION")
-    print("=" * 70)
+    print_banner("🔍 BALANCE VALIDATION")
+    import time
+    import json
+    
+    print_banner("🔍 BALANCE VALIDATION")
     print(f"⚙️  Games: {games}, MCTS sims: {mcts_sims}, Cores: {cores}")
 
     start_time = time.time()
 
     # Extract workspace snapshot
-    print("\n📦 Extracting workspace...")
-    workspace_path = Path("/tmp/essence-wars")
-    workspace_path.mkdir(exist_ok=True)
-
-    with tarfile.open(fileobj=io.BytesIO(workspace_snapshot), mode='r:gz') as tar:
-        tar.extractall(workspace_path)
-
-    print(f"✓ Workspace extracted to {workspace_path}")
+    workspace_path = extract_workspace(workspace_snapshot)
 
     # Build validate binary
-    print("\n🔨 Building validate binary...")
-    build_start = time.time()
+    success, stderr, build_time = build_rust_binary(workspace_path, "validate")
+    if not success:
+        return {"success": False, "error": f"Build failed: {stderr[-1000:]}"}
 
-    result = subprocess.run(
-        ["cargo", "build", "--release", "--bin", "validate"],
-        cwd=workspace_path,
-        capture_output=True,
-        text=True,
-    )
-
-    build_time = time.time() - build_start
-    print(f"✓ Build completed in {build_time:.1f}s")
-
-    if result.returncode != 0:
-        print(f"❌ Build failed:\n{result.stderr}")
-        return {"success": False, "error": f"Build failed: {result.stderr[-1000:]}"}
-
-    # Set up weights - copy from consolidated training outputs
-    print("\n📂 Setting up weights...")
-    weights_dest = workspace_path / "data" / "weights"
-    specialists_dest = weights_dest / "specialists"
-    specialists_dest.mkdir(parents=True, exist_ok=True)
-
-    # Look for trained weights in the consolidated location
-    trained_weights = Path("/experiments/trained_weights")
-    weights_found = 0
-
-    if trained_weights.exists():
-        import shutil
-
-        # Copy generalist weights
-        gen_weights = trained_weights / "generalist.toml"
-        if gen_weights.exists():
-            shutil.copy2(gen_weights, weights_dest / "generalist.toml")
-            print(f"  ✓ Copied generalist weights")
-            weights_found += 1
-
-        # Copy specialist weights
-        spec_dir = trained_weights / "specialists"
-        if spec_dir.exists():
-            for spec_file in spec_dir.glob("*.toml"):
-                shutil.copy2(spec_file, specialists_dest / spec_file.name)
-                print(f"  ✓ Copied {spec_file.stem} specialist weights")
-                weights_found += 1
-
-    print(f"  Found {weights_found} weight files")
+    # Set up weights from persistent volume
+    weights_found = setup_weights_from_volume(workspace_path)
 
     # Run validation
     print("\n🧪 Running validation...")
@@ -428,8 +477,7 @@ def run_validation(workspace_snapshot: bytes, run_id: str = None, games: int = N
 
     total_time = time.time() - start_time
 
-    print("\n" + "=" * 70)
-    print(f"✅ VALIDATION COMPLETE!")
+    print_banner("✅ VALIDATION COMPLETE!")
     print(f"⏱️  Validation Time: {validation_time:.1f}s ({validation_time/60:.1f}m)")
     print(f"⏱️  Total Time: {total_time:.1f}s")
     print("=" * 70 + "\n")
@@ -489,70 +537,24 @@ def run_matchup_validation(
         Dict with matchup results
     """
     import subprocess
-    import tarfile
-    import io
     import json
     import time
 
-    print("=" * 70)
-    print(f"🎯 MATCHUP VALIDATION: {matchup.upper()}")
-    print("=" * 70)
+    print_banner(f"🎯 MATCHUP VALIDATION: {matchup.upper()}")
     print(f"⚙️  Games: {games}, MCTS sims: {mcts_sims}, Cores: {cores}")
 
     start_time = time.time()
 
     # Extract workspace snapshot
-    print("\n📦 Extracting workspace...")
-    workspace_path = Path("/tmp/essence-wars")
-    workspace_path.mkdir(exist_ok=True)
-
-    with tarfile.open(fileobj=io.BytesIO(workspace_snapshot), mode='r:gz') as tar:
-        tar.extractall(workspace_path)
-
-    print(f"✓ Workspace extracted to {workspace_path}")
+    workspace_path = extract_workspace(workspace_snapshot)
 
     # Build validate binary
-    print("\n🔨 Building validate binary...")
-    build_start = time.time()
+    success, stderr, build_time = build_rust_binary(workspace_path, "validate")
+    if not success:
+        return {"success": False, "matchup": matchup, "error": f"Build failed: {stderr[-1000:]}"}
 
-    result = subprocess.run(
-        ["cargo", "build", "--release", "--bin", "validate"],
-        cwd=workspace_path,
-        capture_output=True,
-        text=True,
-    )
-
-    build_time = time.time() - build_start
-    print(f"✓ Build completed in {build_time:.1f}s")
-
-    if result.returncode != 0:
-        print(f"❌ Build failed:\n{result.stderr}")
-        return {"success": False, "matchup": matchup, "error": f"Build failed: {result.stderr[-1000:]}"}
-
-    # Set up weights
-    print("\n📂 Setting up weights...")
-    weights_dest = workspace_path / "data" / "weights"
-    specialists_dest = weights_dest / "specialists"
-    specialists_dest.mkdir(parents=True, exist_ok=True)
-
-    trained_weights = Path("/experiments/trained_weights")
-    weights_found = 0
-
-    if trained_weights.exists():
-        import shutil
-
-        gen_weights = trained_weights / "generalist.toml"
-        if gen_weights.exists():
-            shutil.copy2(gen_weights, weights_dest / "generalist.toml")
-            weights_found += 1
-
-        spec_dir = trained_weights / "specialists"
-        if spec_dir.exists():
-            for spec_file in spec_dir.glob("*.toml"):
-                shutil.copy2(spec_file, specialists_dest / spec_file.name)
-                weights_found += 1
-
-    print(f"  Found {weights_found} weight files")
+    # Set up weights from persistent volume
+    weights_found = setup_weights_from_volume(workspace_path)
 
     # Run validation for this matchup only
     print(f"\n🧪 Running validation for {matchup}...")
@@ -598,8 +600,7 @@ def run_matchup_validation(
     # (exit code 1 just means "imbalanced", which is still valid data)
     success = has_valid_data
 
-    print("\n" + "=" * 70)
-    print(f"✅ {matchup.upper()} COMPLETE!")
+    print_banner(f"✅ {matchup.upper()} COMPLETE!")
     print(f"⏱️  Validation Time: {validation_time:.1f}s ({validation_time/60:.1f}m)")
     print("=" * 70 + "\n")
 
@@ -991,9 +992,7 @@ def main(
 
     parallel_mode = not sequential
 
-    print("\n" + "=" * 70)
-    print("🚀 ESSENCE WARS - MODAL CLOUD TRAINING")
-    print("=" * 70)
+    print_banner("🚀 ESSENCE WARS - MODAL CLOUD TRAINING")
     print(f"⏰ Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"🆔 Run ID: {run_id}")
     print(f"📋 Mode: {mode}")
@@ -1050,9 +1049,7 @@ def main(
         training_time = time.time() - training_start
 
         # Print training summary
-        print("\n" + "=" * 70)
-        print("📊 TRAINING SUMMARY")
-        print("=" * 70)
+        print_banner("📊 TRAINING SUMMARY")
 
         success_count = sum(1 for r in training_results if r['success'])
 
@@ -1070,7 +1067,8 @@ def main(
                 wr = result.get('best_wr') or 'N/A'
                 fit = result.get('best_fitness') or 'N/A'
                 time_m = result.get('training_time', 0) / 60
-                print(f"│ {result['mode']:20s} │ WR: {wr:>6s} │ Fit: {fit:>7s} │ {time_m:4.1f}m │")
+                display_name = result.get('display_name', result['mode'])
+                print(f"│ {display_name:20s} │ WR: {wr:>6s} │ Fit: {fit:>7s} │ {time_m:4.1f}m │")
 
         print("└─────────────────────────────────────────────────────────────────┘\n")
 
@@ -1161,9 +1159,7 @@ def main(
             # Print validation summary
             summary = results.get('summary', {})
 
-            print("\n" + "=" * 70)
-            print("📊 VALIDATION SUMMARY")
-            print("=" * 70)
+            print_banner("📊 VALIDATION SUMMARY")
 
             p1_wr = summary.get('p1_win_rate', 0) * 100
             status = summary.get('overall_status', 'unknown').upper()
@@ -1205,9 +1201,7 @@ def main(
     # ========================================================================
     total_time = time.time() - total_start_time
 
-    print("\n" + "=" * 70)
-    print("📊 FINAL SUMMARY")
-    print("=" * 70)
+    print_banner("📊 FINAL SUMMARY")
 
     print(f"\n⏱️  Total Wall Time: {total_time:.1f}s ({total_time/60:.1f}m)")
 

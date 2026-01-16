@@ -2,31 +2,31 @@
 
 **Mission**: Design and implement 300 Cards for the initial `New Horizons` Edition of Essence Wars.
 
-## Current State (v0.5.0 - Obsidion Expansion Complete)
+## Current State (v0.5.0 - Phase 4 Engine Enhancements Complete)
 
 ### Card Pool Summary
 | Category | Count | Target |
 |----------|-------|--------|
-| **Total Cards** | 105 | 300 |
-| Argentum Combine | 25 | ~75 |
-| Symbiote Circles | 35 | ~75 |
-| Obsidion Syndicate | 30 | ~75 |
-| Free-Walkers (Neutral) | 15 | ~75 |
-| **Support Cards** | 12 | ~30 |
-| **Legendary Cards** | 5 | ~12 |
+| **Total Cards** | 140 | 300 |
+| Argentum Combine | 35 | ~75 |
+| Symbiote Circles | 45 | ~75 |
+| Obsidion Syndicate | 40 | ~75 |
+| Free-Walkers (Neutral) | 20 | ~75 |
+| **Support Cards** | 15 | ~30 |
+| **Legendary Cards** | 6 | ~12 |
 
-### Balance Baseline (Round-Robin Validation, 2026-01-15)
+### Balance Baseline (Post-Tuning Validation, 2026-01-16)
 | Metric | Value | Status |
 |--------|-------|--------|
-| P1 Win Rate | 54.7% | BALANCED |
-| Argentum | 56.1% | Slightly High |
-| Symbiote | 49.7% | Balanced |
-| Obsidion | 45.1% | Slightly Low |
-| Max Delta | 11.0% | **NEEDS TUNING** |
+| P1 Win Rate | 54.3% | BALANCED |
+| Argentum | 48.8% | Balanced |
+| Symbiote | 49.2% | Balanced |
+| Obsidion | 51.8% | Balanced |
+| Max Delta | 3.0% | **EXCELLENT** |
 
-**Validation Method:** Round-robin across all 40 deck combinations (50 games/matchup/direction = 4,000 total games).
+**Validation Method:** Round-robin across all 40 deck combinations after Modal cloud tuning with retuned specialist weights.
 
-**Next Step:** Run comprehensive validation on Modal (1500 games/matchup = 120k total) for higher confidence metrics, then fine-tune.
+**Status:** Phase 5 ready. Weights have been tuned and deployed for all factions.
 
 ### Keyword Slots
 - **Used:** 14 of 16 (Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick, Ephemeral, Regenerate, Stealth, Charge, **Frenzy**, **Volatile**)
@@ -50,10 +50,10 @@
 ```
 data/
 ├── cards/core_set/
-│   ├── argentum.yaml   (IDs 1000-1024, 25 cards)
-│   ├── symbiote.yaml   (IDs 2000-2034, 35 cards)
-│   ├── obsidion.yaml   (IDs 3000-3029, 30 cards)
-│   └── neutral.yaml    (IDs 4000-4014, 15 cards)
+│   ├── argentum.yaml   (IDs 1000-1034, 35 cards)
+│   ├── symbiote.yaml   (IDs 2000-2044, 45 cards)
+│   ├── obsidion.yaml   (IDs 3000-3039, 40 cards)
+│   └── neutral.yaml    (IDs 4000-4019, 20 cards)
 ├── decks/
 │   ├── argentum/
 │   │   ├── control.toml
@@ -215,69 +215,142 @@ data/
 
 ---
 
-## Milestone 4: Engine Enhancements
+## Milestone 4: Engine Enhancements [COMPLETED]
 
 **Goal:** Expand card design space without using keyword slots.
 
-### Phase 4A: Creature Filters in YAML
+**Status:** Done (v0.5.0)
 
-**Current Limitation:** Effects can't target creatures by criteria.
+### Phase 4A: Creature Filters in YAML [DONE]
 
-**Proposed Feature:**
+**Implementation:**
+- Added `filter` field to `EffectDefinition` variants (Damage, Heal, BuffStats, Destroy, GrantKeyword, RemoveKeyword, Silence, Bounce)
+- Implemented `CreatureFilter::matches()` method for runtime filtering
+- Applied filters in effect resolution (`effect_queue.rs`) and legal action generation (`legal.rs`)
+
+**YAML Syntax:**
 ```yaml
-# Example: "Deal 2 damage to enemy creatures with 3 or less health"
+# Execute-style removal: Destroy creature with ≤3 health
+- type: destroy
+  filter:
+    max_health: 3
+
+# Keyword synergy: Buff all Rush creatures
+- type: buff_stats
+  attack: 2
+  health: 1
+  filter:
+    has_keyword: 8  # Rush keyword bit
+```
+
+**Filter Fields:**
+- `max_health`: Target must have health ≤ value
+- `min_health`: Target must have health ≥ value
+- `has_keyword`: Target must have keyword (uses keyword bit values)
+- `lacks_keyword`: Target must NOT have keyword
+
+### Phase 4B: Conditional Triggers [DONE]
+
+**Implementation:**
+- Added `Condition` enum with `TargetDied` variant
+- Added `EffectResult` struct to track effect outcomes
+- Added `conditional_effects` field to `AbilityDefinition` and `CardType::Spell`
+- Modified effect resolution to track results and check conditions
+
+**YAML Syntax:**
+```yaml
+# Kill reward: Deal 3 damage, if target dies draw a card
 effects:
   - type: damage
-    amount: 2
-    target: enemy_creatures
+    amount: 3
+conditional_effects:
+  - condition: target_died
+    effects:
+      - type: draw
+        count: 1
+```
+
+### Phase 4C: Bounce Effect [DONE]
+
+**Implementation:**
+- Added `Effect::Bounce` variant with optional filter
+- Implemented `apply_bounce` handler in effect queue
+- Creature returns to owner's hand (removed from board, card added to hand)
+
+**YAML Syntax:**
+```yaml
+# Return target enemy creature to hand
+effects:
+  - type: bounce
+
+# Mass bounce: Return all creatures with ≤3 health to hand
+effects:
+  - type: bounce
     filter:
       max_health: 3
 ```
 
-**Implementation:**
-1. Expose existing `CreatureFilter` struct to YAML parser
-2. Add filter field to effect definitions
-3. Update effect resolution to apply filters
+### Phase 4D: New Cards Using Phase 4 Features (+35 cards) [DONE]
 
-**Unlocks:**
-- Conditional removal ("Destroy creature with 2 or less attack")
-- Targeted buffs ("Give +2/+2 to creatures with Rush")
-- Board-aware effects
+**Argentum (IDs 1025-1034, 10 cards):**
+| Card | Cost | Type | Effect |
+|------|------|------|--------|
+| Execute | 2 | Spell | Destroy creature with ≤3 health |
+| Purge the Weak | 4 | Spell | 2 damage to creatures with ≤3 health |
+| Shield Wall Captain | 3 | 1/5 Guard | OnPlay: Grant Shield to Guard creatures |
+| Rally the Guards | 3 | Spell | +1/+1 to all Guard creatures |
+| Temporal Displacement | 3 | Spell | Bounce enemy creature |
+| Mass Recall | 5 | Spell | Bounce all creatures with ≤3 health |
+| Stalwart Defender | 4 | 2/7 Guard | - |
+| Siege Breaker | 5 | 4/4 Piercing | OnPlay: 2 damage to creature with ≤4 health |
+| Judgment Strike | 3 | Spell | 3 damage, if dies heal 3 |
+| Culling Blade | 4 | Spell | Destroy creature ≤4 health, if dies draw 1 |
 
-### Phase 4B: Conditional Triggers
+**Symbiote (IDs 2035-2044, 10 cards):**
+| Card | Cost | Type | Effect |
+|------|------|------|--------|
+| Soul Reaper | 3 | Spell | 3 damage, if dies draw 1 |
+| Feast | 2 | Spell | 2 damage, if dies +2/+2 to ally |
+| Predatory Strike | 4 | Spell | 4 damage, if dies heal 4 |
+| Pounce Hunter | 3 | 3/2 Rush | OnKill: Draw 1 |
+| Evolution Burst | 3 | Spell | +2/+1 to all Rush creatures |
+| Pack Recall | 2 | Spell | Bounce ally creature, draw 1 |
+| Spawn Caller | 4 | 2/4 | OnPlay: 2 damage to creature with ≤2 health |
+| Feral Striker | 2 | 3/2 Rush | - |
+| Swarm Ambusher | 4 | 4/3 Rush Lethal | - |
+| Consume the Fallen | 3 | Spell | Destroy creature ≤3 health, if dies +1/+1 |
 
-**Current Limitation:** No if/then logic in ability chains.
+**Obsidion (IDs 3030-3039, 10 cards):**
+| Card | Cost | Type | Effect |
+|------|------|------|--------|
+| Soul Harvest | 3 | Spell | 3 damage, if dies heal 3 |
+| Consume Essence | 4 | Spell | Destroy creature ≤4 health, if dies draw 2 |
+| Vampiric Execution | 5 | Spell | 5 damage, if dies heal 5 + draw 1 |
+| Shadow Return | 2 | Spell | Bounce + 1 damage |
+| Mass Dispersion | 5 | Spell | Bounce all creatures with ≤3 health |
+| Vampiric Surge | 3 | Spell | +2/+0 to all Lifesteal creatures |
+| Blood Pact | 2 | Spell | +1/+2, grant Lifesteal |
+| Reaper's Due | 4 | 4/3 Lifesteal Quick | OnKill: Heal 4 |
+| Soul Collector | 3 | 3/3 Lifesteal | OnKill: Draw 1 |
+| Void Executioner | 5 | 4/4 Quick | OnPlay: Destroy creature ≤3 health |
 
-**Proposed Feature:**
-```yaml
-# Example: "Deal 2 damage. If target dies, draw a card"
-effects:
-  - type: damage
-    amount: 2
-  - type: draw
-    count: 1
-    condition:
-      target_died: true
-```
+**Neutral (IDs 4015-4019, 5 cards):**
+| Card | Cost | Type | Effect |
+|------|------|------|--------|
+| Temporal Shift | 3 | Spell | Bounce enemy creature |
+| Triage | 2 | Spell | Heal 4 to creature with ≤3 health |
+| Opportunist | 3 | 3/3 | OnPlay: 2 damage to creature with ≤3 health |
+| Silencing Shot | 2 | Spell | Silence creature with ≤4 health |
+| Scavenger | 2 | 2/2 | OnAllyDeath: Draw 1 |
 
-**Implementation:**
-1. Add `Condition` enum to effect system
-2. Track effect results for condition checking
-3. Chain effects with conditional gates
-
-**Unlocks:**
-- Execute effects ("If this kills, gain +1/+1")
-- Threshold effects ("If you have 5+ creatures, draw 2")
-- Combo enablers
-
-### Phase 4C: Additional Effect Types
+### Phase 4E: Future Effect Types (Deferred)
 
 | Effect | Description | Use Case |
 |--------|-------------|----------|
-| `bounce` | Return creature to owner's hand | Tempo/control |
 | `copy` | Create copy of creature | Value generation |
 | `transform` | Change creature into another | Removal variant |
 | `cost_modify` | Change card costs | Ramp/disruption |
+| `summon` | Create token creature | Board presence |
 
 ---
 
@@ -377,10 +450,10 @@ cargo run --release --bin validate -- --games 1500 --output validation.json  # 1
 |-----------|-------------|---------------|--------|
 | M1: Foundation Refactor | 0 | 60 | ✅ Done |
 | M2: Symbiote Rising | +20 | 80 | ✅ Done |
-| M3: Argentum Recovery + Obsidion Parity | +25 | **105** | ✅ Done |
-| M4: Engine Enhancements | 0 | 105 | Planned |
-| M5: Tactical Evolution | +45 | 150 | Planned |
-| M6: Legends of Omyra | +150 | **300** | Planned |
+| M3: Argentum Recovery + Obsidion Parity | +25 | 105 | ✅ Done |
+| M4: Engine Enhancements | +35 | **140** | ✅ Done |
+| M5: Tactical Evolution | +45 | 185 | Planned |
+| M6: Legends of Omyra | +115 | **300** | Planned |
 
 ---
 
@@ -403,15 +476,16 @@ cargo run --release --bin validate -- --games 1500 --output validation.json  # 1
 3. Higher confidence balance metrics
 4. Fine-tune any outlier cards based on results
 
-**Option B: Engine Work (Milestone 4)**
-1. Implement creature filters in YAML
-2. Add conditional triggers
-3. New effect types (bounce, copy, transform)
-4. Enables more interesting card designs
+**Option B: Tactical Expansion (Milestone 5)**
+1. Add tech cards for situational answers
+2. Expand neutral utility pool
+3. Fill cost curve gaps
+4. Add more supports and legendaries
 
-**Option C: Neutral Expansion**
-1. Add 10-15 Neutral cards to reach parity
-2. More utility options for all factions
-3. Better deck variety
+**Option C: New Deck Archetypes**
+1. Create new deck strategies using Phase 4 cards
+2. Bounce-tempo decks
+3. Kill-reward aggro
+4. Conditional combo strategies
 
-**Current Focus:** Run 20k Modal validation to get high-confidence balance metrics before more card additions.
+**Current Focus:** Run comprehensive validation to ensure Phase 4 cards are balanced, then proceed with Milestone 5.

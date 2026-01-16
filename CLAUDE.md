@@ -15,7 +15,7 @@
 cargo build --release
 
 # Run all tests
-cargo nextest run --status-level=fail  # ~556 tests (only shows failures)
+cargo nextest run --status-level=fail  # ~576 tests (only shows failures)
 cargo test                              # Alternative: use standard cargo test
 
 # Run Linter (production code only, excludes tests)
@@ -77,7 +77,7 @@ ai-cardgame/
 │   ├── core/               # Core game engine
 │   │   ├── mod.rs
 │   │   ├── types.rs        # CardId, PlayerId, Slot, Rarity, Tag
-│   │   ├── keywords.rs     # 12 keywords as u8 bitfield
+│   │   ├── keywords.rs     # 14 keywords as u16 bitfield
 │   │   ├── config.rs       # GameConfig with all parameters
 │   │   ├── effects.rs      # Trigger, Effect, EffectTarget, TargetingRule
 │   │   ├── state.rs        # GameState, PlayerState, Creature, Support
@@ -129,11 +129,11 @@ ai-cardgame/
 │       ├── diagnose.rs     # CLI for P1/P2 asymmetry analysis
 │       └── profile_mcts.rs # MCTS performance profiling
 ├── data/
-│   ├── cards/core_set/         # 60 cards (4 faction files)
-│   │   ├── argentum.yaml       # IDs 1000-1014 (15 cards)
-│   │   ├── symbiote.yaml       # IDs 2000-2014 (15 cards)
-│   │   ├── obsidion.yaml       # IDs 3000-3014 (15 cards)
-│   │   └── neutral.yaml        # IDs 4000-4014 (15 cards)
+│   ├── cards/core_set/         # 140 cards (4 faction files)
+│   │   ├── argentum.yaml       # IDs 1000-1034 (35 cards)
+│   │   ├── symbiote.yaml       # IDs 2000-2044 (45 cards)
+│   │   ├── obsidion.yaml       # IDs 3000-3039 (40 cards)
+│   │   └── neutral.yaml        # IDs 4000-4019 (20 cards)
 │   ├── decks/                  # 6 predefined decks (organized by faction)
 │   │   ├── argentum/
 │   │   │   ├── control.toml    # Argentum Control
@@ -551,7 +551,7 @@ cargo bench                    # Criterion benchmarks
 - 5 creature slots, 2 support slots per player
 - 3 Action Points per turn
 - 30 turn limit with life-based tiebreaker
-- 12 keywords: Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick, Ephemeral, Regenerate, Stealth, Charge
+- 14 keywords: Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick, Ephemeral, Regenerate, Stealth, Charge, Frenzy, Volatile
 
 ### AI Interface (GameEnvironment trait)
 - `get_state_tensor()` - 326 floats representing full game state
@@ -563,20 +563,20 @@ cargo bench                    # Criterion benchmarks
 ## Card System
 
 ### Card Counts
-- **Total**: 60 cards (Core Set)
-- **Argentum Combine**: 15 cards (IDs 1000-1014)
-- **Symbiote Circles**: 15 cards (IDs 2000-2014)
-- **Obsidion Syndicate**: 15 cards (IDs 3000-3014)
-- **Free-Walkers (Neutral)**: 15 cards (IDs 4000-4014)
+- **Total**: 140 cards (Core Set)
+- **Argentum Combine**: 35 cards (IDs 1000-1034)
+- **Symbiote Circles**: 45 cards (IDs 2000-2044)
+- **Obsidion Syndicate**: 40 cards (IDs 3000-3039)
+- **Free-Walkers (Neutral)**: 20 cards (IDs 4000-4019)
 
 ### Card ID Ranges
 
-| Faction | ID Range | Reserved For |
-|---------|----------|--------------|
-| Argentum | 1000-1999 | Future expansion |
-| Symbiote | 2000-2999 | Future expansion |
-| Obsidion | 3000-3999 | Future expansion |
-| Neutral | 4000-4999 | Future expansion |
+| Faction | ID Range | Current | Reserved For |
+|---------|----------|---------|--------------|
+| Argentum | 1000-1999 | 1000-1034 | Future expansion |
+| Symbiote | 2000-2999 | 2000-2044 | Future expansion |
+| Obsidion | 3000-3999 | 3000-3039 | Future expansion |
+| Neutral | 4000-4999 | 4000-4019 | Future expansion |
 
 ### YAML Schema
 
@@ -623,7 +623,76 @@ cargo bench                    # Criterion benchmarks
   passive_effects:
     - modifier:
         attack_bonus: 1
+
+# Phase 4 Features: Filters, Conditionals, Bounce
+
+# Filtered Effect (destroy creature with ≤3 health)
+- id: 1025
+  name: "Execute"
+  cost: 2
+  card_type: spell
+  targeting: TargetEnemyCreature
+  effects:
+    - type: destroy
+      filter:
+        max_health: 3
+
+# Conditional Effect (if target dies, draw a card)
+- id: 2035
+  name: "Soul Reaper"
+  cost: 3
+  card_type: spell
+  targeting: TargetEnemyCreature
+  effects:
+    - type: damage
+      amount: 3
+  conditional_effects:
+    - condition: target_died
+      effects:
+        - type: draw
+          count: 1
+
+# Bounce Effect (return creature to hand)
+- id: 1029
+  name: "Temporal Displacement"
+  cost: 3
+  card_type: spell
+  targeting: TargetEnemyCreature
+  effects:
+    - type: bounce
+
+# Keyword Filter (buff all Rush creatures)
+- id: 2039
+  name: "Evolution Burst"
+  cost: 3
+  card_type: spell
+  targeting: NoTarget
+  effects:
+    - type: buff_stats
+      attack: 2
+      health: 1
+      filter:
+        has_keyword: 8  # Rush keyword bit
 ```
+
+### Filter Fields
+| Field | Type | Description |
+|-------|------|-------------|
+| `max_health` | u8 | Target must have health ≤ value |
+| `min_health` | u8 | Target must have health ≥ value |
+| `has_keyword` | u16 | Target must have keyword (bit value) |
+| `lacks_keyword` | u16 | Target must NOT have keyword |
+
+### Keyword Bit Values
+| Keyword | Bit | Keyword | Bit |
+|---------|-----|---------|-----|
+| Guard | 1 | Quick | 128 |
+| Lethal | 2 | Ephemeral | 256 |
+| Lifesteal | 4 | Regenerate | 512 |
+| Rush | 8 | Stealth | 1024 |
+| Ranged | 16 | Charge | 2048 |
+| Piercing | 32 | Frenzy | 4096 |
+| Shield | 64 | Volatile | 8192 |
 
 ## State Tensor Layout (326 floats)
 
@@ -651,25 +720,26 @@ cargo bench                    # Criterion benchmarks
 ## Implementation Status
 
 **Complete:**
-- Core game engine with 12 keywords
+- Core game engine with 14 keywords
 - Essence/mana system (grows +1/turn, caps at 10)
 - AI interface (tensor, action mask, rewards)
-- 60-card Core Set (4 factions × 15 cards each)
+- 140-card Core Set (Phase 4 complete)
 - Faction system (3 factions + neutrals)
 - Bot system (RandomBot, GreedyBot, MctsBot)
 - Arena CLI with parallel execution and progress indicator
-- Deck system with 6 TOML definitions (organized by faction)
+- Deck system with 6+ TOML definitions (organized by faction)
 - Weight tuning pipeline with CMA-ES optimizer
 - Analysis pipeline with visualizations
 - P1/P2 asymmetry diagnostics with statistical analysis
 - CSV/JSON export for external analysis tools
 - Version tracking for ML reproducibility
+- Phase 4 engine: Creature filters, conditional triggers, bounce effect
 - Criterion benchmarks
 - CI/CD with GitHub Actions (nightly + weekly)
-- ~556 tests passing
+- ~576 tests passing
 
 **Current Focus (see PROJECT-300.md):**
-- Card expansion to 300 cards (Project 300)
+- Card expansion to 300 cards (Project 300 - Phase 5 next)
 - Modal cloud training pipeline
 - Documentation updates
 
