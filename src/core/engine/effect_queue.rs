@@ -738,6 +738,15 @@ impl EffectQueue {
 
         state.players[owner.index()].creatures.push(creature);
 
+        // Check if the summoned creature has <= 0 health (can happen with auras/debuffs)
+        if let Some(creature) = state.players[owner.index()].get_creature(target_slot) {
+            if creature.current_health <= 0
+                && !self.pending_deaths.contains(&(owner, target_slot)) {
+                self.pending_deaths.push((owner, target_slot));
+                self.accumulated_result.target_died = true;
+            }
+        }
+
         // Queue OnPlay triggers
         self.check_creature_triggers(Trigger::OnPlay, owner, target_slot, state, card_db);
     }
@@ -785,6 +794,16 @@ impl EffectQueue {
         };
 
         state.players[owner.index()].creatures.push(creature);
+        
+        // Check if the summoned token has <= 0 health (edge case for 0-health tokens)
+        if let Some(creature) = state.players[owner.index()].get_creature(target_slot) {
+            if creature.current_health <= 0
+                && !self.pending_deaths.contains(&(owner, target_slot)) {
+                self.pending_deaths.push((owner, target_slot));
+                self.accumulated_result.target_died = true;
+            }
+        }
+        
         // Note: Tokens don't trigger OnPlay since they're not "played from hand"
     }
 
@@ -826,7 +845,16 @@ impl EffectQueue {
             frenzy_stacks: 0,
         };
 
+        // Check if the transformed creature has <= 0 health before adding (edge case)
+        let is_dead = creature.current_health <= 0;
+        
         state.players[owner.index()].creatures.push(creature);
+        
+        if is_dead && !self.pending_deaths.contains(&(owner, slot)) {
+            self.pending_deaths.push((owner, slot));
+            self.accumulated_result.target_died = true;
+        }
+        
         // Note: Transform doesn't trigger OnDeath or OnPlay
     }
 
@@ -879,6 +907,16 @@ impl EffectQueue {
         };
 
         state.players[copy_owner.index()].creatures.push(creature);
+        
+        // Check if the copied creature has <= 0 health (can happen if copying damaged creature)
+        if let Some(creature) = state.players[copy_owner.index()].get_creature(target_slot) {
+            if creature.current_health <= 0
+                && !self.pending_deaths.contains(&(copy_owner, target_slot)) {
+                self.pending_deaths.push((copy_owner, target_slot));
+                self.accumulated_result.target_died = true;
+            }
+        }
+        
         // Note: Copy doesn't trigger OnPlay since it's not played from hand
     }
 

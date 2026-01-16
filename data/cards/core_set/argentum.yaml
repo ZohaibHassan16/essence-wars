@@ -13,7 +13,7 @@ cards:
     cost: 2
     card_type: creature
     attack: 2
-    health: 4
+    health: 5
     keywords: [Guard]
     rarity: Common
     tags: [Construct]
@@ -32,7 +32,7 @@ cards:
     name: "Cogwork Defender"
     cost: 3
     card_type: creature
-    attack: 2
+    attack: 3
     health: 5
     keywords: [Guard]
     rarity: Common
@@ -352,7 +352,7 @@ cards:
     name: "Shield Wall Captain"
     cost: 3
     card_type: creature
-    attack: 1
+    attack: 2
     health: 5
     keywords: [Guard]
     rarity: Uncommon
@@ -405,7 +405,7 @@ cards:
     name: "Stalwart Defender"
     cost: 4
     card_type: creature
-    attack: 2
+    attack: 3
     health: 7
     keywords: [Guard]
     rarity: Uncommon
@@ -610,7 +610,7 @@ cards:
     cost: 4
     card_type: creature
     attack: 2
-    health: 4
+    health: 5
     keywords: []
     rarity: Uncommon
     tags: [Engineer]

@@ -21,7 +21,7 @@ use common::arena_test_deck;
 
 /// Helper to create an MCTS config matching arena defaults.
 ///
-/// Note: MCTS needs at least 100 simulations to be effective.
+/// Note: MCTS needs at least 200 simulations to be effective with 300-card set.
 /// With fewer simulations, it may play worse than random.
 fn mcts_config(simulations: u32) -> MctsConfig {
     MctsConfig {
@@ -33,8 +33,8 @@ fn mcts_config(simulations: u32) -> MctsConfig {
     }
 }
 
-/// Minimum simulations for MCTS to be effective
-const MIN_EFFECTIVE_SIMS: u32 = 100;
+/// Minimum simulations for MCTS to be effective (increased for 300-card complexity)
+const MIN_EFFECTIVE_SIMS: u32 = 200;
 
 /// Comprehensive state invariant checker (copied from simulation_tests for independence)
 fn verify_invariants(engine: &GameEngine, context: &str) {
@@ -347,9 +347,14 @@ fn stress_test_all_bot_combinations() {
         }
 
         eprintln!("  Random: {}, MCTS: {}, Draws: {}", random_wins, mcts_wins, draws);
+        // With 300-card set's defensive options, draws are common (~20%)
+        // MCTS should still beat Random more often, but not as dramatically
+        let total_decisive = random_wins + mcts_wins;
+        let mcts_win_rate = if total_decisive > 0 { mcts_wins as f64 / total_decisive as f64 } else { 0.0 };
         assert!(
-            mcts_wins > random_wins,
-            "MCTS should beat Random most of the time"
+            mcts_win_rate >= 0.55,
+            "MCTS should beat Random at least 55% of decisive games (got {:.1}% - {}/{} wins)",
+            mcts_win_rate * 100.0, mcts_wins, total_decisive
         );
     }
 

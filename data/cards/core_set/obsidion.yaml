@@ -52,7 +52,7 @@ cards:
     name: "Hemomancer"
     cost: 4
     card_type: creature
-    attack: 5
+    attack: 4
     health: 4
     keywords: [Lifesteal]
     rarity: Uncommon
@@ -62,7 +62,7 @@ cards:
     name: "Silent Assassin"
     cost: 4
     card_type: creature
-    attack: 5
+    attack: 4
     health: 3
     keywords: [Stealth, Quick]
     rarity: Rare
@@ -200,7 +200,7 @@ cards:
     name: "Blood Seeker"
     cost: 3
     card_type: creature
-    attack: 4
+    attack: 3
     health: 3
     keywords: [Lifesteal]
     rarity: Common
@@ -210,7 +210,7 @@ cards:
     name: "Spectral Assassin"
     cost: 3
     card_type: creature
-    attack: 4
+    attack: 3
     health: 3
     keywords: [Ephemeral, Quick]
     rarity: Uncommon
@@ -230,7 +230,7 @@ cards:
     name: "Soul Reaver"
     cost: 5
     card_type: creature
-    attack: 5
+    attack: 4
     health: 4
     keywords: [Quick, Lifesteal, Regenerate]
     rarity: Rare
@@ -454,7 +454,7 @@ cards:
     name: "Reaper's Due"
     cost: 4
     card_type: creature
-    attack: 4
+    attack: 3
     health: 3
     keywords: [Lifesteal, Quick]
     rarity: Rare

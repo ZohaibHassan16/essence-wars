@@ -34,6 +34,10 @@
 - [ ] Analzye, Discuss the Data Pipeline, Clean up and document tuning/validation scripts
 - [ ] Fix, rework or refactor `scripts/analyze-mcts.sh` and the Analysis Pipeline
 - [x] Remove TUI code (deferred indefinitely)
+- [ ] Discuss if a Match Mode should be added for the additional Win Codnition (Victory Points), or if this would seriously disturb overall balance and hurt our mission, or be a good addition
+  - 1. **Enemy life ≤ 0** → You win (Already implemented)
+  - 2. **50 Victory Points** → You win (Basic Infrastructure implemented, not enabled nor integrated yet)
+  - 3. **Turn 30** → Higher life wins (draw if tied) (should be implemented, check)
 - [ ] Version Bump of the Engine after everything is done for Phase 2
 
 ---

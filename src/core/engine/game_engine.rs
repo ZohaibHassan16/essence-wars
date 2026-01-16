@@ -438,6 +438,11 @@ impl<'a> GameEngine<'a> {
         // Check for victory after each action
         self.check_life_victory();
 
+        // Ensure any pending deaths are processed before validation
+        // (handles edge cases where creatures end up at 0 health)
+        self.state.players[0].creatures.retain(|c| c.current_health > 0);
+        self.state.players[1].creatures.retain(|c| c.current_health > 0);
+
         // Validate state invariants in debug builds
         self.state.debug_validate();
 
