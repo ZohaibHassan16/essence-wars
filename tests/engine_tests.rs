@@ -525,6 +525,7 @@ fn ability_test_db() -> cardgame::cards::CardDatabase {
                     trigger: Trigger::OnPlay, // Using OnPlay as trigger for manual activation
                     targeting: TargetingRule::TargetEnemyCreature,
                     effects: vec![EffectDefinition::Damage { amount: 2, filter: None }],
+                    conditional_effects: vec![],
                 }],
             },
             rarity: Rarity::Uncommon,
@@ -543,6 +544,7 @@ fn ability_test_db() -> cardgame::cards::CardDatabase {
                     trigger: Trigger::OnPlay,
                     targeting: TargetingRule::NoTarget,
                     effects: vec![EffectDefinition::BuffStats { attack: 1, health: 1, filter: None }],
+                    conditional_effects: vec![],
                 }],
             },
             rarity: Rarity::Uncommon,
@@ -776,4 +778,219 @@ fn test_use_ability_self_target() {
     let creature = creature.unwrap();
     assert_eq!(creature.attack, 2, "Attack should be buffed to 2");
     assert_eq!(creature.current_health, 4, "Health should be buffed to 4");
+}
+
+// ============================================================================
+// Conditional Spell Effect Tests (Phase 4B.1)
+// ============================================================================
+
+use cardgame::cards::ConditionalEffectGroup;
+use cardgame::effects::Condition;
+use cardgame::types::CreatureInstanceId;
+
+/// Create a card database for conditional spell tests
+fn conditional_card_db() -> cardgame::cards::CardDatabase {
+    use cardgame::cards::{CardDefinition, CardType, EffectDefinition};
+    use cardgame::effects::TargetingRule;
+    use cardgame::types::Rarity;
+
+    let cards = vec![
+        // Basic creature to target
+        CardDefinition {
+            id: 1,
+            name: "Target Dummy".to_string(),
+            cost: 1,
+            card_type: CardType::Creature {
+                attack: 1,
+                health: 2,
+                keywords: vec![],
+                abilities: vec![],
+            },
+            rarity: Rarity::Common,
+            tags: vec![],
+        },
+        // Spell that deals 3 damage, if target dies, draw a card
+        CardDefinition {
+            id: 2,
+            name: "Soul Harvest".to_string(),
+            cost: 2,
+            card_type: CardType::Spell {
+                targeting: TargetingRule::TargetEnemyCreature,
+                effects: vec![EffectDefinition::Damage { amount: 3, filter: None }],
+                conditional_effects: vec![ConditionalEffectGroup {
+                    condition: Condition::TargetDied,
+                    effects: vec![EffectDefinition::Draw { count: 1 }],
+                }],
+            },
+            rarity: Rarity::Uncommon,
+            tags: vec![],
+        },
+        // Spell that deals 1 damage, if target dies, draw a card (for non-kill scenario)
+        CardDefinition {
+            id: 3,
+            name: "Weak Soul Harvest".to_string(),
+            cost: 1,
+            card_type: CardType::Spell {
+                targeting: TargetingRule::TargetEnemyCreature,
+                effects: vec![EffectDefinition::Damage { amount: 1, filter: None }],
+                conditional_effects: vec![ConditionalEffectGroup {
+                    condition: Condition::TargetDied,
+                    effects: vec![EffectDefinition::Draw { count: 1 }],
+                }],
+            },
+            rarity: Rarity::Uncommon,
+            tags: vec![],
+        },
+        // Tanky creature to survive weak spell
+        CardDefinition {
+            id: 4,
+            name: "Tough Dummy".to_string(),
+            cost: 1,
+            card_type: CardType::Creature {
+                attack: 1,
+                health: 5,
+                keywords: vec![],
+                abilities: vec![],
+            },
+            rarity: Rarity::Common,
+            tags: vec![],
+        },
+    ];
+    cardgame::cards::CardDatabase::new(cards)
+}
+
+/// Create a deck for conditional spell tests
+fn conditional_deck() -> Vec<CardId> {
+    vec![
+        CardId(1), CardId(1), CardId(1), CardId(1), CardId(1),
+        CardId(2), CardId(2), CardId(3), CardId(3), CardId(4),
+        CardId(1), CardId(1), CardId(1), CardId(1), CardId(1),
+        CardId(2), CardId(2), CardId(3), CardId(3), CardId(4),
+    ]
+}
+
+#[test]
+fn test_conditional_spell_triggers_on_kill() {
+    use cardgame::state::CardInstance;
+
+    let card_db = conditional_card_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    engine.start_game(conditional_deck(), conditional_deck(), 42);
+
+    // Directly set up the game state to avoid relying on random draws
+    // Place a Target Dummy (id=1, 1/2) on P2's board
+    let creature = Creature {
+        instance_id: CreatureInstanceId(100),
+        card_id: CardId(1),
+        owner: PlayerId::PLAYER_TWO,
+        slot: Slot(0),
+        attack: 1,
+        current_health: 2,
+        max_health: 2,
+        base_attack: 1,
+        base_health: 2,
+        keywords: Keywords::none(),
+        status: CreatureStatus::default(),
+        turn_played: 1,
+        frenzy_stacks: 0,
+    };
+    engine.state.players[1].creatures.push(creature);
+
+    // Give P1 a Soul Harvest spell (id=2) in hand
+    engine.state.players[0].hand.clear();
+    engine.state.players[0].hand.push(CardInstance::new(CardId(2)));
+
+    // Make sure P1 is active with resources
+    engine.state.active_player = PlayerId::PLAYER_ONE;
+    engine.state.players[0].current_essence = 10;
+    engine.state.players[0].action_points = 3;
+
+    // Add cards to P1's deck so draw effect can work
+    engine.state.players[0].deck.push(CardInstance::new(CardId(1)));
+    engine.state.players[0].deck.push(CardInstance::new(CardId(1)));
+
+    let p1_hand_before_spell = engine.state.players[0].hand.len(); // Should be 1
+
+    // Play Soul Harvest targeting enemy creature in slot 0
+    engine.apply_action(Action::PlayCard {
+        hand_index: 0,
+        slot: Slot(0), // Target enemy creature in slot 0
+    }).expect("P1 should be able to play Soul Harvest");
+
+    // Target Dummy should be dead (had 2 health, took 3 damage)
+    assert!(engine.state.players[1].get_creature(Slot(0)).is_none(), "Target Dummy should be dead");
+
+    // P1 should have drawn a card from conditional effect
+    // Hand was: 1 card, -1 for playing spell, +1 for conditional draw = 1 card
+    let expected_hand = p1_hand_before_spell - 1 + 1; // -1 for spell, +1 for draw
+    assert_eq!(
+        engine.state.players[0].hand.len(),
+        expected_hand,
+        "P1 should have drawn a card from conditional effect"
+    );
+}
+
+#[test]
+fn test_conditional_spell_does_not_trigger_when_target_survives() {
+    use cardgame::state::CardInstance;
+
+    let card_db = conditional_card_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    engine.start_game(conditional_deck(), conditional_deck(), 42);
+
+    // Directly set up the game state
+    // Place a Tough Dummy (id=4, 1/5) on P2's board
+    let creature = Creature {
+        instance_id: CreatureInstanceId(100),
+        card_id: CardId(4),
+        owner: PlayerId::PLAYER_TWO,
+        slot: Slot(0),
+        attack: 1,
+        current_health: 5,
+        max_health: 5,
+        base_attack: 1,
+        base_health: 5,
+        keywords: Keywords::none(),
+        status: CreatureStatus::default(),
+        turn_played: 1,
+        frenzy_stacks: 0,
+    };
+    engine.state.players[1].creatures.push(creature);
+
+    // Give P1 a Weak Soul Harvest spell (id=3) in hand
+    engine.state.players[0].hand.clear();
+    engine.state.players[0].hand.push(CardInstance::new(CardId(3)));
+
+    // Make sure P1 is active with resources
+    engine.state.active_player = PlayerId::PLAYER_ONE;
+    engine.state.players[0].current_essence = 10;
+    engine.state.players[0].action_points = 3;
+
+    // Add cards to P1's deck (in case draw effect triggers, but it shouldn't)
+    engine.state.players[0].deck.push(CardInstance::new(CardId(1)));
+    engine.state.players[0].deck.push(CardInstance::new(CardId(1)));
+
+    let p1_hand_before_spell = engine.state.players[0].hand.len(); // Should be 1
+
+    // Play Weak Soul Harvest targeting enemy creature in slot 0
+    engine.apply_action(Action::PlayCard {
+        hand_index: 0,
+        slot: Slot(0), // Target enemy creature in slot 0
+    }).expect("P1 should be able to play Weak Soul Harvest");
+
+    // Tough Dummy should still be alive (had 5 health, took 1 damage)
+    let creature = engine.state.players[1].get_creature(Slot(0));
+    assert!(creature.is_some(), "Tough Dummy should still be alive");
+    assert_eq!(creature.unwrap().current_health, 4, "Tough Dummy should have 4 health");
+
+    // P1 should NOT have drawn a card (conditional effect didn't trigger)
+    // Hand was: 1 card, -1 for playing spell = 0 cards
+    let expected_hand = p1_hand_before_spell - 1; // -1 for spell, no draw
+    assert_eq!(
+        engine.state.players[0].hand.len(),
+        expected_hand,
+        "P1 should NOT have drawn a card (target survived)"
+    );
 }

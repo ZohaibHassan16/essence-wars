@@ -5,9 +5,9 @@
 
 use std::collections::VecDeque;
 use crate::core::cards::{CardDatabase, CardType, EffectDefinition};
-use crate::core::effects::{CreatureFilter, Effect, EffectSource, EffectTarget, PendingEffect, Trigger};
+use crate::core::effects::{CreatureFilter, Effect, EffectResult, EffectSource, EffectTarget, PendingEffect, Trigger};
 use crate::core::keywords::Keywords;
-use crate::core::state::{Creature, GameResult, GameState, WinReason};
+use crate::core::state::{CardInstance, Creature, GameResult, GameState, WinReason};
 use crate::core::tracing::EffectTracer;
 use crate::core::types::{CardId, PlayerId, Slot};
 
@@ -20,6 +20,8 @@ pub struct EffectQueue {
     queue: VecDeque<PendingEffect>,
     /// Creatures marked for death (processed after each effect)
     pending_deaths: Vec<(PlayerId, Slot)>,
+    /// Accumulated result from effect resolution (for conditional triggers)
+    accumulated_result: EffectResult,
 }
 
 impl EffectQueue {
@@ -28,7 +30,18 @@ impl EffectQueue {
         Self {
             queue: VecDeque::new(),
             pending_deaths: Vec::new(),
+            accumulated_result: EffectResult::none(),
         }
+    }
+
+    /// Reset the accumulated result (call before processing a new spell/ability)
+    pub fn reset_accumulated_result(&mut self) {
+        self.accumulated_result = EffectResult::none();
+    }
+
+    /// Get the accumulated result from effect resolution
+    pub fn accumulated_result(&self) -> &EffectResult {
+        &self.accumulated_result
     }
 
     /// Add an effect to the back of the queue
@@ -286,6 +299,8 @@ impl EffectQueue {
             // Mark for death processing
             if !self.pending_deaths.contains(&(owner, slot)) {
                 self.pending_deaths.push((owner, slot));
+                // Track that a target died for conditional triggers
+                self.accumulated_result.target_died = true;
             }
         }
     }
@@ -480,6 +495,8 @@ impl EffectQueue {
             if creature.current_health <= 0
                 && !self.pending_deaths.contains(&(owner, slot)) {
                 self.pending_deaths.push((owner, slot));
+                // Track that a target died for conditional triggers
+                self.accumulated_result.target_died = true;
             }
         }
     }
@@ -502,6 +519,8 @@ impl EffectQueue {
                 if creature.current_health <= 0
                     && !self.pending_deaths.contains(&(owner, slot)) {
                     self.pending_deaths.push((owner, slot));
+                    // Track that a target died for conditional triggers
+                    self.accumulated_result.target_died = true;
                 }
             }
         }
@@ -519,6 +538,8 @@ impl EffectQueue {
                 if state.players[owner.index()].get_creature(slot).is_some()
                     && !self.pending_deaths.contains(&(owner, slot)) {
                     self.pending_deaths.push((owner, slot));
+                    // Track that a target died for conditional triggers
+                    self.accumulated_result.target_died = true;
                 }
             }
             EffectTarget::AllCreatures => {
@@ -535,6 +556,8 @@ impl EffectQueue {
                 for (owner, slot) in creatures {
                     if !self.pending_deaths.contains(&(owner, slot)) {
                         self.pending_deaths.push((owner, slot));
+                        // Track that a target died for conditional triggers
+                        self.accumulated_result.target_died = true;
                     }
                 }
             }
@@ -548,6 +571,8 @@ impl EffectQueue {
                 for slot in creatures {
                     if !self.pending_deaths.contains(&(player, slot)) {
                         self.pending_deaths.push((player, slot));
+                        // Track that a target died for conditional triggers
+                        self.accumulated_result.target_died = true;
                     }
                 }
             }
@@ -562,6 +587,8 @@ impl EffectQueue {
                 for slot in creatures {
                     if !self.pending_deaths.contains(&(enemy, slot)) {
                         self.pending_deaths.push((enemy, slot));
+                        // Track that a target died for conditional triggers
+                        self.accumulated_result.target_died = true;
                     }
                 }
             }

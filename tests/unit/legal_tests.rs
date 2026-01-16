@@ -75,6 +75,7 @@ fn test_card_db() -> CardDatabase {
             card_type: CardType::Spell {
                 targeting: TargetingRule::NoTarget,
                 effects: vec![],
+                conditional_effects: vec![],
             },
             rarity: Rarity::Common,
             tags: vec![],

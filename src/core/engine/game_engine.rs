@@ -572,7 +572,7 @@ impl<'a> GameEngine<'a> {
                     }
                 }
             }
-            CardType::Spell { targeting, effects } => {
+            CardType::Spell { targeting, effects, conditional_effects } => {
                 // Resolve the spell target based on targeting rule and slot parameter
                 let target = resolve_spell_target(targeting, slot, current_player)?;
                 let source = EffectSource::Card(card_id);
@@ -585,6 +585,31 @@ impl<'a> GameEngine<'a> {
                         current_player,
                     ) {
                         effect_queue.push(effect, source);
+                    }
+                }
+
+                // If spell has conditional effects, process primary effects first and check conditions
+                if !conditional_effects.is_empty() {
+                    // Reset accumulated result before processing
+                    effect_queue.reset_accumulated_result();
+
+                    // Process primary effects
+                    effect_queue.process_all(&mut self.state, self.card_db);
+
+                    // Check conditions and queue bonus effects (clone to avoid borrow issues)
+                    let result = effect_queue.accumulated_result().clone();
+                    for cond_group in conditional_effects {
+                        if result.check(&cond_group.condition) {
+                            for effect_def in &cond_group.effects {
+                                if let Some(effect) = effect_def_to_effect_with_target(
+                                    effect_def,
+                                    target,
+                                    current_player,
+                                ) {
+                                    effect_queue.push(effect, source);
+                                }
+                            }
+                        }
                     }
                 }
 

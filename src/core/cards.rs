@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use crate::core::types::*;
 use crate::core::keywords::Keywords;
-use crate::core::effects::{Trigger, TargetingRule, CreatureFilter};
+use crate::core::effects::{Condition, Trigger, TargetingRule, CreatureFilter};
 
 /// Definition of a triggered ability on a creature
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -18,6 +18,18 @@ pub struct AbilityDefinition {
     pub trigger: Trigger,
     #[serde(default)]
     pub targeting: TargetingRule,
+    pub effects: Vec<EffectDefinition>,
+    /// Effects that trigger conditionally based on the result of the primary effects
+    #[serde(default)]
+    pub conditional_effects: Vec<ConditionalEffectGroup>,
+}
+
+/// A group of effects that trigger if a condition is met
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct ConditionalEffectGroup {
+    /// The condition that must be met for these effects to trigger
+    pub condition: Condition,
+    /// The effects to apply if the condition is met
     pub effects: Vec<EffectDefinition>,
 }
 
@@ -99,6 +111,9 @@ pub enum CardType {
         #[serde(default)]
         targeting: TargetingRule,
         effects: Vec<EffectDefinition>,
+        /// Effects that trigger conditionally based on the result of the primary effects
+        #[serde(default)]
+        conditional_effects: Vec<ConditionalEffectGroup>,
     },
     Support {
         durability: u8,

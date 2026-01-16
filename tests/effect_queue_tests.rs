@@ -728,3 +728,356 @@ fn test_effect_queue_empty_after_processing() {
     assert!(queue.is_empty());
     assert_eq!(queue.len(), 0);
 }
+
+// ============================================================================
+// Bounce Effect Tests
+// ============================================================================
+
+/// Test bouncing a single creature returns it to hand
+#[test]
+fn test_bounce_single_creature() {
+    let mut state = create_effect_test_state();
+    let card_db = CardDatabase::empty();
+    let mut queue = EffectQueue::new();
+
+    // Create enemy creature
+    create_test_creature(
+        &mut state,
+        PlayerId::PLAYER_TWO,
+        Slot(0),
+        3,
+        4,
+        Keywords::none(),
+    );
+
+    // Record original hand size
+    let original_hand_size = state.players[1].hand.len();
+
+    // Queue bounce effect
+    queue.push(
+        Effect::Bounce {
+            target: EffectTarget::Creature {
+                owner: PlayerId::PLAYER_TWO,
+                slot: Slot(0),
+            },
+            filter: None,
+        },
+        EffectSource::System,
+    );
+
+    queue.process_all(&mut state, &card_db);
+
+    // Creature should be removed from board
+    assert!(state.get_creature(PlayerId::PLAYER_TWO, Slot(0)).is_none());
+
+    // Card should be added to hand
+    assert_eq!(state.players[1].hand.len(), original_hand_size + 1);
+}
+
+/// Test bouncing multiple creatures with AoE
+#[test]
+fn test_bounce_all_enemy_creatures() {
+    let mut state = create_effect_test_state();
+    let card_db = CardDatabase::empty();
+    let mut queue = EffectQueue::new();
+
+    // Create multiple enemy creatures
+    for slot in [Slot(0), Slot(1), Slot(2)] {
+        create_test_creature(
+            &mut state,
+            PlayerId::PLAYER_TWO,
+            slot,
+            2,
+            3,
+            Keywords::none(),
+        );
+    }
+
+    // Create friendly creature that should NOT be bounced
+    create_test_creature(
+        &mut state,
+        PlayerId::PLAYER_ONE,
+        Slot(0),
+        2,
+        3,
+        Keywords::none(),
+    );
+
+    let original_p2_hand_size = state.players[1].hand.len();
+
+    // Queue bounce all enemy creatures
+    queue.push(
+        Effect::Bounce {
+            target: EffectTarget::AllEnemyCreatures(PlayerId::PLAYER_ONE),
+            filter: None,
+        },
+        EffectSource::System,
+    );
+
+    queue.process_all(&mut state, &card_db);
+
+    // All enemy creatures should be gone
+    assert!(state.players[1].creatures.is_empty());
+
+    // Cards should be in hand
+    assert_eq!(state.players[1].hand.len(), original_p2_hand_size + 3);
+
+    // Friendly creature should still be on board
+    assert!(state.get_creature(PlayerId::PLAYER_ONE, Slot(0)).is_some());
+}
+
+/// Test bounce with filter only affects matching creatures
+#[test]
+fn test_bounce_with_filter() {
+    let mut state = create_effect_test_state();
+    let card_db = CardDatabase::empty();
+    let mut queue = EffectQueue::new();
+
+    // Create enemy creature with low health (should be bounced)
+    create_test_creature(
+        &mut state,
+        PlayerId::PLAYER_TWO,
+        Slot(0),
+        2,
+        2, // Low health
+        Keywords::none(),
+    );
+
+    // Create enemy creature with high health (should NOT be bounced)
+    create_test_creature(
+        &mut state,
+        PlayerId::PLAYER_TWO,
+        Slot(1),
+        3,
+        5, // High health
+        Keywords::none(),
+    );
+
+    let original_hand_size = state.players[1].hand.len();
+
+    // Queue bounce with max_health filter
+    use cardgame::effects::CreatureFilter;
+    queue.push(
+        Effect::Bounce {
+            target: EffectTarget::AllEnemyCreatures(PlayerId::PLAYER_ONE),
+            filter: Some(CreatureFilter::any().with_max_health(3)),
+        },
+        EffectSource::System,
+    );
+
+    queue.process_all(&mut state, &card_db);
+
+    // Low health creature should be bounced
+    assert!(state.get_creature(PlayerId::PLAYER_TWO, Slot(0)).is_none());
+
+    // High health creature should remain
+    assert!(state.get_creature(PlayerId::PLAYER_TWO, Slot(1)).is_some());
+
+    // Only one card added to hand
+    assert_eq!(state.players[1].hand.len(), original_hand_size + 1);
+}
+
+/// Test bounce when hand is full discards the card
+#[test]
+fn test_bounce_hand_full_discards() {
+    let mut state = create_effect_test_state();
+    let card_db = CardDatabase::empty();
+    let mut queue = EffectQueue::new();
+
+    // Fill player 2's hand to maximum
+    while !state.players[1].is_hand_full() {
+        state.players[1].hand.push(cardgame::state::CardInstance::new(cardgame::types::CardId(1)));
+    }
+    let max_hand_size = state.players[1].hand.len();
+
+    // Create enemy creature
+    create_test_creature(
+        &mut state,
+        PlayerId::PLAYER_TWO,
+        Slot(0),
+        3,
+        4,
+        Keywords::none(),
+    );
+
+    // Queue bounce effect
+    queue.push(
+        Effect::Bounce {
+            target: EffectTarget::Creature {
+                owner: PlayerId::PLAYER_TWO,
+                slot: Slot(0),
+            },
+            filter: None,
+        },
+        EffectSource::System,
+    );
+
+    queue.process_all(&mut state, &card_db);
+
+    // Creature should be removed from board
+    assert!(state.get_creature(PlayerId::PLAYER_TWO, Slot(0)).is_none());
+
+    // Hand should still be at max (card was discarded, not added)
+    assert_eq!(state.players[1].hand.len(), max_hand_size);
+}
+
+// ============================================================================
+// Conditional Trigger Tests (Phase 4B.1)
+// ============================================================================
+
+#[test]
+fn test_accumulated_result_tracks_target_death_from_damage() {
+    let mut state = create_effect_test_state();
+    let card_db = CardDatabase::empty();
+    let mut queue = EffectQueue::new();
+
+    // Create a creature with 2 health
+    create_test_creature(
+        &mut state,
+        PlayerId::PLAYER_TWO,
+        Slot(0),
+        2,
+        2,
+        Keywords::none(),
+    );
+
+    // Reset accumulated result
+    queue.reset_accumulated_result();
+
+    // Queue lethal damage
+    queue.push(
+        Effect::Damage {
+            target: EffectTarget::Creature {
+                owner: PlayerId::PLAYER_TWO,
+                slot: Slot(0),
+            },
+            amount: 3,
+            filter: None,
+        },
+        EffectSource::System,
+    );
+
+    queue.process_all(&mut state, &card_db);
+
+    // Check that target_died was tracked
+    assert!(queue.accumulated_result().target_died);
+}
+
+#[test]
+fn test_accumulated_result_no_death_when_creature_survives() {
+    let mut state = create_effect_test_state();
+    let card_db = CardDatabase::empty();
+    let mut queue = EffectQueue::new();
+
+    // Create a creature with 5 health
+    create_test_creature(
+        &mut state,
+        PlayerId::PLAYER_TWO,
+        Slot(0),
+        2,
+        5,
+        Keywords::none(),
+    );
+
+    // Reset accumulated result
+    queue.reset_accumulated_result();
+
+    // Queue non-lethal damage
+    queue.push(
+        Effect::Damage {
+            target: EffectTarget::Creature {
+                owner: PlayerId::PLAYER_TWO,
+                slot: Slot(0),
+            },
+            amount: 2,
+            filter: None,
+        },
+        EffectSource::System,
+    );
+
+    queue.process_all(&mut state, &card_db);
+
+    // Check that target_died is false
+    assert!(!queue.accumulated_result().target_died);
+}
+
+#[test]
+fn test_accumulated_result_tracks_target_death_from_destroy() {
+    let mut state = create_effect_test_state();
+    let card_db = CardDatabase::empty();
+    let mut queue = EffectQueue::new();
+
+    // Create a creature
+    create_test_creature(
+        &mut state,
+        PlayerId::PLAYER_TWO,
+        Slot(0),
+        2,
+        5,
+        Keywords::none(),
+    );
+
+    // Reset accumulated result
+    queue.reset_accumulated_result();
+
+    // Queue destroy effect
+    queue.push(
+        Effect::Destroy {
+            target: EffectTarget::Creature {
+                owner: PlayerId::PLAYER_TWO,
+                slot: Slot(0),
+            },
+            filter: None,
+        },
+        EffectSource::System,
+    );
+
+    queue.process_all(&mut state, &card_db);
+
+    // Check that target_died was tracked
+    assert!(queue.accumulated_result().target_died);
+}
+
+#[test]
+fn test_accumulated_result_reset_clears_previous_state() {
+    let mut state = create_effect_test_state();
+    let card_db = CardDatabase::empty();
+    let mut queue = EffectQueue::new();
+
+    // Create a creature
+    create_test_creature(
+        &mut state,
+        PlayerId::PLAYER_TWO,
+        Slot(0),
+        2,
+        2,
+        Keywords::none(),
+    );
+
+    // Reset accumulated result
+    queue.reset_accumulated_result();
+
+    // Queue lethal damage
+    queue.push(
+        Effect::Damage {
+            target: EffectTarget::Creature {
+                owner: PlayerId::PLAYER_TWO,
+                slot: Slot(0),
+            },
+            amount: 5,
+            filter: None,
+        },
+        EffectSource::System,
+    );
+
+    queue.process_all(&mut state, &card_db);
+
+    // Verify target died
+    assert!(queue.accumulated_result().target_died);
+
+    // Reset accumulated result
+    queue.reset_accumulated_result();
+
+    // Verify it's cleared
+    assert!(!queue.accumulated_result().target_died);
+}

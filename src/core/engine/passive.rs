@@ -165,5 +165,13 @@ pub fn support_effect_def_to_effect(
                 target: EffectTarget::AllAllyCreatures(source_owner),
             })
         }
+        EffectDefinition::Bounce { filter } => {
+            // Bounce typically targets enemy creatures
+            let target = match &ability.targeting {
+                TargetingRule::TargetAllyCreature => EffectTarget::AllAllyCreatures(source_owner),
+                _ => EffectTarget::AllEnemyCreatures(source_owner),
+            };
+            Some(Effect::Bounce { target, filter: filter.clone() })
+        }
     }
 }

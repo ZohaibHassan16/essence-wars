@@ -123,6 +123,39 @@ impl PendingEffect {
     }
 }
 
+// === Conditional Triggers ===
+
+/// Conditions that can be checked after an effect resolves
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Condition {
+    /// The primary target of the effect died
+    TargetDied,
+    // Future: TargetSurvived, AllyCountAtLeast(u8), LifeBelow(u8), etc.
+}
+
+/// Result of applying an effect (for conditional triggers)
+#[derive(Clone, Debug, Default)]
+pub struct EffectResult {
+    /// Whether the primary target died from the effect
+    pub target_died: bool,
+    // Future: damage_dealt: u8, creatures_destroyed: u8, etc.
+}
+
+impl EffectResult {
+    /// Create an empty result with no triggered conditions
+    pub fn none() -> Self {
+        Self::default()
+    }
+
+    /// Check if a condition is satisfied by this result
+    pub fn check(&self, condition: &Condition) -> bool {
+        match condition {
+            Condition::TargetDied => self.target_died,
+        }
+    }
+}
+
 // === Targeting Rules (for spells and abilities) ===
 
 /// Rules for what a spell or ability can target

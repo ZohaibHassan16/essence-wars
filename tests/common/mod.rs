@@ -152,6 +152,7 @@ pub fn card_playing_test_db() -> CardDatabase {
                     trigger: Trigger::OnPlay,
                     targeting: TargetingRule::NoTarget,
                     effects: vec![EffectDefinition::Draw { count: 1 }],
+                    conditional_effects: vec![],
                 }],
             },
             rarity: Rarity::Uncommon,
@@ -165,6 +166,7 @@ pub fn card_playing_test_db() -> CardDatabase {
             card_type: CardType::Spell {
                 targeting: TargetingRule::TargetEnemyCreature,
                 effects: vec![EffectDefinition::Damage { amount: 3, filter: None }],
+                conditional_effects: vec![],
             },
             rarity: Rarity::Common,
             tags: vec![],
@@ -177,6 +179,7 @@ pub fn card_playing_test_db() -> CardDatabase {
             card_type: CardType::Spell {
                 targeting: TargetingRule::NoTarget,
                 effects: vec![EffectDefinition::Draw { count: 2 }],
+                conditional_effects: vec![],
             },
             rarity: Rarity::Common,
             tags: vec![],
@@ -206,6 +209,7 @@ pub fn card_playing_test_db() -> CardDatabase {
                     trigger: Trigger::OnPlay,
                     targeting: TargetingRule::NoTarget,
                     effects: vec![EffectDefinition::Draw { count: 1 }],
+                    conditional_effects: vec![],
                 }],
             },
             rarity: Rarity::Uncommon,
@@ -219,6 +223,7 @@ pub fn card_playing_test_db() -> CardDatabase {
             card_type: CardType::Spell {
                 targeting: TargetingRule::TargetAllyCreature,
                 effects: vec![EffectDefinition::BuffStats { attack: 2, health: 2, filter: None }],
+                conditional_effects: vec![],
             },
             rarity: Rarity::Common,
             tags: vec![],
@@ -294,6 +299,7 @@ pub fn card_playing_test_db() -> CardDatabase {
                     trigger: Trigger::StartOfTurn,
                     targeting: TargetingRule::NoTarget,
                     effects: vec![EffectDefinition::Heal { amount: 2, filter: None }],
+                    conditional_effects: vec![],
                 }],
             },
             rarity: Rarity::Uncommon,

@@ -290,5 +290,21 @@ pub fn effect_def_to_triggered_effect(
                 target: default_target,
             })
         }
+        EffectDefinition::Bounce { filter } => {
+            // Bounce typically targets enemy creatures
+            let target = match &ability.targeting {
+                TargetingRule::TargetEnemyCreature => {
+                    EffectTarget::AllEnemyCreatures(source_owner)
+                }
+                TargetingRule::TargetAllyCreature => {
+                    EffectTarget::AllAllyCreatures(source_owner)
+                }
+                _ => EffectTarget::AllEnemyCreatures(source_owner),
+            };
+            Some(Effect::Bounce {
+                target,
+                filter: filter.clone(),
+            })
+        }
     }
 }

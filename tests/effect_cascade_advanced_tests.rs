@@ -62,6 +62,7 @@ fn death_cascade_test_db() -> CardDatabase {
                     trigger: Trigger::OnDeath,
                     targeting: TargetingRule::NoTarget, // Ignored by engine
                     effects: vec![EffectDefinition::Damage { amount: 2, filter: None }],
+                    conditional_effects: vec![],
                 }],
             },
             rarity: Rarity::Uncommon,
@@ -80,6 +81,7 @@ fn death_cascade_test_db() -> CardDatabase {
                     trigger: Trigger::OnDeath,
                     targeting: TargetingRule::NoTarget, // Ignored by engine
                     effects: vec![EffectDefinition::Damage { amount: 3, filter: None }],
+                    conditional_effects: vec![],
                 }],
             },
             rarity: Rarity::Rare,
@@ -98,6 +100,7 @@ fn death_cascade_test_db() -> CardDatabase {
                     trigger: Trigger::OnAllyDeath,
                     targeting: TargetingRule::NoTarget,
                     effects: vec![EffectDefinition::BuffStats { attack: 1, health: 1, filter: None }],
+                    conditional_effects: vec![],
                 }],
             },
             rarity: Rarity::Uncommon,
@@ -116,6 +119,7 @@ fn death_cascade_test_db() -> CardDatabase {
                     trigger: Trigger::OnAllyDeath,
                     targeting: TargetingRule::NoTarget,
                     effects: vec![EffectDefinition::Draw { count: 1 }],
+                    conditional_effects: vec![],
                 }],
             },
             rarity: Rarity::Uncommon,

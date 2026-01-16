@@ -608,6 +608,9 @@ fn format_effect(effect: &Effect) -> String {
             let slot_str = slot.map_or("auto".to_string(), |s| format!("{}", s.0));
             format!("Summon(P{}, card={}, slot={})", owner.index() + 1, card_id.0, slot_str)
         }
+        Effect::Bounce { target, .. } => {
+            format!("Bounce({})", format_target(target))
+        }
     }
 }
 
