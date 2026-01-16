@@ -176,6 +176,28 @@ pub fn effect_def_to_effect_with_target(
         EffectDefinition::Bounce { filter } => {
             Some(Effect::Bounce { target, filter: filter.clone() })
         }
+        EffectDefinition::SummonToken { token } => {
+            // Summon a token creature for the caster
+            Some(Effect::SummonToken {
+                owner: source_player,
+                token: token.to_token_definition(),
+                slot: None, // Will use first available slot
+            })
+        }
+        EffectDefinition::Transform { into } => {
+            // Transform the target creature into a token
+            Some(Effect::Transform {
+                target,
+                into: into.to_token_definition(),
+            })
+        }
+        EffectDefinition::Copy => {
+            // Copy the target creature for the caster
+            Some(Effect::Copy {
+                target,
+                owner: source_player,
+            })
+        }
     }
 }
 
@@ -305,6 +327,26 @@ pub fn effect_def_to_triggered_effect(
                 target,
                 filter: filter.clone(),
             })
+        }
+        EffectDefinition::SummonToken { token } => {
+            // Summon a token creature for the ability owner
+            Some(Effect::SummonToken {
+                owner: source_owner,
+                token: token.to_token_definition(),
+                slot: None, // Will use first available slot
+            })
+        }
+        EffectDefinition::Transform { into } => {
+            // Transform needs a specific target - typically used with targeting
+            // For triggered abilities without targeting, this doesn't make sense
+            // Return None to indicate it needs proper targeting resolution
+            let _ = into; // Suppress unused warning
+            None
+        }
+        EffectDefinition::Copy => {
+            // Copy needs a specific target - typically used with targeting
+            // For triggered abilities without targeting, this doesn't make sense
+            None
         }
     }
 }

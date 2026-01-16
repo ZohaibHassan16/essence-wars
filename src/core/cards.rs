@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use crate::core::types::*;
 use crate::core::keywords::Keywords;
-use crate::core::effects::{Condition, Trigger, TargetingRule, CreatureFilter};
+use crate::core::effects::{Condition, Trigger, TargetingRule, CreatureFilter, TokenDefinition};
 
 /// Definition of a triggered ability on a creature
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -31,6 +31,34 @@ pub struct ConditionalEffectGroup {
     pub condition: Condition,
     /// The effects to apply if the condition is met
     pub effects: Vec<EffectDefinition>,
+}
+
+/// Token definition for YAML (uses string keywords instead of bitmask)
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct TokenDef {
+    /// Display name for the token
+    pub name: String,
+    /// Attack value
+    pub attack: u8,
+    /// Health value
+    pub health: u8,
+    /// Keywords as string list (converted to bitmask at runtime)
+    #[serde(default)]
+    pub keywords: Vec<String>,
+}
+
+impl TokenDef {
+    /// Convert to TokenDefinition with keywords as bitmask
+    pub fn to_token_definition(&self) -> TokenDefinition {
+        let keyword_refs: Vec<&str> = self.keywords.iter().map(|s| s.as_str()).collect();
+        let keywords = Keywords::from_names(&keyword_refs);
+        TokenDefinition {
+            name: self.name.clone(),
+            attack: self.attack,
+            health: self.health,
+            keywords: keywords.0,
+        }
+    }
 }
 
 /// Definition of an effect (serializable from YAML)
@@ -78,6 +106,16 @@ pub enum EffectDefinition {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         filter: Option<CreatureFilter>,
     },
+    /// Summon a token creature
+    SummonToken {
+        token: TokenDef,
+    },
+    /// Transform target creature into a token
+    Transform {
+        into: TokenDef,
+    },
+    /// Create a copy of target creature
+    Copy,
 }
 
 /// Definition of a passive effect (for supports)

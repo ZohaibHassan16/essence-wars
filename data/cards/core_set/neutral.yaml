@@ -239,3 +239,127 @@ cards:
         effects:
           - type: draw
             count: 1
+
+  # === PHASE 5: NEUTRAL WARD & TOKEN CARDS (v0.5.0) ===
+  # Ward: First spell/ability targeting this has no effect, then Ward is consumed
+
+  # --- Ward Creatures ---
+  - id: 4020
+    name: "Warded Sentinel"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: [Ward]
+    rarity: Common
+    tags: [Guardian]
+
+  - id: 4021
+    name: "Mystic Guardian"
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: [Ward, Guard]
+    rarity: Uncommon
+    tags: [Guardian]
+
+  - id: 4022
+    name: "Shield Mage"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: []
+    rarity: Rare
+    tags: [Mage]
+    abilities:
+      - trigger: OnPlay
+        targeting: TargetAllyCreature
+        effects:
+          - type: grant_keyword
+            keyword: Ward
+
+  - id: 4023
+    name: "Arcane Protector"
+    cost: 5
+    card_type: creature
+    attack: 3
+    health: 6
+    keywords: [Ward, Shield]
+    rarity: Rare
+    tags: [Guardian]
+
+  # --- Token Summoning ---
+  - id: 4024
+    name: "Raise Militia"
+    cost: 2
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: summon_token
+        token:
+          name: "Militia"
+          attack: 1
+          health: 1
+          keywords: []
+    rarity: Common
+
+  - id: 4025
+    name: "Conjure Guardian"
+    cost: 4
+    card_type: spell
+    targeting: NoTarget
+    effects:
+      - type: summon_token
+        token:
+          name: "Arcane Guardian"
+          attack: 2
+          health: 3
+          keywords: [Guard]
+    rarity: Uncommon
+
+  - id: 4026
+    name: "Token Master"
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Rare
+    tags: [Mage]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: summon_token
+            token:
+              name: "Summoned Warrior"
+              attack: 2
+              health: 2
+              keywords: [Rush]
+
+  # --- Transform Utility ---
+  - id: 4027
+    name: "Polymorph"
+    cost: 5
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: transform
+        into:
+          name: "Sheep"
+          attack: 1
+          health: 1
+          keywords: []
+    rarity: Rare
+
+  # --- Copy Utility ---
+  - id: 4028
+    name: "Mirror Image"
+    cost: 4
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: copy
+    rarity: Uncommon

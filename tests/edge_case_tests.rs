@@ -532,8 +532,12 @@ fn test_edge_case_all_keywords_interact_correctly() {
 
     // Test that the 2 Symbiote keywords (Frenzy, Volatile) can also be set
     kw = kw.with_frenzy().with_volatile();
-    assert_eq!(kw, Keywords::all(), "All 14 keywords should be set");
-    assert_eq!(kw.0, 0x3FFF, "All 14 keyword bits should be set");
+    assert_eq!(kw.0, 0x3FFF, "All 14 keyword bits (original+new+symbiote) should be set");
+
+    // Test that the 2 Phase 5 keywords (Fortify, Ward) can also be set
+    kw = kw.with_fortify().with_ward();
+    assert_eq!(kw, Keywords::all(), "All 16 keywords should be set");
+    assert_eq!(kw.0, 0xFFFF, "All 16 keyword bits should be set");
 }
 
 #[test]

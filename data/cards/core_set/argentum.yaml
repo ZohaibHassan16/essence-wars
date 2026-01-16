@@ -459,3 +459,80 @@ cards:
           - type: draw
             count: 1
     rarity: Rare
+
+  # === PHASE 5: ARGENTUM FORTIFY & ADVANCED EFFECTS (v0.5.0) ===
+  # Fortify: Takes 1 less damage from all sources (min 1)
+
+  # --- Fortify Creatures ---
+  - id: 1035
+    name: "Hardened Vanguard"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: [Guard, Fortify]
+    rarity: Common
+    tags: [Soldier]
+
+  - id: 1036
+    name: "Armored Titan"
+    cost: 5
+    card_type: creature
+    attack: 3
+    health: 7
+    keywords: [Fortify]
+    rarity: Uncommon
+    tags: [Construct]
+
+  - id: 1037
+    name: "Bulwark Commander"
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 5
+    keywords: [Guard, Fortify]
+    rarity: Rare
+    tags: [Soldier]
+    abilities:
+      - trigger: OnPlay
+        targeting: NoTarget
+        effects:
+          - type: grant_keyword
+            keyword: Fortify
+            filter:
+              has_keyword: 8  # Guard keyword bit (0x0008)
+
+  - id: 1038
+    name: "Fortress Wall"
+    cost: 6
+    card_type: creature
+    attack: 1
+    health: 10
+    keywords: [Guard, Fortify, Shield]
+    rarity: Legendary
+    tags: [Construct]
+
+  # --- Transform Spell (Argentum control tool) ---
+  - id: 1039
+    name: "Transmutation Ray"
+    cost: 4
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+      - type: transform
+        into:
+          name: "Brass Cog"
+          attack: 1
+          health: 1
+          keywords: []
+    rarity: Rare
+
+  # --- Copy Effect (duplicate your guards) ---
+  - id: 1040
+    name: "Assembly Protocol"
+    cost: 5
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+      - type: copy
+    rarity: Rare

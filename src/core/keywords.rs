@@ -31,11 +31,15 @@ impl Keywords {
     pub const FRENZY: u16      = 0x1000;  // bit 12 - +1 attack after each attack this turn
     pub const VOLATILE: u16    = 0x2000;  // bit 13 - deal 2 damage to all enemy creatures on death
 
+    // Phase 5 keywords (bits 14-15) - final keyword slots
+    pub const FORTIFY: u16     = 0x4000;  // bit 14 - takes 1 less damage from all sources (min 1)
+    pub const WARD: u16        = 0x8000;  // bit 15 - first spell/ability targeting this has no effect
+
     /// Create empty keywords
     pub const fn none() -> Self { Self(0) }
 
-    /// Create with all keywords (14 keywords currently defined)
-    pub const fn all() -> Self { Self(0x3FFF) }
+    /// Create with all keywords (16 keywords currently defined)
+    pub const fn all() -> Self { Self(0xFFFF) }
 
     // Fast keyword checks for original keywords - single bitwise AND
     #[inline(always)] pub const fn has_rush(self) -> bool { self.0 & Self::RUSH != 0 }
@@ -56,6 +60,10 @@ impl Keywords {
     // Fast keyword checks for Symbiote keywords
     #[inline(always)] pub const fn has_frenzy(self) -> bool { self.0 & Self::FRENZY != 0 }
     #[inline(always)] pub const fn has_volatile(self) -> bool { self.0 & Self::VOLATILE != 0 }
+
+    // Fast keyword checks for Phase 5 keywords
+    #[inline(always)] pub const fn has_fortify(self) -> bool { self.0 & Self::FORTIFY != 0 }
+    #[inline(always)] pub const fn has_ward(self) -> bool { self.0 & Self::WARD != 0 }
 
     // Generic check
     #[inline(always)]
@@ -86,6 +94,10 @@ impl Keywords {
     pub const fn with_frenzy(self) -> Self { Self(self.0 | Self::FRENZY) }
     pub const fn with_volatile(self) -> Self { Self(self.0 | Self::VOLATILE) }
 
+    // Builder pattern for Phase 5 keywords
+    pub const fn with_fortify(self) -> Self { Self(self.0 | Self::FORTIFY) }
+    pub const fn with_ward(self) -> Self { Self(self.0 | Self::WARD) }
+
     /// Combine keywords from two sources
     pub const fn union(self, other: Keywords) -> Keywords {
         Keywords(self.0 | other.0)
@@ -113,6 +125,9 @@ impl Keywords {
                 // Symbiote keywords
                 "frenzy" => kw.add(Self::FRENZY),
                 "volatile" => kw.add(Self::VOLATILE),
+                // Phase 5 keywords
+                "fortify" => kw.add(Self::FORTIFY),
+                "ward" => kw.add(Self::WARD),
                 _ => {} // Ignore unknown keywords
             }
         }
@@ -139,6 +154,9 @@ impl Keywords {
         // Symbiote keywords
         if self.has_frenzy() { names.push("Frenzy"); }
         if self.has_volatile() { names.push("Volatile"); }
+        // Phase 5 keywords
+        if self.has_fortify() { names.push("Fortify"); }
+        if self.has_ward() { names.push("Ward"); }
         names
     }
 }

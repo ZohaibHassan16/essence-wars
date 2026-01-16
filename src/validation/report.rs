@@ -139,7 +139,7 @@ fn generate_summary_text(
     lines.push(String::new());
 
     lines.push(format!("Timestamp: {}", results.timestamp));
-    lines.push(format!("Parallel Execution: false"));
+    lines.push("Parallel Execution: false".to_string());
     lines.push(String::new());
 
     lines.push("--- Balance Status ---".to_string());

@@ -536,7 +536,7 @@ fn resolve_creature_combat(
     result
 }
 
-/// Apply combat damage to a creature, handling Shield and Lethal keywords.
+/// Apply combat damage to a creature, handling Shield, Fortify, and Lethal keywords.
 ///
 /// Returns (damage_dealt, was_blocked_by_shield, creature_died)
 fn apply_combat_damage(
@@ -564,17 +564,24 @@ fn apply_combat_damage(
         return (0, true, false);
     }
 
+    // FORTIFY: Reduce damage by 1 (minimum 1 damage still dealt)
+    let actual_damage = if creature.keywords.has_fortify() && damage > 1 {
+        damage - 1
+    } else {
+        damage
+    };
+
     // Apply damage
-    creature.current_health -= damage as i8;
+    creature.current_health -= actual_damage as i8;
     let died = creature.current_health <= 0;
 
     // Apply Lethal: any non-zero damage kills
-    if attacker_has_lethal && damage > 0 && !died {
+    if attacker_has_lethal && actual_damage > 0 && !died {
         creature.current_health = 0;
-        return (damage, false, true);
+        return (actual_damage, false, true);
     }
 
-    (damage, false, died)
+    (actual_damage, false, died)
 }
 
 /// Mark a creature as having attacked this turn.

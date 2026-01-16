@@ -2,20 +2,20 @@
 
 **Mission**: Design and implement 300 Cards for the initial `New Horizons` Edition of Essence Wars.
 
-## Current State (v0.5.0 - Phase 4 Engine Enhancements Complete)
+## Current State (v0.5.0 - Phase 5 Engine Expansion Complete)
 
 ### Card Pool Summary
 | Category | Count | Target |
 |----------|-------|--------|
-| **Total Cards** | 140 | 300 |
-| Argentum Combine | 35 | ~75 |
+| **Total Cards** | 155 | 300 |
+| Argentum Combine | 41 | ~75 |
 | Symbiote Circles | 45 | ~75 |
 | Obsidion Syndicate | 40 | ~75 |
-| Free-Walkers (Neutral) | 20 | ~75 |
-| **Support Cards** | 15 | ~30 |
-| **Legendary Cards** | 6 | ~12 |
+| Free-Walkers (Neutral) | 29 | ~75 |
+| **Support Cards** | 17 | ~30 |
+| **Legendary Cards** | 7 | ~12 |
 
-### Balance Baseline (Post-Tuning Validation, 2026-01-16)
+### Balance Baseline (Post-Phase 5, 2026-01-16)
 | Metric | Value | Status |
 |--------|-------|--------|
 | P1 Win Rate | 54.3% | BALANCED |
@@ -26,11 +26,11 @@
 
 **Validation Method:** Round-robin across all 40 deck combinations after Modal cloud tuning with retuned specialist weights.
 
-**Status:** Phase 5 ready. Weights have been tuned and deployed for all factions.
+**Status:** Milestone 6 ready. All 16 keyword slots used. Engine supports summon, transform, and copy effects.
 
 ### Keyword Slots
-- **Used:** 14 of 16 (Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick, Ephemeral, Regenerate, Stealth, Charge, **Frenzy**, **Volatile**)
-- **Available:** 2 slots reserved for future balance tuning
+- **Used:** 16 of 16 (Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick, Ephemeral, Regenerate, Stealth, Charge, Frenzy, Volatile, **Fortify**, **Ward**)
+- **Available:** None (all slots utilized)
 
 ---
 
@@ -50,10 +50,10 @@
 ```
 data/
 ├── cards/core_set/
-│   ├── argentum.yaml   (IDs 1000-1034, 35 cards)
+│   ├── argentum.yaml   (IDs 1000-1040, 41 cards)
 │   ├── symbiote.yaml   (IDs 2000-2044, 45 cards)
 │   ├── obsidion.yaml   (IDs 3000-3039, 40 cards)
-│   └── neutral.yaml    (IDs 4000-4019, 20 cards)
+│   └── neutral.yaml    (IDs 4000-4028, 29 cards)
 ├── decks/
 │   ├── argentum/
 │   │   ├── control.toml
@@ -354,71 +354,202 @@ effects:
 
 ---
 
-## Milestone 5: Tactical Evolution (+60 cards)
+## Milestone 5: Engine Expansion (+15 cards) [COMPLETED]
 
-**Goal:** Expand to ~150 cards with tech cards and neutral utility.
+**Goal:** Add final 2 keywords and 3 new effect types to maximize design space.
 
-### Phase 5A: Tech Cards
+**Status:** Done (v0.5.0)
 
-**Situational answers for each faction:**
+### Phase 5A: Final Keywords [DONE]
 
-| Faction | Tech Focus | Example Cards |
-|---------|------------|---------------|
-| Argentum | Anti-spell | "Shield Wall: Give all allies Shield until end of turn" |
-| Obsidion | Disruption | "Mind Rot: Enemy discards a random card" |
-| Neutral | Silence | "Nullifier: Remove all keywords from target" |
+| Keyword | Bit | Effect | Primary Faction | Implementation |
+|---------|-----|--------|-----------------|----------------|
+| **Fortify** | 14 | Takes 1 less damage from all sources (minimum 1) | Argentum | `keywords.rs`, `combat.rs`, `effect_queue.rs` |
+| **Ward** | 15 | First spell/ability targeting this has no effect, then Ward is consumed | Neutral | `keywords.rs`, `effect_queue.rs` |
 
-### Phase 5B: Neutral Utility Wave (+20 cards)
+**Keyword Distribution (Final):**
+| Faction | Keywords | Count |
+|---------|----------|-------|
+| Argentum | Guard, Shield, Piercing, **Fortify** | 4 |
+| Symbiote | Rush, Frenzy, Volatile, Regenerate, Lethal | 5 |
+| Obsidion | Lifesteal, Quick, Stealth, Ephemeral | 4 |
+| Neutral | Charge, Ranged, **Ward** | 3 |
 
-**Focus:** Cards that help weaker factions more than stronger ones
+### Phase 5B: New Effect Types [DONE]
 
-- Card draw (helps aggro reload)
-- Cheap removal (helps control stabilize)
-- Flexible bodies (fill curve gaps)
+| Effect | Description | YAML Syntax |
+|--------|-------------|-------------|
+| **SummonToken** | Create a token creature in an empty slot | `type: summon_token` with `token: {name, attack, health, keywords}` |
+| **Transform** | Replace target creature with a token | `type: transform` with `into: {name, attack, health, keywords}` |
+| **Copy** | Create a copy of target creature | `type: copy` |
 
-### Phase 5C: Meta Validation
+**Implementation Details:**
+- Added `TokenDefinition` struct for inline token definitions
+- Tokens use `CardId(0)` as sentinel (not from card database)
+- Transform/Copy don't trigger OnPlay (creature not played from hand)
+- Ward only blocks single-target effects, not AoE or combat damage
 
-1. Run full 20k validation suite
-2. Target: All factions within 45-55% win rate
-3. No matchup worse than 40/60
-4. Retune weights for all specialists
+**YAML Examples:**
+```yaml
+# Summon Token
+effects:
+  - type: summon_token
+    token:
+      name: "Militia"
+      attack: 1
+      health: 1
+      keywords: []
+
+# Transform
+effects:
+  - type: transform
+    into:
+      name: "Sheep"
+      attack: 1
+      health: 1
+      keywords: []
+
+# Copy (targets resolved from spell targeting)
+effects:
+  - type: copy
+```
+
+### Phase 5C: Showcase Cards (+15 cards) [DONE]
+
+**Argentum (IDs 1035-1040, 6 cards):**
+| Card | Cost | Stats | Keywords/Effects |
+|------|------|-------|------------------|
+| Hardened Vanguard | 3 | 2/4 | Guard, Fortify |
+| Armored Titan | 5 | 3/7 | Fortify |
+| Bulwark Commander | 4 | 2/5 | Guard, Fortify. OnPlay: Grant Fortify to Guards |
+| Fortress Wall | 6 | 1/10 | Guard, Fortify, Shield |
+| Transmutation Ray | 4 | Spell | Transform enemy into 1/1 Brass Cog |
+| Assembly Protocol | 5 | Spell | Copy ally creature |
+
+**Neutral (IDs 4020-4028, 9 cards):**
+| Card | Cost | Stats | Keywords/Effects |
+|------|------|-------|------------------|
+| Warded Sentinel | 3 | 2/3 | Ward |
+| Mystic Guardian | 4 | 3/4 | Ward, Guard |
+| Shield Mage | 3 | 2/3 | OnPlay: Grant Ward to ally |
+| Arcane Protector | 5 | 3/6 | Ward, Shield |
+| Raise Militia | 2 | Spell | Summon 1/1 Militia |
+| Conjure Guardian | 4 | Spell | Summon 2/3 Arcane Guardian with Guard |
+| Token Master | 4 | 2/4 | OnPlay: Summon 2/2 Warrior with Rush |
+| Polymorph | 5 | Spell | Transform enemy into 1/1 Sheep |
+| Mirror Image | 4 | Spell | Copy ally creature |
+
+### Phase 5D: Validation [DONE]
+
+- All 576 tests passing
+- Clippy checks passing
+- Cards loading correctly
+- Balance validated with arena tests
 
 ---
 
-## Milestone 6: Legends of Omyra (Completion)
+## Milestone 6: Neutral Foundation (+25-30 cards)
 
-**Goal:** Reach 300 cards with Legendary commanders and final polish.
+**Goal:** Expand neutral pool from 20 to ~50 cards.
 
-### Phase 6A: Faction Commanders (+12 Legendaries)
+### Phase 6A: Neutral Creatures (+15 cards)
 
-| Faction | Commander | Signature Ability |
-|---------|-----------|-------------------|
-| Argentum | The High Artificer | "All constructs gain +0/+2 and Guard" |
-| Argentum | Iron Colossus Prime | "Cannot be destroyed by effects" |
-| Argentum | The Grand Architect | "Start of turn: Summon a 1/1 Construct" |
-| Symbiote | The Broodmother | "On ally death: Summon a 1/1 Spore" |
-| Symbiote | Alpha of the Pack | "All allies with Rush gain +2/+0" |
-| Symbiote | The Hivemind | "Your creatures share keywords" |
-| Obsidion | The Eternal One | "Lifesteal. On kill: Gain +2/+2" |
-| Obsidion | Shadow Emperor | "Stealth. On attack: Deal 2 to all enemies" |
-| Obsidion | The Soul Collector | "On any death: Draw a card" |
-| Neutral | The Wanderer | "Start of turn: Gain a random keyword" |
-| Neutral | Mercenary King | "Your neutral cards cost 1 less" |
-| Neutral | The Arbiter | "On play: Silence all creatures" |
+Fill cost curve gaps with flexible bodies:
+- 1-2 cost efficient creatures
+- 3-4 cost utility creatures
+- 5+ cost finishers
 
-### Phase 6B: Final Card Wave (+50 cards)
+### Phase 6B: Neutral Spells & Supports (+10-15 cards)
 
-Fill remaining gaps to reach 300:
-- Common/Uncommon filler for draft variety
-- Rare tech options
-- Legendary finishers
+- Card draw options
+- Flexible removal
+- Utility supports
 
-### Phase 6C: Golden Master Balance Pass
+### Phase 6C: Validation
+
+Target: Neutral cards used in ~30% of all decks (splash ratio).
+
+---
+
+## Milestone 7: Faction Deepening (+40-50 cards)
+
+**Goal:** Bring each faction to ~60 cards with archetype support.
+
+### Phase 7A: Argentum Wave (+15 cards)
+
+Focus: Fortify synergies, construct tokens, defensive tech
+
+### Phase 7B: Symbiote Wave (+15 cards)
+
+Focus: Token swarm, death triggers, aggressive tempo
+
+### Phase 7C: Obsidion Wave (+15 cards)
+
+Focus: Copy synergies, transformation tricks, life manipulation
+
+### Phase 7D: Validation
+
+Target: All factions 45-55% win rate, no matchup worse than 40/60.
+
+---
+
+## Milestone 8: Legendary Commanders (+12 cards)
+
+**Goal:** Add iconic faction leaders with powerful abilities.
+
+### Phase 8A: Faction Legendaries (3 per faction)
+
+| Faction | Commander | Cost | Stats | Signature Ability |
+|---------|-----------|------|-------|-------------------|
+| Argentum | The High Artificer | 6 | 3/6 | "All Constructs gain +0/+2 and Guard" |
+| Argentum | Iron Colossus Prime | 8 | 6/10 | "Fortify. Cannot be destroyed by effects" |
+| Argentum | The Grand Architect | 5 | 2/4 | "Start of turn: Summon a 1/1 Construct" |
+| Symbiote | The Broodmother | 6 | 4/5 | "On ally death: Summon a 1/1 Spore with Rush" |
+| Symbiote | Alpha of the Pack | 5 | 4/4 | "Rush. All allies with Rush gain +2/+0" |
+| Symbiote | The Hivemind | 7 | 3/6 | "Your creatures share keywords" |
+| Obsidion | The Eternal One | 7 | 5/5 | "Lifesteal. On kill: Gain +2/+2 permanently" |
+| Obsidion | Shadow Emperor | 6 | 4/4 | "Stealth. On attack: Deal 2 to all enemies" |
+| Obsidion | The Soul Collector | 5 | 3/4 | "On any creature death: Draw a card" |
+
+### Phase 8B: Neutral Legendaries (3 cards)
+
+| Commander | Cost | Stats | Signature Ability |
+|-----------|------|-------|-------------------|
+| The Wanderer | 4 | 3/4 | "Ward. Start of turn: Gain a random keyword" |
+| Mercenary King | 6 | 5/5 | "Your neutral cards cost 1 less" |
+| The Arbiter | 7 | 4/6 | "On play: Silence all other creatures" |
+
+### Phase 8C: Legendary Balance Pass
+
+Ensure legendaries are powerful but not format-warping.
+
+---
+
+## Milestone 9: Final Polish (+50-60 cards)
+
+**Goal:** Reach 300 cards with filler and final balance.
+
+### Phase 9A: Cost Curve Filling (+30 cards)
+
+Common/Uncommon cards to ensure smooth draft curves.
+
+### Phase 9B: Tech Cards (+15 cards)
+
+Situational answers for specific matchups:
+- Anti-swarm tools
+- Anti-control tools
+- Keyword hate cards
+
+### Phase 9C: Rare Finishers (+10 cards)
+
+High-impact cards for late-game strategies.
+
+### Phase 9D: Golden Master Balance Pass
 
 1. Final 20k validation on all matchups
 2. Individual card stat adjustments
 3. Weight retuning for all agents
-4. Documentation update
+4. Documentation freeze
 
 ---
 
@@ -451,9 +582,12 @@ cargo run --release --bin validate -- --games 1500 --output validation.json  # 1
 | M1: Foundation Refactor | 0 | 60 | ✅ Done |
 | M2: Symbiote Rising | +20 | 80 | ✅ Done |
 | M3: Argentum Recovery + Obsidion Parity | +25 | 105 | ✅ Done |
-| M4: Engine Enhancements | +35 | **140** | ✅ Done |
-| M5: Tactical Evolution | +45 | 185 | Planned |
-| M6: Legends of Omyra | +115 | **300** | Planned |
+| M4: Engine Enhancements (Phase 4) | +35 | 140 | ✅ Done |
+| M5: Engine Expansion (Phase 5) | +15 | **155** | ✅ Done |
+| M6: Neutral Foundation | +30 | 185 | 🔜 Next |
+| M7: Faction Deepening | +45 | 230 | Planned |
+| M8: Legendary Commanders | +12 | 242 | Planned |
+| M9: Final Polish | +58 | **300** | Planned |
 
 ---
 
@@ -470,22 +604,24 @@ cargo run --release --bin validate -- --games 1500 --output validation.json  # 1
 
 ## Immediate Next Steps
 
-**Option A: Large Validation (Recommended)**
-1. Run 20k game validation via Modal cloud
-2. Retune specialist weights for all factions
-3. Higher confidence balance metrics
-4. Fine-tune any outlier cards based on results
+**Current Focus: Milestone 6 - Neutral Foundation**
 
-**Option B: Tactical Expansion (Milestone 5)**
-1. Add tech cards for situational answers
-2. Expand neutral utility pool
-3. Fill cost curve gaps
-4. Add more supports and legendaries
+### Phase 6A: Neutral Creatures (+15 cards)
+1. Fill 1-2 cost slots with efficient bodies
+2. Add 3-4 cost utility creatures with Ward synergies
+3. Create 5+ cost finishers with token generation
 
-**Option C: New Deck Archetypes**
-1. Create new deck strategies using Phase 4 cards
-2. Bounce-tempo decks
-3. Kill-reward aggro
-4. Conditional combo strategies
+### Phase 6B: Neutral Spells & Supports (+10-15 cards)
+1. Add card draw options
+2. Create flexible removal spells
+3. Design utility supports
 
-**Current Focus:** Run comprehensive validation to ensure Phase 4 cards are balanced, then proceed with Milestone 5.
+### Phase 6C: Validation
+1. Run full test suite
+2. Balance validation
+3. Target: Neutral cards used in ~30% of all decks
+
+**Notes:**
+- All 16 keyword slots are now used
+- Engine supports: filters, conditionals, bounce, summon, transform, copy
+- Ready to design cards using full feature set

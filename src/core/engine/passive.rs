@@ -173,5 +173,14 @@ pub fn support_effect_def_to_effect(
             };
             Some(Effect::Bounce { target, filter: filter.clone() })
         }
+        EffectDefinition::SummonToken { token } => {
+            Some(Effect::SummonToken {
+                owner: source_owner,
+                token: token.to_token_definition(),
+                slot: None,
+            })
+        }
+        EffectDefinition::Transform { .. } => None, // Needs specific targeting
+        EffectDefinition::Copy => None, // Needs specific targeting
     }
 }

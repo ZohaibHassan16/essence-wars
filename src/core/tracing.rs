@@ -611,6 +611,16 @@ fn format_effect(effect: &Effect) -> String {
         Effect::Bounce { target, .. } => {
             format!("Bounce({})", format_target(target))
         }
+        Effect::SummonToken { owner, token, slot } => {
+            let slot_str = slot.map_or("auto".to_string(), |s| format!("{}", s.0));
+            format!("SummonToken(P{}, '{}' {}/{}, slot={})", owner.index() + 1, token.name, token.attack, token.health, slot_str)
+        }
+        Effect::Transform { target, into } => {
+            format!("Transform({} -> '{}' {}/{})", format_target(target), into.name, into.attack, into.health)
+        }
+        Effect::Copy { target, owner } => {
+            format!("Copy({} for P{})", format_target(target), owner.index() + 1)
+        }
     }
 }
 

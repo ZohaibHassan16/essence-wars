@@ -5,7 +5,7 @@
 
 use std::collections::VecDeque;
 use crate::core::cards::{CardDatabase, CardType, EffectDefinition};
-use crate::core::effects::{CreatureFilter, Effect, EffectResult, EffectSource, EffectTarget, PendingEffect, Trigger};
+use crate::core::effects::{CreatureFilter, Effect, EffectResult, EffectSource, EffectTarget, PendingEffect, TokenDefinition, Trigger};
 use crate::core::keywords::Keywords;
 use crate::core::state::{CardInstance, Creature, GameResult, GameState, WinReason};
 use crate::core::tracing::EffectTracer;
@@ -127,6 +127,18 @@ impl EffectQueue {
         }
     }
 
+    /// Check if a creature has Ward and consume it. Returns true if Ward was consumed (effect should be blocked).
+    /// Ward only blocks single-target effects, not AoE effects.
+    fn check_and_consume_ward(state: &mut GameState, owner: PlayerId, slot: Slot) -> bool {
+        if let Some(creature) = state.players[owner.index()].get_creature_mut(slot) {
+            if creature.keywords.has_ward() {
+                creature.keywords.remove(Keywords::WARD);
+                return true; // Ward consumed, block the effect
+            }
+        }
+        false
+    }
+
     /// Resolve a single effect, potentially queuing more effects
     fn resolve_effect(
         &mut self,
@@ -143,33 +155,81 @@ impl EffectQueue {
 
         match pending.effect {
             Effect::Damage { target, amount, ref filter } => {
+                // Ward blocks single-target damage
+                if let EffectTarget::Creature { owner, slot } = target {
+                    if Self::check_and_consume_ward(state, owner, slot) {
+                        return; // Effect blocked by Ward
+                    }
+                }
                 self.apply_damage(target, amount, filter.as_ref(), source_player, state, card_db);
             }
             Effect::Heal { target, amount, ref filter } => {
+                // Ward blocks single-target heal (consistent with other targeted effects)
+                if let EffectTarget::Creature { owner, slot } = target {
+                    if Self::check_and_consume_ward(state, owner, slot) {
+                        return;
+                    }
+                }
                 self.apply_heal(target, amount, filter.as_ref(), state, card_db);
             }
             Effect::Draw { player, count } => {
                 self.apply_draw(player, count, state);
             }
             Effect::BuffStats { target, attack, health, ref filter } => {
+                // Ward blocks single-target buffs
+                if let EffectTarget::Creature { owner, slot } = target {
+                    if Self::check_and_consume_ward(state, owner, slot) {
+                        return;
+                    }
+                }
                 self.apply_buff(target, attack, health, filter.as_ref(), state);
             }
             Effect::SetStats { target, attack, health } => {
+                // Ward blocks single-target set stats
+                if let EffectTarget::Creature { owner, slot } = target {
+                    if Self::check_and_consume_ward(state, owner, slot) {
+                        return;
+                    }
+                }
                 self.apply_set_stats(target, attack, health, state);
             }
             Effect::Destroy { target, ref filter } => {
+                // Ward blocks single-target destroy
+                if let EffectTarget::Creature { owner, slot } = target {
+                    if Self::check_and_consume_ward(state, owner, slot) {
+                        return;
+                    }
+                }
                 self.apply_destroy(target, filter.as_ref(), state);
             }
             Effect::Summon { owner, card_id, slot } => {
                 self.apply_summon(owner, card_id, slot, state, card_db);
             }
             Effect::GrantKeyword { target, keyword, ref filter } => {
+                // Ward blocks single-target grant keyword
+                if let EffectTarget::Creature { owner, slot } = target {
+                    if Self::check_and_consume_ward(state, owner, slot) {
+                        return;
+                    }
+                }
                 self.apply_grant_keyword(target, keyword, filter.as_ref(), source_player, state);
             }
             Effect::RemoveKeyword { target, keyword, ref filter } => {
+                // Ward blocks single-target remove keyword
+                if let EffectTarget::Creature { owner, slot } = target {
+                    if Self::check_and_consume_ward(state, owner, slot) {
+                        return;
+                    }
+                }
                 self.apply_remove_keyword(target, keyword, filter.as_ref(), state);
             }
             Effect::Silence { target, ref filter } => {
+                // Ward blocks single-target silence
+                if let EffectTarget::Creature { owner, slot } = target {
+                    if Self::check_and_consume_ward(state, owner, slot) {
+                        return;
+                    }
+                }
                 self.apply_silence(target, filter.as_ref(), state);
             }
             Effect::GainEssence { player, amount } => {
@@ -179,7 +239,28 @@ impl EffectQueue {
                 self.apply_refresh_creature(target, state);
             }
             Effect::Bounce { target, ref filter } => {
+                // Ward blocks single-target bounce
+                if let EffectTarget::Creature { owner, slot } = target {
+                    if Self::check_and_consume_ward(state, owner, slot) {
+                        return;
+                    }
+                }
                 self.apply_bounce(target, filter.as_ref(), state);
+            }
+            Effect::SummonToken { owner, ref token, slot } => {
+                self.apply_summon_token(owner, token, slot, state);
+            }
+            Effect::Transform { target, ref into } => {
+                // Ward blocks single-target transform
+                if let EffectTarget::Creature { owner, slot } = target {
+                    if Self::check_and_consume_ward(state, owner, slot) {
+                        return;
+                    }
+                }
+                self.apply_transform(target, into, state);
+            }
+            Effect::Copy { target, owner } => {
+                self.apply_copy(target, owner, state);
             }
         }
     }
@@ -208,7 +289,7 @@ impl EffectQueue {
                     .flat_map(|(i, p)| {
                         let owner = PlayerId(i as u8);
                         p.creatures.iter()
-                            .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                            .filter(|c| filter.is_none_or(|f| f.matches(c.current_health, c.keywords.0)))
                             .map(move |c| (owner, c.slot))
                     })
                     .collect();
@@ -220,7 +301,7 @@ impl EffectQueue {
             EffectTarget::AllAllyCreatures(player) => {
                 let creatures: Vec<_> = state.players[player.index()]
                     .creatures.iter()
-                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                    .filter(|c| filter.is_none_or(|f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
 
@@ -232,7 +313,7 @@ impl EffectQueue {
                 let enemy = player.opponent();
                 let creatures: Vec<_> = state.players[enemy.index()]
                     .creatures.iter()
-                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                    .filter(|c| filter.is_none_or(|f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
 
@@ -255,16 +336,16 @@ impl EffectQueue {
         state: &mut GameState,
         card_db: &CardDatabase,
     ) {
-        // First check if creature exists and has shield, get necessary info
+        // First check if creature exists and has shield/fortify, get necessary info
         let creature_info = {
             let creature = match state.players[owner.index()].get_creature(slot) {
                 Some(c) => c,
                 None => return,
             };
-            (creature.keywords.has_shield(), creature.current_health)
+            (creature.keywords.has_shield(), creature.keywords.has_fortify(), creature.current_health)
         };
 
-        let (has_shield, old_health) = creature_info;
+        let (has_shield, has_fortify, old_health) = creature_info;
 
         if has_shield {
             // Shield absorbs the damage, remove shield
@@ -275,11 +356,18 @@ impl EffectQueue {
             return;
         }
 
+        // FORTIFY: Reduce damage by 1 (minimum 1 damage still dealt)
+        let actual_amount = if has_fortify && amount > 1 {
+            amount - 1
+        } else {
+            amount
+        };
+
         // Apply damage
-        let damage_dealt = amount.min(old_health.max(0) as u8);
+        let damage_dealt = actual_amount.min(old_health.max(0) as u8);
         let new_health = {
             let creature = state.players[owner.index()].get_creature_mut(slot).unwrap();
-            creature.current_health -= amount as i8;
+            creature.current_health -= actual_amount as i8;
             creature.current_health
         };
 
@@ -345,7 +433,7 @@ impl EffectQueue {
                     .flat_map(|(i, p)| {
                         let owner = PlayerId(i as u8);
                         p.creatures.iter()
-                            .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                            .filter(|c| filter.is_none_or(|f| f.matches(c.current_health, c.keywords.0)))
                             .map(move |c| (owner, c.slot))
                     })
                     .collect();
@@ -357,7 +445,7 @@ impl EffectQueue {
             EffectTarget::AllAllyCreatures(player) => {
                 let creatures: Vec<_> = state.players[player.index()]
                     .creatures.iter()
-                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                    .filter(|c| filter.is_none_or(|f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
 
@@ -369,7 +457,7 @@ impl EffectQueue {
                 let enemy = player.opponent();
                 let creatures: Vec<_> = state.players[enemy.index()]
                     .creatures.iter()
-                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                    .filter(|c| filter.is_none_or(|f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
 
@@ -438,7 +526,7 @@ impl EffectQueue {
                     .flat_map(|(i, p)| {
                         let owner = PlayerId(i as u8);
                         p.creatures.iter()
-                            .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                            .filter(|c| filter.is_none_or(|f| f.matches(c.current_health, c.keywords.0)))
                             .map(move |c| (owner, c.slot))
                     })
                     .collect();
@@ -450,7 +538,7 @@ impl EffectQueue {
             EffectTarget::AllAllyCreatures(player) => {
                 let creatures: Vec<_> = state.players[player.index()]
                     .creatures.iter()
-                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                    .filter(|c| filter.is_none_or(|f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
 
@@ -462,7 +550,7 @@ impl EffectQueue {
                 let enemy = player.opponent();
                 let creatures: Vec<_> = state.players[enemy.index()]
                     .creatures.iter()
-                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                    .filter(|c| filter.is_none_or(|f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
 
@@ -548,7 +636,7 @@ impl EffectQueue {
                     .flat_map(|(i, p)| {
                         let owner = PlayerId(i as u8);
                         p.creatures.iter()
-                            .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                            .filter(|c| filter.is_none_or(|f| f.matches(c.current_health, c.keywords.0)))
                             .map(move |c| (owner, c.slot))
                     })
                     .collect();
@@ -564,7 +652,7 @@ impl EffectQueue {
             EffectTarget::AllAllyCreatures(player) => {
                 let creatures: Vec<_> = state.players[player.index()]
                     .creatures.iter()
-                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                    .filter(|c| filter.is_none_or(|f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
 
@@ -580,7 +668,7 @@ impl EffectQueue {
                 let enemy = player.opponent();
                 let creatures: Vec<_> = state.players[enemy.index()]
                     .creatures.iter()
-                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                    .filter(|c| filter.is_none_or(|f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
 
@@ -654,6 +742,146 @@ impl EffectQueue {
         self.check_creature_triggers(Trigger::OnPlay, owner, target_slot, state, card_db);
     }
 
+    /// Summon a token creature (not from card database)
+    fn apply_summon_token(
+        &mut self,
+        owner: PlayerId,
+        token: &TokenDefinition,
+        slot: Option<Slot>,
+        state: &mut GameState,
+    ) {
+        // Find the slot to use
+        let target_slot = slot.or_else(|| state.players[owner.index()].find_empty_creature_slot());
+
+        let Some(target_slot) = target_slot else {
+            // No empty slot available
+            return;
+        };
+
+        // Check if slot is already occupied
+        if state.players[owner.index()].get_creature(target_slot).is_some() {
+            return;
+        }
+
+        // Create token creature instance
+        // Use CardId(0) as a sentinel value for tokens (not a real card)
+        let instance_id = state.next_creature_instance_id();
+        let keywords = Keywords(token.keywords);
+
+        let creature = Creature {
+            instance_id,
+            card_id: CardId(0), // Token marker
+            owner,
+            slot: target_slot,
+            attack: token.attack as i8,
+            current_health: token.health as i8,
+            max_health: token.health as i8,
+            base_attack: token.attack,
+            base_health: token.health,
+            keywords,
+            status: Default::default(),
+            turn_played: state.current_turn,
+            frenzy_stacks: 0,
+        };
+
+        state.players[owner.index()].creatures.push(creature);
+        // Note: Tokens don't trigger OnPlay since they're not "played from hand"
+    }
+
+    /// Transform target creature into a token
+    fn apply_transform(
+        &mut self,
+        target: EffectTarget,
+        into: &TokenDefinition,
+        state: &mut GameState,
+    ) {
+        let EffectTarget::Creature { owner, slot } = target else {
+            return;
+        };
+
+        // Remove the existing creature
+        let existed = state.players[owner.index()].get_creature(slot).is_some();
+        if !existed {
+            return;
+        }
+        state.players[owner.index()].creatures.retain(|c| c.slot != slot);
+
+        // Create the transformed creature in the same slot
+        let instance_id = state.next_creature_instance_id();
+        let keywords = Keywords(into.keywords);
+
+        let creature = Creature {
+            instance_id,
+            card_id: CardId(0), // Token marker
+            owner,
+            slot,
+            attack: into.attack as i8,
+            current_health: into.health as i8,
+            max_health: into.health as i8,
+            base_attack: into.attack,
+            base_health: into.health,
+            keywords,
+            status: Default::default(),
+            turn_played: state.current_turn,
+            frenzy_stacks: 0,
+        };
+
+        state.players[owner.index()].creatures.push(creature);
+        // Note: Transform doesn't trigger OnDeath or OnPlay
+    }
+
+    /// Copy target creature to an empty slot
+    fn apply_copy(
+        &mut self,
+        target: EffectTarget,
+        copy_owner: PlayerId,
+        state: &mut GameState,
+    ) {
+        let EffectTarget::Creature { owner, slot } = target else {
+            return;
+        };
+
+        // Get the source creature's stats
+        let source = match state.players[owner.index()].get_creature(slot) {
+            Some(c) => c,
+            None => return,
+        };
+
+        // Copy base stats (not current stats)
+        let card_id = source.card_id;
+        let base_attack = source.base_attack;
+        let base_health = source.base_health;
+        let keywords = source.keywords;
+
+        // Find empty slot for the copy
+        let target_slot = match state.players[copy_owner.index()].find_empty_creature_slot() {
+            Some(s) => s,
+            None => return, // No empty slot
+        };
+
+        // Create the copy
+        let instance_id = state.next_creature_instance_id();
+
+        let creature = Creature {
+            instance_id,
+            card_id,
+            owner: copy_owner,
+            slot: target_slot,
+            attack: base_attack as i8,
+            current_health: base_health as i8,
+            max_health: base_health as i8,
+            base_attack,
+            base_health,
+            keywords,
+            status: Default::default(),
+            turn_played: state.current_turn,
+            frenzy_stacks: 0,
+        };
+
+        state.players[copy_owner.index()].creatures.push(creature);
+        // Note: Copy doesn't trigger OnPlay since it's not played from hand
+    }
+
     /// Grant a keyword to a target
     fn apply_grant_keyword(
         &mut self,
@@ -672,7 +900,7 @@ impl EffectQueue {
             EffectTarget::AllCreatures => {
                 for player in &mut state.players {
                     for creature in &mut player.creatures {
-                        if filter.map_or(true, |f| f.matches(creature.current_health, creature.keywords.0)) {
+                        if filter.is_none_or(|f| f.matches(creature.current_health, creature.keywords.0)) {
                             creature.keywords.add(keyword);
                         }
                     }
@@ -680,7 +908,7 @@ impl EffectQueue {
             }
             EffectTarget::AllAllyCreatures(player) => {
                 for creature in &mut state.players[player.index()].creatures {
-                    if filter.map_or(true, |f| f.matches(creature.current_health, creature.keywords.0)) {
+                    if filter.is_none_or(|f| f.matches(creature.current_health, creature.keywords.0)) {
                         creature.keywords.add(keyword);
                     }
                 }
@@ -688,7 +916,7 @@ impl EffectQueue {
             EffectTarget::AllEnemyCreatures(player) => {
                 let enemy = player.opponent();
                 for creature in &mut state.players[enemy.index()].creatures {
-                    if filter.map_or(true, |f| f.matches(creature.current_health, creature.keywords.0)) {
+                    if filter.is_none_or(|f| f.matches(creature.current_health, creature.keywords.0)) {
                         creature.keywords.add(keyword);
                     }
                 }
@@ -714,7 +942,7 @@ impl EffectQueue {
             EffectTarget::AllCreatures => {
                 for player in &mut state.players {
                     for creature in &mut player.creatures {
-                        if filter.map_or(true, |f| f.matches(creature.current_health, creature.keywords.0)) {
+                        if filter.is_none_or(|f| f.matches(creature.current_health, creature.keywords.0)) {
                             creature.keywords.remove(keyword);
                         }
                     }
@@ -775,7 +1003,7 @@ impl EffectQueue {
                 let creatures: Vec<_> = state.players[enemy.index()]
                     .creatures
                     .iter()
-                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                    .filter(|c| filter.is_none_or(|f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
                 for slot in creatures {
@@ -786,7 +1014,7 @@ impl EffectQueue {
                 let creatures: Vec<_> = state.players[player.index()]
                     .creatures
                     .iter()
-                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                    .filter(|c| filter.is_none_or(|f| f.matches(c.current_health, c.keywords.0)))
                     .map(|c| c.slot)
                     .collect();
                 for slot in creatures {
@@ -798,7 +1026,7 @@ impl EffectQueue {
                     let creatures: Vec<_> = state.players[player.index()]
                         .creatures
                         .iter()
-                        .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                        .filter(|c| filter.is_none_or(|f| f.matches(c.current_health, c.keywords.0)))
                         .map(|c| c.slot)
                         .collect();
                     for slot in creatures {
@@ -956,6 +1184,21 @@ impl EffectQueue {
                     target: EffectTarget::AllEnemyCreatures(source_owner),
                     filter: filter.clone(),
                 })
+            }
+            EffectDefinition::SummonToken { token } => {
+                Some(Effect::SummonToken {
+                    owner: source_owner,
+                    token: token.to_token_definition(),
+                    slot: None,
+                })
+            }
+            EffectDefinition::Transform { .. } => {
+                // Transform needs specific targeting - not supported in this context
+                None
+            }
+            EffectDefinition::Copy => {
+                // Copy needs specific targeting - not supported in this context
+                None
             }
         }
     }

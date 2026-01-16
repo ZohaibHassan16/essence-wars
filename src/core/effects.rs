@@ -53,6 +53,38 @@ pub enum EffectTarget {
     None,
 }
 
+/// Token definition for summoning creatures that don't exist in the card database
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TokenDefinition {
+    /// Display name for the token
+    pub name: String,
+    /// Attack value
+    pub attack: u8,
+    /// Health value
+    pub health: u8,
+    /// Keywords as a bitmask
+    #[serde(default)]
+    pub keywords: u16,
+}
+
+impl TokenDefinition {
+    /// Create a new token definition
+    pub fn new(name: impl Into<String>, attack: u8, health: u8) -> Self {
+        Self {
+            name: name.into(),
+            attack,
+            health,
+            keywords: 0,
+        }
+    }
+
+    /// Add a keyword to the token
+    pub fn with_keyword(mut self, keyword: u16) -> Self {
+        self.keywords |= keyword;
+        self
+    }
+}
+
 /// All possible effects in the game
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Effect {
@@ -75,8 +107,14 @@ pub enum Effect {
     // === Creature Manipulation ===
     /// Destroy target creature (filter applies to AoE targets)
     Destroy { target: EffectTarget, filter: Option<CreatureFilter> },
-    /// Summon a creature (slot None = first available)
+    /// Summon a creature from card database (slot None = first available)
     Summon { owner: PlayerId, card_id: CardId, slot: Option<Slot> },
+    /// Summon a token creature (not from card database)
+    SummonToken { owner: PlayerId, token: TokenDefinition, slot: Option<Slot> },
+    /// Transform target creature into a token (replaces the creature)
+    Transform { target: EffectTarget, into: TokenDefinition },
+    /// Create a copy of target creature in an empty slot
+    Copy { target: EffectTarget, owner: PlayerId },
 
     // === Keyword Manipulation ===
     /// Grant a keyword to target (filter applies to AoE targets)
