@@ -61,7 +61,7 @@ fn death_cascade_test_db() -> CardDatabase {
                 abilities: vec![AbilityDefinition {
                     trigger: Trigger::OnDeath,
                     targeting: TargetingRule::NoTarget, // Ignored by engine
-                    effects: vec![EffectDefinition::Damage { amount: 2 }],
+                    effects: vec![EffectDefinition::Damage { amount: 2, filter: None }],
                 }],
             },
             rarity: Rarity::Uncommon,
@@ -79,7 +79,7 @@ fn death_cascade_test_db() -> CardDatabase {
                 abilities: vec![AbilityDefinition {
                     trigger: Trigger::OnDeath,
                     targeting: TargetingRule::NoTarget, // Ignored by engine
-                    effects: vec![EffectDefinition::Damage { amount: 3 }],
+                    effects: vec![EffectDefinition::Damage { amount: 3, filter: None }],
                 }],
             },
             rarity: Rarity::Rare,
@@ -97,7 +97,7 @@ fn death_cascade_test_db() -> CardDatabase {
                 abilities: vec![AbilityDefinition {
                     trigger: Trigger::OnAllyDeath,
                     targeting: TargetingRule::NoTarget,
-                    effects: vec![EffectDefinition::BuffStats { attack: 1, health: 1 }],
+                    effects: vec![EffectDefinition::BuffStats { attack: 1, health: 1, filter: None }],
                 }],
             },
             rarity: Rarity::Uncommon,
@@ -167,6 +167,7 @@ fn test_ondeath_triggers_on_damage() {
                 slot: Slot(0),
             },
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -217,6 +218,7 @@ fn test_onallydeath_triggers() {
                 slot: Slot(1),
             },
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -275,6 +277,7 @@ fn test_multiple_onallydeath_same_death() {
                 slot: Slot(2),
             },
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -329,6 +332,7 @@ fn test_ondeath_aoe_kills_multiple() {
                 slot: Slot(0),
             },
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -395,6 +399,7 @@ fn test_ondeath_chain_double_aoe() {
                 slot: Slot(0),
             },
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -446,6 +451,7 @@ fn test_death_chain_with_onallydeath_buffs() {
         Effect::Damage {
             target: EffectTarget::AllAllyCreatures(PlayerId::PLAYER_ONE),
             amount: 1,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -479,6 +485,7 @@ fn test_cascade_stops_on_game_over() {
         Effect::Damage {
             target: EffectTarget::Player(PlayerId::PLAYER_TWO),
             amount: 10,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -488,6 +495,7 @@ fn test_cascade_stops_on_game_over() {
         Effect::Damage {
             target: EffectTarget::Player(PlayerId::PLAYER_ONE),
             amount: 100,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -539,6 +547,7 @@ fn test_debuff_accumulation_kills_creature() {
                 },
                 attack: 0,
                 health: -1,
+                filter: None,
             },
             EffectSource::System,
         );
@@ -576,6 +585,7 @@ fn test_single_large_debuff_kills() {
             },
             attack: 0,
             health: -5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -636,6 +646,7 @@ fn test_shield_survives_cascade_damage() {
                 slot: Slot(0),
             },
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -668,6 +679,7 @@ fn test_effect_queue_fifo_during_cascade() {
         Effect::Damage {
             target: EffectTarget::Player(PlayerId::PLAYER_TWO),
             amount: 10,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -676,6 +688,7 @@ fn test_effect_queue_fifo_during_cascade() {
         Effect::Heal {
             target: EffectTarget::Player(PlayerId::PLAYER_TWO),
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -711,6 +724,7 @@ fn test_creature_damage_heal_fifo() {
                 slot: Slot(0),
             },
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -722,6 +736,7 @@ fn test_creature_damage_heal_fifo() {
                 slot: Slot(0),
             },
             amount: 3,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -733,6 +748,7 @@ fn test_creature_damage_heal_fifo() {
                 slot: Slot(0),
             },
             amount: 2,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -784,6 +800,7 @@ fn test_simultaneous_deaths_all_trigger() {
         Effect::Damage {
             target: EffectTarget::AllAllyCreatures(PlayerId::PLAYER_ONE),
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );

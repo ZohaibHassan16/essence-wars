@@ -91,6 +91,10 @@ pub enum Effect {
     GainEssence { player: PlayerId, amount: u8 },
     /// Refresh a creature (remove exhausted status)
     RefreshCreature { target: EffectTarget },
+
+    // === Board Manipulation ===
+    /// Return target creature to its owner's hand (filter applies to AoE targets)
+    Bounce { target: EffectTarget, filter: Option<CreatureFilter> },
 }
 
 /// Source of an effect (for tracking and debugging)

@@ -524,7 +524,7 @@ fn ability_test_db() -> cardgame::cards::CardDatabase {
                 abilities: vec![AbilityDefinition {
                     trigger: Trigger::OnPlay, // Using OnPlay as trigger for manual activation
                     targeting: TargetingRule::TargetEnemyCreature,
-                    effects: vec![EffectDefinition::Damage { amount: 2 }],
+                    effects: vec![EffectDefinition::Damage { amount: 2, filter: None }],
                 }],
             },
             rarity: Rarity::Uncommon,
@@ -542,7 +542,7 @@ fn ability_test_db() -> cardgame::cards::CardDatabase {
                 abilities: vec![AbilityDefinition {
                     trigger: Trigger::OnPlay,
                     targeting: TargetingRule::NoTarget,
-                    effects: vec![EffectDefinition::BuffStats { attack: 1, health: 1 }],
+                    effects: vec![EffectDefinition::BuffStats { attack: 1, health: 1, filter: None }],
                 }],
             },
             rarity: Rarity::Uncommon,

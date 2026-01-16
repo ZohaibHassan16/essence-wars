@@ -46,6 +46,7 @@ fn test_effect_queue_fifo_order() {
                     slot: Slot(0),
                 },
                 amount,
+                filter: None,
             },
             EffectSource::System,
         );
@@ -82,6 +83,7 @@ fn test_mixed_effects_fifo() {
                 slot: Slot(0),
             },
             amount: 2,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -93,6 +95,7 @@ fn test_mixed_effects_fifo() {
                 slot: Slot(0),
             },
             amount: 1,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -104,6 +107,7 @@ fn test_mixed_effects_fifo() {
                 slot: Slot(0),
             },
             amount: 4,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -133,6 +137,7 @@ fn test_terminal_stops_queue() {
         Effect::Damage {
             target: EffectTarget::Player(PlayerId::PLAYER_TWO),
             amount: 10,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -142,6 +147,7 @@ fn test_terminal_stops_queue() {
         Effect::Damage {
             target: EffectTarget::Player(PlayerId::PLAYER_ONE),
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -171,6 +177,7 @@ fn test_win_condition_detection() {
         Effect::Damage {
             target: EffectTarget::Player(PlayerId::PLAYER_TWO),
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -217,6 +224,7 @@ fn test_aoe_kills_multiple_creatures() {
         Effect::Damage {
             target: EffectTarget::AllEnemyCreatures(PlayerId::PLAYER_ONE),
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -265,6 +273,7 @@ fn test_selective_damage() {
         Effect::Damage {
             target: EffectTarget::AllEnemyCreatures(PlayerId::PLAYER_ONE),
             amount: 3,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -307,6 +316,7 @@ fn test_debuff_causes_death() {
             },
             attack: 0,
             health: -4,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -344,6 +354,7 @@ fn test_sequential_debuffs() {
                 },
                 attack: 0,
                 health: -2,
+                filter: None,
             },
             EffectSource::System,
         );
@@ -384,6 +395,7 @@ fn test_shield_vs_debuff() {
                 slot: Slot(0),
             },
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -396,6 +408,7 @@ fn test_shield_vs_debuff() {
             },
             attack: 0,
             health: -3,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -431,6 +444,7 @@ fn test_shield_blocks_first_damage_only() {
                 slot: Slot(0),
             },
             amount: 2,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -442,6 +456,7 @@ fn test_shield_blocks_first_damage_only() {
                 slot: Slot(0),
             },
             amount: 3,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -492,6 +507,7 @@ fn test_damage_empty_slot() {
                 slot: Slot(0),
             },
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -518,6 +534,7 @@ fn test_heal_empty_slot() {
                 slot: Slot(0),
             },
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -556,6 +573,7 @@ fn test_buff_increases_stats() {
             },
             attack: 2,
             health: 2,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -593,6 +611,7 @@ fn test_heal_capped_at_max_health() {
                 slot: Slot(0),
             },
             amount: 3,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -605,6 +624,7 @@ fn test_heal_capped_at_max_health() {
                 slot: Slot(0),
             },
             amount: 10,
+            filter: None,
         },
         EffectSource::System,
     );

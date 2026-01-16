@@ -62,6 +62,10 @@ pub enum EffectDefinition {
     },
     GainEssence { amount: u8 },
     RefreshCreature,
+    Bounce {
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        filter: Option<CreatureFilter>,
+    },
 }
 
 /// Definition of a passive effect (for supports)

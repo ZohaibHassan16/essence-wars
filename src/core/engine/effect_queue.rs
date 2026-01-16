@@ -165,6 +165,9 @@ impl EffectQueue {
             Effect::RefreshCreature { target } => {
                 self.apply_refresh_creature(target, state);
             }
+            Effect::Bounce { target, ref filter } => {
+                self.apply_bounce(target, filter.as_ref(), state);
+            }
         }
     }
 
@@ -729,6 +732,84 @@ impl EffectQueue {
         }
     }
 
+    /// Return a creature to its owner's hand
+    fn apply_bounce(
+        &mut self,
+        target: EffectTarget,
+        filter: Option<&CreatureFilter>,
+        state: &mut GameState,
+    ) {
+        match target {
+            EffectTarget::Creature { owner, slot } => {
+                self.bounce_creature(owner, slot, filter, state);
+            }
+            EffectTarget::AllEnemyCreatures(player) => {
+                let enemy = player.opponent();
+                let creatures: Vec<_> = state.players[enemy.index()]
+                    .creatures
+                    .iter()
+                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                    .map(|c| c.slot)
+                    .collect();
+                for slot in creatures {
+                    self.bounce_creature(enemy, slot, None, state);
+                }
+            }
+            EffectTarget::AllAllyCreatures(player) => {
+                let creatures: Vec<_> = state.players[player.index()]
+                    .creatures
+                    .iter()
+                    .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                    .map(|c| c.slot)
+                    .collect();
+                for slot in creatures {
+                    self.bounce_creature(player, slot, None, state);
+                }
+            }
+            EffectTarget::AllCreatures => {
+                for player in [PlayerId::PLAYER_ONE, PlayerId::PLAYER_TWO] {
+                    let creatures: Vec<_> = state.players[player.index()]
+                        .creatures
+                        .iter()
+                        .filter(|c| filter.map_or(true, |f| f.matches(c.current_health, c.keywords.0)))
+                        .map(|c| c.slot)
+                        .collect();
+                    for slot in creatures {
+                        self.bounce_creature(player, slot, None, state);
+                    }
+                }
+            }
+            _ => {} // Player targets don't make sense for bounce
+        }
+    }
+
+    /// Bounce a single creature (return to owner's hand)
+    fn bounce_creature(
+        &mut self,
+        owner: PlayerId,
+        slot: Slot,
+        filter: Option<&CreatureFilter>,
+        state: &mut GameState,
+    ) {
+        let player_state = &mut state.players[owner.index()];
+        if let Some(creature) = player_state.get_creature(slot) {
+            // Apply filter if present
+            if let Some(f) = filter {
+                if !f.matches(creature.current_health, creature.keywords.0) {
+                    return;
+                }
+            }
+            let card_id = creature.card_id;
+            // Remove creature from board
+            player_state.creatures.retain(|c| c.slot != slot);
+            // Add card back to hand if not full
+            if !player_state.is_hand_full() {
+                player_state.hand.push(CardInstance::new(card_id));
+            }
+            // Note: If hand is full, the card is simply lost
+        }
+    }
+
     /// Check for and queue triggered abilities on a creature
     fn check_creature_triggers(
         &mut self,
@@ -840,6 +921,13 @@ impl EffectQueue {
             EffectDefinition::RefreshCreature => {
                 Some(Effect::RefreshCreature {
                     target: EffectTarget::Creature { owner: source_owner, slot: source_slot },
+                })
+            }
+            EffectDefinition::Bounce { filter } => {
+                // For triggered abilities, bounce targets enemy creatures
+                Some(Effect::Bounce {
+                    target: EffectTarget::AllEnemyCreatures(source_owner),
+                    filter: filter.clone(),
                 })
             }
         }

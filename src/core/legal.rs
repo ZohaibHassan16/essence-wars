@@ -254,7 +254,28 @@ fn generate_ability_actions(
                         });
                     }
                 }
-                TargetingRule::TargetCreature(_) | TargetingRule::TargetAny => {
+                TargetingRule::TargetCreature(ref filter) => {
+                    // Target enemy creatures that match the filter
+                    let opponent_state = &state.players[opponent.index()];
+                    for opp_creature in &opponent_state.creatures {
+                        // Can't target stealthed enemy creatures with abilities
+                        if opp_creature.keywords.has_stealth() {
+                            continue;
+                        }
+                        // Apply filter
+                        if !filter.matches(opp_creature.current_health, opp_creature.keywords.0) {
+                            continue;
+                        }
+                        if actions.len() < MAX_LEGAL_ACTIONS {
+                            actions.push(Action::UseAbility {
+                                slot: creature.slot,
+                                ability_index: ability_idx as u8,
+                                target: Target::EnemySlot(opp_creature.slot),
+                            });
+                        }
+                    }
+                }
+                TargetingRule::TargetAny => {
                     // Target any enemy creature slot
                     for slot_idx in 0..board::CREATURE_SLOTS as u8 {
                         if actions.len() < MAX_LEGAL_ACTIONS {
@@ -266,8 +287,7 @@ fn generate_ability_actions(
                         }
                     }
                     // Also allow targeting self for TargetAny
-                    if matches!(ability.targeting, TargetingRule::TargetAny)
-                        && actions.len() < MAX_LEGAL_ACTIONS {
+                    if actions.len() < MAX_LEGAL_ACTIONS {
                         actions.push(Action::UseAbility {
                             slot: creature.slot,
                             ability_index: ability_idx as u8,

@@ -30,7 +30,7 @@ fn create_test_spell() -> CardDefinition {
         cost: 3,
         card_type: CardType::Spell {
             targeting: TargetingRule::TargetCreature(CreatureFilter::any()),
-            effects: vec![EffectDefinition::Damage { amount: 4 }],
+            effects: vec![EffectDefinition::Damage { amount: 4, filter: None }],
         },
         rarity: Rarity::Uncommon,
         tags: vec![],

@@ -173,6 +173,9 @@ pub fn effect_def_to_effect_with_target(
         EffectDefinition::RefreshCreature => {
             Some(Effect::RefreshCreature { target })
         }
+        EffectDefinition::Bounce { filter } => {
+            Some(Effect::Bounce { target, filter: filter.clone() })
+        }
     }
 }
 

@@ -36,6 +36,7 @@ fn test_effect_queue_single_damage() {
                 slot: Slot(0),
             },
             amount: 3,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -71,6 +72,7 @@ fn test_effect_queue_damage_kills_creature() {
                 slot: Slot(0),
             },
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -105,6 +107,7 @@ fn test_effect_queue_shield_blocks_damage() {
                 slot: Slot(0),
             },
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -150,6 +153,7 @@ fn test_effect_queue_heal() {
                 slot: Slot(0),
             },
             amount: 2,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -194,6 +198,7 @@ fn test_effect_queue_heal_max_cap() {
                 slot: Slot(0),
             },
             amount: 10,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -264,6 +269,7 @@ fn test_effect_queue_fifo_order() {
                 slot: Slot(0),
             },
             amount: 3,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -274,6 +280,7 @@ fn test_effect_queue_fifo_order() {
                 slot: Slot(1),
             },
             amount: 5,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -316,6 +323,7 @@ fn test_effect_queue_buff() {
             },
             attack: 2,
             health: 2,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -354,6 +362,7 @@ fn test_effect_queue_debuff_death() {
             },
             attack: 0,
             health: -3,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -387,6 +396,7 @@ fn test_effect_queue_destroy() {
                 owner: PlayerId::PLAYER_TWO,
                 slot: Slot(0),
             },
+            filter: None,
         },
         EffectSource::System,
     );
@@ -408,6 +418,7 @@ fn test_effect_queue_player_damage() {
         Effect::Damage {
             target: EffectTarget::Player(PlayerId::PLAYER_TWO),
             amount: 10,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -429,6 +440,7 @@ fn test_effect_queue_player_damage_game_over() {
         Effect::Damage {
             target: EffectTarget::Player(PlayerId::PLAYER_TWO),
             amount: 30,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -470,6 +482,7 @@ fn test_effect_queue_grant_keyword() {
                 slot: Slot(0),
             },
             keyword: Keywords::RUSH,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -505,6 +518,7 @@ fn test_effect_queue_remove_keyword() {
                 slot: Slot(0),
             },
             keyword: Keywords::SHIELD,
+            filter: None,
         },
         EffectSource::System,
     );
@@ -539,6 +553,7 @@ fn test_effect_queue_silence() {
                 owner: PlayerId::PLAYER_ONE,
                 slot: Slot(0),
             },
+            filter: None,
         },
         EffectSource::System,
     );
@@ -592,6 +607,7 @@ fn test_effect_queue_all_enemy_creatures_damage() {
         Effect::Damage {
             target: EffectTarget::AllEnemyCreatures(PlayerId::PLAYER_ONE),
             amount: 2,
+            filter: None,
         },
         EffectSource::System,
     );

@@ -164,7 +164,7 @@ pub fn card_playing_test_db() -> CardDatabase {
             cost: 1,
             card_type: CardType::Spell {
                 targeting: TargetingRule::TargetEnemyCreature,
-                effects: vec![EffectDefinition::Damage { amount: 3 }],
+                effects: vec![EffectDefinition::Damage { amount: 3, filter: None }],
             },
             rarity: Rarity::Common,
             tags: vec![],
@@ -218,7 +218,7 @@ pub fn card_playing_test_db() -> CardDatabase {
             cost: 2,
             card_type: CardType::Spell {
                 targeting: TargetingRule::TargetAllyCreature,
-                effects: vec![EffectDefinition::BuffStats { attack: 2, health: 2 }],
+                effects: vec![EffectDefinition::BuffStats { attack: 2, health: 2, filter: None }],
             },
             rarity: Rarity::Common,
             tags: vec![],
@@ -293,7 +293,7 @@ pub fn card_playing_test_db() -> CardDatabase {
                 triggered_effects: vec![AbilityDefinition {
                     trigger: Trigger::StartOfTurn,
                     targeting: TargetingRule::NoTarget,
-                    effects: vec![EffectDefinition::Heal { amount: 2 }],
+                    effects: vec![EffectDefinition::Heal { amount: 2, filter: None }],
                 }],
             },
             rarity: Rarity::Uncommon,
