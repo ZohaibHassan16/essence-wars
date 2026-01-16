@@ -135,6 +135,12 @@ Examples:
         help="List available experiments and exit",
     )
 
+    parser.add_argument(
+        "--no-cache",
+        action="store_true",
+        help="Disable caching (re-parse all experiments)",
+    )
+
     return parser.parse_args()
 
 
@@ -222,6 +228,7 @@ def main():
         sys.exit(0)
 
     # Aggregate all experiments
+    use_cache = not args.no_cache
     if RICH_AVAILABLE:
         with Progress(
             SpinnerColumn(),
@@ -229,17 +236,18 @@ def main():
             BarColumn(),
             transient=True,
         ) as progress:
-            task = progress.add_task("Aggregating experiments...", total=None)
+            cache_text = " (cached)" if use_cache else ""
+            task = progress.add_task(f"Aggregating experiments{cache_text}...", total=None)
 
             df = aggregator.aggregate_all(
-                min_generations=args.min_gens, mode_filter=args.mode, tag_filter=args.tag
+                min_generations=args.min_gens, mode_filter=args.mode, tag_filter=args.tag, use_cache=use_cache
             )
 
             progress.update(task, completed=True)
     else:
         print("Aggregating experiments...")
         df = aggregator.aggregate_all(
-            min_generations=args.min_gens, mode_filter=args.mode, tag_filter=args.tag
+            min_generations=args.min_gens, mode_filter=args.mode, tag_filter=args.tag, use_cache=use_cache
         )
 
     if df.empty:

@@ -6,6 +6,8 @@ Scans experiments/mcts/ directory and builds consolidated datasets.
 
 import re
 import logging
+import pickle
+import hashlib
 from pathlib import Path
 from dataclasses import dataclass, asdict
 from typing import Optional
@@ -93,10 +95,20 @@ class ExperimentRun:
 class ExperimentAggregator:
     """Aggregate and analyze MCTS experiment runs."""
 
-    def __init__(self, experiments_root: Path):
-        """Initialize aggregator with experiments directory path."""
+    def __init__(self, experiments_root: Path, cache_dir: Optional[Path] = None):
+        """
+        Initialize aggregator with experiments directory path.
+        
+        Args:
+            experiments_root: Root directory containing experiments
+            cache_dir: Directory for caching parsed experiments (default: experiments_root/.cache)
+        """
         self.experiments_root = Path(experiments_root)
+        self.cache_dir = cache_dir or (self.experiments_root / ".cache")
+        self.cache_dir.mkdir(exist_ok=True)
         self.runs: list[ExperimentRun] = []
+        self._cache_hits = 0
+        self._cache_misses = 0
 
     def scan_experiments(
         self,
@@ -148,16 +160,60 @@ class ExperimentAggregator:
         logger.info(f"Found {len(experiment_dirs)} experiment directories")
         return experiment_dirs
 
-    def parse_experiment(self, exp_dir: Path) -> Optional[ExperimentRun]:
+    def _get_cache_key(self, exp_dir: Path) -> str:
+        """Generate cache key based on experiment directory and modification time."""
+        log_files = list(exp_dir.glob("*.log"))
+        if not log_files:
+            return ""
+        
+        log_file = log_files[0]
+        mtime = log_file.stat().st_mtime
+        cache_key = f"{exp_dir.name}_{mtime}"
+        return hashlib.md5(cache_key.encode()).hexdigest()
+    
+    def _load_from_cache(self, cache_key: str) -> Optional[ExperimentRun]:
+        """Load experiment from cache if available."""
+        cache_file = self.cache_dir / f"{cache_key}.pkl"
+        if cache_file.exists():
+            try:
+                with open(cache_file, 'rb') as f:
+                    return pickle.load(f)
+            except Exception as e:
+                logger.debug(f"Cache load failed: {e}")
+                cache_file.unlink(missing_ok=True)
+        return None
+    
+    def _save_to_cache(self, cache_key: str, run: ExperimentRun) -> None:
+        """Save experiment to cache."""
+        cache_file = self.cache_dir / f"{cache_key}.pkl"
+        try:
+            with open(cache_file, 'wb') as f:
+                pickle.dump(run, f)
+        except Exception as e:
+            logger.debug(f"Cache save failed: {e}")
+
+    def parse_experiment(self, exp_dir: Path, use_cache: bool = True) -> Optional[ExperimentRun]:
         """
         Parse a single experiment directory.
 
         Args:
             exp_dir: Path to experiment directory
+            use_cache: Whether to use cached results
 
         Returns:
             ExperimentRun object or None if parsing fails
         """
+        # Try cache first
+        if use_cache:
+            cache_key = self._get_cache_key(exp_dir)
+            if cache_key:
+                cached = self._load_from_cache(cache_key)
+                if cached:
+                    self._cache_hits += 1
+                    logger.debug(f"Cache hit: {exp_dir.name}")
+                    return cached
+                self._cache_misses += 1
+        
         try:
             # Find log file
             log_files = list(exp_dir.glob("*.log"))
@@ -252,7 +308,15 @@ class ExperimentAggregator:
                 stats_file=str(stats_file) if stats_file.exists() else None,
             )
 
-            return ExperimentRun(metadata=metadata, generations=generation_metrics)
+            run = ExperimentRun(metadata=metadata, generations=generation_metrics)
+            
+            # Save to cache
+            if use_cache:
+                cache_key = self._get_cache_key(exp_dir)
+                if cache_key:
+                    self._save_to_cache(cache_key, run)
+            
+            return run
 
         except Exception as e:
             logger.error(f"Error parsing {exp_dir.name}: {e}", exc_info=True)
@@ -263,6 +327,7 @@ class ExperimentAggregator:
         min_generations: int = 0,
         mode_filter: Optional[str] = None,
         tag_filter: Optional[str] = None,
+        use_cache: bool = True,
     ) -> pd.DataFrame:
         """
         Aggregate all experiments into a single DataFrame.
@@ -271,6 +336,7 @@ class ExperimentAggregator:
             min_generations: Minimum generations to include
             mode_filter: Filter by mode
             tag_filter: Filter by tag
+            use_cache: Whether to use cached parsing results
 
         Returns:
             Consolidated DataFrame with all experiment data
@@ -279,9 +345,11 @@ class ExperimentAggregator:
 
         self.runs = []
         failed = []
+        self._cache_hits = 0
+        self._cache_misses = 0
 
         for exp_dir in exp_dirs:
-            run = self.parse_experiment(exp_dir)
+            run = self.parse_experiment(exp_dir, use_cache=use_cache)
             if run:
                 if len(run.generations) >= min_generations:
                     self.runs.append(run)
@@ -295,7 +363,8 @@ class ExperimentAggregator:
         if failed:
             logger.warning(f"Failed to parse {len(failed)} experiments: {failed[:5]}...")
 
-        logger.info(f"Successfully parsed {len(self.runs)} experiments")
+        cache_msg = f" (cache: {self._cache_hits} hits, {self._cache_misses} misses)" if use_cache else ""
+        logger.info(f"Successfully parsed {len(self.runs)} experiments{cache_msg}")
 
         # Combine all runs into single DataFrame
         if not self.runs:
