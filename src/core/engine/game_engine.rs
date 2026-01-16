@@ -201,9 +201,15 @@ impl<'a> GameEngine<'a> {
         const REGEN_AMOUNT: i8 = 2;
 
         for creature in &mut self.state.players[player.index()].creatures {
+            // Skip dead/dying creatures (health <= 0) - they'll be removed by death processing
+            if creature.current_health <= 0 {
+                continue;
+            }
+            
             if creature.keywords.has_regenerate() && creature.current_health < creature.max_health {
+                // Use saturating add to prevent overflow from edge cases
                 creature.current_health =
-                    (creature.current_health + REGEN_AMOUNT).min(creature.max_health);
+                    creature.current_health.saturating_add(REGEN_AMOUNT).min(creature.max_health);
             }
         }
     }
@@ -437,11 +443,6 @@ impl<'a> GameEngine<'a> {
 
         // Check for victory after each action
         self.check_life_victory();
-
-        // Ensure any pending deaths are processed before validation
-        // (handles edge cases where creatures end up at 0 health)
-        self.state.players[0].creatures.retain(|c| c.current_health > 0);
-        self.state.players[1].creatures.retain(|c| c.current_health > 0);
 
         // Validate state invariants in debug builds
         self.state.debug_validate();

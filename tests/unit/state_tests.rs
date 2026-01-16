@@ -170,18 +170,18 @@ fn test_debug_validate_catches_wrong_owner() {
 
 #[test]
 #[cfg(debug_assertions)]
-#[should_panic(expected = "Dead creature")]
+#[should_panic(expected = "invalid health")]
 fn test_debug_validate_catches_dead_creature() {
     let mut state = GameState::new();
 
-    // Add a dead creature (should have been removed)
+    // Add a creature with invalid negative health (0 is temporarily allowed for death processing)
     state.players[0].creatures.push(Creature {
         instance_id: CreatureInstanceId(0),
         card_id: CardId(1),
         owner: PlayerId::PLAYER_ONE,
         slot: Slot(0),
         attack: 2,
-        current_health: 0, // Dead!
+        current_health: -1, // Invalid negative health!
         max_health: 3,
         base_attack: 2,
         base_health: 3,

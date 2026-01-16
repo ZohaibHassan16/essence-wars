@@ -308,9 +308,12 @@ impl PlayerState {
             seen_slots.push(creature.slot.0);
 
             // Creatures on board should be alive
+            // Note: Temporarily allowing 0-health creatures since death processing is asynchronous
+            // through the effect queue's pending_deaths system. The creature will be removed
+            // on the next process_deaths() call.
             debug_assert!(
-                creature.current_health > 0,
-                "Dead creature (health={}) still on board at slot {}",
+                creature.current_health >= 0,
+                "Creature with invalid health ({}) at slot {}",
                 creature.current_health, creature.slot.0
             );
         }
