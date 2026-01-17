@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essence Wars Research Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #0f3460;
+            --text-primary: #eee;
+            --text-secondary: #aaa;
+            --accent-blue: #4da6ff;
+            --accent-green: #4dff88;
+            --accent-red: #ff6b6b;
+            --accent-yellow: #ffd93d;
+            --argentum: #7cb9e8;
+            --symbiote: #77dd77;
+            --obsidion: #9370db;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(77, 166, 255, 0.3);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .meta-info {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .meta-info span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card-full { grid-column: 1 / -1; }
+
+        .card h2 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--accent-blue);
+            border-radius: 2px;
+        }
+
+        .chart-container { min-height: 400px; }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .summary-card .label {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .balanced { color: var(--accent-green); }
+        .warning { color: var(--accent-yellow); }
+        .imbalanced { color: var(--accent-red); }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        th { background: var(--bg-card); font-weight: 600; }
+        tr:hover { background: rgba(77, 166, 255, 0.1); }
+        .win-rate { font-weight: bold; }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border: none;
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab:hover, .tab.active { background: var(--accent-blue); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        footer a { color: var(--accent-blue); text-decoration: none; }
+
+        @media (max-width: 768px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            header h1 { font-size: 1.8em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Essence Wars Research Dashboard</h1>
+            <div class="meta-info">
+                <span>Generated: 2026-01-17 11:09</span>
+                <span>Games Analyzed: 48,000</span>
+                <span>Matchups: 48</span>
+                <span>Engine Version: unknown</span>
+            </div>
+        </header>
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="value warning">Warning</div>
+                <div class="label">Overall Balance</div>
+            </div>
+            <div class="summary-card">
+                <div class="value">7.6%</div>
+                <div class="label">Max Faction Delta</div>
+            </div>
+            <div class="summary-card">
+                <div class="value">48.1%</div>
+                <div class="label">P1 Win Rate</div>
+            </div>
+            <div class="summary-card">
+                <div class="value">25.6</div>
+                <div class="label">Avg Game Length</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card card-full">
+                <h2>Faction Matchup Matrix</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 15px;">
+                    Win rates for Row Faction vs Column Faction. Values > 50% favor the row faction.
+                </p>
+                <div id="heatmap-container" class="chart-container"></div>
+            </div>
+
+            <div class="card">
+                <h2>Faction Win Rates</h2>
+                <div id="faction-bars-container" class="chart-container"></div>
+            </div>
+
+            <div class="card">
+                <h2>Deck Performance Ranking</h2>
+                <div id="deck-ranking-container" class="chart-container"></div>
+            </div>
+
+            <div class="card">
+                <h2>P1/P2 Advantage Analysis</h2>
+                <div id="p1p2-container" class="chart-container"></div>
+            </div>
+
+            <div class="card">
+                <h2>Game Length Distribution</h2>
+                <div id="game-length-container" class="chart-container"></div>
+            </div>
+
+            <div class="card card-full">
+                <h2>Combat Efficiency by Faction</h2>
+                <div id="combat-efficiency-container" class="chart-container"></div>
+            </div>
+
+            <div class="card card-full">
+                <h2>Detailed Matchup Analysis</h2>
+                <div class="tabs">
+                    <button class="tab active" data-faction="argentum">Argentum</button>
+<button class="tab " data-faction="symbiote">Symbiote</button>
+<button class="tab " data-faction="obsidion">Obsidion</button>
+                </div>
+                <div id="matchup-details">
+                    <div id="table-argentum" class="tab-content active"><table><thead><tr><th>Argentum Deck</th><th>Opponent</th><th>Win Rate</th><th>Games</th><th>Avg Turns</th></tr></thead><tbody><tr><td>colossus_wall</td><td>broodmother_swarm</td><td class="win-rate imbalanced">0.6%</td><td>1000</td><td>24.4</td></tr><tr><td>colossus_wall</td><td>alpha_frenzy</td><td class="win-rate imbalanced">0.7%</td><td>1000</td><td>25.7</td></tr><tr><td>colossus_wall</td><td>plague_volatile</td><td class="win-rate imbalanced">0.6%</td><td>1000</td><td>24.3</td></tr><tr><td>colossus_wall</td><td>grove_regenerate</td><td class="win-rate imbalanced">0.6%</td><td>1000</td><td>24.8</td></tr><tr><td>artificer_tokens</td><td>broodmother_swarm</td><td class="win-rate imbalanced">0.5%</td><td>1000</td><td>26.7</td></tr><tr><td>artificer_tokens</td><td>alpha_frenzy</td><td class="win-rate imbalanced">0.6%</td><td>1000</td><td>27.6</td></tr><tr><td>artificer_tokens</td><td>plague_volatile</td><td class="win-rate imbalanced">0.5%</td><td>1000</td><td>28.2</td></tr><tr><td>artificer_tokens</td><td>grove_regenerate</td><td class="win-rate imbalanced">0.6%</td><td>1000</td><td>25.2</td></tr><tr><td>vex_piercing</td><td>broodmother_swarm</td><td class="win-rate imbalanced">0.3%</td><td>1000</td><td>26.0</td></tr><tr><td>vex_piercing</td><td>alpha_frenzy</td><td class="win-rate imbalanced">0.4%</td><td>1000</td><td>26.7</td></tr><tr><td>vex_piercing</td><td>plague_volatile</td><td class="win-rate imbalanced">0.5%</td><td>1000</td><td>27.7</td></tr><tr><td>vex_piercing</td><td>grove_regenerate</td><td class="win-rate imbalanced">0.4%</td><td>1000</td><td>26.5</td></tr><tr><td>architect_fortify</td><td>broodmother_swarm</td><td class="win-rate imbalanced">0.5%</td><td>1000</td><td>26.2</td></tr><tr><td>architect_fortify</td><td>alpha_frenzy</td><td class="win-rate imbalanced">0.5%</td><td>1000</td><td>26.1</td></tr><tr><td>architect_fortify</td><td>plague_volatile</td><td class="win-rate imbalanced">0.4%</td><td>1000</td><td>27.0</td></tr><tr><td>architect_fortify</td><td>grove_regenerate</td><td class="win-rate imbalanced">0.5%</td><td>1000</td><td>25.4</td></tr><tr><td>architect_fortify</td><td>archon_burst</td><td class="win-rate imbalanced">0.4%</td><td>1000</td><td>25.3</td></tr><tr><td>architect_fortify</td><td>kael_assassin</td><td class="win-rate imbalanced">0.6%</td><td>1000</td><td>24.4</td></tr><tr><td>architect_fortify</td><td>sovereign_lifesteal</td><td class="win-rate imbalanced">0.7%</td><td>1000</td><td>26.5</td></tr><tr><td>architect_fortify</td><td>shadow_weaver</td><td class="win-rate imbalanced">0.4%</td><td>1000</td><td>24.8</td></tr><tr><td>vex_piercing</td><td>archon_burst</td><td class="win-rate imbalanced">0.4%</td><td>1000</td><td>26.5</td></tr><tr><td>vex_piercing</td><td>kael_assassin</td><td class="win-rate imbalanced">0.5%</td><td>1000</td><td>25.7</td></tr><tr><td>vex_piercing</td><td>sovereign_lifesteal</td><td class="win-rate imbalanced">0.6%</td><td>1000</td><td>27.8</td></tr><tr><td>vex_piercing</td><td>shadow_weaver</td><td class="win-rate imbalanced">0.5%</td><td>1000</td><td>26.0</td></tr><tr><td>colossus_wall</td><td>archon_burst</td><td class="win-rate imbalanced">0.4%</td><td>1000</td><td>26.1</td></tr><tr><td>colossus_wall</td><td>kael_assassin</td><td class="win-rate imbalanced">0.8%</td><td>1000</td><td>24.0</td></tr><tr><td>colossus_wall</td><td>sovereign_lifesteal</td><td class="win-rate imbalanced">0.9%</td><td>1000</td><td>27.2</td></tr><tr><td>colossus_wall</td><td>shadow_weaver</td><td class="win-rate imbalanced">0.6%</td><td>1000</td><td>27.0</td></tr><tr><td>artificer_tokens</td><td>archon_burst</td><td class="win-rate imbalanced">0.5%</td><td>1000</td><td>25.3</td></tr><tr><td>artificer_tokens</td><td>kael_assassin</td><td class="win-rate imbalanced">0.7%</td><td>1000</td><td>25.0</td></tr><tr><td>artificer_tokens</td><td>sovereign_lifesteal</td><td class="win-rate imbalanced">0.8%</td><td>1000</td><td>26.9</td></tr><tr><td>artificer_tokens</td><td>shadow_weaver</td><td class="win-rate imbalanced">0.7%</td><td>1000</td><td>25.2</td></tr></tbody></table></div>
+<div id="table-symbiote" class="tab-content "><table><thead><tr><th>Symbiote Deck</th><th>Opponent</th><th>Win Rate</th><th>Games</th><th>Avg Turns</th></tr></thead><tbody><tr><td>alpha_frenzy</td><td>shadow_weaver</td><td class="win-rate imbalanced">0.3%</td><td>1000</td><td>25.6</td></tr><tr><td>alpha_frenzy</td><td>archon_burst</td><td class="win-rate imbalanced">0.5%</td><td>1000</td><td>24.9</td></tr><tr><td>alpha_frenzy</td><td>kael_assassin</td><td class="win-rate imbalanced">0.4%</td><td>1000</td><td>24.6</td></tr><tr><td>alpha_frenzy</td><td>sovereign_lifesteal</td><td class="win-rate imbalanced">0.4%</td><td>1000</td><td>25.8</td></tr><tr><td>broodmother_swarm</td><td>shadow_weaver</td><td class="win-rate imbalanced">0.5%</td><td>1000</td><td>23.1</td></tr><tr><td>broodmother_swarm</td><td>archon_burst</td><td class="win-rate imbalanced">0.6%</td><td>1000</td><td>22.8</td></tr><tr><td>broodmother_swarm</td><td>kael_assassin</td><td class="win-rate imbalanced">0.7%</td><td>1000</td><td>22.4</td></tr><tr><td>broodmother_swarm</td><td>sovereign_lifesteal</td><td class="win-rate imbalanced">0.6%</td><td>1000</td><td>24.8</td></tr><tr><td>grove_regenerate</td><td>shadow_weaver</td><td class="win-rate imbalanced">0.4%</td><td>1000</td><td>24.2</td></tr><tr><td>grove_regenerate</td><td>archon_burst</td><td class="win-rate imbalanced">0.4%</td><td>1000</td><td>24.7</td></tr><tr><td>grove_regenerate</td><td>kael_assassin</td><td class="win-rate imbalanced">0.4%</td><td>1000</td><td>24.5</td></tr><tr><td>grove_regenerate</td><td>sovereign_lifesteal</td><td class="win-rate imbalanced">0.5%</td><td>1000</td><td>25.8</td></tr><tr><td>plague_volatile</td><td>shadow_weaver</td><td class="win-rate imbalanced">0.4%</td><td>1000</td><td>25.7</td></tr><tr><td>plague_volatile</td><td>archon_burst</td><td class="win-rate imbalanced">0.5%</td><td>1000</td><td>27.0</td></tr><tr><td>plague_volatile</td><td>kael_assassin</td><td class="win-rate imbalanced">0.5%</td><td>1000</td><td>25.0</td></tr><tr><td>plague_volatile</td><td>sovereign_lifesteal</td><td class="win-rate imbalanced">0.5%</td><td>1000</td><td>26.7</td></tr></tbody></table></div>
+<div id="table-obsidion" class="tab-content "><table><thead><tr><th>Obsidion Deck</th><th>Opponent</th><th>Win Rate</th><th>Games</th><th>Avg Turns</th></tr></thead><tbody></tbody></table></div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>
+                <strong>Essence Wars</strong> - A deterministic card game engine for ML/AI research
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        const dashboardData = {"matchup_matrix": {"argentum": {"symbiote": 43.443749999999994, "obsidion": 44.25625}, "symbiote": {"argentum": 42.09375, "obsidion": 39.08125}, "obsidion": {"argentum": 29.7875, "symbiote": 42.662499999999994}}, "faction_win_rates": {"argentum": 43.85, "symbiote": 40.5875, "obsidion": 36.225}, "deck_rankings": [{"deck_id": "colossus_wall", "faction": "argentum", "win_rate": 49.1, "games": 8000}, {"deck_id": "broodmother_swarm", "faction": "symbiote", "win_rate": 44.8125, "games": 8000}, {"deck_id": "alpha_frenzy", "faction": "symbiote", "win_rate": 36.15, "games": 8000}, {"deck_id": "plague_volatile", "faction": "symbiote", "win_rate": 45.237500000000004, "games": 8000}, {"deck_id": "grove_regenerate", "faction": "symbiote", "win_rate": 36.15, "games": 8000}, {"deck_id": "artificer_tokens", "faction": "argentum", "win_rate": 49.737500000000004, "games": 8000}, {"deck_id": "vex_piercing", "faction": "argentum", "win_rate": 39.2375, "games": 8000}, {"deck_id": "architect_fortify", "faction": "argentum", "win_rate": 37.325, "games": 8000}, {"deck_id": "archon_burst", "faction": "obsidion", "win_rate": 40.8125, "games": 8000}, {"deck_id": "kael_assassin", "faction": "obsidion", "win_rate": 31.125000000000004, "games": 8000}, {"deck_id": "sovereign_lifesteal", "faction": "obsidion", "win_rate": 32.300000000000004, "games": 8000}, {"deck_id": "shadow_weaver", "faction": "obsidion", "win_rate": 40.6625, "games": 8000}], "p1_p2_analysis": {"overall_p1_win_rate": 48.10625, "total_games": 48000}, "game_lengths": [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369, 24.369], "combat_stats": {"argentum": {"trade_ratio": 1.0016328084470856, "face_damage": 11.701125}, "symbiote": {"trade_ratio": 0.9981314339078491, "face_damage": 12.639187499999998}, "obsidion": {"trade_ratio": 1.0046474154834912, "face_damage": 10.8623125}}};
+
+        const colors = {
+            argentum: '#7cb9e8',
+            symbiote: '#77dd77',
+            obsidion: '#9370db',
+            neutral: '#888888'
+        };
+
+        const plotlyLayout = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(22,33,62,0.8)',
+            font: { color: '#eee', family: 'Segoe UI, system-ui, sans-serif' },
+            margin: { t: 40, r: 20, b: 60, l: 60 }
+        };
+
+        const plotlyConfig = { responsive: true, displayModeBar: true };
+
+        function renderHeatmap() {
+            const matrix = dashboardData.matchup_matrix;
+            const factions = ['argentum', 'symbiote', 'obsidion'];
+            const labels = ['Argentum', 'Symbiote', 'Obsidion'];
+
+            const z = factions.map(f1 => factions.map(f2 => matrix[f1]?.[f2] ?? 50));
+
+            const annotations = [];
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    const val = z[i][j];
+                    annotations.push({
+                        x: labels[j], y: labels[i],
+                        text: val.toFixed(1) + '%',
+                        showarrow: false,
+                        font: { color: val > 55 || val < 45 ? '#fff' : '#333', size: 16 }
+                    });
+                }
+            }
+
+            Plotly.newPlot('heatmap-container', [{
+                type: 'heatmap', z: z, x: labels, y: labels,
+                colorscale: [[0, '#ff6b6b'], [0.45, '#ff6b6b'], [0.45, '#ffd93d'],
+                            [0.55, '#ffd93d'], [0.55, '#4dff88'], [1, '#4dff88']],
+                zmin: 30, zmax: 70, showscale: true,
+                colorbar: { title: 'Win Rate %', ticksuffix: '%' }
+            }], { ...plotlyLayout, annotations, xaxis: { title: 'Opponent' }, yaxis: { title: 'Your Faction', autorange: 'reversed' }}, plotlyConfig);
+        }
+
+        function renderFactionBars() {
+            const factions = Object.keys(dashboardData.faction_win_rates);
+            const winRates = Object.values(dashboardData.faction_win_rates);
+            const barColors = factions.map(f => colors[f.toLowerCase()] || '#888');
+
+            Plotly.newPlot('faction-bars-container', [{
+                type: 'bar', x: factions.map(f => f.charAt(0).toUpperCase() + f.slice(1)),
+                y: winRates, marker: { color: barColors },
+                text: winRates.map(v => v.toFixed(1) + '%'), textposition: 'outside'
+            }], {
+                ...plotlyLayout, yaxis: { title: 'Win Rate %', range: [0, 70], gridcolor: 'rgba(255,255,255,0.1)' },
+                shapes: [{ type: 'line', x0: -0.5, x1: 2.5, y0: 50, y1: 50, line: { color: '#ffd93d', width: 2, dash: 'dash' }},
+                        { type: 'rect', x0: -0.5, x1: 2.5, y0: 45, y1: 55, fillcolor: 'rgba(77, 255, 136, 0.1)', line: { width: 0 }}]
+            }, plotlyConfig);
+        }
+
+        function renderDeckRanking() {
+            const decks = dashboardData.deck_rankings;
+            const sorted = [...decks].sort((a, b) => b.win_rate - a.win_rate);
+            const barColors = sorted.map(d => colors[d.faction.toLowerCase()] || '#888');
+
+            Plotly.newPlot('deck-ranking-container', [{
+                type: 'bar', y: sorted.map(d => d.deck_id.replace(/_/g, ' ')),
+                x: sorted.map(d => d.win_rate), orientation: 'h',
+                marker: { color: barColors },
+                text: sorted.map(d => d.win_rate.toFixed(1) + '%'), textposition: 'outside'
+            }], {
+                ...plotlyLayout, xaxis: { title: 'Win Rate %', range: [0, 75], gridcolor: 'rgba(255,255,255,0.1)' },
+                yaxis: { autorange: 'reversed' }, height: Math.max(400, sorted.length * 35),
+                shapes: [{ type: 'line', x0: 50, x1: 50, y0: -0.5, y1: sorted.length - 0.5, line: { color: '#ffd93d', width: 2, dash: 'dash' }}]
+            }, plotlyConfig);
+        }
+
+        function renderP1P2Analysis() {
+            const p1Data = dashboardData.p1_p2_analysis;
+            Plotly.newPlot('p1p2-container', [{
+                type: 'indicator', mode: 'gauge+number+delta',
+                value: p1Data.overall_p1_win_rate, delta: { reference: 50, valueformat: '.1f' },
+                gauge: {
+                    axis: { range: [35, 65], ticksuffix: '%' }, bar: { color: '#4da6ff' },
+                    bgcolor: 'rgba(22,33,62,0.8)', borderwidth: 2, bordercolor: 'rgba(255,255,255,0.3)',
+                    steps: [{ range: [35, 45], color: 'rgba(255, 107, 107, 0.3)' },
+                            { range: [45, 55], color: 'rgba(77, 255, 136, 0.2)' },
+                            { range: [55, 65], color: 'rgba(255, 107, 107, 0.3)' }],
+                    threshold: { line: { color: '#ffd93d', width: 4 }, thickness: 0.75, value: 50 }
+                },
+                title: { text: 'Player 1 Win Rate', font: { size: 16 } },
+                number: { suffix: '%', font: { size: 36 } }
+            }], { ...plotlyLayout, height: 350 }, plotlyConfig);
+        }
+
+        function renderGameLength() {
+            const lengths = dashboardData.game_lengths;
+            Plotly.newPlot('game-length-container', [{
+                type: 'histogram', x: lengths, marker: { color: '#4da6ff' }, nbinsx: 20
+            }], {
+                ...plotlyLayout,
+                xaxis: { title: 'Game Length (Turns)', gridcolor: 'rgba(255,255,255,0.1)' },
+                yaxis: { title: 'Number of Games', gridcolor: 'rgba(255,255,255,0.1)' }, bargap: 0.05
+            }, plotlyConfig);
+        }
+
+        function renderCombatEfficiency() {
+            const factions = ['argentum', 'symbiote', 'obsidion'];
+            const labels = ['Argentum', 'Symbiote', 'Obsidion'];
+            const tradeRatios = factions.map(f => dashboardData.combat_stats[f]?.trade_ratio ?? 1);
+            const faceDamage = factions.map(f => dashboardData.combat_stats[f]?.face_damage ?? 0);
+
+            Plotly.newPlot('combat-efficiency-container', [
+                { type: 'bar', name: 'Trade Ratio', x: labels, y: tradeRatios, marker: { color: '#4da6ff' }},
+                { type: 'bar', name: 'Avg Face Damage', x: labels, y: faceDamage, marker: { color: '#4dff88' }, yaxis: 'y2' }
+            ], {
+                ...plotlyLayout, barmode: 'group',
+                yaxis: { title: 'Trade Ratio', gridcolor: 'rgba(255,255,255,0.1)' },
+                yaxis2: { title: 'Face Damage', overlaying: 'y', side: 'right', showgrid: false },
+                legend: { orientation: 'h', y: -0.15 }
+            }, plotlyConfig);
+        }
+
+        function switchTab(faction) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector('.tab[data-faction="' + faction + '"]').classList.add('active');
+            document.getElementById('table-' + faction).classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderHeatmap();
+            renderFactionBars();
+            renderDeckRanking();
+            renderP1P2Analysis();
+            renderGameLength();
+            renderCombatEfficiency();
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => switchTab(tab.dataset.faction));
+            });
+        });
+    </script>
+</body>
+</html>

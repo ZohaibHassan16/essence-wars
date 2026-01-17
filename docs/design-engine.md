@@ -1,8 +1,8 @@
 # Card Game Engine Design Document
 
-> **Version:** 1.2 (Phase 4)
-> **Last Updated:** 2026-01-16
-> **Status:** Implementation Complete
+> **Version:** 1.3 (New Horizons Edition)
+> **Last Updated:** 2026-01-17
+> **Status:** Implementation Complete - 300 cards, 16 keywords
 
 This document is the single source of truth for all game rules, parameters, and engine specifications.
 
@@ -593,8 +593,10 @@ Note: Playing a creature does NOT exhaust it (but summoning sickness
 | **Regenerate** | Heals 2 HP at start of owner's turn | ~1.0 |
 | **Stealth** | Cannot be targeted by enemy attacks/spells; breaks when attacking | ~1.5 |
 | **Charge** | +2 attack damage when attacking | ~1.0 |
-| **Frenzy** | After killing a creature in combat, can attack again | ~1.5 |
-| **Volatile** | Deals damage to all adjacent enemy creatures when it dies | ~0.5 |
+| **Frenzy** | +1 attack after each attack this turn | ~1.0 |
+| **Volatile** | Deal 2 damage to all enemy creatures when this dies | ~0.5 |
+| **Fortify** | Take 1 less damage from all sources (minimum 1) | ~1.0 |
+| **Ward** | First spell/ability targeting this has no effect; Ward is removed | ~1.0 |
 
 ### 7.2 Keyword Interaction Matrix
 
@@ -705,9 +707,11 @@ impl Keywords {
     pub const STEALTH: u16     = 0x0400;  // bit 10
     pub const CHARGE: u16      = 0x0800;  // bit 11
 
-    // Phase 4 keywords (bits 12-13)
+    // Phase 4 keywords (bits 12-15)
     pub const FRENZY: u16    = 0x1000;  // bit 12
     pub const VOLATILE: u16  = 0x2000;  // bit 13
+    pub const FORTIFY: u16   = 0x4000;  // bit 14
+    pub const WARD: u16      = 0x8000;  // bit 15
 }
 
 // Check with single bitwise AND: keywords.0 & Keywords::RUSH != 0
@@ -1430,10 +1434,10 @@ Board:
 │  data/                                                                      │
 │    └── cards/                                                               │
 │        └── core_set/                                                        │
-│            ├── argentum.yaml     (35 cards - IDs 1000-1034)                │
-│            ├── symbiote.yaml     (45 cards - IDs 2000-2044)                │
-│            ├── obsidion.yaml     (40 cards - IDs 3000-3039)                │
-│            └── neutral.yaml      (20 cards - IDs 4000-4019)                │
+│            ├── argentum.yaml     (75 cards - IDs 1000-1074)                │
+│            ├── symbiote.yaml     (75 cards - IDs 2000-2074)                │
+│            ├── obsidion.yaml     (75 cards - IDs 3000-3074)                │
+│            └── neutral.yaml      (75 cards - IDs 4000-4074)                │
 │                                                                             │
 │  LOADING PROCESS                                                            │
 │  ───────────────                                                            │
@@ -1448,7 +1452,7 @@ Board:
 │  • Parsing: ~1-10ms (one time at startup)                                  │
 │  • Card lookup: O(1) array index (during gameplay)                         │
 │  • Memory: ~100 bytes per card definition                                  │
-│  • Current: 140 cards ≈ 14KB memory (trivial)                              │
+│  • Current: 300 cards ≈ 30KB memory (trivial)                              │
 │                                                                             │
 │  BENEFITS                                                                   │
 │  ────────                                                                   │
@@ -1639,16 +1643,19 @@ pub enum DeckVisibility {
 
 ### 12.5 Card Pool Reference
 
-Current card pool: **140 cards** across 4 factions
+Current card pool: **300 cards** across 4 factions (New Horizons Edition)
 
 | Faction | ID Range | Cards | Identity |
 |---------|----------|-------|----------|
-| Argentum Combine | 1000-1034 | 35 | Guard, Piercing, Shield - "The Wall" |
-| Symbiote Circles | 2000-2044 | 45 | Rush, Lethal, Regenerate - "The Swarm" |
-| Obsidion Syndicate | 3000-3039 | 40 | Lifesteal, Stealth, Quick - "The Shadow" |
-| Free-Walkers (Neutral) | 4000-4019 | 20 | Ranged, Charge - "The Toolbox" |
+| Argentum Combine | 1000-1074 | 75 | Guard, Piercing, Shield, Fortify - "The Wall" |
+| Symbiote Circles | 2000-2074 | 75 | Rush, Lethal, Regenerate, Frenzy, Volatile - "The Swarm" |
+| Obsidion Syndicate | 3000-3074 | 75 | Lifesteal, Stealth, Quick, Ward - "The Shadow" |
+| Free-Walkers (Neutral) | 4000-4074 | 75 | Ranged, Charge - "The Toolbox" |
+
+**Commander Decks:** 12 pre-built decks (4 per faction) with Legendary Commanders.
 
 See `data/cards/core_set/` for complete card definitions.
+See `docs/cards-new-horizons.md` for the complete card database reference.
 
 ---
 
@@ -1659,6 +1666,7 @@ See `data/cards/core_set/` for complete card definitions.
 | 1.0 | 2026-01-12 | Initial consolidated design document |
 | 1.1 | 2026-01-13 | Phase 1.5 keywords (Ephemeral, Regenerate, Stealth, Charge) |
 | 1.2 | 2026-01-16 | Phase 4 engine enhancements: Creature Filters, Conditional Triggers, Bounce Effect, Frenzy/Volatile keywords |
+| 1.3 | 2026-01-17 | **New Horizons Edition**: 300 cards, 16 keywords (added Fortify, Ward), 12 Commander Decks |
 
 ---
 
