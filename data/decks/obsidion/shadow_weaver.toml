@@ -1,0 +1,48 @@
+id = "shadow_weaver"
+name = "The Shadow Weaver"
+description = "Shadow clones and stealth tactics - hit and run"
+tags = ["commander", "obsidion"]
+
+cards = [
+    # Commander
+    3057,  # The Shadow Weaver (6) 3/4 Stealth, summons 2x Shadow Clones
+
+    # Stealth Creatures
+    3001,  # Shadow Blade (2) 3/2 Stealth, Lethal
+    3001,  # Shadow Blade x2
+    3005,  # Silent Assassin (4) 4/3 Stealth, Quick
+    3018,  # Spectral Assassin (4) 3/3 Stealth, Lifesteal
+    3019,  # Nightstalker (4) 3/4 Stealth, Lifesteal, Regenerate
+
+    # Quick/Burst Creatures
+    3002,  # Blood Acolyte (2) 2/3 Quick, Lifesteal
+    3002,  # Blood Acolyte x2
+    3058,  # Void Archon (5) 4/4 Quick
+    3003,  # Void Walker (3) 3/3 Ephemeral, Rush
+
+    # Token/Clone Support
+    3041,  # Shadow Spawn (spell - summon token)
+    3044,  # Void Rift (spell - summon tokens)
+    3068,  # Shadowstep (spell - stealth grant)
+
+    # Sustain
+    3004,  # Hemomancer (4) 4/4 Lifesteal
+    3017,  # Blood Seeker (3) 3/3 Quick, Lifesteal
+    3020,  # Soul Reaver (5) 4/4 Lifesteal
+
+    # Removal/Control
+    3010,  # Soul Drain (spell - damage + heal)
+    3008,  # Life Tap (spell - damage + draw)
+    3025,  # Shadow Strike (spell - damage)
+
+    # Utility Creatures
+    3000,  # Soul Fragment (1) 2/2 Ephemeral
+    3000,  # Soul Fragment x2
+    3006,  # Ritual Master (4) 4/4 OnPlay effects
+
+    # Neutral Support
+    4000,  # Wandering Merchant (2) 2/3
+    4003,  # Hedge Wizard (3) 2/2 draw
+    4010,  # Supply Cache (2) draw
+    4012,  # Wayfarer's Blessing (2) +1/+1
+]

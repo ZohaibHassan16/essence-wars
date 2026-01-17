@@ -42,7 +42,7 @@ cards:
     name: "Void Walker"
     cost: 3
     card_type: creature
-    attack: 4
+    attack: 3  # Nerfed from 4 (v0.5.1 round 4)
     health: 3
     keywords: [Ephemeral, Rush]
     rarity: Uncommon
@@ -220,7 +220,7 @@ cards:
     name: "Nightstalker"
     cost: 4
     card_type: creature
-    attack: 4
+    attack: 3  # Nerfed from 4 (v0.5.1 round 4)
     health: 4
     keywords: [Stealth, Lifesteal, Regenerate]
     rarity: Rare
@@ -743,26 +743,34 @@ cards:
     # Returns to hand on kill - hit and run assassin
     # Flavor: "You never see him twice. Once is enough."
 
-  # --- The Doppelganger King (Copy/Clone archetype) ---
+  # --- The Shadow Weaver (Shadow Clone archetype) ---
   - id: 3057
-    name: "The Doppelganger King"
-    cost: 7
+    name: "The Shadow Weaver"
+    cost: 6
     card_type: creature
-    attack: 4
+    attack: 3
     health: 4
-    keywords: []
+    keywords: [Stealth]
     rarity: Legendary
     tags: [Commander, Shapeshifter]
     abilities:
       - trigger: OnPlay
-        targeting: TargetEnemyCreature
+        targeting: NoTarget
         effects:
-          - type: copy
-          - type: buff_stats
-            attack: 2
-            health: 2
-    # Becomes a copy of target enemy creature with +2/+2
-    # Flavor: "Why be yourself when you can be everyone?"
+          - type: summon_token
+            token:
+              name: "Shadow Clone"
+              attack: 2
+              health: 2
+              keywords: [Ephemeral, Stealth]
+          - type: summon_token
+            token:
+              name: "Shadow Clone"
+              attack: 2
+              health: 2
+              keywords: [Ephemeral, Stealth]
+    # Summons shadow clones that strike from the darkness
+    # Flavor: "From one shadow, many emerge."
 
   # --- Void Archon (Quick/Burst archetype) ---
   - id: 3058

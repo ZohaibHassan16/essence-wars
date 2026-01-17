@@ -62,9 +62,9 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
         seed: 600,
         deck1_id: "broodmother_swarm",
         deck2_id: "broodmother_swarm",
-        expected_winner: Some(0), // P1 wins
-        expected_turns: 15,
-        expected_action_count: 75,
+        expected_winner: Some(1), // P2 wins (updated v0.5.1 round 5)
+        expected_turns: 18,
+        expected_action_count: 82,
     },
 ];
 

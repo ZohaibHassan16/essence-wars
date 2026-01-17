@@ -4,7 +4,7 @@
 *.pdb
 
 # Cargo lock file (uncomment if you want to ignore it for libraries)
-# Cargo.lock
+Cargo.lock
 
 # IDE / Editor files
 .vscode/

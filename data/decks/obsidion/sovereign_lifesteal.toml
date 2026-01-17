@@ -1,13 +1,47 @@
 id = "sovereign_lifesteal"
 name = "The Blood Sovereign"
-description = "Lifesteal sustain"
+description = "Lifesteal sustain - outlast opponents through life gain"
 tags = ["commander", "obsidion"]
 
 cards = [
-    3055, 3002, 3047, 3059, 3017,
-    3038, 3004, 3019, 3037, 3051,
-    3060, 3020, 3048, 3043, 3007,
-    3000, 3010, 3015, 3025, 3072,
-    3001, 3008, 3016, 4029, 4030,
-    4031, 4044, 4054, 4066, 4067,
+    # Commander
+    3055,  # The Blood Sovereign (6) 4/5 Lifesteal, grants Lifesteal to all
+
+    # Core Lifesteal Creatures (benefit from commander aura)
+    3002,  # Blood Acolyte (2) 2/3 Quick, Lifesteal
+    3002,  # Blood Acolyte x2
+    3004,  # Hemomancer (4) 4/4 Lifesteal
+    3017,  # Blood Seeker (3) 3/3 Quick, Lifesteal
+    3019,  # Nightstalker (4) 3/4 Stealth, Lifesteal, Regenerate
+    3020,  # Soul Reaver (5) 4/4 Lifesteal
+    3007,  # The Eternal One (7) 7/7 Lifesteal, Regenerate
+
+    # High Attack Creatures (great with granted Lifesteal)
+    3006,  # Ritual Master (4) 4/4 OnPlay effects
+    3003,  # Void Walker (3) 3/3 Ephemeral, Rush
+    3058,  # Void Archon (5) 4/4 Quick
+    3001,  # Shadow Blade (2) 3/2 Stealth, Lethal
+
+    # Sustain/Healing Spells
+    3010,  # Soul Drain (3) damage + heal
+    3010,  # Soul Drain x2
+    3008,  # Life Tap (2) damage + draw
+    3015,  # Blood Pact (spell)
+
+    # Board Presence
+    3000,  # Soul Fragment (1) 2/2 Ephemeral
+    3000,  # Soul Fragment x2
+    3047,  # Crimson Acolyte (creature)
+    3059,  # Blood Ritualist (creature)
+
+    # Removal
+    3025,  # Shadow Strike (spell)
+    3016,  # Corruption (spell)
+
+    # Neutral Support
+    4000,  # Wandering Merchant (2) 2/3
+    4001,  # Road Warden (3) 3/3 Guard
+    4003,  # Hedge Wizard (3) 2/2 draw
+    4005,  # Caravan Guard (2) 2/3
+    4010,  # Supply Cache (2) draw
 ]

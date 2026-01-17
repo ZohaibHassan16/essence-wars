@@ -1,13 +1,51 @@
 id = "plague_volatile"
 name = "Plague Sovereign"
-description = "Volatile death triggers"
+description = "Death triggers and Volatile damage - win through attrition"
 tags = ["commander", "symbiote"]
 
 cards = [
-    2061, 2048, 2026, 2067, 2020,
-    2028, 2068, 2027, 2040, 2046,
-    2050, 2054, 2055, 2065, 2069,
-    2071, 2074, 2002, 2007, 2010,
-    2013, 2016, 2031, 4052, 4058,
-    4059, 4070, 4074, 4004, 4006,
+    # Commander
+    2061,  # Plague Sovereign (6) 4/4 Volatile, deals 1 dmg on ally death
+
+    # Volatile Creatures (deal damage on death)
+    2026,  # Volatile Spore (creature with Volatile)
+    2026,  # Volatile Spore x2
+    2027,  # Plague Carrier (Volatile creature)
+    2028,  # Infectious Growth (Volatile)
+
+    # Regenerate Creatures (hard to kill, good value)
+    2002,  # Regenerating Ooze (3) 3/4 Regenerate
+    2004,  # Hive Guardian (4) 3/6 Guard, Regenerate
+    2062,  # Grove Warden (Regenerate)
+
+    # Rush Creatures (aggressive trades)
+    2003,  # Broodling (1) 2/2 Rush
+    2003,  # Broodling x2
+    2005,  # Pack Hunter (2) 2/3 Rush
+    2005,  # Pack Hunter x2
+    2019,  # Swarm Leader (Rush synergy)
+
+    # Token Generators (more death triggers)
+    2038,  # Spawn Nest (token generator)
+    2042,  # Brood Pit (token generator)
+    2049,  # Hive Spawner (creature)
+
+    # Lethal Creatures (trade efficiently)
+    2001,  # Venom Fang (2) 2/3 Lethal
+    2006,  # Parasitic Larva (1) 1/2 Lethal
+
+    # Board Presence
+    2000,  # Spore Crawler (1) 1/3
+    2000,  # Spore Crawler x2
+
+    # Spells
+    2010,  # Overgrowth (buff spell)
+    2013,  # Nature's Wrath (spell)
+    2016,  # Regeneration (heal spell)
+
+    # Neutral Support
+    4000,  # Wandering Merchant (2) 2/3
+    4001,  # Road Warden (3) 3/3 Guard
+    4003,  # Hedge Wizard (3) 2/2 draw
+    4010,  # Supply Cache (2) draw
 ]

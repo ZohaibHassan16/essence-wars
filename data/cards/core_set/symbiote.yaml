@@ -13,7 +13,7 @@ cards:
     cost: 1
     card_type: creature
     attack: 1
-    health: 2
+    health: 3  # Buffed from 2 (v0.5.1 round 5)
     keywords: []
     rarity: Common
     tags: [Parasite]
@@ -42,7 +42,7 @@ cards:
     name: "Broodling"
     cost: 1
     card_type: creature
-    attack: 1
+    attack: 2  # Buffed from 1 (v0.5.1 round 5)
     health: 2
     keywords: [Rush]
     rarity: Common
@@ -63,7 +63,7 @@ cards:
     cost: 2
     card_type: creature
     attack: 2
-    health: 2
+    health: 3  # Buffed from 2 (v0.5.1 round 5)
     keywords: [Rush]
     rarity: Common
     tags: [Beast]

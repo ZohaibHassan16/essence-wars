@@ -1,13 +1,47 @@
 id = "kael_assassin"
 name = "Shadow Emperor Kael"
-description = "Stealth assassination"
+description = "Stealth assassination - strike from shadows, vanish before retaliation"
 tags = ["commander", "obsidion"]
 
 cards = [
-    3056, 3024, 3052, 3063, 3005,
-    3042, 3064, 3022, 3026, 3033,
-    3036, 3045, 3050, 3053, 3062,
-    3065, 3070, 3003, 3009, 3012,
-    3018, 3023, 3028, 4008, 4014,
-    4023, 4027, 4041, 4042, 4063,
+    # Commander
+    3056,  # Shadow Emperor Kael (6) 5/4 Stealth, Quick, bounces on kill
+
+    # Core Stealth Creatures
+    3001,  # Shadow Blade (2) 3/2 Stealth, Lethal
+    3001,  # Shadow Blade x2
+    3005,  # Silent Assassin (4) 4/3 Stealth, Quick
+    3018,  # Spectral Assassin (4) 3/3 Stealth, Lifesteal
+    3019,  # Nightstalker (4) 3/4 Stealth, Lifesteal, Regenerate
+
+    # Quick Creatures (immediate impact)
+    3002,  # Blood Acolyte (2) 2/3 Quick, Lifesteal
+    3002,  # Blood Acolyte x2
+    3017,  # Blood Seeker (3) 3/3 Quick, Lifesteal
+    3058,  # Void Archon (5) 4/4 Quick
+
+    # Burst Damage
+    3003,  # Void Walker (3) 3/3 Ephemeral, Rush
+    3000,  # Soul Fragment (1) 2/2 Ephemeral
+    3000,  # Soul Fragment x2
+    3006,  # Ritual Master (4) 4/4 OnPlay damage+heal
+
+    # Removal Spells
+    3010,  # Soul Drain (3) damage + heal
+    3008,  # Life Tap (2) damage + draw
+    3025,  # Shadow Strike (damage)
+    3016,  # Corruption (spell)
+    3009,  # Void Bolt (damage spell)
+
+    # Utility
+    3068,  # Shadowstep (grant Stealth)
+    3015,  # Blood Pact (spell)
+
+    # Neutral Creatures
+    4000,  # Wandering Merchant (2) 2/3
+    4001,  # Road Warden (3) 3/3 Guard
+    4003,  # Hedge Wizard (3) 2/2 draw
+    4005,  # Caravan Guard (2) 2/3
+    4010,  # Supply Cache (2) draw
+    4012,  # Wayfarer's Blessing (2) +1/+1
 ]

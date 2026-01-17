@@ -80,7 +80,7 @@ cards:
     cost: 2
     card_type: creature
     attack: 2
-    health: 3
+    health: 4  # Buffed from 3 (v0.5.1 round 4)
     keywords: [Shield]
     rarity: Common
     tags: [Soldier]
@@ -89,7 +89,7 @@ cards:
     name: "Clockwork Medic"
     cost: 3
     card_type: creature
-    attack: 1
+    attack: 2  # Buffed from 1 (v0.5.1 round 4)
     health: 4
     keywords: []
     rarity: Uncommon
@@ -193,7 +193,7 @@ cards:
     name: "Forge Master"
     cost: 5
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.5.1 round 4)
     health: 4
     keywords: []
     rarity: Rare
@@ -284,7 +284,7 @@ cards:
     name: "Armored Sentinel"
     cost: 3
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.5.1 round 4)
     health: 5
     keywords: [Guard, Shield]
     rarity: Uncommon
@@ -295,7 +295,7 @@ cards:
     name: "Field Medic"
     cost: 2
     card_type: creature
-    attack: 1
+    attack: 2  # Buffed from 1 (v0.5.1 round 4)
     health: 3
     keywords: []
     rarity: Common
@@ -559,7 +559,7 @@ cards:
     name: "Steel Templar"
     cost: 4
     card_type: creature
-    attack: 3
+    attack: 4  # Buffed from 3 (v0.5.1 round 4)
     health: 5
     keywords: [Fortify, Guard]
     rarity: Uncommon

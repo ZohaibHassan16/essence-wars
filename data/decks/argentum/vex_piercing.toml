@@ -1,13 +1,43 @@
 id = "vex_piercing"
 name = "Siege Marshal Vex"
-description = "Aggressive Piercing damage"
+description = "Aggressive Piercing damage - punch through enemy defenses"
 tags = ["commander", "argentum"]
 
 cards = [
-    1058, 1005, 1065, 1070, 1011,
-    1014, 1018, 1024, 1028, 1029,
-    1033, 1049, 1054, 1066, 1071,
-    1073, 1074, 1012, 1013, 1019,
-    1026, 1034, 1039, 4055, 4056,
-    4057, 4068, 4069, 4071, 4072,
+    # Commander
+    1058,  # Siege Marshal Vex (5) 4/4 Piercing, +1 atk aura
+
+    # Core Piercing Creatures
+    1001,  # Steam Knight (3) 3/4 Piercing
+    1001,  # Steam Knight x2
+    1005,  # Pressure Trooper (3) 3/2 Piercing
+    1005,  # Pressure Trooper x2
+    1067,  # Siege Cannon (4) 3/2 Piercing, Ranged
+    1067,  # Siege Cannon x2
+    1068,  # Battering Ram (5) 5/3 Piercing
+    1032,  # Siege Breaker (5) 4/4 Piercing, OnPlay dmg
+    1008,  # Siege Engine (6) 4/6 Guard, Piercing
+    1069,  # Clockwork Dragon (6) 5/5 Piercing, Charge
+
+    # Support Creatures
+    1000,  # Brass Sentinel (2) 2/5 Guard
+    1006,  # Shield Bearer (2) 2/4 Shield
+    1002,  # Cogwork Defender (3) 3/5 Guard
+    1004,  # Iron Colossus (5) 3/7 Guard
+
+    # Combat Spells
+    1070,  # Precision Strike (2) - 3 damage
+    1070,  # Precision Strike x2
+    1010,  # Reinforce (2) - +0/+3
+    1074,  # Breaching Charge (3) - 4 dmg to Guard
+
+    # Neutral Creatures
+    4000,  # Wandering Merchant (2) 2/3
+    4001,  # Road Warden (3) 3/3 Guard
+    4003,  # Hedge Wizard (3) 2/2 draw
+    4005,  # Caravan Guard (2) 2/3
+
+    # Neutral Utility
+    4010,  # Supply Cache (2) draw
+    4012,  # Wayfarer's Blessing (2) +1/+1
 ]
