@@ -1,15 +1,57 @@
 # Essence Wars
 
-A deterministic, perfect-information card game engine designed for AI research (reinforcement learning, MCTS, neural network training).
+**A Deterministic Card Game Engine for AI Research**
 
-## Overview
+[![Balance Dashboard](https://img.shields.io/badge/📊_Balance-Dashboard-blue?style=for-the-badge)](docs/dashboard/index.html)
+[![Training Dashboard](https://img.shields.io/badge/📈_Training-Dashboard-purple?style=for-the-badge)](docs/dashboard/training.html)
+[![Performance](https://img.shields.io/badge/⚡_Performance-Dashboard-orange?style=for-the-badge)](docs/dashboard/performance.html)
 
-Essence Wars is a lane-based digital card game with:
-- **300 cards** across 3 factions + neutrals (New Horizons Edition)
-- **12 pre-built Commander Decks** for balanced matchup testing
-- **16 keywords** with rich mechanical interactions
-- **Deterministic engine** for reproducible experiments
-- **AI interface** with tensor representation (326 floats) and fixed action space (256 actions)
+---
+
+## Live Research Dashboards
+
+> **[View Interactive Dashboards →](docs/index.html)**
+
+| Dashboard | Description |
+|-----------|-------------|
+| [**Balance Dashboard**](docs/dashboard/index.html) | Faction matchups, deck rankings, P1/P2 analysis, combat statistics |
+| [**Training Dashboard**](docs/dashboard/training.html) | MCTS weight tuning, fitness curves, convergence analysis |
+| [**Performance Dashboard**](docs/dashboard/performance.html) | Engine benchmarks, throughput metrics, latency analysis |
+
+---
+
+## Key Metrics
+
+| Metric | Value |
+|--------|-------|
+| **Cards** | 300 (New Horizons Edition) |
+| **Commander Decks** | 12 pre-built decks |
+| **Keywords** | 16 mechanical interactions |
+| **Random Game Throughput** | ~80,000 games/sec |
+| **Greedy Game Throughput** | ~17,000 games/sec |
+| **State Tensor Latency** | ~133 ns |
+
+---
+
+## Faction Balance
+
+The game features a deliberate **rock-paper-scissors** dynamic:
+
+```
+              Argentum   Obsidion   Symbiote
+Argentum         -        59.8%      50.8%    ← Argentum beats Obsidion
+Obsidion       40.2%        -        52.2%    ← Obsidion beats Symbiote
+Symbiote       49.2%      47.8%        -      ← Balanced matchup
+```
+
+| Faction | Identity | Playstyle |
+|---------|----------|-----------|
+| **Argentum Combine** | "The Wall" | Defensive constructs, Guard synergy, high HP |
+| **Symbiote Circles** | "The Swarm" | Aggressive tempo, Rush creatures, death triggers |
+| **Obsidion Syndicate** | "The Shadow" | Burst damage, Lifesteal, Stealth assassins |
+| **Free-Walkers** | Neutral | Utility cards that splash into any faction |
+
+---
 
 ## Quick Start
 
@@ -20,53 +62,33 @@ cargo build --release
 # Run bot arena matches
 cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --games 100 --progress
 
-# Run balance validation (8,000 games, ~2 min)
+# Run balance validation (8,000 games)
 cargo run --release --bin validate -- --games 100
 
-# Generate interactive dashboard
-./scripts/generate-dashboard.sh
-# Open docs/dashboard/index.html in browser
+# Generate all dashboards
+./scripts/generate-all-dashboards.sh
 ```
 
-## Faction Balance
+---
 
-The game features a deliberate **rock-paper-scissors** dynamic:
-
-| Matchup | Favored | Win Rate |
-|---------|---------|----------|
-| Argentum vs Obsidion | Argentum | ~60% |
-| Obsidion vs Symbiote | Obsidion | ~52% |
-| Symbiote vs Argentum | Even | ~49% |
-
-Interactive balance visualization: `docs/dashboard/index.html`
-
-### Factions
-
-| Faction | Identity | Playstyle |
-|---------|----------|-----------|
-| **Argentum Combine** | "The Wall" | Defensive, high-HP constructs, Guard synergy |
-| **Symbiote Circles** | "The Swarm" | Aggressive tempo, Rush creatures, death triggers |
-| **Obsidion Syndicate** | "The Shadow" | Burst damage, Lifesteal, Stealth assassins |
-| **Free-Walkers** | Neutral | Utility cards that splash into any faction |
-
-## Research Features
-
-### AI Interface
+## AI Research Interface
 
 ```rust
-// Get game state as neural network input
+use cardgame::engine::GameEnvironment;
+
+// Get game state as neural network input (326 floats)
 let tensor: [f32; 326] = env.get_state_tensor();
 
-// Get legal action mask
+// Get legal action mask (256 floats, 0.0 or 1.0)
 let mask: [f32; 256] = env.get_legal_action_mask();
 
 // Apply action from neural network output
 env.apply_action_by_index(action_idx);
 
-// Get reward signal
+// Get reward signal (-1.0, 0.0, or 1.0)
 let reward = env.get_reward(player_id);
 
-// Clone state for tree search
+// Clone state for MCTS tree search
 let clone = env.fork();
 ```
 
@@ -79,7 +101,9 @@ let clone = env.fork();
 | `mcts` | Monte Carlo Tree Search | Strong benchmark |
 | `agent-*` | MCTS with tuned weights | Faction specialists |
 
-### Weight Tuning (CMA-ES)
+---
+
+## Weight Tuning (CMA-ES)
 
 ```bash
 # Train generalist weights
@@ -87,33 +111,23 @@ cargo run --release --bin tune -- --mode generalist --generations 100
 
 # Train faction specialist
 cargo run --release --bin tune -- --mode faction-specialist --faction argentum
+
+# View training results
+./scripts/analyze-mcts.sh
 ```
 
-### Diagnostics
-
-```bash
-# P1/P2 asymmetry analysis
-cargo run --release --bin diagnose -- 500 --export json
-
-# Text-based validation report
-./scripts/analyze-validation.sh --latest
-```
-
-## Performance
-
-| Benchmark | Throughput |
-|-----------|------------|
-| Random games | ~80,000/sec |
-| Greedy games | ~17,000/sec |
-| State tensor | ~7.2M/sec |
-| Engine fork | ~10M/sec |
+---
 
 ## Documentation
 
-- `docs/essence-wars-design.md` - Full game rules and mechanics
-- `docs/design-engine.md` - Engine architecture and API
-- `docs/cards-new-horizons.md` - Complete card database (300 cards)
-- `docs/modal-cloud-setup.md` - Cloud training with Modal
+| Document | Description |
+|----------|-------------|
+| [**Game Design**](docs/essence-wars-design.md) | Full game rules, mechanics, keywords |
+| [**Engine Architecture**](docs/design-engine.md) | API reference, state representation |
+| [**Card Database**](docs/cards-new-horizons.md) | All 300 cards, commander abilities |
+| [**Cloud Training**](docs/modal-cloud-setup.md) | Training with Modal.com |
+
+---
 
 ## Project Structure
 
@@ -129,22 +143,23 @@ cargo run --release --bin diagnose -- 500 --export json
 │   └── weights/           # Tuned bot weights
 ├── python/                # Analysis and visualization
 │   └── cardgame/analysis/ # Dashboards, aggregators
+├── docs/                  # Documentation + GitHub Pages
+│   ├── dashboard/         # Interactive dashboards
+│   └── *.md               # Design documents
 ├── scripts/               # Shell wrappers
 └── tests/                 # ~576 tests
 ```
 
+---
+
 ## Requirements
 
-- Rust 1.75+ with Cargo
-- Python 3.11+ with uv (for analysis tools)
+- **Rust** 1.75+ with Cargo
+- **Python** 3.11+ with uv (for analysis tools)
 
-## License
-
-MIT
+---
 
 ## Citation
-
-If you use Essence Wars in your research, please cite:
 
 ```bibtex
 @software{essence_wars,
@@ -154,3 +169,9 @@ If you use Essence Wars in your research, please cite:
   url = {https://github.com/your-repo/essence-wars}
 }
 ```
+
+---
+
+## License
+
+MIT

@@ -26,15 +26,15 @@
 
 *Complete the first edition card set and streamline tooling.*
 
-- [ ] Expand card pool to 300 cards (New Horizons Edition)
-- [ ] Balance all faction matchups (45-55% win rates)
+- [x] Expand card pool to 300 cards (New Horizons Edition)
+- [x] Balance all faction matchups (45-55% win rates)
 - [x] Set up Modal cloud tuning (internal tooling)
-- [ ] Update documentation after the 300 Cards have been implemented (`docs/essence-wars-design.md`, `docs/design-engine.md`) to ensure all new effects and keywords are documented, all architectural and design changes are reflected and documented
-- [ ] Create card database reference (`docs/cards-new-horizons.md`)
-- [ ] Analzye, Discuss the Data Pipeline, Clean up and document tuning/validation scripts
-- [ ] Fix, rework or refactor `scripts/analyze-mcts.sh` and the Analysis Pipeline
+- [x] Update documentation after the 300 Cards have been implemented (`docs/essence-wars-design.md`, `docs/design-engine.md`) to ensure all new effects and keywords are documented, all architectural and design changes are reflected and documented
+- [x] Create card database reference (`docs/cards-new-horizons.md`)
+- [x] Analzye, Discuss the Data Pipeline, Clean up and document tuning/validation scripts
+- [x] Fix, rework or refactor `scripts/analyze-mcts.sh` and the Analysis Pipeline
 - [x] Remove TUI code (deferred indefinitely)
-- [ ] Discuss if a Match Mode should be added for the additional Win Codnition (Victory Points), or if this would seriously disturb overall balance and hurt our mission, or be a good addition
+- [x] Discuss if a Match Mode should be added for the additional Win Codnition (Victory Points), or if this would seriously disturb overall balance and hurt our mission, or be a good addition
   - 1. **Enemy life ≤ 0** → You win (Already implemented)
   - 2. **50 Victory Points** → You win (Basic Infrastructure implemented, not enabled nor integrated yet)
   - 3. **Turn 30** → Higher life wins (draw if tied) (should be implemented, check)

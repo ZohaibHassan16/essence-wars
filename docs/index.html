@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essence Wars - Research Portal</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #21262d;
+            --border: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-blue: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-purple: #a371f7;
+            --accent-orange: #d29922;
+            --argentum: #7cb9e8;
+            --symbiote: #77dd77;
+            --obsidion: #9370db;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 40px;
+        }
+
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--argentum), var(--symbiote), var(--obsidion));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .tagline {
+            font-size: 1.3em;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+
+        .stat-box .number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+        .stat-box .label {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        /* Dashboard Cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+
+        .dashboard-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            transition: transform 0.2s, border-color 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-blue);
+        }
+
+        .dashboard-card h2 {
+            font-size: 1.4em;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dashboard-card .icon {
+            font-size: 1.5em;
+        }
+
+        .dashboard-card p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .dashboard-card .features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .dashboard-card .tag {
+            background: var(--bg-card);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            color: var(--text-secondary);
+        }
+
+        .card-balance { border-left: 4px solid var(--accent-green); }
+        .card-training { border-left: 4px solid var(--accent-purple); }
+        .card-performance { border-left: 4px solid var(--accent-orange); }
+
+        /* Quick Stats Section */
+        .quick-stats {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .quick-stats h2 {
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .matchup-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .matchup-table th, .matchup-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .matchup-table th {
+            background: var(--bg-card);
+        }
+
+        .matchup-table .faction-argentum { color: var(--argentum); }
+        .matchup-table .faction-symbiote { color: var(--symbiote); }
+        .matchup-table .faction-obsidion { color: var(--obsidion); }
+
+        .win-high { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
+        .win-low { background: rgba(248, 81, 73, 0.2); color: #f85149; }
+        .win-even { background: var(--bg-card); }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border);
+        }
+
+        footer a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .doc-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>Essence Wars</h1>
+        <p class="tagline">A Deterministic Card Game Engine for AI Research</p>
+
+        <div class="hero-stats">
+            <div class="stat-box">
+                <div class="number">300</div>
+                <div class="label">Cards</div>
+            </div>
+            <div class="stat-box">
+                <div class="number">12</div>
+                <div class="label">Commander Decks</div>
+            </div>
+            <div class="stat-box">
+                <div class="number">16</div>
+                <div class="label">Keywords</div>
+            </div>
+            <div class="stat-box">
+                <div class="number">80k</div>
+                <div class="label">Games/sec</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="dashboard-grid">
+            <a href="dashboard/index.html" class="dashboard-card card-balance">
+                <h2><span class="icon">&#9878;</span> Balance Dashboard</h2>
+                <p>Explore faction matchups, deck rankings, and game statistics from validation runs.</p>
+                <div class="features">
+                    <span class="tag">Matchup Heatmap</span>
+                    <span class="tag">Deck Rankings</span>
+                    <span class="tag">P1/P2 Analysis</span>
+                    <span class="tag">Combat Stats</span>
+                </div>
+            </a>
+
+            <a href="dashboard/training.html" class="dashboard-card card-training">
+                <h2><span class="icon">&#9881;</span> Training Dashboard</h2>
+                <p>Analyze MCTS weight tuning runs with fitness curves and convergence metrics.</p>
+                <div class="features">
+                    <span class="tag">Fitness Curves</span>
+                    <span class="tag">Weight Evolution</span>
+                    <span class="tag">Convergence</span>
+                    <span class="tag">Experiment Comparison</span>
+                </div>
+            </a>
+
+            <a href="dashboard/performance.html" class="dashboard-card card-performance">
+                <h2><span class="icon">&#9889;</span> Performance Dashboard</h2>
+                <p>Benchmark results showing engine throughput and optimization metrics.</p>
+                <div class="features">
+                    <span class="tag">Throughput</span>
+                    <span class="tag">Latency</span>
+                    <span class="tag">Memory</span>
+                    <span class="tag">Scaling</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="quick-stats">
+            <h2>Faction Balance at a Glance</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                The game features a deliberate rock-paper-scissors dynamic between factions.
+            </p>
+            <table class="matchup-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th class="faction-argentum">Argentum</th>
+                        <th class="faction-obsidion">Obsidion</th>
+                        <th class="faction-symbiote">Symbiote</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th class="faction-argentum">Argentum</th>
+                        <td class="win-even">-</td>
+                        <td class="win-high">59.8%</td>
+                        <td class="win-even">50.8%</td>
+                    </tr>
+                    <tr>
+                        <th class="faction-obsidion">Obsidion</th>
+                        <td class="win-low">40.2%</td>
+                        <td class="win-even">-</td>
+                        <td class="win-high">52.2%</td>
+                    </tr>
+                    <tr>
+                        <th class="faction-symbiote">Symbiote</th>
+                        <td class="win-even">49.2%</td>
+                        <td class="win-low">47.8%</td>
+                        <td class="win-even">-</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="color: var(--text-secondary); font-size: 0.9em;">
+                Data from 48,000 games using GreedyBot vs GreedyBot across all 12 Commander Decks.
+            </p>
+        </div>
+    </div>
+
+    <footer>
+        <p>Built for AI research: reinforcement learning, MCTS, and neural network training.</p>
+        <div class="doc-links">
+            <a href="https://github.com/anthropics/essence-wars">GitHub Repository</a>
+            <a href="essence-wars-design.md">Game Design Doc</a>
+            <a href="design-engine.md">Engine Architecture</a>
+            <a href="cards-new-horizons.md">Card Database</a>
+        </div>
+        <p style="margin-top: 20px; font-size: 0.85em;">
+            Essence Wars v0.5.0 &middot; New Horizons Edition &middot; 2026
+        </p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essence Wars - Performance Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #21262d;
+            --border: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent-green: #3fb950;
+            --accent-blue: #58a6ff;
+            --accent-orange: #d29922;
+            --accent-purple: #a371f7;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+
+        header h1 {
+            font-size: 2em;
+            margin-bottom: 8px;
+            color: var(--accent-orange);
+        }
+
+        header .meta {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .throughput-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .throughput-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .throughput-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: var(--accent-green);
+        }
+
+        .throughput-card .unit {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        .throughput-card .label {
+            margin-top: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 20px;
+        }
+
+        .chart-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .chart-card h2 {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .benchmark-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .benchmark-table th, .benchmark-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .benchmark-table th {
+            color: var(--text-secondary);
+            font-weight: normal;
+        }
+
+        .benchmark-table td.value {
+            font-family: 'SFMono-Regular', Consolas, monospace;
+            color: var(--accent-blue);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" class="back-link">&larr; Back to Portal</a>
+
+        <header>
+            <h1>Performance Benchmarks</h1>
+            <p class="meta">Generated: 2026-01-17 11:19 | Engine: Essence Wars v0.5.0</p>
+        </header>
+
+        <div class="throughput-grid">
+            <div class="throughput-card">
+                <div class="value">304</div>
+                <div class="unit">games/sec</div>
+                <div class="label">Random Bot Games</div>
+            </div>
+            <div class="throughput-card">
+                <div class="value">27</div>
+                <div class="unit">games/sec</div>
+                <div class="label">Greedy Bot Games</div>
+            </div>
+            <div class="throughput-card">
+                <div class="value">7.5M</div>
+                <div class="unit">tensors/sec</div>
+                <div class="label">State Tensors</div>
+            </div>
+            <div class="throughput-card">
+                <div class="value">9.1M</div>
+                <div class="unit">forks/sec</div>
+                <div class="label">Engine Clones</div>
+            </div>
+        </div>
+
+        <div class="chart-grid">
+            <div class="chart-card">
+                <h2>Latency Comparison</h2>
+                <div id="latency-chart" style="height: 350px;"></div>
+            </div>
+
+            <div class="chart-card">
+                <h2>Throughput Comparison</h2>
+                <div id="throughput-chart" style="height: 350px;"></div>
+            </div>
+        </div>
+
+        <div class="chart-card" style="margin-top: 20px;">
+            <h2>Detailed Benchmark Results</h2>
+            <table class="benchmark-table">
+                <thead>
+                    <tr>
+                        <th>Benchmark</th>
+                        <th>Mean</th>
+                        <th>95% CI</th>
+                        <th>Throughput</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+            <td>State Tensor</td>
+            <td class="value">133.85 ns</td>
+            <td class="value">132.90 - 135.49</td>
+            <td class="value">7.5M/sec</td>
+        </tr>
+<tr>
+            <td>Legal Actions</td>
+            <td class="value">16.70 ns</td>
+            <td class="value">16.59 - 16.83</td>
+            <td class="value"></td>
+        </tr>
+<tr>
+            <td>Engine Fork</td>
+            <td class="value">110.46 ns</td>
+            <td class="value">110.34 - 110.59</td>
+            <td class="value">9.1M/sec</td>
+        </tr>
+<tr>
+            <td>Random Game</td>
+            <td class="value">3285.22 µs</td>
+            <td class="value">3280.48 - 3290.27</td>
+            <td class="value">304/sec</td>
+        </tr>
+<tr>
+            <td>Greedy Game</td>
+            <td class="value">36876.38 µs</td>
+            <td class="value">36764.29 - 37006.56</td>
+            <td class="value">27/sec</td>
+        </tr>
+<tr>
+            <td>MCTS 50 sims</td>
+            <td class="value">47.68 µs</td>
+            <td class="value">47.34 - 48.14</td>
+            <td class="value"></td>
+        </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Latency chart
+        const latencyData = {"names": ["State Tensor", "Legal Actions", "Engine Fork", "Random Game", "Greedy Game", "MCTS 50 sims"], "values": [133.85017254943077, 16.695615876758996, 110.45660889824966, 3285.2195803404047, 36876.3766028345, 47.68345345764354], "errors_lower": [0.9463804320296276, 0.11052519941983974, 0.11780072436083344, 4.736593579259534, 112.09150981006678, 0.3387157227504858], "errors_upper": [1.6387343880234937, 0.13750930618856927, 0.13434716879982034, 5.045550640908004, 130.18349755477539, 0.45638245411807077]};
+
+        Plotly.newPlot('latency-chart', [{
+            x: latencyData.names,
+            y: latencyData.values,
+            type: 'bar',
+            marker: {
+                color: ['#58a6ff', '#58a6ff', '#58a6ff', '#3fb950', '#3fb950', '#a371f7'],
+            },
+            error_y: {
+                type: 'data',
+                symmetric: false,
+                array: latencyData.errors_upper,
+                arrayminus: latencyData.errors_lower,
+                color: '#8b949e'
+            }
+        }], {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#e6edf3' },
+            yaxis: {
+                title: 'Latency (log scale)',
+                type: 'log',
+                gridcolor: '#30363d'
+            },
+            xaxis: { gridcolor: '#30363d' },
+            margin: { t: 20, b: 80 }
+        }, { responsive: true });
+
+        // Throughput chart
+        const throughputData = {"names": ["Random Games", "Greedy Games", "State Tensors", "Engine Forks"], "values": [304, 27, 7471040, 9053328]};
+
+        Plotly.newPlot('throughput-chart', [{
+            x: throughputData.names,
+            y: throughputData.values,
+            type: 'bar',
+            marker: {
+                color: ['#3fb950', '#3fb950', '#58a6ff', '#58a6ff'],
+            }
+        }], {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#e6edf3' },
+            yaxis: {
+                title: 'Operations/sec (log scale)',
+                type: 'log',
+                gridcolor: '#30363d'
+            },
+            xaxis: { gridcolor: '#30363d' },
+            margin: { t: 20, b: 80 }
+        }, { responsive: true });
+    </script>
+</body>
+</html>
