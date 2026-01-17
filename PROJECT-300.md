@@ -2,7 +2,7 @@
 
 **Mission**: Design and implement 300 Cards for the initial `New Horizons` Edition of Essence Wars.
 
-## Current State (v0.5.2 - Phase 8B Complete)
+## Current State (v0.6.0 - Phase 8B Complete)
 
 ### Card Pool Summary
 | Category | Count | Target | Status |
@@ -43,6 +43,34 @@
 ### Keyword Slots
 - **Used:** 16 of 16 (Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick, Ephemeral, Regenerate, Stealth, Charge, Frenzy, Volatile, **Fortify**, **Ward**)
 - **Available:** None (all slots utilized)
+
+---
+
+## Research Infrastructure Phases
+
+Parallel to card expansion, these phases build the AI research platform.
+
+### Phase 1: Core Engine [COMPLETE]
+- Deterministic game engine with 16 keywords
+- Bot system (Random, Greedy, MCTS)
+- Arena CLI, weight tuning with CMA-ES
+- 596 tests, CI/CD pipeline
+
+### Phase 2: Research Tooling [COMPLETE - v0.6.0]
+- **Interactive Dashboards** (GitHub Pages):
+  - Balance Dashboard: Faction matchups, deck rankings, P1/P2 analysis
+  - Training Dashboard: MCTS weight tuning, fitness curves
+  - Performance Dashboard: Engine benchmarks, throughput metrics
+- **Game Modes System**:
+  - Attrition (default): Standard life-based victory
+  - Essence Duel (experimental): First to 50 VP from face damage
+- **Documentation**: Game modes, dashboard generation scripts
+
+### Phase 3: ML/AI Infrastructure [NEXT]
+- Python bindings (PyO3) for ML training
+- OpenAI Gym environment bridge
+- Neural network training pipeline
+- PPO and AlphaZero agent implementations
 
 ---
 

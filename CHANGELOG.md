@@ -4,6 +4,33 @@ All notable changes to the Essence Wars engine.
 
 Format: `[version] - YYYY-MM-DD` with categories: Added, Changed, Fixed, Removed.
 
+## [0.6.0] - 2026-01-17
+
+### Added
+- **Game Modes System**: Two distinct victory conditions for different research scenarios
+  - **Attrition** (default): Reduce enemy to 0 life, or turn 30 → higher life wins
+  - **Essence Duel** (experimental): First to 50 VP (cumulative face damage) or reduce to 0 life
+  - `--mode` flag for arena CLI (`attrition` or `essence-duel`)
+  - `GameEngine::start_game_with_mode()` API method
+  - 10 unit tests in `tests/unit/game_mode_tests.rs`
+- **Interactive Research Dashboards** (GitHub Pages):
+  - [Balance Dashboard](https://christianwissmann85.github.io/essence-wars/dashboard/index.html): Faction matchups, deck rankings, P1/P2 analysis
+  - [Training Dashboard](https://christianwissmann85.github.io/essence-wars/dashboard/training.html): MCTS weight tuning, fitness curves
+  - [Performance Dashboard](https://christianwissmann85.github.io/essence-wars/dashboard/performance.html): Engine benchmarks, throughput metrics
+  - Portal landing page at `docs/index.html`
+- **Dashboard Generation Scripts**:
+  - `python/cardgame/analysis/research_dashboard.py`: Balance validation dashboard generator
+  - `python/cardgame/analysis/performance_dashboard.py`: Benchmark dashboard generator
+  - `scripts/generate-all-dashboards.sh`: Generate all dashboards in one command
+- **Documentation**:
+  - `docs/game-modes.md`: Game modes documentation with API reference and research applications
+
+### Changed
+- `MatchConfig` now supports `with_game_mode()` builder method
+- `GameRunner` now supports `with_game_mode()` for mode-aware game execution
+- README.md updated with Game Modes section and dashboard links
+- CLAUDE.md updated with Game Modes in Key Design Decisions
+
 ## [0.5.0] - 2026-01-14
 
 ### Added
