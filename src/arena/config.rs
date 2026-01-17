@@ -3,6 +3,7 @@
 //! Provides configuration types for running matches between bots.
 
 use crate::bots::{BotType, BotWeights, MctsConfig};
+use crate::core::state::GameMode;
 use crate::types::CardId;
 
 /// Configuration for a single match between two bots.
@@ -28,6 +29,8 @@ pub struct MatchConfig {
     pub mcts_config: MctsConfig,
     /// Whether to show progress during execution
     pub show_progress: bool,
+    /// Game mode (Attrition or EssenceDuel)
+    pub game_mode: GameMode,
 }
 
 impl MatchConfig {
@@ -51,7 +54,14 @@ impl MatchConfig {
             seed,
             mcts_config: MctsConfig::default(),
             show_progress: false,
+            game_mode: GameMode::default(),
         }
+    }
+
+    /// Set the game mode.
+    pub fn with_game_mode(mut self, mode: GameMode) -> Self {
+        self.game_mode = mode;
+        self
     }
 
     /// Set weights for bot 1.

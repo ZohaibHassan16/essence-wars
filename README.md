@@ -53,6 +53,25 @@ Symbiote       49.2%      47.8%        -      ← Balanced matchup
 
 ---
 
+## Game Modes
+
+| Mode | Win Condition | Status |
+|------|---------------|--------|
+| **Attrition** | 0 life OR turn 30 → higher life | Default, MCTS trained |
+| **Essence Duel** | First to 50 VP (face damage) | Experimental |
+
+```bash
+# Attrition (default)
+cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --games 100
+
+# Essence Duel
+cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --games 100 --mode essence-duel
+```
+
+See [docs/game-modes.md](https://christianwissmann85.github.io/essence-wars/game-modes.md) for details.
+
+---
+
 ## Quick Start
 
 ```bash

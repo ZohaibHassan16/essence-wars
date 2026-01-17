@@ -62,6 +62,9 @@ pub mod game {
 
     /// Turn limit (game ends at this turn)
     pub const TURN_LIMIT: u8 = 30;
+
+    /// Victory Points threshold for Essence Duel mode
+    pub const VICTORY_POINTS_THRESHOLD: u16 = 50;
 }
 
 /// Action space constants for neural network interface

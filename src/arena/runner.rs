@@ -6,6 +6,7 @@ use crate::arena::logger::{ActionLogger, ActionRecord, StateSnapshot};
 use crate::arena::stats::MatchStats;
 use crate::bots::Bot;
 use crate::cards::CardDatabase;
+use crate::core::state::GameMode;
 use crate::core::tracing::{CombatTrace, CombatTracer, EffectEvent, EffectTracer};
 use crate::engine::GameEngine;
 use crate::types::{CardId, PlayerId};
@@ -35,6 +36,7 @@ pub struct GameRunner<'a> {
     logger: Option<ActionLogger>,
     trace_combat: bool,
     trace_effects: bool,
+    game_mode: GameMode,
 }
 
 impl<'a> GameRunner<'a> {
@@ -45,12 +47,19 @@ impl<'a> GameRunner<'a> {
             logger: None,
             trace_combat: false,
             trace_effects: false,
+            game_mode: GameMode::default(),
         }
     }
 
     /// Enable logging with the given logger.
     pub fn with_logger(mut self, logger: ActionLogger) -> Self {
         self.logger = Some(logger);
+        self
+    }
+
+    /// Set the game mode.
+    pub fn with_game_mode(mut self, mode: GameMode) -> Self {
+        self.game_mode = mode;
         self
     }
 
@@ -97,7 +106,7 @@ impl<'a> GameRunner<'a> {
 
         // Create and start game engine
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_with_mode(deck1, deck2, seed, self.game_mode);
 
         // Log game start
         if let Some(ref mut logger) = self.logger {

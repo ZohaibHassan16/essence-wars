@@ -74,7 +74,7 @@ fn run_single_game_parallel(
 
     // Create and start game engine
     let mut engine = GameEngine::new(card_db);
-    engine.start_game(config.deck1.clone(), config.deck2.clone(), seeds.game);
+    engine.start_game_with_mode(config.deck1.clone(), config.deck2.clone(), seeds.game, config.game_mode);
 
     // Main game loop
     let max_actions = 1000;
@@ -203,7 +203,7 @@ fn run_single_game_sequential(
 
     // Create and start game engine
     let mut engine = GameEngine::new(card_db);
-    engine.start_game(config.deck1.clone(), config.deck2.clone(), seeds.game);
+    engine.start_game_with_mode(config.deck1.clone(), config.deck2.clone(), seeds.game, config.game_mode);
 
     // Log game start
     if let Some(ref mut l) = logger {

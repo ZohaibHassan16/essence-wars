@@ -188,6 +188,16 @@ pub enum WinReason {
     Concession,
 }
 
+/// Game mode determines victory conditions
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+pub enum GameMode {
+    /// Attrition: Reduce enemy to 0 life, or turn 30 → higher life wins
+    #[default]
+    Attrition,
+    /// Essence Duel: First to 50 VP (cumulative face damage) or reduce to 0 life
+    EssenceDuel,
+}
+
 /// Game result
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum GameResult {
@@ -205,6 +215,7 @@ pub struct GameState {
     pub next_creature_id: u32,
     pub rng_state: u64,
     pub result: Option<GameResult>,
+    pub game_mode: GameMode,
 }
 
 impl GameState {
@@ -218,6 +229,7 @@ impl GameState {
             next_creature_id: 0,
             rng_state: 0,
             result: None,
+            game_mode: GameMode::default(),
         }
     }
 

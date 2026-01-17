@@ -21,6 +21,7 @@ use cardgame::arena::{
 };
 use cardgame::bots::{BotType, MctsConfig};
 use cardgame::cards::CardDatabase;
+use cardgame::core::state::GameMode;
 use cardgame::decks::DeckRegistry;
 use cardgame::execution::configure_thread_pool;
 
@@ -124,6 +125,10 @@ struct Args {
     /// Enable all tracing (combat + effects, forces sequential mode)
     #[arg(long)]
     trace_all: bool,
+
+    /// Game mode: attrition (default) or essence-duel
+    #[arg(long, default_value = "attrition")]
+    mode: String,
 }
 
 fn main() {
@@ -357,12 +362,27 @@ fn main() {
         );
     }
 
+    // Parse game mode
+    let game_mode = match args.mode.to_lowercase().as_str() {
+        "attrition" => GameMode::Attrition,
+        "essence-duel" | "essenceduel" | "duel" => GameMode::EssenceDuel,
+        other => {
+            eprintln!("Unknown game mode: '{}'. Use 'attrition' or 'essence-duel'.", other);
+            process::exit(1);
+        }
+    };
+
+    if game_mode == GameMode::EssenceDuel {
+        println!("Mode: Essence Duel (first to 50 VP wins)");
+    }
+
     // Build match configuration
     let config = MatchConfig::new(bot1_type, bot2_type, deck1, deck2, args.games, seed)
         .with_weights1(weights1)
         .with_weights2(weights2)
         .with_mcts_config(mcts_config)
-        .with_progress(args.progress);
+        .with_progress(args.progress)
+        .with_game_mode(game_mode);
 
     // Run the match
     let stats = if parallel {

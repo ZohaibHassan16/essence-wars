@@ -553,6 +553,20 @@ cargo bench                    # Criterion benchmarks
 - 30 turn limit with life-based tiebreaker
 - 14 keywords: Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick, Ephemeral, Regenerate, Stealth, Charge, Frenzy, Volatile
 
+### Game Modes
+| Mode | Win Condition | Training Status |
+|------|---------------|-----------------|
+| **Attrition** (default) | 0 life OR turn 30 → higher life | Trained (MCTS weights) |
+| **Essence Duel** | 50 VP (face damage) OR 0 life | Experimental |
+
+```bash
+# Default mode (Attrition)
+cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --games 100
+
+# Essence Duel mode
+cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --games 100 --mode essence-duel
+```
+
 ### AI Interface (GameEnvironment trait)
 - `get_state_tensor()` - 326 floats representing full game state
 - `get_legal_action_mask()` - 256 floats (0.0 or 1.0)

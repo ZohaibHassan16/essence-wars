@@ -48,3 +48,5 @@ mod runner_tests;
 mod stats_tests;
 #[path = "unit/resource_system_tests.rs"]
 mod resource_system_tests;
+#[path = "unit/game_mode_tests.rs"]
+mod game_mode_tests;

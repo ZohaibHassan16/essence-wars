@@ -10,7 +10,7 @@ use crate::core::combat;
 use crate::core::config::{game, player};
 use crate::core::effects::{EffectSource, Trigger};
 use crate::core::legal::legal_actions;
-use crate::core::state::{Creature, CreatureStatus, GamePhase, GameResult, GameState, Support, WinReason};
+use crate::core::state::{Creature, CreatureStatus, GameMode, GamePhase, GameResult, GameState, Support, WinReason};
 use crate::core::tracing::{CombatTracer, EffectTracer};
 use crate::core::types::{CardId, PlayerId, Slot};
 
@@ -94,6 +94,19 @@ impl<'a> GameEngine<'a> {
 
         // Validate initial state in debug builds
         self.state.debug_validate();
+    }
+
+    /// Initialize a new game with the given decks and game mode.
+    /// Same as `start_game` but allows specifying the game mode.
+    pub fn start_game_with_mode(
+        &mut self,
+        deck1: Vec<CardId>,
+        deck2: Vec<CardId>,
+        seed: u64,
+        mode: GameMode,
+    ) {
+        self.start_game(deck1, deck2, seed);
+        self.state.game_mode = mode;
     }
 
     /// Draw a card for the specified player.
@@ -357,6 +370,33 @@ impl<'a> GameEngine<'a> {
         }
     }
 
+    /// Check if a player has won via Victory Points (Essence Duel mode only).
+    /// In Essence Duel, first player to deal 50 cumulative face damage wins.
+    pub fn check_victory_points_victory(&mut self) {
+        // Only applies in Essence Duel mode
+        if self.state.game_mode != GameMode::EssenceDuel {
+            return;
+        }
+
+        // Already have a result? Don't override
+        if self.state.result.is_some() {
+            return;
+        }
+
+        for player_idx in 0..2 {
+            let vp = self.state.players[player_idx].total_damage_dealt;
+            if vp >= game::VICTORY_POINTS_THRESHOLD {
+                let winner = PlayerId(player_idx as u8);
+                self.state.result = Some(GameResult::Win {
+                    winner,
+                    reason: WinReason::VictoryPointsReached,
+                });
+                self.state.phase = GamePhase::Ended;
+                return;
+            }
+        }
+    }
+
     /// Apply an action to the game state.
     /// Returns Ok(()) on success, Err with description on illegal action.
     pub fn apply_action(&mut self, action: Action) -> Result<(), String> {
@@ -392,6 +432,7 @@ impl<'a> GameEngine<'a> {
 
         // Check for victory after each action
         self.check_life_victory();
+        self.check_victory_points_victory();
 
         // Validate state invariants in debug builds
         self.state.debug_validate();
@@ -443,6 +484,7 @@ impl<'a> GameEngine<'a> {
 
         // Check for victory after each action
         self.check_life_victory();
+        self.check_victory_points_victory();
 
         // Validate state invariants in debug builds
         self.state.debug_validate();
