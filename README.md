@@ -2,21 +2,21 @@
 
 **A Deterministic Card Game Engine for AI Research**
 
-[![Balance Dashboard](https://img.shields.io/badge/📊_Balance-Dashboard-blue?style=for-the-badge)](docs/dashboard/index.html)
-[![Training Dashboard](https://img.shields.io/badge/📈_Training-Dashboard-purple?style=for-the-badge)](docs/dashboard/training.html)
-[![Performance](https://img.shields.io/badge/⚡_Performance-Dashboard-orange?style=for-the-badge)](docs/dashboard/performance.html)
+[![Balance Dashboard](https://img.shields.io/badge/📊_Balance-Dashboard-blue?style=for-the-badge)](https://christianwissmann85.github.io/essence-wars/dashboard/index.html)
+[![Training Dashboard](https://img.shields.io/badge/📈_Training-Dashboard-purple?style=for-the-badge)](https://christianwissmann85.github.io/essence-wars/dashboard/training.html)
+[![Performance](https://img.shields.io/badge/⚡_Performance-Dashboard-orange?style=for-the-badge)](https://christianwissmann85.github.io/essence-wars/dashboard/performance.html)
 
 ---
 
 ## Live Research Dashboards
 
-> **[View Interactive Dashboards →](docs/index.html)**
+> **[View Interactive Dashboards →](https://christianwissmann85.github.io/essence-wars/)**
 
 | Dashboard | Description |
 |-----------|-------------|
-| [**Balance Dashboard**](docs/dashboard/index.html) | Faction matchups, deck rankings, P1/P2 analysis, combat statistics |
-| [**Training Dashboard**](docs/dashboard/training.html) | MCTS weight tuning, fitness curves, convergence analysis |
-| [**Performance Dashboard**](docs/dashboard/performance.html) | Engine benchmarks, throughput metrics, latency analysis |
+| [**Balance Dashboard**](https://christianwissmann85.github.io/essence-wars/dashboard/index.html) | Faction matchups, deck rankings, P1/P2 analysis, combat statistics |
+| [**Training Dashboard**](https://christianwissmann85.github.io/essence-wars/dashboard/training.html) | MCTS weight tuning, fitness curves, convergence analysis |
+| [**Performance Dashboard**](https://christianwissmann85.github.io/essence-wars/dashboard/performance.html) | Engine benchmarks, throughput metrics, latency analysis |
 
 ---
 
@@ -122,10 +122,10 @@ cargo run --release --bin tune -- --mode faction-specialist --faction argentum
 
 | Document | Description |
 |----------|-------------|
-| [**Game Design**](docs/essence-wars-design.md) | Full game rules, mechanics, keywords |
-| [**Engine Architecture**](docs/design-engine.md) | API reference, state representation |
-| [**Card Database**](docs/cards-new-horizons.md) | All 300 cards, commander abilities |
-| [**Cloud Training**](docs/modal-cloud-setup.md) | Training with Modal.com |
+| [**Game Design**](https://christianwissmann85.github.io/essence-wars/essence-wars-design.md) | Full game rules, mechanics, keywords |
+| [**Engine Architecture**](https://christianwissmann85.github.io/essence-wars/design-engine.md) | API reference, state representation |
+| [**Card Database**](https://christianwissmann85.github.io/essence-wars/cards-new-horizons.md) | All 300 cards, commander abilities |
+| [**Cloud Training**](https://christianwissmann85.github.io/essence-wars/modal-cloud-setup.md) | Training with Modal.com |
 
 ---
 
@@ -166,7 +166,7 @@ cargo run --release --bin tune -- --mode faction-specialist --faction argentum
   title = {Essence Wars: A Deterministic Card Game Engine for AI Research},
   author = {Wissmann, Christian},
   year = {2026},
-  url = {https://github.com/your-repo/essence-wars}
+  url = {https://github.com/christianwissmann85/essence-wars}
 }
 ```
 
