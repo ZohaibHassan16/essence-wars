@@ -45,17 +45,17 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
         deck1_id: "broodmother_swarm",
         deck2_id: "broodmother_swarm",
         expected_winner: Some(1), // P2 wins
-        expected_turns: 14,
-        expected_action_count: 60,
+        expected_turns: 12,       // Updated for deck rebuild v0.5.1
+        expected_action_count: 55,
     },
     GoldenTestCase {
         name: "greedy_mirror_seed_200",
         seed: 200,
         deck1_id: "broodmother_swarm",
         deck2_id: "broodmother_swarm",
-        expected_winner: Some(0), // P1 wins
-        expected_turns: 19,
-        expected_action_count: 82,
+        expected_winner: Some(1), // P2 wins (changed from P1)
+        expected_turns: 16,       // Updated for deck rebuild v0.5.1
+        expected_action_count: 68,
     },
     GoldenTestCase {
         name: "greedy_mirror_seed_600",
