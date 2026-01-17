@@ -36,10 +36,13 @@ pub(super) fn remove_passive_from_creature(creature: &mut Creature, modifier: &P
         PassiveModifier::HealthBonus(amount) => {
             creature.current_health = creature.current_health.saturating_sub(*amount);
             creature.max_health = creature.max_health.saturating_sub(*amount);
-            // Ensure health doesn't go below 1 from passive removal
+            // Ensure health and max_health don't go below 1 from passive removal
             // (damage should kill, not passive loss)
             if creature.current_health < 1 {
                 creature.current_health = 1;
+            }
+            if creature.max_health < 1 {
+                creature.max_health = 1;
             }
         }
         PassiveModifier::GrantKeyword(keyword_name) => {

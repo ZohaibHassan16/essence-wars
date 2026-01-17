@@ -363,11 +363,11 @@ impl EffectQueue {
             amount
         };
 
-        // Apply damage
+        // Apply damage (cap at 0 to prevent negative health)
         let damage_dealt = actual_amount.min(old_health.max(0) as u8);
         let new_health = {
             let creature = state.players[owner.index()].get_creature_mut(slot).unwrap();
-            creature.current_health -= actual_amount as i8;
+            creature.current_health = (creature.current_health - actual_amount as i8).max(0);
             creature.current_health
         };
 
@@ -383,7 +383,7 @@ impl EffectQueue {
         }
 
         // Check for death
-        if new_health <= 0 {
+        if new_health == 0 {
             // Mark for death processing
             if !self.pending_deaths.contains(&(owner, slot)) {
                 self.pending_deaths.push((owner, slot));
@@ -482,8 +482,10 @@ impl EffectQueue {
     ) {
         if let Some(creature) = state.players[owner.index()].get_creature_mut(slot) {
             // Heal up to max health (use i16 to avoid overflow)
+            // Cap at 0 minimum in case max_health went negative from passive removal
             creature.current_health = ((creature.current_health as i16) + (amount as i16))
-                .min(creature.max_health as i16) as i8;
+                .min(creature.max_health as i16)
+                .max(0) as i8;
         }
     }
 
@@ -574,13 +576,14 @@ impl EffectQueue {
         if let Some(creature) = state.players[owner.index()].get_creature_mut(slot) {
             // Use saturating arithmetic to prevent overflow
             creature.attack = creature.attack.saturating_add(attack);
-            creature.current_health = creature.current_health.saturating_add(health);
+            // Cap health at 0 to prevent negative values (debuffs can reduce health)
+            creature.current_health = creature.current_health.saturating_add(health).max(0);
             if health > 0 {
                 creature.max_health = creature.max_health.saturating_add(health);
             }
 
             // Check for death from negative health buff
-            if creature.current_health <= 0
+            if creature.current_health == 0
                 && !self.pending_deaths.contains(&(owner, slot)) {
                 self.pending_deaths.push((owner, slot));
                 // Track that a target died for conditional triggers

@@ -571,9 +571,9 @@ fn apply_combat_damage(
         damage
     };
 
-    // Apply damage
-    creature.current_health -= actual_damage as i8;
-    let died = creature.current_health <= 0;
+    // Apply damage (cap at 0 to prevent negative health)
+    creature.current_health = (creature.current_health - actual_damage as i8).max(0);
+    let died = creature.current_health == 0;
 
     // Apply Lethal: any non-zero damage kills
     if attacker_has_lethal && actual_damage > 0 && !died {
@@ -805,11 +805,11 @@ fn process_creature_death(
             .map(|c| c.slot)
             .collect();
 
-        // Deal 2 damage to each enemy creature
+        // Deal 2 damage to each enemy creature (cap at 0 to prevent negative health)
         for enemy_slot in enemy_slots {
             if let Some(enemy) = state.players[enemy_player.index()].get_creature_mut(enemy_slot) {
-                enemy.current_health -= VOLATILE_DAMAGE;
-                if enemy.current_health <= 0 {
+                enemy.current_health = (enemy.current_health - VOLATILE_DAMAGE).max(0);
+                if enemy.current_health == 0 {
                     enemies_killed.push(enemy_slot);
                 }
             }
