@@ -10,8 +10,10 @@ This package provides:
 Submodules:
 - essence_wars.infra: Experiment management utilities
 - essence_wars.analysis: Visualization and analysis tools (requires pandas, plotly)
-- essence_wars.agents: Agent implementations (future)
-- essence_wars.training: Training utilities (future)
+- essence_wars.agents: PPO and AlphaZero agent implementations
+- essence_wars.hub: Huggingface Hub integration for model/dataset sharing
+- essence_wars.data: Dataset loading utilities
+- essence_wars.benchmark: Standardized evaluation API
 
 Quick Start:
     from essence_wars import PyGame
@@ -93,4 +95,17 @@ def __getattr__(name: str):
     elif name == "parallel_env":
         from essence_wars.parallel_env import parallel_env
         return parallel_env
+    # Hub functions (lazy import to avoid huggingface_hub dependency)
+    elif name == "load_pretrained":
+        from essence_wars.hub import load_pretrained
+        return load_pretrained
+    elif name == "download_dataset":
+        from essence_wars.hub import download_dataset
+        return download_dataset
+    elif name == "upload_model":
+        from essence_wars.hub import upload_model
+        return upload_model
+    elif name == "upload_dataset":
+        from essence_wars.hub import upload_dataset
+        return upload_dataset
     raise AttributeError(f"module 'essence_wars' has no attribute {name!r}")

@@ -269,16 +269,16 @@ class EloTracker:
 
 ### Deliverables
 
-- [ ] `python/essence_wars/benchmark/api.py` - EssenceWarsBenchmark class
-- [ ] `python/essence_wars/benchmark/elo.py` - Elo rating tracker
-- [ ] `python/essence_wars/benchmark/metrics.py` - Standard metrics
-- [ ] Baseline evaluations (random, greedy, mcts50, mcts100)
-- [ ] Transfer and generalization evaluation modes
-- [ ] JSON export for results
+- [x] `python/essence_wars/benchmark/api.py` - EssenceWarsBenchmark class
+- [x] `python/essence_wars/benchmark/elo.py` - Elo rating tracker
+- [x] `python/essence_wars/benchmark/metrics.py` - Standard metrics
+- [x] Baseline evaluations (random, greedy, mcts50, mcts100)
+- [ ] Transfer and generalization evaluation modes (deferred to Phase 4)
+- [x] JSON export for results
 
 ---
 
-## Milestone M5.5D: Tutorial Notebooks
+## Milestone M5.5D: Tutorial Notebooks ✅ [COMPLETE]
 
 **Goal**: Lower barrier to entry with comprehensive Jupyter tutorials.
 
@@ -325,46 +325,54 @@ pip install essence-wars[train]
 
 ### Deliverables
 
-- [ ] `notebooks/01_quickstart.ipynb` - 15-minute onboarding
-- [ ] `notebooks/02_environment_basics.ipynb` - Deep dive into env
-- [ ] `notebooks/03_mcts_tuning.ipynb` - MCTS weight tuning
-- [ ] `notebooks/04_custom_decks.ipynb` - Deck creation
-- [ ] `notebooks/05_behavioral_cloning.ipynb` - Train on MCTS data
-- [ ] All notebooks tested and runnable
+- [x] `notebooks/01_quickstart.ipynb` - Quickstart with game basics, visualization, built-in agents
+- [x] `notebooks/02_environment.ipynb` - Environment API deep dive (PyGame, PyParallelGames)
+- [x] `notebooks/03_dataset_exploration.ipynb` - Dataset loading and analysis
+- [x] `notebooks/04_behavioral_cloning.ipynb` - Train neural network on MCTS data
+- [x] `notebooks/05_alphazero_training.ipynb` - Self-play training with MCTS
+- [x] All notebooks tested and runnable (Colab-compatible)
 
 ---
 
-## Milestone M5.5E: Huggingface Integration
+## Milestone M5.5E: Huggingface Integration ✅ [COMPLETE]
 
 **Goal**: Host datasets and models on Huggingface for easy access.
 
 ### Dataset Hosting
 
 ```python
-from datasets import load_dataset
+from essence_wars.hub import download_dataset
+from essence_wars.data import MCTSDataset
 
-# Load pre-generated MCTS dataset
-dataset = load_dataset("essence-wars/mcts-self-play", split="train")
+# Download pre-generated MCTS dataset from Huggingface
+path = download_dataset("mcts-self-play")  # Short name
+# or: path = download_dataset("essence-wars/mcts-100k")  # Full repo ID
+
+# Load for training
+dataset = MCTSDataset(path)
+print(f"Loaded {len(dataset)} samples")
 
 # Iterate
 for sample in dataset:
-    obs = sample["state_tensor"]
-    policy = sample["mcts_policy"]
-    value = sample["value"]
+    obs = sample["obs"]  # (326,) tensor
+    policy = sample["policy_target"]  # (256,) tensor
+    value = sample["value_target"]  # scalar
 ```
 
 ### Model Hosting
 
 ```python
-from essence_wars.agents import load_pretrained
+from essence_wars.hub import load_pretrained
 
 # Load pre-trained models from Huggingface
-agent = load_pretrained("essence-wars/ppo-generalist")
-agent = load_pretrained("essence-wars/bc-mcts-100k")
-agent = load_pretrained("essence-wars/alphazero-v1")
+agent = load_pretrained("ppo-generalist")  # Short name
+agent = load_pretrained("essence-wars/bc-mcts-100k")  # Full repo ID
+agent = load_pretrained("username/my-model")  # User model
 
 # Use in benchmark
-benchmark.evaluate(agent)
+from essence_wars.benchmark import EssenceWarsBenchmark
+benchmark = EssenceWarsBenchmark()
+results = benchmark.evaluate(agent)
 ```
 
 ### Repository Structure
@@ -383,12 +391,13 @@ huggingface.co/essence-wars/
 
 ### Deliverables
 
-- [ ] Huggingface account setup (essence-wars organization)
-- [ ] `python/essence_wars/hub.py` - Huggingface integration
-- [ ] Upload script for datasets
-- [ ] Upload script for models
-- [ ] `load_pretrained()` function
-- [ ] Model cards with training details
+- [ ] Huggingface account setup (essence-wars organization) - *pending account creation*
+- [x] `python/essence_wars/hub.py` - Huggingface integration module
+- [x] `python/scripts/upload_dataset.py` - Upload script for datasets
+- [x] `python/scripts/upload_model.py` - Upload script for models
+- [x] `load_pretrained()` function with lazy import
+- [x] `download_dataset()` function
+- [x] Auto-generated model cards with training details
 
 ---
 
