@@ -444,6 +444,46 @@ impl PyParallelGames {
     fn dones(&self) -> Vec<bool> {
         self.engines.iter().map(|e| e.is_game_over()).collect()
     }
+
+    /// Reset a single environment by index.
+    ///
+    /// Args:
+    ///     idx: Environment index (0 to num_envs - 1)
+    ///     seed: Random seed for this environment
+    fn reset_single(&mut self, idx: usize, seed: u64) -> PyResult<()> {
+        if idx >= self.num_envs {
+            return Err(PyValueError::new_err(format!(
+                "Index {} out of bounds for {} environments",
+                idx, self.num_envs
+            )));
+        }
+
+        self.engines[idx].start_game_with_mode(
+            self.deck1.clone(),
+            self.deck2.clone(),
+            seed,
+            self.game_mode,
+        );
+
+        Ok(())
+    }
+
+    /// Reset all environments with a base seed.
+    ///
+    /// Each environment gets base_seed + env_index as its seed.
+    ///
+    /// Args:
+    ///     base_seed: Base random seed
+    fn reset_all(&mut self, base_seed: u64) {
+        for (i, engine) in self.engines.iter_mut().enumerate() {
+            engine.start_game_with_mode(
+                self.deck1.clone(),
+                self.deck2.clone(),
+                base_seed + i as u64,
+                self.game_mode,
+            );
+        }
+    }
 }
 
 /// Python module definition.

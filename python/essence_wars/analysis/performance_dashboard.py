@@ -5,9 +5,9 @@ Generate performance benchmark dashboard from Criterion results.
 
 import argparse
 import json
+from datetime import datetime
 from pathlib import Path
 from string import Template
-from datetime import datetime
 
 
 def load_criterion_benchmarks(criterion_dir: Path) -> dict:

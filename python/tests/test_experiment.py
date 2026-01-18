@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import tempfile
 
-from cardgame.infra import Experiment
+from essence_wars.infra import Experiment
 
 
 def test_experiment_creates_directories() -> None:

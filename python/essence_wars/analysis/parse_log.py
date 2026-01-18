@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Parse tuning log output and generate CSV for analysis."""
 
+import csv
 import re
 import sys
-import csv
-from pathlib import Path
+
 
 def parse_tuning_log(log_path: str) -> list[dict]:
     """Parse tuning log and extract generation data."""
@@ -15,7 +15,7 @@ def parse_tuning_log(log_path: str) -> list[dict]:
         r'Gen\s+(\d+):\s+best_fit=\s*([\d.]+),\s+best_wr=\s*([\d.]+)%,\s+sigma=([\d.]+),\s+time=([\d.]+)s'
     )
 
-    with open(log_path, 'r') as f:
+    with open(log_path) as f:
         for line in f:
             match = pattern.search(line)
             if match:

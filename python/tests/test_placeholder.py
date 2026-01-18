@@ -5,9 +5,9 @@ from __future__ import annotations
 
 def test_imports() -> None:
     """Test that basic imports work."""
-    import cardgame
+    import essence_wars
 
-    assert cardgame.__version__ == "0.1.0"
+    assert essence_wars.__version__ == "0.6.0"
 
 
 def test_gymnasium_available() -> None:

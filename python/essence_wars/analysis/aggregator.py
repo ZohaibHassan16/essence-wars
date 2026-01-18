@@ -4,14 +4,13 @@ Aggregator for MCTS training experiments.
 Scans experiments/mcts/ directory and builds consolidated datasets.
 """
 
-import re
+import hashlib
 import logging
 import pickle
-import hashlib
-from pathlib import Path
-from dataclasses import dataclass, asdict
-from typing import Optional
+import re
+from dataclasses import asdict, dataclass
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 
@@ -48,8 +47,8 @@ class ExperimentMetadata:
     total_time_minutes: float
     stop_reason: str
     log_file: str
-    config_file: Optional[str]
-    stats_file: Optional[str]
+    config_file: str | None
+    stats_file: str | None
 
     @property
     def datetime(self) -> datetime:
@@ -95,7 +94,7 @@ class ExperimentRun:
 class ExperimentAggregator:
     """Aggregate and analyze MCTS experiment runs."""
 
-    def __init__(self, experiments_root: Path, cache_dir: Optional[Path] = None):
+    def __init__(self, experiments_root: Path, cache_dir: Path | None = None):
         """
         Initialize aggregator with experiments directory path.
         
@@ -113,8 +112,8 @@ class ExperimentAggregator:
     def scan_experiments(
         self,
         min_generations: int = 0,
-        mode_filter: Optional[str] = None,
-        tag_filter: Optional[str] = None,
+        mode_filter: str | None = None,
+        tag_filter: str | None = None,
     ) -> list[Path]:
         """
         Scan experiments directory for training runs.
@@ -165,13 +164,13 @@ class ExperimentAggregator:
         log_files = list(exp_dir.glob("*.log"))
         if not log_files:
             return ""
-        
+
         log_file = log_files[0]
         mtime = log_file.stat().st_mtime
         cache_key = f"{exp_dir.name}_{mtime}"
         return hashlib.md5(cache_key.encode()).hexdigest()
-    
-    def _load_from_cache(self, cache_key: str) -> Optional[ExperimentRun]:
+
+    def _load_from_cache(self, cache_key: str) -> ExperimentRun | None:
         """Load experiment from cache if available."""
         cache_file = self.cache_dir / f"{cache_key}.pkl"
         if cache_file.exists():
@@ -182,7 +181,7 @@ class ExperimentAggregator:
                 logger.debug(f"Cache load failed: {e}")
                 cache_file.unlink(missing_ok=True)
         return None
-    
+
     def _save_to_cache(self, cache_key: str, run: ExperimentRun) -> None:
         """Save experiment to cache."""
         cache_file = self.cache_dir / f"{cache_key}.pkl"
@@ -192,7 +191,7 @@ class ExperimentAggregator:
         except Exception as e:
             logger.debug(f"Cache save failed: {e}")
 
-    def parse_experiment(self, exp_dir: Path, use_cache: bool = True) -> Optional[ExperimentRun]:
+    def parse_experiment(self, exp_dir: Path, use_cache: bool = True) -> ExperimentRun | None:
         """
         Parse a single experiment directory.
 
@@ -213,7 +212,7 @@ class ExperimentAggregator:
                     logger.debug(f"Cache hit: {exp_dir.name}")
                     return cached
                 self._cache_misses += 1
-        
+
         try:
             # Find log file
             log_files = list(exp_dir.glob("*.log"))
@@ -309,13 +308,13 @@ class ExperimentAggregator:
             )
 
             run = ExperimentRun(metadata=metadata, generations=generation_metrics)
-            
+
             # Save to cache
             if use_cache:
                 cache_key = self._get_cache_key(exp_dir)
                 if cache_key:
                     self._save_to_cache(cache_key, run)
-            
+
             return run
 
         except Exception as e:
@@ -325,8 +324,8 @@ class ExperimentAggregator:
     def aggregate_all(
         self,
         min_generations: int = 0,
-        mode_filter: Optional[str] = None,
-        tag_filter: Optional[str] = None,
+        mode_filter: str | None = None,
+        tag_filter: str | None = None,
         use_cache: bool = True,
     ) -> pd.DataFrame:
         """

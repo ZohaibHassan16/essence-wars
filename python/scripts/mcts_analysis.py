@@ -11,31 +11,31 @@ Usage:
     python mcts_analysis.py --output results/         # Custom output directory
 """
 
-import sys
-import logging
 import argparse
+import logging
+import sys
 from pathlib import Path
 from typing import Optional
 
 try:
     from rich.console import Console
-    from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
-    from rich.table import Table
-    from rich.panel import Panel
     from rich.logging import RichHandler
+    from rich.panel import Panel
+    from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
+    from rich.table import Table
 
     RICH_AVAILABLE = True
 except ImportError:
     RICH_AVAILABLE = False
 
 try:
-    from cardgame.analysis.aggregator import ExperimentAggregator
-    from cardgame.analysis.dashboard import MCTSDashboard
+    from essence_wars.analysis.aggregator import ExperimentAggregator
+    from essence_wars.analysis.dashboard import MCTSDashboard
 except ImportError:
     # Fallback for running from scripts directory
     sys.path.insert(0, str(Path(__file__).parent.parent))
-    from cardgame.analysis.aggregator import ExperimentAggregator
-    from cardgame.analysis.dashboard import MCTSDashboard
+    from essence_wars.analysis.aggregator import ExperimentAggregator
+    from essence_wars.analysis.dashboard import MCTSDashboard
 
 
 def setup_logging(verbose: bool = False) -> logging.Logger:
@@ -328,7 +328,7 @@ def main():
                 f"[dim]Open dashboard:[/dim] [cyan]{dashboard_path}[/cyan]\n"
             )
         else:
-            print(f"\n✓ Analysis complete!")
+            print("\n✓ Analysis complete!")
             print(f"Open dashboard: {dashboard_path}\n")
 
     # Print statistics

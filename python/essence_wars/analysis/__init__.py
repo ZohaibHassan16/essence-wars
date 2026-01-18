@@ -8,14 +8,15 @@ Modules:
     - validation_cli: CLI analyzer for validation results
     - visualize: Matplotlib visualizations for training
     - parse_log: Log file parsing utilities
+    - performance_dashboard: Criterion benchmark dashboard
 """
 
-from .aggregator import ExperimentAggregator, ExperimentRun, ExperimentMetadata
+from .aggregator import ExperimentAggregator, ExperimentMetadata, ExperimentRun
 from .dashboard import MCTSDashboard
 
 __all__ = [
     "ExperimentAggregator",
-    "ExperimentRun",
     "ExperimentMetadata",
+    "ExperimentRun",
     "MCTSDashboard",
 ]

@@ -29,6 +29,7 @@
 | **Keywords** | 16 mechanical interactions |
 | **Random Game Throughput** | ~80,000 games/sec |
 | **Greedy Game Throughput** | ~17,000 games/sec |
+| **Vectorized Env SPS** | ~268,000 steps/sec |
 | **State Tensor Latency** | ~133 ns |
 
 ---
@@ -120,6 +121,31 @@ let clone = env.fork();
 | `mcts` | Monte Carlo Tree Search | Strong benchmark |
 | `agent-*` | MCTS with tuned weights | Faction specialists |
 
+### Python / Gymnasium Interface
+
+```python
+from essence_wars import EssenceWarsEnv, VectorizedEssenceWars
+
+# Single environment (Gymnasium v26+ compliant)
+env = EssenceWarsEnv(opponent="greedy")
+obs, info = env.reset(seed=42)
+
+while True:
+    action = policy.select(obs, info["action_mask"])
+    obs, reward, terminated, truncated, info = env.step(action)
+    if terminated or truncated:
+        break
+
+# Vectorized for high-throughput training (~268k SPS)
+vec_env = VectorizedEssenceWars(num_envs=64)
+obs, masks = vec_env.reset(seed=42)
+
+for _ in range(num_steps):
+    actions = policy.batch_select(obs, masks)
+    obs, rewards, dones, masks = vec_env.step(actions)
+    # Done environments auto-reset
+```
+
 ---
 
 ## Weight Tuning (CMA-ES)
@@ -160,8 +186,8 @@ cargo run --release --bin tune -- --mode faction-specialist --faction argentum
 │   ├── cards/core_set/    # 300 cards in YAML
 │   ├── decks/             # 12 Commander Decks in TOML
 │   └── weights/           # Tuned bot weights
-├── python/                # Analysis and visualization
-│   └── cardgame/analysis/ # Dashboards, aggregators
+├── python/                # Python package + analysis
+│   └── essence_wars/      # Gymnasium env, analysis tools
 ├── docs/                  # Documentation + GitHub Pages
 │   ├── dashboard/         # Interactive dashboards
 │   └── *.md               # Design documents

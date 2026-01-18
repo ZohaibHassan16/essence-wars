@@ -55,7 +55,7 @@
 
 ---
 
-## Milestone 1: PyO3 Bridge (Foundation)
+## Milestone 1: PyO3 Bridge (Foundation) ✅ [COMPLETE]
 
 **Goal**: Expose Rust engine to Python with zero-copy tensor transfer.
 
@@ -198,17 +198,18 @@ python-source = "python"
 module-name = "essence_wars._core"
 ```
 
-### 1D: Deliverables
+### 1D: Deliverables 
 
-- [ ] `src/python.rs` with `PyGame` and `PyParallelGames`
-- [ ] `Cargo.toml` with feature flags
-- [ ] `pyproject.toml` with maturin config
-- [ ] `maturin develop` builds successfully
-- [ ] Unit test: tensor shape is (326,), action mask is (256,)
+- [x] `src/python.rs` with `PyGame` and `PyParallelGames`
+- [x] `Cargo.toml` with feature flags
+- [x] `pyproject.toml` with maturin config
+- [x] `maturin develop` builds successfully
+- [x] Unit test: tensor shape is (326,), action mask is (256,)
+-  ✅ [COMPLETE]
 
 ---
 
-## Milestone 2: Gymnasium Environment
+## Milestone 2: Gymnasium Environment ✅ [COMPLETE]
 
 **Goal**: Strict v26+ compliant single-agent environment for self-play.
 
@@ -329,10 +330,10 @@ class VectorizedEssenceWars(gym.vector.VectorEnv):
 
 ### 2B: Deliverables
 
-- [ ] `python/essence_wars/env.py` with `EssenceWarsEnv`
-- [ ] `python/essence_wars/env.py` with `VectorizedEssenceWars`
-- [ ] Passes `gymnasium.utils.env_checker.check_env()`
-- [ ] Benchmark: >10k SPS single env, >60k SPS vectorized (1000 envs)
+- [x] `python/essence_wars/env.py` with `EssenceWarsEnv`
+- [x] `python/essence_wars/env.py` with `VectorizedEssenceWars`
+- [x] Passes `gymnasium.utils.env_checker.check_env()`
+- [x] Benchmark: >10k SPS single env, >60k SPS vectorized (1000 envs)
 
 ---
 

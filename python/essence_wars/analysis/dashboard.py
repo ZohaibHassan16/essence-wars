@@ -5,9 +5,8 @@ Loads data from CSV files dynamically for efficiency and flexibility.
 """
 
 import logging
-from pathlib import Path
 from datetime import datetime
-from typing import Optional
+from pathlib import Path
 
 import pandas as pd
 import plotly.graph_objects as go

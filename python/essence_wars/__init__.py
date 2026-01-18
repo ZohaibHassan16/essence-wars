@@ -7,6 +7,12 @@ This package provides:
 - Gymnasium-compatible environments (optional)
 - PettingZoo-compatible multi-agent environments (optional)
 
+Submodules:
+- essence_wars.infra: Experiment management utilities
+- essence_wars.analysis: Visualization and analysis tools (requires pandas, plotly)
+- essence_wars.agents: Agent implementations (future)
+- essence_wars.training: Training utilities (future)
+
 Quick Start:
     from essence_wars import PyGame
 
@@ -22,9 +28,13 @@ Quick Start:
 With Gymnasium:
     from essence_wars.env import EssenceWarsEnv
 
-    env = EssenceWarsEnv(deck="argentum_control")
+    env = EssenceWarsEnv(deck="architect_fortify")
     obs, info = env.reset(seed=42)
     obs, reward, terminated, truncated, info = env.step(action)
+
+With Analysis Tools:
+    from essence_wars.infra import Experiment
+    from essence_wars.analysis import ExperimentAggregator, MCTSDashboard
 """
 
 __version__ = "0.6.0"
@@ -32,10 +42,10 @@ __version__ = "0.6.0"
 # Import core Rust bindings
 try:
     from essence_wars._core import (
+        ACTION_SPACE_SIZE,
+        STATE_TENSOR_SIZE,
         PyGame,
         PyParallelGames,
-        STATE_TENSOR_SIZE,
-        ACTION_SPACE_SIZE,
     )
 except ImportError as e:
     raise ImportError(
@@ -61,3 +71,20 @@ __all__ = [
     # Functions
     "list_decks",
 ]
+
+# Lazy imports for optional modules to avoid import errors when dependencies missing
+def __getattr__(name: str):
+    """Lazy import for optional modules."""
+    if name == "EssenceWarsEnv":
+        from essence_wars.env import EssenceWarsEnv
+        return EssenceWarsEnv
+    elif name == "EssenceWarsSelfPlayEnv":
+        from essence_wars.env import EssenceWarsSelfPlayEnv
+        return EssenceWarsSelfPlayEnv
+    elif name == "make_env":
+        from essence_wars.env import make_env
+        return make_env
+    elif name == "VectorizedEssenceWars":
+        from essence_wars.env import VectorizedEssenceWars
+        return VectorizedEssenceWars
+    raise AttributeError(f"module 'essence_wars' has no attribute {name!r}")

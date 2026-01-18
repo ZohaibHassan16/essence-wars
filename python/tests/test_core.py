@@ -1,12 +1,11 @@
 """Tests for the Essence Wars Rust bindings."""
 
 import numpy as np
-import pytest
 
 
 def test_import():
     """Test that the package imports correctly."""
-    from essence_wars import PyGame, PyParallelGames, STATE_TENSOR_SIZE, ACTION_SPACE_SIZE
+    from essence_wars import ACTION_SPACE_SIZE, STATE_TENSOR_SIZE
 
     assert STATE_TENSOR_SIZE == 326
     assert ACTION_SPACE_SIZE == 256
@@ -22,7 +21,7 @@ def test_pygame_creation():
 
 def test_pygame_reset():
     """Test PyGame reset produces valid tensors."""
-    from essence_wars import PyGame, STATE_TENSOR_SIZE, ACTION_SPACE_SIZE
+    from essence_wars import ACTION_SPACE_SIZE, STATE_TENSOR_SIZE, PyGame
 
     game = PyGame()
     game.reset(seed=42)
@@ -143,7 +142,7 @@ def test_pygame_deck_selection():
     """Test creating game with specific decks."""
     from essence_wars import PyGame
 
-    game = PyGame(deck1="argentum_control", deck2="symbiote_aggro")
+    game = PyGame(deck1="architect_fortify", deck2="broodmother_swarm")
     game.reset(seed=42)
 
     assert not game.is_done()
@@ -156,7 +155,7 @@ def test_pygame_list_decks():
     decks = PyGame.list_decks()
     assert isinstance(decks, list)
     assert len(decks) > 0
-    assert "argentum_control" in decks
+    assert "architect_fortify" in decks  # Updated to use actual deck name
 
 
 def test_parallel_games_creation():
@@ -169,7 +168,7 @@ def test_parallel_games_creation():
 
 def test_parallel_games_reset():
     """Test PyParallelGames reset."""
-    from essence_wars import PyParallelGames, STATE_TENSOR_SIZE, ACTION_SPACE_SIZE
+    from essence_wars import ACTION_SPACE_SIZE, STATE_TENSOR_SIZE, PyParallelGames
 
     num_envs = 4
     games = PyParallelGames(num_envs=num_envs)

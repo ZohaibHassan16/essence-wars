@@ -11,9 +11,10 @@ Usage:
     modal deploy modal_tune.py                      # Deploy as persistent app
 """
 
-import modal
 import sys
 from pathlib import Path
+
+import modal
 
 # ============================================================================
 # Configuration
@@ -106,16 +107,16 @@ def extract_workspace(workspace_snapshot: bytes, path: str = "/tmp/essence-wars"
     Returns:
         Path object pointing to extracted workspace
     """
-    import tarfile
     import io
-    
+    import tarfile
+
     print("\n📦 Extracting workspace...")
     workspace_path = Path(path)
     workspace_path.mkdir(exist_ok=True)
-    
+
     with tarfile.open(fileobj=io.BytesIO(workspace_snapshot), mode='r:gz') as tar:
         tar.extractall(workspace_path)
-    
+
     print(f"✓ Workspace extracted to {workspace_path}")
     return workspace_path
 
@@ -133,19 +134,19 @@ def build_rust_binary(workspace: Path, binary: str) -> tuple[bool, str, float]:
     """
     import subprocess
     import time
-    
+
     print(f"\n🔨 Building {binary} binary...")
     build_start = time.time()
-    
+
     result = subprocess.run(
         ["cargo", "build", "--release", "--bin", binary],
         cwd=workspace,
         capture_output=True,
         text=True,
     )
-    
+
     build_time = time.time() - build_start
-    
+
     if result.returncode == 0:
         print(f"✓ Build completed in {build_time:.1f}s")
         return True, "", build_time
@@ -165,33 +166,33 @@ def setup_weights_from_volume(workspace: Path) -> int:
         Number of weight files copied
     """
     import shutil
-    
+
     print("\n📂 Setting up weights...")
-    
+
     weights_dest = workspace / "data" / "weights"
     specialists_dest = weights_dest / "specialists"
     specialists_dest.mkdir(parents=True, exist_ok=True)
-    
+
     trained_weights = Path("/experiments/trained_weights")
     weights_found = 0
-    
+
     if not trained_weights.exists():
         print("  ⚠️  No trained weights found in volume")
         return 0
-    
+
     # Copy generalist weights
     gen_weights = trained_weights / "generalist.toml"
     if gen_weights.exists():
         shutil.copy2(gen_weights, weights_dest / "generalist.toml")
         weights_found += 1
-    
+
     # Copy specialist weights
     spec_dir = trained_weights / "specialists"
     if spec_dir.exists():
         for spec_file in spec_dir.glob("*.toml"):
             shutil.copy2(spec_file, specialists_dest / spec_file.name)
             weights_found += 1
-    
+
     print(f"  Found {weights_found} weight files")
     return weights_found
 
@@ -222,61 +223,61 @@ def run_training(config: dict, workspace_snapshot: bytes):
         config: Training configuration dict with tag, mode, args, description
         workspace_snapshot: Tarball of workspace directory
     """
-    import subprocess
     import shutil
+    import subprocess
     import time
-    
+
     print_banner(f"🚀 Starting: {config['description']}")
     print(f"📊 Tag: {config['tag']}")
     print(f"🔧 Mode: {config['mode']}")
     print(f"⚙️  Args: {' '.join(config['args'])}")
     print(f"💻 Resources: {CPU_COUNT} cores, {MEMORY_MB}MB RAM")
     print("=" * 70)
-    
+
     start_time = time.time()
-    
+
     # Extract workspace snapshot
     workspace_path = extract_workspace(workspace_snapshot)
-    
+
     # Build in release mode
     success, stderr, build_time = build_rust_binary(workspace_path, "tune")
     if not success:
         raise RuntimeError(f"Build failed for {config['tag']}: {stderr[-500:]}")
-    
+
     # Run tuning
     print("\n🧠 Starting training...")
     training_start = time.time()
-    
+
     cmd = [
         "cargo", "run", "--release", "--bin", "tune", "--",
         f"--tag={config['tag']}",
         f"--mode={config['mode']}",
     ] + config['args']
-    
+
     print(f"Command: {' '.join(cmd)}")
-    
+
     result = subprocess.run(
         cmd,
         cwd=workspace_path,
         capture_output=True,
         text=True,
     )
-    
+
     training_time = time.time() - training_start
-    
+
     if result.returncode != 0:
         print(f"❌ Training failed:\n{result.stderr}")
         raise RuntimeError(f"Training failed for {config['tag']}")
-    
+
     # Parse results from output
     output = result.stdout
     print_banner("📈 TRAINING RESULTS")
-    
+
     # Extract key metrics
     best_wr = None
     best_fitness = None
     generations = None
-    
+
     for line in output.split('\n'):
         if "Best win rate:" in line:
             best_wr = line.split("Best win rate:")[-1].strip()
@@ -287,19 +288,19 @@ def run_training(config: dict, workspace_snapshot: bytes):
         elif "Auto-deployed to" in line:
             deploy_path = line.split('"')[1]
             print(f"✓ Auto-deployed: {deploy_path}")
-    
+
     if best_wr:
         print(f"🎯 Win Rate: {best_wr}")
     if best_fitness:
         print(f"📊 Fitness: {best_fitness}")
     if generations:
         print(f"🔄 Generations: {generations}")
-    
+
     print(f"⏱️  Training Time: {training_time:.1f}s ({training_time/60:.1f}m)")
-    
+
     # Copy experiment outputs to persistent volume
     print("\n💾 Saving results to persistent volume...")
-    
+
     experiments_dir = workspace_path / "experiments" / "mcts"
     if experiments_dir.exists():
         # Find the experiment directory (timestamped)
@@ -307,14 +308,14 @@ def run_training(config: dict, workspace_snapshot: bytes):
         if experiment_dirs:
             latest_exp = experiment_dirs[-1]
             dest_path = Path("/experiments") / latest_exp.name
-            
+
             shutil.copytree(latest_exp, dest_path, dirs_exist_ok=True)
             print(f"✓ Saved to: {dest_path}")
-            
+
             # Commit volume changes
             volume.commit()
             print("✓ Volume committed")
-    
+
     # Save ONLY the trained weights to a consolidated location (not per-config)
     # This ensures we don't overwrite good weights with stale ones
     weights_dir = workspace_path / "data" / "weights"
@@ -328,7 +329,7 @@ def run_training(config: dict, workspace_snapshot: bytes):
         src = weights_dir / "generalist.toml"
         if src.exists():
             shutil.copy2(src, weights_dest / "generalist.toml")
-            print(f"✓ Saved generalist weights to volume")
+            print("✓ Saved generalist weights to volume")
             volume.commit()
     elif config['mode'] == 'faction-specialist':
         # Only save the specific faction's specialist weights
@@ -343,13 +344,13 @@ def run_training(config: dict, workspace_snapshot: bytes):
                 shutil.copy2(src, specialists_dest / f"{faction}.toml")
                 print(f"✓ Saved {faction} specialist weights to volume")
                 volume.commit()
-    
+
     total_time = time.time() - start_time
-    
+
     print_banner(f"✅ {config['description']} COMPLETE!")
     print(f"⏱️  Total Time: {total_time:.1f}s ({total_time/60:.1f}m)")
     print("=" * 70 + "\n")
-    
+
     # Extract faction name for display (if applicable)
     display_name = config['mode']
     if config['mode'] == 'faction-specialist':
@@ -360,7 +361,7 @@ def run_training(config: dict, workspace_snapshot: bytes):
                 break
     elif config['mode'] == 'generalist':
         display_name = 'generalist'
-    
+
     return {
         "tag": config['tag'],
         "mode": config['mode'],
@@ -400,9 +401,9 @@ def run_validation(workspace_snapshot: bytes, run_id: str = None, games: int = N
     Returns:
         Dict with validation results
     """
+    import json
     import subprocess
     import time
-    import json
 
     # Use passed parameters or fall back to module defaults
     games = games or VALIDATION_GAMES
@@ -410,9 +411,7 @@ def run_validation(workspace_snapshot: bytes, run_id: str = None, games: int = N
     cores = cores or VALIDATION_CPU
 
     print_banner("🔍 BALANCE VALIDATION")
-    import time
-    import json
-    
+
     print_banner("🔍 BALANCE VALIDATION")
     print(f"⚙️  Games: {games}, MCTS sims: {mcts_sims}, Cores: {cores}")
 
@@ -536,8 +535,8 @@ def run_matchup_validation(
     Returns:
         Dict with matchup results
     """
-    import subprocess
     import json
+    import subprocess
     import time
 
     print_banner(f"🎯 MATCHUP VALIDATION: {matchup.upper()}")
@@ -735,12 +734,11 @@ def merge_matchup_results(matchup_results: list, run_id: str) -> dict:
 )
 def list_experiments():
     """List all experiments stored in persistent volume."""
-    import os
-    
+
     exp_path = Path("/experiments")
     if not exp_path.exists():
         return []
-    
+
     experiments = []
     for item in exp_path.iterdir():
         if item.is_dir() and item.name != "weights":
@@ -750,7 +748,7 @@ def list_experiments():
                 "size_mb": sum(f.stat().st_size for f in item.rglob("*") if f.is_file()) / (1024 * 1024),
                 "modified": stat.st_mtime,
             })
-    
+
     return sorted(experiments, key=lambda x: x['modified'], reverse=True)
 
 @app.function(
@@ -759,8 +757,8 @@ def list_experiments():
 )
 def download_experiment(experiment_name: str) -> bytes:
     """Download experiment results as tarball."""
-    import tarfile
     import io
+    import tarfile
 
     exp_path = Path("/experiments") / experiment_name
     if not exp_path.exists():
@@ -937,9 +935,9 @@ def save_validation_results(workspace_path: Path, run_id: str, results: dict) ->
         f.write("\n".join(config_lines))
 
     print(f"\n💾 Validation results saved to: {validation_dir}")
-    print(f"   📄 results.json - Full JSON data")
-    print(f"   📝 summary.txt  - Human-readable summary")
-    print(f"   ⚙️  config.toml  - Run configuration")
+    print("   📄 results.json - Full JSON data")
+    print("   📝 summary.txt  - Human-readable summary")
+    print("   ⚙️  config.toml  - Run configuration")
 
     return validation_dir
 
@@ -978,8 +976,8 @@ def main(
         cores: Number of CPU cores for validation (default: 32, note: also update VALIDATION_CPU constant)
         sequential: If True, run validation sequentially instead of parallel (default: False)
     """
-    import tarfile
     import io
+    import tarfile
     import time
     from datetime import datetime
 
@@ -1033,7 +1031,7 @@ def main(
             configs = [c for c in TRAINING_CONFIGS if single.lower() in c['tag'].lower()]
             if not configs:
                 print(f"❌ No configuration found matching '{single}'")
-                print(f"Available: generalist, argentum, symbiote, obsidion")
+                print("Available: generalist, argentum, symbiote, obsidion")
                 sys.exit(1)
             print(f"🎯 Running single configuration: {configs[0]['description']}\n")
         else:
@@ -1243,28 +1241,27 @@ def main(
 @app.local_entrypoint()
 def download_latest():
     """Download the latest experiment results."""
-    import time
-    
+
     print("📋 Fetching experiment list...")
     experiments = list_experiments.remote()
-    
+
     if not experiments:
         print("❌ No experiments found in persistent volume")
         return
-    
+
     print(f"\n📦 Found {len(experiments)} experiment(s):")
     for i, exp in enumerate(experiments[:5]):  # Show latest 5
         print(f"  {i+1}. {exp['name']} ({exp['size_mb']:.1f} MB)")
-    
+
     # Download latest
     latest = experiments[0]
     print(f"\n⬇️  Downloading: {latest['name']}...")
-    
+
     tarball = download_experiment.remote(latest['name'])
-    
+
     output_path = Path(f"experiments_modal_{latest['name']}.tar.gz")
     output_path.write_bytes(tarball)
-    
+
     print(f"✅ Downloaded to: {output_path}")
     print(f"📦 Size: {len(tarball) / (1024*1024):.1f} MB")
     print(f"\n💡 Extract with: tar -xzf {output_path}")

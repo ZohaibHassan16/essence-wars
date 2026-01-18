@@ -9,10 +9,9 @@ Usage:
 
 import argparse
 import json
-from pathlib import Path
 from collections import defaultdict
 from dataclasses import dataclass, field
-from typing import Optional
+from pathlib import Path
 
 
 @dataclass
@@ -275,7 +274,7 @@ def print_worst_matchups(matchups: list):
 
 def print_deck_matchup_details(data: dict, faction: str):
     """Print detailed matchup info for a specific faction's decks."""
-    print(f"\n" + "=" * 70)
+    print("\n" + "=" * 70)
     print(f"DETAILED MATCHUPS FOR {faction.upper()}")
     print("=" * 70)
 
@@ -308,7 +307,7 @@ def print_deck_matchup_details(data: dict, faction: str):
             print(f"  vs {m['vs_deck']:<20} ({m['vs_faction']:<8}): {m['win_rate']*100:5.1f}% {indicator}")
 
 
-def find_latest_results() -> Optional[Path]:
+def find_latest_results() -> Path | None:
     """Find the most recent validation results."""
     validation_dir = Path("experiments/validation")
     if not validation_dir.exists():
