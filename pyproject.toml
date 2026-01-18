@@ -134,6 +134,8 @@ dev = [
     "ruff>=0.14.11",
     "mypy>=1.19.1",
     "jupyterlab>=4.5.2",
+    "nbconvert>=7.16.6",
+    "ipykernel>=7.1.0",
 ]
 
 # Training dependencies: PyTorch, tensorboard, experiment tracking
