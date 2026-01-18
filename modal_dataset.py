@@ -34,7 +34,7 @@ RUST_VERSION = "stable"
 # Container configuration
 CPU_COUNT = 16  # 16 cores for rayon parallelization
 MEMORY_MB = 16384  # 16 GB RAM (increased for 100k+ datasets)
-TIMEOUT_SECONDS = 7200  # 2 hours max
+TIMEOUT_SECONDS = 14400  # 4 hours max
 
 # Default generation parameters
 DEFAULT_GAMES = 100_000
