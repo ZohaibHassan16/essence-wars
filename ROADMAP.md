@@ -46,12 +46,12 @@
 
 *Make Essence Wars accessible to ML researchers.*
 
-- [ ] Create PyO3 Python bindings
-- [ ] Implement Gymnasium environment interface
+- [x] Create PyO3 Python bindings
+- [x] Implement Gymnasium environment interface
 - [ ] Publish `essence-wars` package to PyPI (`pip install essence-wars`)
 - [ ] Publish Rust crate to crates.io (`cargo add essence-wars`)
 - [ ] Train first proof-of-concept PPO agent
-- [ ] Validate Gym interface with standard RL libraries (Stable-Baselines3, CleanRL)
+- [x] Validate Gym interface with standard RL libraries (Stable-Baselines3, CleanRL)
 - [ ] Write researcher quickstart guide
 - [ ] Design JRPG integration architecture (`docs/jrpg-architecture.md`)
 - [ ] Define clean API layer for external game clients
