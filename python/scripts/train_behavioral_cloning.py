@@ -23,7 +23,6 @@ import argparse
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 import torch
 import torch.nn.functional as F
@@ -480,7 +479,7 @@ def main() -> None:
 
     # Training complete
     total_time = time.time() - start_time
-    print(f"\n=== Training Complete ===")
+    print("\n=== Training Complete ===")
     print(f"  Total time:     {total_time / 60:.1f} minutes")
     print(f"  Best val loss:  {best_val_loss:.4f}")
     print(f"  Model saved to: {output_path}")

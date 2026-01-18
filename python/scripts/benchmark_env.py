@@ -2,6 +2,7 @@
 """Benchmark script for vectorized environment throughput."""
 
 import time
+
 import numpy as np
 
 from essence_wars.env import VectorizedEssenceWars

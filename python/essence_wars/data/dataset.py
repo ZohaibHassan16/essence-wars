@@ -24,13 +24,13 @@ from __future__ import annotations
 
 import gzip
 import json
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator
 
 import numpy as np
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 
 @dataclass
@@ -112,7 +112,7 @@ class MCTSDataset(Dataset[dict[str, torch.Tensor]]):
         if self.path.suffix == ".gz":
             open_fn = lambda p: gzip.open(p, "rt", encoding="utf-8")
         else:
-            open_fn = lambda p: open(p, "r", encoding="utf-8")
+            open_fn = lambda p: open(p, encoding="utf-8")
 
         with open_fn(self.path) as f:
             for line in f:
@@ -195,7 +195,7 @@ class StreamingMCTSDataset:
         if self.path.suffix == ".gz":
             open_fn = lambda p: gzip.open(p, "rt", encoding="utf-8")
         else:
-            open_fn = lambda p: open(p, "r", encoding="utf-8")
+            open_fn = lambda p: open(p, encoding="utf-8")
 
         with open_fn(self.path) as f:
             for line in f:
@@ -278,7 +278,7 @@ def get_dataset_stats(path: str | Path, max_games: int | None = None) -> dict:
     if path.suffix == ".gz":
         open_fn = lambda p: gzip.open(p, "rt", encoding="utf-8")
     else:
-        open_fn = lambda p: open(p, "r", encoding="utf-8")
+        open_fn = lambda p: open(p, encoding="utf-8")
 
     total_games = 0
     total_moves = 0

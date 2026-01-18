@@ -29,8 +29,8 @@ Example:
 from essence_wars.agents.networks import AlphaZeroNetwork, EssenceWarsNetwork, ResidualBlock
 
 __all__ = [
-    "EssenceWarsNetwork",
     "AlphaZeroNetwork",
+    "EssenceWarsNetwork",
     "ResidualBlock",
 ]
 

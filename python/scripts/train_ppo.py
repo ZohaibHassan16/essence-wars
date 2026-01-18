@@ -21,7 +21,6 @@ Example:
 """
 
 import argparse
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -252,7 +251,7 @@ def main():
         f.write(f"Timesteps: {trainer.global_step:,}\n")
         f.write(f"Win rate vs Greedy: {win_rate_greedy:.1%}\n")
         f.write(f"Win rate vs Random: {win_rate_random:.1%}\n")
-        f.write(f"\nConfig:\n")
+        f.write("\nConfig:\n")
         for key, value in vars(config).items():
             if not key.startswith("_"):
                 f.write(f"  {key}: {value}\n")

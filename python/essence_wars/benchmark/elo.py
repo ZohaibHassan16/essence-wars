@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import json
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 
@@ -189,7 +189,7 @@ class EloTracker:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "EloTracker":
+    def from_dict(cls, data: dict) -> EloTracker:
         """Load ratings from dictionary."""
         tracker = cls(
             k_factor=data.get("k_factor", 32.0),
@@ -211,7 +211,7 @@ class EloTracker:
             json.dump(self.to_dict(), f, indent=2)
 
     @classmethod
-    def load(cls, path: str | Path) -> "EloTracker":
+    def load(cls, path: str | Path) -> EloTracker:
         """Load ratings from JSON file."""
         with open(path) as f:
             return cls.from_dict(json.load(f))

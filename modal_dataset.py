@@ -19,9 +19,8 @@ Usage:
     modal run modal_dataset.py --list
 """
 
-import sys
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 import modal
 
@@ -117,7 +116,6 @@ def build_binary(workspace: Path) -> bool:
 def create_workspace_snapshot() -> bytes:
     """Create a gzipped tarball of the workspace for Modal upload."""
     import io
-    import os
     import tarfile
 
     # Find workspace root (where Cargo.toml is)
@@ -239,7 +237,7 @@ def generate_dataset(
     file_size = output_path.stat().st_size if output_path.exists() else 0
 
     # Commit volume changes
-    print(f"\n[4/4] Saving to persistent volume...")
+    print("\n[4/4] Saving to persistent volume...")
     volume.commit()
 
     return {
@@ -398,7 +396,7 @@ def main(
         print(f"  File size:  {result['file_size_mb']:.1f} MB")
         print(f"  Gen time:   {result['generation_time_seconds']:.1f}s")
         print(f"  Total time: {total_time:.1f}s")
-        print(f"\nTo download: modal run modal_dataset.py --download")
+        print("\nTo download: modal run modal_dataset.py --download")
     else:
         print(f"  Error: {result.get('error', 'Unknown error')}")
         if result.get('stdout'):

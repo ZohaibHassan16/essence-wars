@@ -1,7 +1,6 @@
 """Tests for PPO agent components."""
 
 import numpy as np
-import pytest
 import torch
 
 

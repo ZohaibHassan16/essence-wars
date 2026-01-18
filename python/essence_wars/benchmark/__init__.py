@@ -11,18 +11,18 @@ Example:
     print(f"Win rate vs Greedy: {results['win_rate_vs_greedy']:.1%}")
 """
 
-from .agents import BenchmarkAgent, RandomAgent, GreedyAgent, MCTSAgent, NeuralAgent
-from .elo import EloTracker
+from .agents import BenchmarkAgent, GreedyAgent, MCTSAgent, NeuralAgent, RandomAgent
 from .api import EssenceWarsBenchmark
+from .elo import EloTracker
 from .metrics import BenchmarkResults
 
 __all__ = [
     "BenchmarkAgent",
-    "RandomAgent",
+    "BenchmarkResults",
+    "EloTracker",
+    "EssenceWarsBenchmark",
     "GreedyAgent",
     "MCTSAgent",
     "NeuralAgent",
-    "EloTracker",
-    "EssenceWarsBenchmark",
-    "BenchmarkResults",
+    "RandomAgent",
 ]

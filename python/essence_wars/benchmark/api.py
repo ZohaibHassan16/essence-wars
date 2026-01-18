@@ -23,18 +23,17 @@ Example:
 from __future__ import annotations
 
 import time
-from typing import Callable
 
 import numpy as np
 
-from .agents import BenchmarkAgent, RandomAgent, NeuralAgent
+from .agents import BenchmarkAgent
 from .elo import EloTracker
 from .metrics import (
     BenchmarkResults,
-    MatchupResult,
     DeckResult,
-    TransferResults,
     GeneralizationResults,
+    MatchupResult,
+    TransferResults,
 )
 
 
@@ -147,7 +146,6 @@ class EssenceWarsBenchmark:
         Returns:
             BenchmarkResults with all metrics
         """
-        from essence_wars._core import PyGame
 
         games_per = games_per_opponent or self.games_per_opponent
         baselines = baselines or self.BASELINES

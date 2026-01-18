@@ -222,7 +222,7 @@ def test_parallel_env_state():
 
 def test_parallel_env_factory_functions():
     """Test the factory functions."""
-    from essence_wars.parallel_env import parallel_env, raw_env, env
+    from essence_wars.parallel_env import env, parallel_env, raw_env
 
     env1 = parallel_env()
     env2 = raw_env()
@@ -293,6 +293,7 @@ def test_parallel_env_close():
 def test_parallel_env_api_compliance():
     """Test PettingZoo API compliance using official test utilities."""
     from pettingzoo.test import parallel_api_test
+
     from essence_wars.parallel_env import EssenceWarsParallelEnv
 
     env = EssenceWarsParallelEnv()

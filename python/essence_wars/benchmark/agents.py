@@ -236,7 +236,7 @@ class NeuralAgent(BaseAgent):
         name: str | None = None,
         device: str = "cpu",
         deterministic: bool = True,
-    ) -> "NeuralAgent":
+    ) -> NeuralAgent:
         """Load a neural agent from a checkpoint file.
 
         Supports both AlphaZero and Behavioral Cloning checkpoints.
@@ -251,6 +251,7 @@ class NeuralAgent(BaseAgent):
             NeuralAgent instance
         """
         from pathlib import Path
+
         from essence_wars.agents.networks import AlphaZeroNetwork
 
         checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)

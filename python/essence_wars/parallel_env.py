@@ -133,7 +133,7 @@ class EssenceWarsParallelEnv(ParallelEnv):
 
         # Episode tracking
         self._step_count = 0
-        self._cumulative_rewards = {agent: 0.0 for agent in self.possible_agents}
+        self._cumulative_rewards = dict.fromkeys(self.possible_agents, 0.0)
 
     def observation_space(self, agent: str) -> spaces.Space:
         """Return the observation space for an agent."""
@@ -165,7 +165,7 @@ class EssenceWarsParallelEnv(ParallelEnv):
         self._game.reset(seed=seed)
         self.agents = self.possible_agents[:]
         self._step_count = 0
-        self._cumulative_rewards = {agent: 0.0 for agent in self.possible_agents}
+        self._cumulative_rewards = dict.fromkeys(self.possible_agents, 0.0)
 
         observations = self._get_observations()
         infos = self._get_infos()
@@ -222,8 +222,8 @@ class EssenceWarsParallelEnv(ParallelEnv):
                 active_agent: -1.0,
                 self._other_agent(active_agent): 1.0,
             }
-            terminations = {agent: True for agent in self.possible_agents}
-            truncations = {agent: False for agent in self.possible_agents}
+            terminations = dict.fromkeys(self.possible_agents, True)
+            truncations = dict.fromkeys(self.possible_agents, False)
             self.agents = []
 
             observations = self._get_observations()
@@ -249,8 +249,8 @@ class EssenceWarsParallelEnv(ParallelEnv):
         # Check for truncation (max turns)
         truncated = self._step_count >= self.max_turns and not done
 
-        terminations = {agent: done for agent in self.possible_agents}
-        truncations = {agent: truncated for agent in self.possible_agents}
+        terminations = dict.fromkeys(self.possible_agents, done)
+        truncations = dict.fromkeys(self.possible_agents, truncated)
 
         if done or truncated:
             self.agents = []
@@ -302,7 +302,7 @@ class EssenceWarsParallelEnv(ParallelEnv):
         pass
 
     @property
-    def unwrapped(self) -> "EssenceWarsParallelEnv":
+    def unwrapped(self) -> EssenceWarsParallelEnv:
         """Return the unwrapped environment."""
         return self
 

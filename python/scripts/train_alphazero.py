@@ -16,7 +16,6 @@ Usage:
 """
 
 import argparse
-import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -223,7 +222,7 @@ def main():
             # Behavioral cloning checkpoint
             trainer.network.load_state_dict(checkpoint["model_state_dict"])
             print(f"  Loaded BC checkpoint (epoch {checkpoint.get('epoch', 'unknown')})")
-            print(f"  Note: Starting fresh training from iteration 0")
+            print("  Note: Starting fresh training from iteration 0")
         else:
             raise ValueError(f"Unknown checkpoint format in {args.load}")
 
