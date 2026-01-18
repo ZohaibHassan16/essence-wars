@@ -612,7 +612,7 @@ fn check_battle_trigger(
 - **Pros**: Smaller bundle, faster iteration, familiar web stack
 - **Cons**: Duplicate UI logic, WASM FFI overhead
 
-**Recommendation**: Start with **Option B** for Phase 5A (faster iteration on UI/UX), consider Option A for Phase 5B if 3D JRPG succeeds (code reuse).
+**Key Decision**: **Option B** for Phase 5A (faster iteration on UI/UX)
 
 ### 5.2 WASM Bridge
 

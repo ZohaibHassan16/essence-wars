@@ -73,13 +73,7 @@
 - [ ] Design analytics API for Glassbox Mode (decision trees, replay system)
 - [ ] Add Learned Card Embeddings `observation_mode="flat"` vs `observation_mode="embedded"`  
   - Research contribution: Compare both in a paper!
-- [ ] Write Tutorial Notebooks 📓, link them in the Main Readme, Lowers barrier to entry (critically important), Shows best practices, Reduces repetitive questions, Good tutorials get cited!
-  - **Essential tutorials:**
-  - 01_quickstart.ipynb - Install → Train PPO → Evaluate (15 minutes)
-  - 02_mcts_tuning.ipynb - How to tune MCTS weights yourself
-  - 03_custom_decks.ipynb - Create your own deck and test it
-  - 04_state_analysis.ipynb - Understanding the state tensor
-  - 05_self_play.ipynb - Set up AlphaZero-style self-play
+- [ ] Review and Improve Tutorial Notebooks 📓, add one or two using the new Agent Roster
 - [ ] Idea: Use the Bitnet Approach for Reward Shaping: Rewards remain binary -1, 1, but we can add 'shadow reward shapes' that are using smaller values to give the neural nets something to work for like 1.58b Bitnet Does it for LLMs ? 
 
 ---
@@ -89,7 +83,7 @@
 *Deploy interactive web experience on Huggingface Spaces.*
 
 ### Human Play Mode
-- [ ] Build web client UI (Bevy WASM or web-native)
+- [ ] Build web client UI (web-native)
 - [ ] Implement Human vs AI matches (select opponent: MCTS/PPO/AlphaZero/LLM)
 - [ ] Add AI hint system (limited charges per game, suggests strong moves)
 - [ ] Create deck builder interface

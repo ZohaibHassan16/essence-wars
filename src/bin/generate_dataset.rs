@@ -573,10 +573,54 @@ fn main() {
     let games_completed = AtomicU64::new(0);
     let total_moves = AtomicU64::new(0);
 
-    // Generate games in parallel
-    let records: Vec<GameRecord> = matchups
+    // Prepare output file path
+    let use_compression = !args.no_compress && args.output.extension().map_or(false, |e| e == "gz");
+    let output_path = if use_compression {
+        args.output.clone()
+    } else if args.output.extension().map_or(true, |e| e != "jsonl") {
+        args.output.with_extension("jsonl")
+    } else {
+        args.output.clone()
+    };
+
+    println!("Output file: {:?}", output_path);
+
+    // Create thread-safe channel for streaming records to disk
+    use std::sync::mpsc;
+    let (tx, rx) = mpsc::sync_channel(100); // Buffer up to 100 records
+
+    // Track stats for final report
+    let wins_p1 = AtomicU64::new(0);
+    let wins_p2 = AtomicU64::new(0);
+    let draws = AtomicU64::new(0);
+
+    // Spawn writer thread (clone path for closure)
+    let output_path_clone = output_path.clone();
+    let writer_handle = std::thread::spawn(move || {
+        let file = File::create(&output_path_clone).expect("Failed to create output file");
+        
+        if use_compression || output_path_clone.extension().map_or(false, |e| e == "gz") {
+            let encoder = GzEncoder::new(file, Compression::default());
+            let mut writer = BufWriter::new(encoder);
+            for record in rx {
+                serde_json::to_writer(&mut writer, &record).expect("Failed to write record");
+                writeln!(writer).expect("Failed to write newline");
+            }
+        } else {
+            let mut writer = BufWriter::new(file);
+            for record in rx {
+                serde_json::to_writer(&mut writer, &record).expect("Failed to write record");
+                writeln!(writer).expect("Failed to write newline");
+            }
+        }
+    });
+
+    println!("Generating {} games (streaming to disk)...", total_games);
+
+    // Generate games in parallel, sending to writer thread
+    matchups
         .into_par_iter()
-        .map(|(d1, d2, seed)| {
+        .for_each(|(d1, d2, seed)| {
             let record = generate_game(
                 &card_db,
                 &deck_registry,
@@ -590,83 +634,66 @@ fn main() {
 
             let moves = record.moves.len() as u64;
             total_moves.fetch_add(moves, Ordering::Relaxed);
+            
+            // Track winner stats
+            match record.winner {
+                0 => wins_p1.fetch_add(1, Ordering::Relaxed),
+                1 => wins_p2.fetch_add(1, Ordering::Relaxed),
+                _ => draws.fetch_add(1, Ordering::Relaxed),
+            };
+
+            // Send record to writer thread (blocks if buffer full)
+            tx.send(record).expect("Failed to send record to writer");
+
             let completed = games_completed.fetch_add(1, Ordering::Relaxed) + 1;
             progress.set_position(completed);
             progress.set_message(format!("{} moves", total_moves.load(Ordering::Relaxed)));
+        });
 
-            record
-        })
-        .collect();
+    // Close channel and wait for writer to finish
+    drop(tx);
+    writer_handle.join().expect("Writer thread panicked");
 
     progress.finish_with_message("done");
 
     let duration = start.elapsed();
     let total_move_count = total_moves.load(Ordering::Relaxed);
+    let total_game_count = games_completed.load(Ordering::Relaxed);
 
     println!("\nGeneration complete!");
-    println!("  Games:     {}", records.len());
+    println!("  Games:     {}", total_game_count);
     println!("  Moves:     {}", total_move_count);
     println!("  Duration:  {:.1}s", duration.as_secs_f64());
     println!(
         "  Speed:     {:.1} games/s, {:.1} moves/s",
-        records.len() as f64 / duration.as_secs_f64(),
+        total_game_count as f64 / duration.as_secs_f64(),
         total_move_count as f64 / duration.as_secs_f64()
     );
-
-    // Write output
-    println!("\nWriting to {:?}...", args.output);
-
-    let use_compression = !args.no_compress && args.output.extension().map_or(false, |e| e == "gz");
-    let output_path = if use_compression {
-        args.output.clone()
-    } else if args.output.extension().map_or(true, |e| e != "jsonl") {
-        args.output.with_extension("jsonl")
-    } else {
-        args.output.clone()
-    };
-
-    let file = File::create(&output_path).expect("Failed to create output file");
-
-    if use_compression || output_path.extension().map_or(false, |e| e == "gz") {
-        let encoder = GzEncoder::new(file, Compression::default());
-        let mut writer = BufWriter::new(encoder);
-        for record in &records {
-            serde_json::to_writer(&mut writer, record).expect("Failed to write record");
-            writeln!(writer).expect("Failed to write newline");
-        }
-    } else {
-        let mut writer = BufWriter::new(file);
-        for record in &records {
-            serde_json::to_writer(&mut writer, record).expect("Failed to write record");
-            writeln!(writer).expect("Failed to write newline");
-        }
-    }
-
-    println!("Done! Output: {:?}", output_path);
+    println!("  Output:    {:?}", output_path);
 
     // Print stats
-    let wins_p1 = records.iter().filter(|r| r.winner == 0).count();
-    let wins_p2 = records.iter().filter(|r| r.winner == 1).count();
-    let draws = records.iter().filter(|r| r.winner == -1).count();
+    let p1_wins = wins_p1.load(Ordering::Relaxed);
+    let p2_wins = wins_p2.load(Ordering::Relaxed);
+    let draw_count = draws.load(Ordering::Relaxed);
 
     println!("\nGame Statistics:");
     println!(
         "  P1 wins: {} ({:.1}%)",
-        wins_p1,
-        100.0 * wins_p1 as f64 / records.len() as f64
+        p1_wins,
+        100.0 * p1_wins as f64 / total_game_count as f64
     );
     println!(
         "  P2 wins: {} ({:.1}%)",
-        wins_p2,
-        100.0 * wins_p2 as f64 / records.len() as f64
+        p2_wins,
+        100.0 * p2_wins as f64 / total_game_count as f64
     );
     println!(
         "  Draws:   {} ({:.1}%)",
-        draws,
-        100.0 * draws as f64 / records.len() as f64
+        draw_count,
+        100.0 * draw_count as f64 / total_game_count as f64
     );
     println!(
         "  Avg moves/game: {:.1}",
-        total_move_count as f64 / records.len() as f64
+        total_move_count as f64 / total_game_count as f64
     );
 }
