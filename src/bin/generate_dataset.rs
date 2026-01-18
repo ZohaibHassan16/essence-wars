@@ -606,12 +606,17 @@ fn main() {
                 serde_json::to_writer(&mut writer, &record).expect("Failed to write record");
                 writeln!(writer).expect("Failed to write newline");
             }
+            // CRITICAL: Flush buffer and finalize gzip stream
+            writer.flush().expect("Failed to flush buffer");
+            let encoder = writer.into_inner().expect("Failed to unwrap encoder");
+            encoder.finish().expect("Failed to finalize gzip stream");
         } else {
             let mut writer = BufWriter::new(file);
             for record in rx {
                 serde_json::to_writer(&mut writer, &record).expect("Failed to write record");
                 writeln!(writer).expect("Failed to write newline");
             }
+            writer.flush().expect("Failed to flush buffer");
         }
     });
 
