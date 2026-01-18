@@ -33,6 +33,8 @@ statrs = "0.17"  # Statistical functions for confidence intervals and significan
 pyo3 = { version = "0.22", features = ["extension-module"], optional = true }
 numpy = { version = "0.22", optional = true }
 lazy_static = "1.5"
+flate2 = "1.1.8"
+indicatif = "0.18.3"
 
 [dev-dependencies]
 criterion = "0.5"

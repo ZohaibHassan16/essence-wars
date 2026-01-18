@@ -140,6 +140,14 @@ def main():
         help="Directory to save checkpoints (default: experiments/alphazero/YYYYMMDD_HHMMSS)",
     )
 
+    # Fine-tuning
+    parser.add_argument(
+        "--load",
+        type=str,
+        default=None,
+        help="Load pre-trained model checkpoint (e.g., from behavioral cloning)",
+    )
+
     args = parser.parse_args()
 
     # Import here to avoid slow startup for --help
@@ -199,6 +207,25 @@ def main():
 
     # Create trainer
     trainer = AlphaZeroTrainer(config=config, writer=writer)
+
+    # Load pre-trained model if specified
+    if args.load:
+        print(f"\nLoading pre-trained model from: {args.load}")
+        import torch
+        checkpoint = torch.load(args.load, map_location=config.device, weights_only=False)
+
+        # Handle both AlphaZero checkpoints and BC checkpoints
+        if "network_state_dict" in checkpoint:
+            # AlphaZero checkpoint
+            trainer.load(args.load)
+            print(f"  Loaded AlphaZero checkpoint (iteration {trainer.iteration})")
+        elif "model_state_dict" in checkpoint:
+            # Behavioral cloning checkpoint
+            trainer.network.load_state_dict(checkpoint["model_state_dict"])
+            print(f"  Loaded BC checkpoint (epoch {checkpoint.get('epoch', 'unknown')})")
+            print(f"  Note: Starting fresh training from iteration 0")
+        else:
+            raise ValueError(f"Unknown checkpoint format in {args.load}")
 
     # Train
     try:
