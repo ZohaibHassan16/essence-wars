@@ -333,11 +333,11 @@ class VectorizedEssenceWars(gym.vector.VectorEnv):
 - [x] `python/essence_wars/env.py` with `EssenceWarsEnv`
 - [x] `python/essence_wars/env.py` with `VectorizedEssenceWars`
 - [x] Passes `gymnasium.utils.env_checker.check_env()`
-- [x] Benchmark: >10k SPS single env, >60k SPS vectorized (1000 envs)
+- [x] Benchmark: ~100k SPS single env, **~268k SPS vectorized** (256 envs)
 
 ---
 
-## Milestone 3: PettingZoo Multi-Agent
+## Milestone 3: PettingZoo Multi-Agent ✅ [COMPLETE]
 
 **Goal**: Proper multi-agent environment with action masking for research.
 
@@ -423,9 +423,9 @@ class EssenceWarsParallelEnv(ParallelEnv):
 
 ### 3B: Deliverables
 
-- [ ] `python/essence_wars/parallel_env.py` with `EssenceWarsParallelEnv`
-- [ ] Passes PettingZoo API tests
-- [ ] Example: two random agents playing
+- [x] `python/essence_wars/parallel_env.py` with `EssenceWarsParallelEnv`
+- [x] Passes PettingZoo API tests (`parallel_api_test`)
+- [x] Example: two random agents playing
 
 ---
 

@@ -87,4 +87,10 @@ def __getattr__(name: str):
     elif name == "VectorizedEssenceWars":
         from essence_wars.env import VectorizedEssenceWars
         return VectorizedEssenceWars
+    elif name == "EssenceWarsParallelEnv":
+        from essence_wars.parallel_env import EssenceWarsParallelEnv
+        return EssenceWarsParallelEnv
+    elif name == "parallel_env":
+        from essence_wars.parallel_env import parallel_env
+        return parallel_env
     raise AttributeError(f"module 'essence_wars' has no attribute {name!r}")

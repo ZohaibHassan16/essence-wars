@@ -150,6 +150,7 @@ addopts = "-v --tb=short"
 [dependency-groups]
 dev = [
     "mypy>=1.19.1",
+    "pettingzoo>=1.25.0",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "ruff>=0.14.11",
