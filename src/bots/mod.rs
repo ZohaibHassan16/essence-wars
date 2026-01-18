@@ -9,12 +9,16 @@ mod greedy;
 mod mcts;
 pub mod weights;
 pub mod factory;
+pub mod introspection;
 
 pub use random::RandomBot;
 pub use greedy::GreedyBot;
 pub use mcts::{MctsBot, MctsConfig, MctsNode};
 pub use weights::{BotWeights, GreedyWeights, WeightSet};
 pub use factory::{BotType, BotTypeParseError, create_bot, resolve_weights, resolve_weights_verbose, WeightResolutionError};
+pub use introspection::{
+    BotDecision, IntrospectionConfig, MctsNodeStats, MctsTreeSnapshot, PolicyOutput, PolicySource,
+};
 
 use crate::actions::Action;
 use crate::engine::GameEngine;
@@ -86,4 +90,26 @@ impl Clone for Box<dyn Bot> {
     fn clone(&self) -> Self {
         self.clone_box()
     }
+}
+
+/// Extended bot trait with introspection capabilities.
+///
+/// Bots implementing this trait can expose their decision-making process
+/// for visualization in Glassbox mode.
+pub trait AnalyzableBot: Bot {
+    /// Select an action and return introspection data.
+    ///
+    /// This method allows examining the bot's decision-making process
+    /// including policy outputs, value estimates, and search tree snapshots.
+    fn select_action_with_introspection(
+        &mut self,
+        engine: &GameEngine,
+        config: &IntrospectionConfig,
+    ) -> (Action, Option<BotDecision>);
+
+    /// Get the last decision made (without re-computing).
+    fn last_decision(&self) -> Option<&BotDecision>;
+
+    /// Get the policy source type.
+    fn policy_source(&self) -> PolicySource;
 }

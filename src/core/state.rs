@@ -4,12 +4,13 @@
 //! It uses ArrayVec for stack allocation to enable fast cloning (critical for MCTS).
 
 use arrayvec::ArrayVec;
+use serde::{Deserialize, Serialize};
 use crate::core::config::{board, game, player};
 use crate::core::types::*;
 use crate::core::keywords::Keywords;
 
 /// Status flags for creatures (packed bitfield)
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CreatureStatus(pub u8);
 
 impl CreatureStatus {
@@ -34,7 +35,7 @@ impl CreatureStatus {
 }
 
 /// A creature on the battlefield
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Creature {
     pub instance_id: CreatureInstanceId,
     pub card_id: CardId,
@@ -73,7 +74,7 @@ impl Creature {
 }
 
 /// A support card on the battlefield
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Support {
     pub card_id: CardId,
     pub owner: PlayerId,
@@ -82,7 +83,7 @@ pub struct Support {
 }
 
 /// A card instance (in hand or deck)
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CardInstance {
     pub card_id: CardId,
 }
@@ -94,7 +95,7 @@ impl CardInstance {
 }
 
 /// Per-player state
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PlayerState {
     pub life: i16,
     pub max_essence: u8,
@@ -172,7 +173,7 @@ impl Default for PlayerState {
 }
 
 /// Game phase
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum GamePhase {
     #[default]
     Main,
@@ -180,7 +181,7 @@ pub enum GamePhase {
 }
 
 /// Win reason
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum WinReason {
     LifeReachedZero,
     TurnLimitHigherLife,
@@ -189,7 +190,7 @@ pub enum WinReason {
 }
 
 /// Game mode determines victory conditions
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum GameMode {
     /// Attrition: Reduce enemy to 0 life, or turn 30 → higher life wins
     #[default]
@@ -199,14 +200,14 @@ pub enum GameMode {
 }
 
 /// Game result
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum GameResult {
     Win { winner: PlayerId, reason: WinReason },
     Draw,
 }
 
 /// Complete game state - everything needed to continue a game
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GameState {
     pub players: [PlayerState; 2],
     pub current_turn: u16,

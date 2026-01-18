@@ -50,3 +50,7 @@ mod stats_tests;
 mod resource_system_tests;
 #[path = "unit/game_mode_tests.rs"]
 mod game_mode_tests;
+#[path = "unit/serialization_tests.rs"]
+mod serialization_tests;
+#[path = "unit/client_api_tests.rs"]
+mod client_api_tests;

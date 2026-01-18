@@ -48,13 +48,14 @@
 
 - [x] Create PyO3 Python bindings
 - [x] Implement Gymnasium environment interface
-- [ ] Publish `essence-wars` package to PyPI (`pip install essence-wars`)
-- [ ] Publish Rust crate to crates.io (`cargo add essence-wars`)
+- [x] Publish `essence-wars` package to PyPI (`pip install essence-wars`)
 - [ ] Train first proof-of-concept PPO agent
 - [x] Validate Gym interface with standard RL libraries (Stable-Baselines3, CleanRL)
-- [ ] Write researcher quickstart guide
+- [x] Write researcher quickstart guide
 - [ ] Design JRPG integration architecture (`docs/jrpg-architecture.md`)
 - [ ] Define clean API layer for external game clients
+- [ ] Build minimal Bevy 3D integration prototype (validates JRPG tech stack)
+- [ ] Design analytics API for Glassbox Mode (decision trees, replay system)
 
 ---
 
@@ -69,8 +70,6 @@
 - [ ] Create benchmark suite for reproducible comparisons
 - [ ] Publish dataset of self-play games
 - [ ] Write documentation for agent submission
-- [ ] Build minimal Bevy 3D integration prototype (validates JRPG tech stack)
-- [ ] Design analytics API for Glassbox Mode (decision trees, replay system)
 - [ ] Add Learned Card Embeddings `observation_mode="flat"` vs `observation_mode="embedded"`  
   - Research contribution: Compare both in a paper!
 - [ ] Review and Improve Tutorial Notebooks 📓, add one or two using the new Agent Roster

@@ -57,7 +57,7 @@ impl Slot {
 }
 
 /// Unique identifier for a creature instance on the board
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct CreatureInstanceId(pub u32);
 
 /// Card rarity

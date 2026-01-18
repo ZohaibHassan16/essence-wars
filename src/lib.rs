@@ -32,9 +32,19 @@ pub mod validation;
 // Diagnostics module for P1/P2 asymmetry analysis
 pub mod diagnostics;
 
+// Client API for game integration (web, JRPG, training)
+pub mod client_api;
+
+// Replay system for game recording and playback
+pub mod replay;
+
 // Python bindings (only compiled with --features python)
 #[cfg(feature = "python")]
 pub mod python;
+
+// WASM bindings (only compiled with --features wasm)
+#[cfg(feature = "wasm")]
+pub mod wasm;
 
 // Re-export modules from core at crate root for backward compatibility
 pub use core::types;

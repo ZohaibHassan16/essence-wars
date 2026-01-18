@@ -9,6 +9,7 @@
 //! - Index 75-254:  UseAbility(slot, ability_idx, target)
 //! - Index 255:     EndTurn
 
+use serde::{Deserialize, Serialize};
 use crate::core::config::actions as action_config;
 use crate::core::types::Slot;
 
@@ -18,7 +19,7 @@ use crate::core::types::Slot;
 /// - 0: no target
 /// - 1-5: enemy slots 0-4
 /// - 6: self (the creature using ability)
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Target {
     /// No target required
     NoTarget,
@@ -54,7 +55,7 @@ impl Target {
 }
 
 /// Represents all possible game actions
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Action {
     /// Play a card from hand to a board slot
     PlayCard {
