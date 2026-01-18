@@ -2,6 +2,10 @@
 
 **A Deterministic Card Game Engine for AI Research**
 
+[![PyPI](https://img.shields.io/pypi/v/essence-wars?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/project/essence-wars/)
+[![Python](https://img.shields.io/pypi/pyversions/essence-wars?style=for-the-badge&logo=python&logoColor=white)](https://pypi.org/project/essence-wars/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+
 [![Balance Dashboard](https://img.shields.io/badge/📊_Balance-Dashboard-blue?style=for-the-badge)](https://christianwissmann85.github.io/essence-wars/dashboard/index.html)
 [![Training Dashboard](https://img.shields.io/badge/📈_Training-Dashboard-purple?style=for-the-badge)](https://christianwissmann85.github.io/essence-wars/dashboard/training.html)
 [![Performance](https://img.shields.io/badge/⚡_Performance-Dashboard-orange?style=for-the-badge)](https://christianwissmann85.github.io/essence-wars/dashboard/performance.html)
@@ -73,12 +77,61 @@ See [docs/game-modes.md](https://christianwissmann85.github.io/essence-wars/game
 
 ---
 
-## Quick Start
+## Installation
+
+### Python (Recommended for ML Research)
 
 ```bash
-# Build
+# Install from PyPI
+pip install essence-wars
+
+# With training dependencies (PyTorch, TensorBoard)
+pip install essence-wars[train]
+
+# With all optional dependencies
+pip install essence-wars[train,analysis,hub]
+```
+
+### From Source (Rust Development)
+
+```bash
+# Clone and build
+git clone https://github.com/christianwissmann85/essence-wars
+cd essence-wars
 cargo build --release
 
+# Install Python package in development mode
+pip install maturin
+maturin develop --release
+```
+
+---
+
+## Quick Start
+
+### Python
+
+```python
+from essence_wars import PyGame
+
+# Create and reset a game
+game = PyGame()
+game.reset(seed=42)
+
+# Get observation and legal actions
+obs = game.observe()        # numpy array (326,)
+mask = game.action_mask()   # numpy array (256,)
+
+# Play a game
+while not game.is_done():
+    legal_actions = mask.nonzero()[0]
+    action = legal_actions[0]  # Or use your policy
+    reward, done = game.step(action)
+```
+
+### Rust CLI Tools
+
+```bash
 # Run bot arena matches
 cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --games 100 --progress
 

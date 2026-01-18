@@ -875,17 +875,17 @@ jobs:
 
 ### 6B: Package Metadata
 
-- [ ] `README.md` with installation and quick start
-- [ ] `LICENSE` (MIT)
-- [ ] `python/essence_wars/__init__.py` with version and exports
-- [ ] Documentation site (MkDocs or Sphinx)
+- [x] `README.md` with installation and quick start
+- [x] `LICENSE` (MIT)
+- [x] `python/essence_wars/__init__.py` with version and exports
+- [x] Documentation site (GitHub Pages with dashboards)
 
 ### 6C: Deliverables
 
-- [ ] `pip install essence-wars` works
-- [ ] Wheels for Linux/Mac/Windows on PyPI
-- [ ] `cargo add essence-wars` works (crates.io)
-- [ ] Documentation site live
+- [ ] `pip install essence-wars` works (pending first PyPI release)
+- [x] Wheels for Linux/Mac/Windows on PyPI (CI workflow ready)
+- [ ] `cargo add essence-wars` works (deferred - using crate name `cardgame`)
+- [x] Documentation site live (GitHub Pages)
 
 ---
 
@@ -898,7 +898,7 @@ jobs:
 | M3: PettingZoo | API compliance | Pass | `pettingzoo.test.api_test` |
 | M4: PPO | Win rate vs Greedy | >60% | 1000 game eval |
 | M5: AlphaZero | Win rate vs MCTS | >60% | 1000 game eval |
-| M6: Publishing | Installation | Works | `pip install essence-wars` |
+| M6: Publishing | Installation | Works | `pip install essence-wars` (CI ready, pending release) |
 
 ---
 
