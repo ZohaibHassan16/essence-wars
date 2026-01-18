@@ -40,40 +40,7 @@ classifiers = [
 
 dependencies = [
     "numpy>=1.24.0",
-]
-
-[project.optional-dependencies]
-gymnasium = [
-    "gymnasium>=0.29.0",
-]
-pettingzoo = [
-    "pettingzoo>=1.24.0",
-]
-train = [
-    "gymnasium>=0.29.0",
-    "torch>=2.0.0",
-    "tensorboard>=2.14.0",
-    "wandb>=0.16.0",
-    "tqdm>=4.66.0",
-]
-dev = [
-    "gymnasium>=0.29.0",
-    "pettingzoo>=1.24.0",
-    "pytest>=8.0.0",
-    "pytest-cov>=4.0.0",
-    "ruff>=0.8.0",
-    "mypy>=1.13.0",
-]
-analysis = [
-    "pandas>=2.2.0",
-    "matplotlib>=3.8.0",
-    "seaborn>=0.13.0",
-    "plotly>=5.18.0",
-    "jinja2>=3.1.0",
-    "rich>=13.7.0",
-]
-all = [
-    "essence-wars[gymnasium,pettingzoo,train,dev,analysis]",
+    "gymnasium>=0.29.0",  # Core RL environment interface
 ]
 
 [project.urls]
@@ -147,11 +114,41 @@ python_files = ["test_*.py"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short"
 
+# =============================================================================
+# Dependency Groups (used by uv)
+# =============================================================================
+# Usage:
+#   uv sync --all-groups          # Install everything
+#   uv sync --group dev           # Just dev tools
+#   uv sync --group train         # Just training dependencies
+#
+# When publishing to PyPI, use [project.optional-dependencies] instead
+
 [dependency-groups]
+# Development tools: linters, type checkers, test runners
 dev = [
-    "mypy>=1.19.1",
+    "gymnasium>=0.29.0",
     "pettingzoo>=1.25.0",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "ruff>=0.14.11",
+    "mypy>=1.19.1",
+]
+
+# Training dependencies: PyTorch, tensorboard, experiment tracking
+train = [
+    "torch>=2.9.1",
+    "tensorboard>=2.14.0",
+    "wandb>=0.16.0",
+    "tqdm>=4.66.0",
+]
+
+# Analysis tools: data processing, plotting, dashboards
+analysis = [
+    "pandas>=2.2.0",
+    "matplotlib>=3.8.0",
+    "seaborn>=0.13.0",
+    "plotly>=5.18.0",
+    "jinja2>=3.1.0",
+    "rich>=13.7.0",
 ]

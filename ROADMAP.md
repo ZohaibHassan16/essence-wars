@@ -73,6 +73,8 @@
 - [ ] Design analytics API for Glassbox Mode (decision trees, replay system)
 - [ ] Add Learned Card Embeddings `observation_mode="flat"` vs `observation_mode="embedded"`  
   - Research contribution: Compare both in a paper!
+- [ ] Create Jypiter Notebooks for Researchers and Students to use, link them in the Main Readme
+- [ ] Idea: Use the Bitnet Approach for Reward Shaping: Rewards remain binary -1, 1, but we can add 'shadow reward shapes' that are using smaller values to give the neural nets something to work for like 1.58b Bitnet Does it for LLMs ? 
 
 ---
 
