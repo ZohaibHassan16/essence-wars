@@ -97,3 +97,5 @@ python/cardgame/_cardgame*.pyd
 
 # Experiments and Data
 experiments/
+models/
+data/datasets

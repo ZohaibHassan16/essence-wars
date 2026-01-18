@@ -32,7 +32,7 @@ use crate::core::engine::GameEngine;
 use crate::core::state::GameMode;
 use crate::core::types::{CardId, PlayerId};
 use crate::decks::DeckRegistry;
-use crate::bots::{Bot, GreedyBot, RandomBot};
+use crate::bots::{Bot, GreedyBot, MctsBot, MctsConfig, RandomBot};
 
 /// Single game wrapper for Python.
 ///
@@ -231,6 +231,36 @@ impl PyGame {
 
         let mut bot = RandomBot::new(42);
         let action = bot.select_action(&tensor, &mask, &legal_actions);
+
+        Ok(action.to_index())
+    }
+
+    /// Get action from the built-in MCTS bot.
+    ///
+    /// MCTS (Monte Carlo Tree Search) provides a strong baseline that
+    /// uses tree search with UCB1 selection and GreedyBot rollouts.
+    ///
+    /// Args:
+    ///     simulations: Number of MCTS simulations (default: 100)
+    ///
+    /// Returns:
+    ///     int: Action index chosen by MCTS
+    #[pyo3(signature = (simulations=100))]
+    fn mcts_action(&self, simulations: u32) -> PyResult<u8> {
+        let legal_actions = self.engine.get_legal_actions();
+
+        if legal_actions.is_empty() {
+            return Err(PyRuntimeError::new_err("No legal actions available"));
+        }
+
+        let config = MctsConfig {
+            simulations,
+            ..Default::default()
+        };
+        let mut bot = MctsBot::with_config(self.card_db, config, 42);
+
+        // MCTS needs engine access for simulation
+        let action = bot.select_action_with_engine(&self.engine);
 
         Ok(action.to_index())
     }
