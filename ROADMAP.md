@@ -22,7 +22,7 @@
 
 ---
 
-## Phase 2: New Horizons Edition 🔄
+## Phase 2: New Horizons Edition ✅
 
 *Complete the first edition card set and streamline tooling.*
 
@@ -38,11 +38,11 @@
   - 1. **Enemy life ≤ 0** → You win (Already implemented)
   - 2. **50 Victory Points** → You win (Basic Infrastructure implemented, not enabled nor integrated yet)
   - 3. **Turn 30** → Higher life wins (draw if tied) (should be implemented, check)
-- [ ] Version Bump of the Engine after everything is done for Phase 2
+- [x] Version Bump of the Engine after everything is done for Phase 2
 
 ---
 
-## Phase 3: ML Infrastructure
+## Phase 3: ML Infrastructure 🔄
 
 *Make Essence Wars accessible to ML researchers.*
 
@@ -71,6 +71,8 @@
 - [ ] Write documentation for agent submission
 - [ ] Build minimal Bevy 3D integration prototype (validates JRPG tech stack)
 - [ ] Design analytics API for Glassbox Mode (decision trees, replay system)
+- [ ] Add Learned Card Embeddings `observation_mode="flat"` vs `observation_mode="embedded"`  
+  - Research contribution: Compare both in a paper!
 
 ---
 

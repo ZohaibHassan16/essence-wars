@@ -8,10 +8,10 @@
 use arrayvec::ArrayVec;
 use crate::core::config::board;
 use crate::core::types::Slot;
-use crate::core::actions::{Action, Target};
+use crate::core::actions::Action;
 use crate::core::state::GameState;
 use crate::core::cards::{CardDatabase, CardType};
-use crate::core::effects::{Trigger, TargetingRule};
+// Note: Trigger and TargetingRule will be needed when activated abilities are implemented
 
 /// Maximum number of legal actions possible in any game state
 pub const MAX_LEGAL_ACTIONS: usize = 64;
@@ -207,144 +207,26 @@ fn generate_attack_actions(
 }
 
 /// Generate all legal UseAbility actions
+///
+/// NOTE: Currently, the game has no "activated" abilities - all creature abilities
+/// use automatic triggers (OnPlay, OnDeath, StartOfTurn, etc.) that fire automatically
+/// when their conditions are met. These are NOT usable via UseAbility actions.
+///
+/// UseAbility actions are reserved for future "Activated" trigger types that
+/// allow players to manually trigger abilities during their turn.
+///
+/// The action space (indices 75-254) is reserved for this future feature.
+#[allow(unused_variables)]
 fn generate_ability_actions(
     state: &GameState,
     card_db: &CardDatabase,
     actions: &mut ArrayVec<Action, MAX_LEGAL_ACTIONS>,
 ) {
-    let player_state = state.active_player_state();
-    let opponent = state.active_player.opponent();
-
-    // For each of our creatures with abilities
-    for creature in &player_state.creatures {
-        // Silenced creatures cannot use abilities
-        if creature.status.is_silenced() {
-            continue;
-        }
-
-        // Look up the card definition to get abilities
-        let Some(card_def) = card_db.get(creature.card_id) else {
-            continue;
-        };
-
-        // Get creature abilities
-        let Some(abilities) = card_def.creature_abilities() else {
-            continue;
-        };
-
-        // Check each ability
-        for (ability_idx, ability) in abilities.iter().enumerate() {
-            // Only activated abilities are usable via UseAbility action
-            // Check if this is an activated ability (using Trigger types)
-            // For now, we consider OnPlay as the only "activated" trigger
-            // that can be used via UseAbility (this may need refinement)
-            if !matches!(ability.trigger, Trigger::OnPlay) {
-                continue;
-            }
-
-            // Generate actions based on targeting rule
-            match &ability.targeting {
-                TargetingRule::NoTarget => {
-                    // NoTarget abilities can target self
-                    if actions.len() < MAX_LEGAL_ACTIONS {
-                        actions.push(Action::UseAbility {
-                            slot: creature.slot,
-                            ability_index: ability_idx as u8,
-                            target: Target::Self_,
-                        });
-                    }
-                }
-                TargetingRule::TargetCreature(ref filter) => {
-                    // Target enemy creatures that match the filter
-                    let opponent_state = &state.players[opponent.index()];
-                    for opp_creature in &opponent_state.creatures {
-                        // Can't target stealthed enemy creatures with abilities
-                        if opp_creature.keywords.has_stealth() {
-                            continue;
-                        }
-                        // Apply filter
-                        if !filter.matches(opp_creature.current_health, opp_creature.keywords.0) {
-                            continue;
-                        }
-                        if actions.len() < MAX_LEGAL_ACTIONS {
-                            actions.push(Action::UseAbility {
-                                slot: creature.slot,
-                                ability_index: ability_idx as u8,
-                                target: Target::EnemySlot(opp_creature.slot),
-                            });
-                        }
-                    }
-                }
-                TargetingRule::TargetAny => {
-                    // Target any enemy creature slot
-                    for slot_idx in 0..board::CREATURE_SLOTS as u8 {
-                        if actions.len() < MAX_LEGAL_ACTIONS {
-                            actions.push(Action::UseAbility {
-                                slot: creature.slot,
-                                ability_index: ability_idx as u8,
-                                target: Target::EnemySlot(Slot(slot_idx)),
-                            });
-                        }
-                    }
-                    // Also allow targeting self for TargetAny
-                    if actions.len() < MAX_LEGAL_ACTIONS {
-                        actions.push(Action::UseAbility {
-                            slot: creature.slot,
-                            ability_index: ability_idx as u8,
-                            target: Target::Self_,
-                        });
-                    }
-                }
-                TargetingRule::TargetEnemyCreature => {
-                    // Target enemy creature slots that have creatures (excluding stealthed)
-                    let opponent_state = &state.players[opponent.index()];
-                    for opp_creature in &opponent_state.creatures {
-                        // Can't target stealthed enemy creatures with abilities
-                        if opp_creature.keywords.has_stealth() {
-                            continue;
-                        }
-                        if actions.len() < MAX_LEGAL_ACTIONS {
-                            actions.push(Action::UseAbility {
-                                slot: creature.slot,
-                                ability_index: ability_idx as u8,
-                                target: Target::EnemySlot(opp_creature.slot),
-                            });
-                        }
-                    }
-                }
-                TargetingRule::TargetAllyCreature => {
-                    // Target self (the creature using the ability)
-                    if actions.len() < MAX_LEGAL_ACTIONS {
-                        actions.push(Action::UseAbility {
-                            slot: creature.slot,
-                            ability_index: ability_idx as u8,
-                            target: Target::Self_,
-                        });
-                    }
-                }
-                TargetingRule::TargetPlayer | TargetingRule::TargetEnemyPlayer => {
-                    // Target player - use NoTarget as we don't have player target
-                    if actions.len() < MAX_LEGAL_ACTIONS {
-                        actions.push(Action::UseAbility {
-                            slot: creature.slot,
-                            ability_index: ability_idx as u8,
-                            target: Target::NoTarget,
-                        });
-                    }
-                }
-                TargetingRule::TargetSlot => {
-                    // Target any slot
-                    for slot_idx in 0..board::CREATURE_SLOTS as u8 {
-                        if actions.len() < MAX_LEGAL_ACTIONS {
-                            actions.push(Action::UseAbility {
-                                slot: creature.slot,
-                                ability_index: ability_idx as u8,
-                                target: Target::EnemySlot(Slot(slot_idx)),
-                            });
-                        }
-                    }
-                }
-            }
-        }
-    }
+    // No activated abilities exist in the current game design.
+    // All abilities are triggered automatically (OnPlay, OnDeath, StartOfTurn, etc.)
+    //
+    // To add activated abilities in the future:
+    // 1. Add `Activated` variant to the `Trigger` enum in effects.rs
+    // 2. Create cards with `trigger: Activated` abilities
+    // 3. Implement the ability generation logic here, checking for Trigger::Activated
 }

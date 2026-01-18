@@ -37,7 +37,7 @@ struct GoldenTestCase {
 /// Note: These values were regenerated after the Core Set card ID migration (2026-01-14).
 /// Cards now use faction-specific ID ranges (Argentum 1000+, Symbiote 2000+, etc.).
 /// Using GameEngine directly instead of GameRunner due to a known GameRunner bug.
-/// Note: Golden values updated for v0.5.1 balance patch (Frenzy nerfs, Fortify buffs)
+/// Note: Golden values updated for v0.6.0 (fixed UseAbility bug - removed spurious UseAbility actions)
 const GOLDEN_TESTS: &[GoldenTestCase] = &[
     GoldenTestCase {
         name: "greedy_mirror_seed_100",
@@ -62,9 +62,9 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
         seed: 600,
         deck1_id: "broodmother_swarm",
         deck2_id: "broodmother_swarm",
-        expected_winner: Some(1), // P2 wins (updated v0.5.1 round 5)
-        expected_turns: 18,
-        expected_action_count: 82,
+        expected_winner: Some(1), // P2 wins (updated v0.6.0 - fixed UseAbility bug)
+        expected_turns: 16,
+        expected_action_count: 69,
     },
 ];
 

@@ -565,6 +565,11 @@ fn ability_deck() -> Vec<CardId> {
     deck
 }
 
+/// Test that UseAbility actions are NOT generated for OnPlay-triggered abilities.
+///
+/// OnPlay abilities trigger automatically when a card is played - they are NOT
+/// "activated" abilities that can be used at will via UseAbility actions.
+/// The action space reserves indices 75-254 for future "Activated" trigger types.
 #[test]
 fn test_use_ability_basic() {
     let card_db = ability_test_db();
@@ -572,10 +577,10 @@ fn test_use_ability_basic() {
 
     engine.start_game(ability_deck(), ability_deck(), 12345);
 
-    // Add a creature with ability to P1's board
+    // Add a creature with an OnPlay ability to P1's board
     let creature = Creature {
         instance_id: engine.state.next_creature_instance_id(),
-        card_id: CardId(2), // Damage Creature
+        card_id: CardId(2), // Damage Creature (has OnPlay ability)
         owner: PlayerId::PLAYER_ONE,
         slot: Slot(0),
         attack: 2,
@@ -590,37 +595,19 @@ fn test_use_ability_basic() {
     };
     engine.state.players[0].creatures.push(creature);
 
-    // Add a target creature to P2's board
-    let target_creature = Creature {
-        instance_id: engine.state.next_creature_instance_id(),
-        card_id: CardId(1), // Basic Creature
-        owner: PlayerId::PLAYER_TWO,
-        slot: Slot(0),
-        attack: 2,
-        current_health: 3,
-        max_health: 3,
-        base_attack: 2,
-        base_health: 3,
-        keywords: Keywords::none(),
-        status: CreatureStatus::default(),
-        turn_played: 0,
-        frenzy_stacks: 0,
-    };
-    engine.state.players[1].creatures.push(target_creature);
+    // Verify that no UseAbility actions are in the legal actions
+    let legal = engine.get_legal_actions();
+    let has_use_ability = legal.iter().any(|a| matches!(a, Action::UseAbility { .. }));
+    assert!(!has_use_ability, "UseAbility should NOT be in legal actions for OnPlay abilities");
 
-    // Use the ability targeting enemy creature at slot 0
+    // Attempting to apply a UseAbility action directly should fail
     let result = engine.apply_action(Action::UseAbility {
         slot: Slot(0),
         ability_index: 0,
         target: Target::EnemySlot(Slot(0)),
     });
-
-    assert!(result.is_ok(), "Use ability should succeed: {:?}", result);
-
-    // Target creature should have taken 2 damage (3 - 2 = 1 health remaining)
-    let target = engine.state.players[1].get_creature(Slot(0));
-    assert!(target.is_some(), "Target creature should still exist");
-    assert_eq!(target.unwrap().current_health, 1, "Target should have 1 health remaining");
+    assert!(result.is_err(), "UseAbility should fail because it's not in legal actions");
+    assert!(result.unwrap_err().contains("Illegal action"));
 }
 
 #[test]
@@ -738,6 +725,10 @@ fn test_use_ability_invalid_ability_index() {
     assert!(result.is_err(), "Use ability should fail with invalid ability index");
 }
 
+/// Test that UseAbility with self-target is NOT generated for OnPlay abilities.
+///
+/// Even NoTarget/self-targeting OnPlay abilities should not be usable via UseAbility.
+/// They trigger automatically when the card is played.
 #[test]
 fn test_use_ability_self_target() {
     let card_db = ability_test_db();
@@ -745,10 +736,10 @@ fn test_use_ability_self_target() {
 
     engine.start_game(ability_deck(), ability_deck(), 12345);
 
-    // Add a creature with self-buff ability
+    // Add a creature with self-buff ability (OnPlay trigger)
     let creature = Creature {
         instance_id: engine.state.next_creature_instance_id(),
-        card_id: CardId(3), // Self Buffer
+        card_id: CardId(3), // Self Buffer (has OnPlay ability)
         owner: PlayerId::PLAYER_ONE,
         slot: Slot(0),
         attack: 1,
@@ -763,21 +754,26 @@ fn test_use_ability_self_target() {
     };
     engine.state.players[0].creatures.push(creature);
 
-    // Use the self-buff ability
+    // Verify that no UseAbility actions are in the legal actions
+    let legal = engine.get_legal_actions();
+    let has_use_ability = legal.iter().any(|a| matches!(a, Action::UseAbility { .. }));
+    assert!(!has_use_ability, "UseAbility should NOT be in legal actions for OnPlay self-buff");
+
+    // Attempting to apply a UseAbility action directly should fail
     let result = engine.apply_action(Action::UseAbility {
         slot: Slot(0),
         ability_index: 0,
         target: Target::Self_,
     });
+    assert!(result.is_err(), "UseAbility should fail because it's not in legal actions");
+    assert!(result.unwrap_err().contains("Illegal action"));
 
-    assert!(result.is_ok(), "Use ability with self target should succeed: {:?}", result);
-
-    // Creature should be buffed (+1/+1)
+    // Creature stats should remain unchanged (ability was NOT activated)
     let creature = engine.state.players[0].get_creature(Slot(0));
     assert!(creature.is_some(), "Creature should still exist");
     let creature = creature.unwrap();
-    assert_eq!(creature.attack, 2, "Attack should be buffed to 2");
-    assert_eq!(creature.current_health, 4, "Health should be buffed to 4");
+    assert_eq!(creature.attack, 1, "Attack should be unchanged");
+    assert_eq!(creature.current_health, 3, "Health should be unchanged");
 }
 
 // ============================================================================

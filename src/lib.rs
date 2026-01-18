@@ -32,6 +32,10 @@ pub mod validation;
 // Diagnostics module for P1/P2 asymmetry analysis
 pub mod diagnostics;
 
+// Python bindings (only compiled with --features python)
+#[cfg(feature = "python")]
+pub mod python;
+
 // Re-export modules from core at crate root for backward compatibility
 pub use core::types;
 pub use core::keywords;

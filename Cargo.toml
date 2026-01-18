@@ -2,6 +2,19 @@
 name = "cardgame"
 version = "0.6.0"
 edition = "2021"
+description = "High-performance card game engine for AI/RL research"
+license = "MIT"
+repository = "https://github.com/christianwissmann85/essence-wars"
+keywords = ["game", "reinforcement-learning", "ai", "mcts", "gymnasium"]
+categories = ["game-engines", "science"]
+
+[lib]
+name = "cardgame"
+crate-type = ["cdylib", "rlib"]  # cdylib for Python, rlib for Rust
+
+[features]
+default = []
+python = ["dep:pyo3", "dep:numpy"]
 
 [dependencies]
 arrayvec = "0.7"
@@ -15,6 +28,11 @@ clap = { version = "4.4", features = ["derive"] }
 rayon = "1.10"
 chrono = "0.4"
 statrs = "0.17"  # Statistical functions for confidence intervals and significance testing
+
+# Optional Python bindings (enabled with --features python)
+pyo3 = { version = "0.22", features = ["extension-module"], optional = true }
+numpy = { version = "0.22", optional = true }
+lazy_static = "1.5"
 
 [dev-dependencies]
 criterion = "0.5"
@@ -35,6 +53,10 @@ path = "src/bin/profile_mcts.rs"
 [[bin]]
 name = "validate"
 path = "src/bin/validate.rs"
+
+[[bin]]
+name = "diagnose"
+path = "src/bin/diagnose.rs"
 
 [[bench]]
 name = "game_benchmarks"
