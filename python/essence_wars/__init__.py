@@ -59,7 +59,8 @@ except ImportError as e:
 # Convenience function to list available decks
 def list_decks() -> list[str]:
     """List all available deck names."""
-    return PyGame.list_decks()
+    result: list[str] = PyGame.list_decks()
+    return result
 
 __all__ = [
     # Version
@@ -75,7 +76,7 @@ __all__ = [
 ]
 
 # Lazy imports for optional modules to avoid import errors when dependencies missing
-def __getattr__(name: str):
+def __getattr__(name: str) -> object:
     """Lazy import for optional modules."""
     if name == "EssenceWarsEnv":
         from essence_wars.env import EssenceWarsEnv

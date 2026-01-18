@@ -125,7 +125,7 @@ def main() -> int:
             private=args.private,
             token=args.token,
         )
-        print(f"Successfully uploaded model!")
+        print("Successfully uploaded model!")
         print(f"View at: {url}")
         return 0
 

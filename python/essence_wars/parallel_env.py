@@ -30,19 +30,18 @@ import numpy as np
 from gymnasium import spaces
 
 try:
-    from pettingzoo import ParallelEnv
+    from pettingzoo import ParallelEnv as ParallelEnvBase
     from pettingzoo.utils import wrappers
     PETTINGZOO_AVAILABLE = True
 except ImportError:
     PETTINGZOO_AVAILABLE = False
     # Create a dummy base class for when PettingZoo isn't installed
-    class ParallelEnv:
-        pass
+    ParallelEnvBase = object  # type: ignore[assignment]
 
 from essence_wars._core import ACTION_SPACE_SIZE, STATE_TENSOR_SIZE, PyGame
 
 
-class EssenceWarsParallelEnv(ParallelEnv):
+class EssenceWarsParallelEnv(ParallelEnvBase):  # type: ignore[misc]
     """
     PettingZoo ParallelEnv for two-player Essence Wars.
 
@@ -126,7 +125,7 @@ class EssenceWarsParallelEnv(ParallelEnv):
             for agent in self.possible_agents
         }
 
-        self._action_spaces = {
+        self._action_spaces: dict[str, spaces.Space[int]] = {
             agent: spaces.Discrete(ACTION_SPACE_SIZE)
             for agent in self.possible_agents
         }
@@ -135,11 +134,11 @@ class EssenceWarsParallelEnv(ParallelEnv):
         self._step_count = 0
         self._cumulative_rewards = dict.fromkeys(self.possible_agents, 0.0)
 
-    def observation_space(self, agent: str) -> spaces.Space:
+    def observation_space(self, agent: str) -> spaces.Box:
         """Return the observation space for an agent."""
         return self._observation_spaces[agent]
 
-    def action_space(self, agent: str) -> spaces.Space:
+    def action_space(self, agent: str) -> spaces.Space[int]:
         """Return the action space for an agent."""
         return self._action_spaces[agent]
 
@@ -147,7 +146,7 @@ class EssenceWarsParallelEnv(ParallelEnv):
         self,
         seed: int | None = None,
         options: dict[str, Any] | None = None,
-    ) -> tuple[dict[str, np.ndarray], dict[str, dict]]:
+    ) -> tuple[dict[str, np.ndarray], dict[str, dict[str, Any]]]:
         """
         Reset the environment to start a new episode.
 
@@ -180,7 +179,7 @@ class EssenceWarsParallelEnv(ParallelEnv):
         dict[str, float],
         dict[str, bool],
         dict[str, bool],
-        dict[str, dict],
+        dict[str, dict[str, Any]],
     ]:
         """
         Execute one step in the environment.
@@ -267,7 +266,7 @@ class EssenceWarsParallelEnv(ParallelEnv):
         obs = self._game.observe()
         return {agent: obs.copy() for agent in self.possible_agents}
 
-    def _get_infos(self) -> dict[str, dict]:
+    def _get_infos(self) -> dict[str, dict[str, Any]]:
         """Get info dicts for all agents with action masks."""
         current_player = self._game.current_player()
         game_mask = self._game.action_mask()
@@ -313,10 +312,11 @@ class EssenceWarsParallelEnv(ParallelEnv):
         For Essence Wars, the state is the same as the observation since
         it's a perfect information game.
         """
-        return self._game.observe()
+        state: np.ndarray = self._game.observe()
+        return state
 
 
-def parallel_env(**kwargs) -> EssenceWarsParallelEnv:
+def parallel_env(**kwargs: Any) -> EssenceWarsParallelEnv:
     """
     Create a PettingZoo parallel environment.
 
@@ -325,7 +325,7 @@ def parallel_env(**kwargs) -> EssenceWarsParallelEnv:
     return EssenceWarsParallelEnv(**kwargs)
 
 
-def raw_env(**kwargs) -> EssenceWarsParallelEnv:
+def raw_env(**kwargs: Any) -> EssenceWarsParallelEnv:
     """
     Create a raw (unwrapped) environment.
 
@@ -334,7 +334,7 @@ def raw_env(**kwargs) -> EssenceWarsParallelEnv:
     return EssenceWarsParallelEnv(**kwargs)
 
 
-def env(**kwargs) -> EssenceWarsParallelEnv:
+def env(**kwargs: Any) -> EssenceWarsParallelEnv:
     """
     Create an environment with standard wrappers.
 

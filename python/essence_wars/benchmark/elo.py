@@ -22,6 +22,7 @@ import json
 import math
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 
 @dataclass
@@ -171,7 +172,7 @@ class EloTracker:
             reverse=True,
         )
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Export ratings to dictionary."""
         return {
             "k_factor": self.k_factor,
@@ -189,7 +190,7 @@ class EloTracker:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> EloTracker:
+    def from_dict(cls, data: dict[str, Any]) -> EloTracker:
         """Load ratings from dictionary."""
         tracker = cls(
             k_factor=data.get("k_factor", 32.0),

@@ -24,9 +24,10 @@ from __future__ import annotations
 
 import gzip
 import json
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
+from typing import IO, Any
 
 import numpy as np
 import torch
@@ -54,7 +55,7 @@ class MCTSSample:
         }
 
 
-class MCTSDataset(Dataset[dict[str, torch.Tensor]]):
+class MCTSDataset(Dataset[dict[str, torch.Tensor]]):  # type: ignore[misc]
     """PyTorch Dataset for MCTS self-play data.
 
     Loads pre-generated MCTS vs MCTS games for behavioral cloning.
@@ -98,17 +99,17 @@ class MCTSDataset(Dataset[dict[str, torch.Tensor]]):
         self._load_data(max_games)
 
         # Compute normalization stats if needed
+        self.mean: np.ndarray | None = None
+        self.std: np.ndarray | None = None
         if self.normalize and len(self.samples) > 0:
             self._compute_normalization_stats()
-        else:
-            self.mean = None
-            self.std = None
 
     def _load_data(self, max_games: int | None) -> None:
         """Load all samples from JSONL file."""
         games_loaded = 0
 
         # Handle gzipped files
+        open_fn: Callable[[Path], IO[str]]
         if self.path.suffix == ".gz":
             open_fn = lambda p: gzip.open(p, "rt", encoding="utf-8")
         else:
@@ -125,7 +126,7 @@ class MCTSDataset(Dataset[dict[str, torch.Tensor]]):
 
         print(f"Loaded {games_loaded} games, {len(self.samples)} samples")
 
-    def _process_game(self, game: dict) -> None:
+    def _process_game(self, game: dict[str, Any]) -> None:
         """Process a game record and extract samples."""
         winner = game["winner"]
 
@@ -153,9 +154,10 @@ class MCTSDataset(Dataset[dict[str, torch.Tensor]]):
         """Compute mean and std for normalization."""
         all_obs = np.stack([s.state_tensor for s in self.samples])
         self.mean = all_obs.mean(axis=0)
-        self.std = all_obs.std(axis=0)
+        std = all_obs.std(axis=0)
         # Avoid division by zero
-        self.std[self.std < 1e-6] = 1.0
+        std[std < 1e-6] = 1.0
+        self.std = std
 
     def __len__(self) -> int:
         return len(self.samples)
@@ -164,7 +166,7 @@ class MCTSDataset(Dataset[dict[str, torch.Tensor]]):
         sample = self.samples[idx]
         tensors = sample.to_tensors()
 
-        if self.normalize and self.mean is not None:
+        if self.normalize and self.mean is not None and self.std is not None:
             tensors["obs"] = (tensors["obs"] - torch.from_numpy(self.mean)) / torch.from_numpy(self.std)
 
         return tensors
@@ -192,6 +194,7 @@ class StreamingMCTSDataset:
     def __iter__(self) -> Iterator[MCTSSample]:
         """Iterate through all samples in the dataset."""
         # Handle gzipped files
+        open_fn: Callable[[Path], IO[str]]
         if self.path.suffix == ".gz":
             open_fn = lambda p: gzip.open(p, "rt", encoding="utf-8")
         else:
@@ -202,7 +205,7 @@ class StreamingMCTSDataset:
                 game = json.loads(line)
                 yield from self._process_game(game)
 
-    def _process_game(self, game: dict) -> Iterator[MCTSSample]:
+    def _process_game(self, game: dict[str, Any]) -> Iterator[MCTSSample]:
         """Process a game record and yield samples."""
         winner = game["winner"]
 
@@ -263,7 +266,7 @@ def load_mcts_dataset(
     return dataset, loader
 
 
-def get_dataset_stats(path: str | Path, max_games: int | None = None) -> dict:
+def get_dataset_stats(path: str | Path, max_games: int | None = None) -> dict[str, Any]:
     """Get statistics about a dataset without loading all samples.
 
     Returns dictionary with:
@@ -275,17 +278,18 @@ def get_dataset_stats(path: str | Path, max_games: int | None = None) -> dict:
     """
     path = Path(path)
 
-    if path.suffix == ".gz":
-        open_fn = lambda p: gzip.open(p, "rt", encoding="utf-8")
-    else:
-        open_fn = lambda p: open(p, encoding="utf-8")
-
     total_games = 0
     total_moves = 0
     p1_wins = 0
     p2_wins = 0
     draws = 0
     decks: set[str] = set()
+
+    open_fn: Callable[[Path], IO[str]]
+    if path.suffix == ".gz":
+        open_fn = lambda p: gzip.open(p, "rt", encoding="utf-8")
+    else:
+        open_fn = lambda p: open(p, encoding="utf-8")
 
     with open_fn(path) as f:
         for line in f:

@@ -39,7 +39,7 @@ from gymnasium import spaces
 from essence_wars._core import ACTION_SPACE_SIZE, STATE_TENSOR_SIZE, PyGame, PyParallelGames
 
 
-class EssenceWarsEnv(gym.Env):
+class EssenceWarsEnv(gym.Env[np.ndarray, int]):
     """
     Gymnasium environment for the Essence Wars card game.
 
@@ -137,7 +137,7 @@ class EssenceWarsEnv(gym.Env):
 
         # Use provided seed or generate one
         if seed is None:
-            seed = self.np_random.integers(0, 2**32 - 1)
+            seed = int(self.np_random.integers(0, 2**32 - 1))
 
         self._game.reset(seed=seed)
         self._step_count = 0
@@ -205,7 +205,8 @@ class EssenceWarsEnv(gym.Env):
 
     def _get_obs(self) -> np.ndarray:
         """Get current observation (state tensor)."""
-        return self._game.observe()
+        obs: np.ndarray = self._game.observe()
+        return obs
 
     def _get_info(self) -> dict[str, Any]:
         """Get info dictionary with action mask and metadata."""
@@ -257,8 +258,9 @@ class EssenceWarsEnv(gym.Env):
         Returns:
             Boolean array of shape (256,)
         """
-        mask = self._game.action_mask()
-        return mask > 0.0
+        mask: np.ndarray = self._game.action_mask()
+        result: np.ndarray = mask > 0.0
+        return result
 
 
 class EssenceWarsSelfPlayEnv(EssenceWarsEnv):
@@ -388,13 +390,13 @@ class VectorizedEssenceWars:
         )
 
         # Space definitions (for reference, not enforced)
-        self.single_observation_space = spaces.Box(
+        self.single_observation_space: spaces.Box = spaces.Box(
             low=-np.inf,
             high=np.inf,
             shape=(STATE_TENSOR_SIZE,),
             dtype=np.float32,
         )
-        self.single_action_space = spaces.Discrete(ACTION_SPACE_SIZE)
+        self.single_action_space: spaces.Space[int] = spaces.Discrete(ACTION_SPACE_SIZE)
 
         # Track episode statistics
         self._episode_rewards = np.zeros(num_envs, dtype=np.float32)
@@ -507,7 +509,8 @@ class VectorizedEssenceWars:
     @property
     def action_size(self) -> int:
         """Number of possible actions."""
-        return ACTION_SPACE_SIZE
+        size: int = ACTION_SPACE_SIZE
+        return size
 
     def action_masks(self) -> np.ndarray:
         """
@@ -516,7 +519,9 @@ class VectorizedEssenceWars:
         Returns:
             Boolean array of shape (num_envs, 256)
         """
-        return self._games.action_mask_batch() > 0.0
+        masks: np.ndarray = self._games.action_mask_batch()
+        result: np.ndarray = masks > 0.0
+        return result
 
     def get_episode_rewards(self) -> np.ndarray:
         """Get cumulative rewards for current episodes."""

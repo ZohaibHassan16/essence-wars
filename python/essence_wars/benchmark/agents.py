@@ -123,7 +123,7 @@ class GreedyAgent(BaseAgent):
     - vs Greedy: ~50% (mirror match)
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("Greedy")
         # We'll use the Rust greedy bot through the game interface
         self._use_rust_bot = True

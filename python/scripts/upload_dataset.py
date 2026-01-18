@@ -99,7 +99,7 @@ def main() -> int:
         file_size_mb = file_size / (1024 * 1024)
 
         # Count lines (games) if reasonable size
-        num_games = "unknown"
+        num_games: int | None = None
         if file_size_mb < 500:  # Only count for <500MB files
             try:
                 if args.dataset.suffix == ".gz":
@@ -113,7 +113,7 @@ def main() -> int:
 
         metadata = {
             "file_size_mb": f"{file_size_mb:.1f}",
-            "num_games": num_games,
+            "num_games": num_games if num_games is not None else "unknown",
             "format": "jsonl.gz" if args.dataset.suffix == ".gz" else "jsonl",
         }
 
@@ -138,7 +138,7 @@ def main() -> int:
             private=args.private,
             token=args.token,
         )
-        print(f"Successfully uploaded dataset!")
+        print("Successfully uploaded dataset!")
         print(f"View at: {url}")
         return 0
 

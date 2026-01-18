@@ -23,8 +23,12 @@ Example:
 from __future__ import annotations
 
 import time
+from typing import TYPE_CHECKING
 
 import numpy as np
+
+if TYPE_CHECKING:
+    from essence_wars._core import PyGame
 
 from .agents import BenchmarkAgent
 from .elo import EloTracker
@@ -204,8 +208,8 @@ class EssenceWarsBenchmark:
         # Compute aggregates
         results.total_games = total_games
         results.total_wins = total_wins
-        results.avg_game_length = np.mean(total_game_lengths) if total_game_lengths else 0
-        results.avg_decision_time_ms = np.mean(total_decision_times) if total_decision_times else 0
+        results.avg_game_length = float(np.mean(total_game_lengths)) if total_game_lengths else 0.0
+        results.avg_decision_time_ms = float(np.mean(total_decision_times)) if total_decision_times else 0.0
         results.elo_rating = self.elo.get_rating(agent.name)
 
         self._log(f"\nFinal Elo: {results.elo_rating:.0f}")
@@ -287,13 +291,13 @@ class EssenceWarsBenchmark:
             wins=wins,
             losses=losses,
             draws=draws,
-            avg_game_length=np.mean(game_lengths) if game_lengths else 0,
-            avg_decision_time_ms=np.mean(decision_times) if decision_times else 0,
+            avg_game_length=float(np.mean(game_lengths)) if game_lengths else 0.0,
+            avg_decision_time_ms=float(np.mean(decision_times)) if decision_times else 0.0,
         )
 
     def _get_opponent_action(
         self,
-        game,
+        game: PyGame,
         opponent: str,
         obs: np.ndarray,
         mask: np.ndarray,
@@ -305,12 +309,14 @@ class EssenceWarsBenchmark:
 
         elif opponent == "greedy":
             # Use Rust greedy bot
-            return game.greedy_action()
+            action: int = game.greedy_action()
+            return action
 
         elif opponent.startswith("mcts"):
             # Parse simulation count
             sims = int(opponent.replace("mcts", ""))
-            return game.mcts_action(sims)
+            action = game.mcts_action(sims)
+            return int(action)
 
         else:
             raise ValueError(f"Unknown opponent: {opponent}")

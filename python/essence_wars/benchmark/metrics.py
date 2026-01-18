@@ -224,7 +224,7 @@ class GeneralizationResults:
     games_played: int
     generalization_gap: float = 0.0
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.generalization_gap = self.win_rate_train - self.win_rate_test
 
     def summary(self) -> str:

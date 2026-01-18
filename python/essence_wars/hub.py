@@ -38,7 +38,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from essence_wars.benchmark.agents import NeuralAgent
@@ -197,8 +197,8 @@ def upload_model(
     repo_id: str,
     *,
     model_type: Literal["ppo", "alphazero", "bc"] = "alphazero",
-    training_config: dict | None = None,
-    metrics: dict | None = None,
+    training_config: dict[str, Any] | None = None,
+    metrics: dict[str, Any] | None = None,
     private: bool = False,
     token: str | None = None,
     commit_message: str | None = None,
@@ -286,7 +286,7 @@ def upload_dataset(
     repo_id: str,
     *,
     filename: str = "data.jsonl.gz",
-    metadata: dict | None = None,
+    metadata: dict[str, Any] | None = None,
     private: bool = False,
     token: str | None = None,
     commit_message: str | None = None,
@@ -365,8 +365,8 @@ def upload_dataset(
 def _generate_model_card(
     repo_id: str,
     model_type: str,
-    training_config: dict | None = None,
-    metrics: dict | None = None,
+    training_config: dict[str, Any] | None = None,
+    metrics: dict[str, Any] | None = None,
 ) -> str:
     """Generate a model card README for Huggingface."""
     model_name = repo_id.split("/")[-1]
@@ -441,7 +441,7 @@ If you use this model in your research, please cite:
 
 def _generate_dataset_card(
     repo_id: str,
-    metadata: dict | None = None,
+    metadata: dict[str, Any] | None = None,
 ) -> str:
     """Generate a dataset card README for Huggingface."""
     dataset_name = repo_id.split("/")[-1]

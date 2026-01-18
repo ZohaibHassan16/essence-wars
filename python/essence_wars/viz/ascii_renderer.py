@@ -16,11 +16,11 @@ if TYPE_CHECKING:
 
 # Try to import rich, fall back to simple print if not available
 try:
+    from rich import box
     from rich.console import Console
     from rich.panel import Panel
     from rich.table import Table
     from rich.text import Text
-    from rich import box
     RICH_AVAILABLE = True
 except ImportError:
     RICH_AVAILABLE = False
@@ -256,7 +256,7 @@ class GameRenderer:
         if self.use_color:
             self.console = Console()
 
-    def render(self, game: "PyGame") -> str:
+    def render(self, game: PyGame) -> str:
         """Render the current game state.
 
         Args:
@@ -274,7 +274,7 @@ class GameRenderer:
         else:
             return self._render_plain(state, mask)
 
-    def _render_rich(self, state: GameStateInfo, mask: np.ndarray, game: "PyGame") -> str:
+    def _render_rich(self, state: GameStateInfo, mask: np.ndarray, game: PyGame) -> str:
         """Render with rich formatting."""
         from io import StringIO
 
@@ -313,7 +313,7 @@ class GameRenderer:
 
     def _render_player_rich(
         self,
-        console: "Console",
+        console: Console,
         player: PlayerInfo,
         player_num: int,
         is_active: bool
@@ -389,7 +389,7 @@ class GameRenderer:
 
         return "\n".join(lines)
 
-    def print(self, game: "PyGame") -> None:
+    def print(self, game: PyGame) -> None:
         """Print the rendered game state to console."""
         if self.use_color:
             tensor = np.array(game.observe())
@@ -401,7 +401,7 @@ class GameRenderer:
         else:
             print(self.render(game))
 
-    def _print_rich(self, state: GameStateInfo, mask: np.ndarray, game: "PyGame") -> None:
+    def _print_rich(self, state: GameStateInfo, mask: np.ndarray, game: PyGame) -> None:
         """Print directly with rich console."""
         console = self.console
 
@@ -433,7 +433,7 @@ class GameRenderer:
         console.print(f"[dim]Legal actions: {num_legal}[/]")
 
 
-def render_game_state(game: "PyGame", use_color: bool = True) -> str:
+def render_game_state(game: PyGame, use_color: bool = True) -> str:
     """Convenience function to render a game state.
 
     Args:
@@ -447,7 +447,7 @@ def render_game_state(game: "PyGame", use_color: bool = True) -> str:
     return renderer.render(game)
 
 
-def print_game_state(game: "PyGame") -> None:
+def print_game_state(game: PyGame) -> None:
     """Convenience function to print a game state.
 
     Args:
