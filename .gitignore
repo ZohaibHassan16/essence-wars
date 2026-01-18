@@ -98,5 +98,7 @@ python/cardgame/_cardgame*.pyd
 # Experiments and Data
 experiments/
 models/
-data/datasets
+data/datasets/
+# Allow sample dataset for tutorials
+!data/datasets/sample_1k.jsonl.gz
 .archive/

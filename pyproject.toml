@@ -133,6 +133,7 @@ dev = [
     "pytest-cov>=7.0.0",
     "ruff>=0.14.11",
     "mypy>=1.19.1",
+    "jupyterlab>=4.5.2",
 ]
 
 # Training dependencies: PyTorch, tensorboard, experiment tracking
