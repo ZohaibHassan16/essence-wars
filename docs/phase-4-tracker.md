@@ -134,7 +134,7 @@ observation_mode="embedded" (new)      → Variable size, learned embeddings
 - [x] Implement `EmbeddedAlphaZeroNetwork`
 - [x] Add `--observation-mode` to training scripts
 - [x] Add unit tests (35 tests passing)
-- [ ] Implement pre-trained Card2Vec approach
+- [x] Implement pre-trained Card2Vec approach
 - [ ] Train PPO with both modes
 - [ ] Compare sample efficiency curves
 - [ ] Compare generalization (train on 3 factions, test on 4th)

@@ -68,6 +68,16 @@ class RunningMeanStd:
         return (x - self.mean) / np.sqrt(self.var + self.epsilon)
 
 
+# Faction to deck mapping
+FACTION_DECKS: dict[str, list[str]] = {
+    "argentum": ["architect_fortify", "artificer_tokens", "colossus_wall", "vex_piercing"],
+    "obsidion": ["archon_burst", "kael_assassin", "shadow_weaver", "sovereign_lifesteal"],
+    "symbiote": ["alpha_frenzy", "broodmother_swarm", "grove_regenerate", "plague_volatile"],
+}
+
+ALL_DECKS: list[str] = [deck for decks in FACTION_DECKS.values() for deck in decks]
+
+
 @dataclass
 class PPOConfig:
     """Configuration for PPO training."""
@@ -75,6 +85,16 @@ class PPOConfig:
     # Environment
     num_envs: int = 64
     max_episode_steps: int = 500
+
+    # Deck selection
+    # If player_faction is set, cycles through faction's decks during training
+    # If player_deck is set, uses that specific deck
+    # If neither is set, uses default decks
+    player_faction: str | None = None  # "argentum", "obsidion", or "symbiote"
+    player_deck: str | None = None     # Specific deck name
+    opponent_faction: str | None = None  # If set, opponent uses random faction deck
+    opponent_deck: str | None = None   # Specific opponent deck (default: random from all)
+    deck_cycle_interval: int = 25_000  # Steps between deck changes (if using faction)
 
     # Training
     total_timesteps: int = 1_000_000
@@ -289,10 +309,11 @@ class PPOTrainer:
             eps=1e-5,
         )
 
+        # Deck selection for faction specialist training
+        self._setup_deck_cycling()
+
         # Vectorized environment
-        self.envs = VectorizedEssenceWars(
-            num_envs=self.config.num_envs,
-        )
+        self.envs = self._create_envs()
 
         # Rollout buffer
         self.buffer = RolloutBuffer(
@@ -312,17 +333,94 @@ class PPOTrainer:
         # Training state
         self.global_step = 0
         self.start_time = None
+        self._last_obs = None
+        self._last_masks = None
 
         # Episode tracking
         self.episode_rewards = []
         self.episode_lengths = []
+
+    def _setup_deck_cycling(self) -> None:
+        """Setup deck lists for faction specialist training."""
+        import random as py_random
+
+        # Determine player decks
+        if self.config.player_faction:
+            if self.config.player_faction not in FACTION_DECKS:
+                raise ValueError(f"Unknown faction: {self.config.player_faction}. "
+                                f"Choose from: {list(FACTION_DECKS.keys())}")
+            self._player_decks = FACTION_DECKS[self.config.player_faction].copy()
+        elif self.config.player_deck:
+            self._player_decks = [self.config.player_deck]
+        else:
+            self._player_decks = ["artificer_tokens"]  # Default
+
+        # Determine opponent decks
+        if self.config.opponent_faction:
+            if self.config.opponent_faction not in FACTION_DECKS:
+                raise ValueError(f"Unknown faction: {self.config.opponent_faction}")
+            self._opponent_decks = FACTION_DECKS[self.config.opponent_faction].copy()
+        elif self.config.opponent_deck:
+            self._opponent_decks = [self.config.opponent_deck]
+        else:
+            self._opponent_decks = ALL_DECKS.copy()  # All decks for opponent variety
+
+        # Shuffle for variety
+        py_random.shuffle(self._player_decks)
+        py_random.shuffle(self._opponent_decks)
+
+        # Current deck indices
+        self._player_deck_idx = 0
+        self._opponent_deck_idx = 0
+        self._last_deck_cycle_step = 0
+
+    def _get_current_decks(self) -> tuple[str, str]:
+        """Get current deck names for player and opponent."""
+        deck1 = self._player_decks[self._player_deck_idx % len(self._player_decks)]
+        deck2 = self._opponent_decks[self._opponent_deck_idx % len(self._opponent_decks)]
+        return deck1, deck2
+
+    def _create_envs(self) -> VectorizedEssenceWars:
+        """Create vectorized environments with current deck configuration."""
+        deck1, deck2 = self._get_current_decks()
+        return VectorizedEssenceWars(
+            num_envs=self.config.num_envs,
+            deck1=deck1,
+            deck2=deck2,
+        )
+
+    def _maybe_cycle_decks(self) -> None:
+        """Cycle to next deck pair if interval has elapsed (faction training only)."""
+        if not self.config.player_faction:
+            return  # Only cycle when training faction specialist
+
+        steps_since_cycle = self.global_step - self._last_deck_cycle_step
+        if steps_since_cycle >= self.config.deck_cycle_interval:
+            # Move to next deck combination
+            self._player_deck_idx = (self._player_deck_idx + 1) % len(self._player_decks)
+            self._opponent_deck_idx = (self._opponent_deck_idx + 1) % len(self._opponent_decks)
+            self._last_deck_cycle_step = self.global_step
+
+            # Recreate environments with new decks
+            old_deck1, _ = self._get_current_decks()
+            deck1, deck2 = self._get_current_decks()
+            print(f"  [Deck cycle] Now training with: {deck1} vs {deck2}")
+            self.envs = self._create_envs()
+
+            # Force reset on next rollout
+            self._last_obs = None
+            self._last_masks = None
 
     def collect_rollout(self) -> dict:
         """Collect rollout experience from vectorized environments."""
         self.network.eval()
         self.buffer.reset()
 
-        obs, masks = self.envs.reset() if self.global_step == 0 else (self._last_obs, self._last_masks)
+        # Reset if first step or after deck cycle (when _last_obs is None)
+        if self.global_step == 0 or self._last_obs is None:
+            obs, masks = self.envs.reset()
+        else:
+            obs, masks = self._last_obs, self._last_masks
 
         episode_infos = []
 
@@ -512,7 +610,16 @@ class PPOTrainer:
         print(f"  Updates: {num_updates:,}")
         print(f"  Device: {self.device}")
 
+        # Print initial deck configuration
+        deck1, deck2 = self._get_current_decks()
+        if self.config.player_faction:
+            print(f"  Faction: {self.config.player_faction} (cycling through {len(self._player_decks)} decks)")
+        print(f"  Initial decks: {deck1} vs {deck2}")
+
         for update in range(1, num_updates + 1):
+            # Check if we should cycle to different decks (faction training)
+            self._maybe_cycle_decks()
+
             # Collect rollout
             rollout_info = self.collect_rollout()
 

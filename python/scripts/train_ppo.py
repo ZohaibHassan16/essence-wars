@@ -6,18 +6,31 @@ This script trains a PPO agent using vectorized environments and
 evaluates it against the built-in GreedyBot.
 
 Usage:
-    python train_ppo.py                           # Default training
-    python train_ppo.py --timesteps 500000        # Short run
-    python train_ppo.py --num-envs 128            # More parallel envs
-    python train_ppo.py --eval-interval 5000      # More frequent eval
+    python train_ppo.py                           # Default generalist training
+    python train_ppo.py --timesteps 300000        # Recommended timesteps
+    python train_ppo.py --player-faction argentum # Train Argentum specialist
+    python train_ppo.py --observation-mode embedded  # Use card embeddings
     python train_ppo.py --tensorboard             # Enable TensorBoard
 
-Example:
-    # Quick test run
-    python train_ppo.py --timesteps 50000 --eval-interval 10000
+Examples:
+    # Generalist (flat architecture) - baseline
+    python train_ppo.py --timesteps 300000 --observation-mode flat
 
-    # Full training with TensorBoard
-    python train_ppo.py --timesteps 1000000 --tensorboard --save-path checkpoints/
+    # Generalist with learned embeddings
+    python train_ppo.py --timesteps 300000 --observation-mode embedded
+
+    # Generalist with pretrained Card2Vec embeddings
+    python train_ppo.py --timesteps 300000 --observation-mode embedded_pretrained \\
+        --pretrained-embeds models/card2vec_*.pt
+
+    # Faction specialist (Argentum)
+    python train_ppo.py --timesteps 300000 --player-faction argentum
+
+    # Faction specialist (Symbiote)
+    python train_ppo.py --timesteps 300000 --player-faction symbiote
+
+    # Faction specialist (Obsidion)
+    python train_ppo.py --timesteps 300000 --player-faction obsidion
 """
 
 import argparse
@@ -105,6 +118,34 @@ def parse_args():
         "--freeze-embeds",
         action="store_true",
         help="Freeze card embeddings during training",
+    )
+
+    # Faction/Deck selection (for specialist training)
+    parser.add_argument(
+        "--player-faction",
+        type=str,
+        default=None,
+        choices=["argentum", "obsidion", "symbiote"],
+        help="Train as faction specialist (cycles through faction's decks)",
+    )
+    parser.add_argument(
+        "--player-deck",
+        type=str,
+        default=None,
+        help="Train with specific deck (overrides --player-faction)",
+    )
+    parser.add_argument(
+        "--opponent-faction",
+        type=str,
+        default=None,
+        choices=["argentum", "obsidion", "symbiote"],
+        help="Opponent uses decks from this faction only",
+    )
+    parser.add_argument(
+        "--deck-cycle-interval",
+        type=int,
+        default=25_000,
+        help="Steps between deck changes for faction training (default: 25000)",
     )
 
     # Evaluation
@@ -196,12 +237,23 @@ def main():
         if args.pretrained_embeds:
             print(f"  Pretrained:    {args.pretrained_embeds}")
         print(f"  Freeze embeds: {args.freeze_embeds}")
+    if args.player_faction:
+        print(f"  Player faction: {args.player_faction} (specialist)")
+    elif args.player_deck:
+        print(f"  Player deck:   {args.player_deck}")
+    else:
+        print(f"  Player:        generalist (all decks)")
     print("=" * 60)
 
-    # Setup save path
+    # Setup save path with faction/mode info
     if args.save_path is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        save_path = Path(f"experiments/ppo/{timestamp}")
+        # Include mode info in path for easy identification
+        mode_suffix = ""
+        if args.player_faction:
+            mode_suffix = f"_{args.player_faction}"
+        mode_suffix += f"_{args.observation_mode}"
+        save_path = Path(f"experiments/ppo/{timestamp}{mode_suffix}")
     else:
         save_path = Path(args.save_path)
 
@@ -233,6 +285,10 @@ def main():
         embed_dim=args.embed_dim,
         pretrained_embeds_path=args.pretrained_embeds,
         freeze_embeds=args.freeze_embeds,
+        player_faction=args.player_faction,
+        player_deck=args.player_deck,
+        opponent_faction=args.opponent_faction,
+        deck_cycle_interval=args.deck_cycle_interval,
         eval_interval=args.eval_interval,
         eval_episodes=args.eval_episodes,
         log_interval=args.log_interval,
