@@ -74,6 +74,7 @@
   - Research contribution: Compare both in a paper!
 - [ ] Review and Improve Tutorial Notebooks 📓, add one or two using the new Agent Roster
 - [ ] Idea: Use the Bitnet Approach for Reward Shaping: Rewards remain binary -1, 1, but we can add 'shadow reward shapes' that are using smaller values to give the neural nets something to work for like 1.58b Bitnet Does it for LLMs ? 
+- [ ] Write Paper 1: "Essence Wars: A High-Performance Card Game Engine for RL Research (see `/home/chris/ai-cardgame/research-agenda.md` for reference)
 
 ---
 
