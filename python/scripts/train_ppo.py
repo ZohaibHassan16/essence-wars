@@ -81,6 +81,32 @@ def parse_args():
         help="Hidden layer dimension (default: 256)",
     )
 
+    # Observation mode (card embeddings)
+    parser.add_argument(
+        "--observation-mode",
+        type=str,
+        default="flat",
+        choices=["flat", "embedded", "embedded_pretrained"],
+        help="Observation mode: flat (default), embedded, or embedded_pretrained",
+    )
+    parser.add_argument(
+        "--embed-dim",
+        type=int,
+        default=64,
+        help="Card embedding dimension (default: 64)",
+    )
+    parser.add_argument(
+        "--pretrained-embeds",
+        type=str,
+        default=None,
+        help="Path to pre-trained card embeddings (for embedded_pretrained mode)",
+    )
+    parser.add_argument(
+        "--freeze-embeds",
+        action="store_true",
+        help="Freeze card embeddings during training",
+    )
+
     # Evaluation
     parser.add_argument(
         "--eval-interval",
@@ -164,6 +190,12 @@ def main():
     print(f"  Batch size:    {args.num_envs * args.num_steps:,}")
     print(f"  Learning rate: {args.lr}")
     print(f"  Device:        {device}")
+    print(f"  Obs mode:      {args.observation_mode}")
+    if args.observation_mode != "flat":
+        print(f"  Embed dim:     {args.embed_dim}")
+        if args.pretrained_embeds:
+            print(f"  Pretrained:    {args.pretrained_embeds}")
+        print(f"  Freeze embeds: {args.freeze_embeds}")
     print("=" * 60)
 
     # Setup save path
@@ -197,6 +229,10 @@ def main():
         gamma=args.gamma,
         ent_coef=args.ent_coef,
         hidden_dim=args.hidden_dim,
+        observation_mode=args.observation_mode,
+        embed_dim=args.embed_dim,
+        pretrained_embeds_path=args.pretrained_embeds,
+        freeze_embeds=args.freeze_embeds,
         eval_interval=args.eval_interval,
         eval_episodes=args.eval_episodes,
         log_interval=args.log_interval,

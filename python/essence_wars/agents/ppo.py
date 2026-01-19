@@ -22,6 +22,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 from essence_wars.agents.networks import EssenceWarsNetwork
+from essence_wars.agents.embeddings import create_network
 from essence_wars.env import EssenceWarsEnv, VectorizedEssenceWars
 
 
@@ -94,6 +95,16 @@ class PPOConfig:
 
     # Network
     hidden_dim: int = 256
+
+    # Observation mode for card embeddings
+    # "flat" = original 326-float tensor
+    # "embedded" = learned card embeddings (end-to-end)
+    # "embedded_pretrained" = pre-trained card embeddings
+    observation_mode: str = "flat"
+    embed_dim: int = 64  # Card embedding dimension
+    pretrained_embeds_path: str | None = None  # Path to pre-trained embeddings
+    freeze_embeds: bool = False  # Freeze embeddings during training
+    include_embed_section: bool = False  # Include trailing card ID section
 
     # Observation normalization
     normalize_obs: bool = True  # Use running mean/std normalization
@@ -261,8 +272,14 @@ class PPOTrainer:
         if network is not None:
             self.network = network.to(self.device)
         else:
-            self.network = EssenceWarsNetwork(
+            self.network = create_network(
+                observation_mode=self.config.observation_mode,
+                network_type="ppo",
+                embed_dim=self.config.embed_dim,
                 hidden_dim=self.config.hidden_dim,
+                pretrained_path=self.config.pretrained_embeds_path,
+                freeze_embeds=self.config.freeze_embeds,
+                include_embed_section=self.config.include_embed_section,
             ).to(self.device)
 
         # Optimizer

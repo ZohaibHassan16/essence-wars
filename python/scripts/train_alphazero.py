@@ -138,6 +138,12 @@ def main():
         default=None,
         help="Directory to save checkpoints (default: experiments/alphazero/YYYYMMDD_HHMMSS)",
     )
+    parser.add_argument(
+        "--checkpoint-interval",
+        type=int,
+        default=10,
+        help="Save checkpoint every N iterations (0 = only at end)",
+    )
 
     # Fine-tuning
     parser.add_argument(
@@ -168,6 +174,7 @@ def main():
         eval_games=args.eval_games,
         replay_buffer_size=args.buffer_size,
         min_replay_size=args.min_buffer_size,
+        checkpoint_interval=args.checkpoint_interval,
     )
 
     # Setup save directory
@@ -228,7 +235,7 @@ def main():
 
     # Train
     try:
-        results = trainer.train()
+        results = trainer.train(save_dir=str(save_dir))
     except KeyboardInterrupt:
         print("\nTraining interrupted by user")
         results = {

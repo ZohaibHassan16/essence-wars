@@ -128,18 +128,23 @@ observation_mode="embedded" (new)      → Variable size, learned embeddings
 | Pre-trained | card2vec → fine-tune | Better transfer | More complex |
 
 **Tasks**:
-- [ ] Design embedding layer architecture
-- [ ] Implement `observation_mode` parameter in `env.py`
-- [ ] Implement end-to-end embedding approach
-- [ ] Implement pre-trained + fine-tune approach (card2vec)
+- [x] Design embedding layer architecture
+- [x] Implement `ObservationTransformer` class
+- [x] Implement `EmbeddedPPONetwork` (end-to-end approach)
+- [x] Implement `EmbeddedAlphaZeroNetwork`
+- [x] Add `--observation-mode` to training scripts
+- [x] Add unit tests (35 tests passing)
+- [ ] Implement pre-trained Card2Vec approach
 - [ ] Train PPO with both modes
 - [ ] Compare sample efficiency curves
 - [ ] Compare generalization (train on 3 factions, test on 4th)
 - [ ] Document findings for Paper 1
 
 **Key Files**:
-- `python/essence_wars/env.py` - Add observation_mode parameter
-- `python/essence_wars/agents/networks.py` - Embedding layer
+- `python/essence_wars/agents/embeddings.py` - ObservationTransformer, EmbeddedNetworks
+- `python/essence_wars/agents/ppo.py` - PPOConfig with observation_mode
+- `python/scripts/train_ppo.py` - CLI with --observation-mode flag
+- `docs/embedding-design.md` - Full design documentation
 
 ### B2. Bitnet Reward Shaping
 

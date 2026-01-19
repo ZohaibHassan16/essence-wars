@@ -68,6 +68,9 @@ class AlphaZeroConfig:
     eval_interval: int = 5  # Evaluate every N iterations
     eval_games: int = 50  # Games for evaluation
 
+    # Checkpointing
+    checkpoint_interval: int = 10  # Save checkpoint every N iterations (0 = only at end)
+
     # Device
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -520,6 +523,7 @@ class AlphaZeroTrainer:
         self.iteration = 0
         self.total_games = 0
         self.start_time = None
+        self.save_dir = None  # Will be set by train()
 
     def self_play_game(self, seed: int | None = None) -> tuple[list, list, list, float]:
         """
@@ -637,35 +641,40 @@ class AlphaZeroTrainer:
             "total_loss": total_loss.item(),
         }
 
-    def train(self, num_iterations: int | None = None) -> dict:
+    def train(self, num_iterations: int | None = None, save_dir: str | None = None) -> dict:
         """
         Main AlphaZero training loop.
 
         Args:
             num_iterations: Override config num_iterations
+            save_dir: Directory to save checkpoints (for periodic saves)
 
         Returns:
             Training statistics
         """
         num_iterations = num_iterations or self.config.num_iterations
+        self.save_dir = save_dir
         self.start_time = time.time()
 
         print(f"Starting AlphaZero training for {num_iterations} iterations...")
         print(f"  Games per iteration: {self.config.games_per_iteration}")
         print(f"  Simulations per move: {self.config.num_simulations}")
         print(f"  Device: {self.device}")
+        if self.config.checkpoint_interval > 0:
+            print(f"  Checkpoint interval: every {self.config.checkpoint_interval} iterations")
 
         all_losses = []
 
-        for iteration in range(1, num_iterations + 1):
-            self.iteration = iteration
-            iter_start = time.time()
+        try:
+            for iteration in range(1, num_iterations + 1):
+                self.iteration = iteration
+                iter_start = time.time()
 
-            # Generate self-play games
-            print(f"\nIteration {iteration}/{num_iterations}")
-            print(f"  Generating {self.config.games_per_iteration} self-play games...")
-            self.generate_self_play_games(self.config.games_per_iteration)
-            print(f"  Replay buffer size: {len(self.replay_buffer)}")
+                # Generate self-play games
+                print(f"\nIteration {iteration}/{num_iterations}")
+                print(f"  Generating {self.config.games_per_iteration} self-play games...")
+                self.generate_self_play_games(self.config.games_per_iteration)
+                print(f"  Replay buffer size: {len(self.replay_buffer)}")
 
             # Training
             if len(self.replay_buffer) >= self.config.min_replay_size:
@@ -695,8 +704,30 @@ class AlphaZeroTrainer:
                     self.writer.add_scalar("eval/win_rate_vs_greedy", win_rate_greedy, iteration)
                     self.writer.add_scalar("eval/win_rate_vs_random", win_rate_random, iteration)
 
+            # Periodic checkpoint saving
+            if (
+                self.config.checkpoint_interval > 0
+                and iteration % self.config.checkpoint_interval == 0
+                and self.save_dir is not None
+            ):
+                from pathlib import Path
+                checkpoint_path = Path(self.save_dir) / f"checkpoint_iter_{iteration}.pt"
+                self.save(str(checkpoint_path))
+                print(f"  [Checkpoint saved: {checkpoint_path.name}]")
+
             iter_time = time.time() - iter_start
             print(f"  Iteration time: {iter_time:.1f}s")
+
+        except KeyboardInterrupt:
+            print("\n\n[INTERRUPTED] Training stopped by user")
+            if self.save_dir is not None:
+                from pathlib import Path
+                interrupt_checkpoint = Path(self.save_dir) / f"checkpoint_interrupted_iter_{self.iteration}.pt"
+                self.save(str(interrupt_checkpoint))
+                print(f"[CHECKPOINT SAVED] Progress saved to: {interrupt_checkpoint.name}")
+            print(f"Completed {self.iteration}/{num_iterations} iterations")
+            # Re-raise to allow outer handler
+            raise
 
         total_time = time.time() - self.start_time
         print(f"\nTraining complete in {total_time:.1f}s")

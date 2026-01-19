@@ -27,11 +27,25 @@ Example:
 """
 
 from essence_wars.agents.networks import AlphaZeroNetwork, EssenceWarsNetwork, ResidualBlock
+from essence_wars.agents.embeddings import (
+    EmbeddedPPONetwork,
+    EmbeddedAlphaZeroNetwork,
+    ObservationTransformer,
+    create_network,
+    get_embedding_info,
+)
 
 __all__ = [
+    # Original networks
     "AlphaZeroNetwork",
     "EssenceWarsNetwork",
     "ResidualBlock",
+    # Embedded networks
+    "EmbeddedPPONetwork",
+    "EmbeddedAlphaZeroNetwork",
+    "ObservationTransformer",
+    "create_network",
+    "get_embedding_info",
 ]
 
 # Lazy imports for optional components (trainers have heavier dependencies)
