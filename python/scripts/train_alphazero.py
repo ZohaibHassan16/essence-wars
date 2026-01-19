@@ -84,6 +84,28 @@ def main():
         help="Number of residual blocks",
     )
 
+    # Observation mode (embeddings)
+    parser.add_argument(
+        "--observation-mode",
+        type=str,
+        default="flat",
+        choices=["flat", "embedded", "embedded_pretrained"],
+        help="Observation mode: flat (326 floats), embedded (learn embeddings), "
+             "embedded_pretrained (use pre-trained Card2Vec)",
+    )
+    parser.add_argument(
+        "--embed-dim",
+        type=int,
+        default=64,
+        help="Card embedding dimension (for embedded modes)",
+    )
+    parser.add_argument(
+        "--pretrained-embeds",
+        type=str,
+        default=None,
+        help="Path to pre-trained Card2Vec embeddings (for embedded_pretrained mode)",
+    )
+
     # Learning parameters
     parser.add_argument(
         "--lr",
@@ -207,17 +229,49 @@ def main():
     print(f"  Learning rate:   {config.learning_rate}")
     print(f"  Hidden dim:      {config.hidden_dim}")
     print(f"  Residual blocks: {config.num_blocks}")
+    print(f"  Obs mode:        {args.observation_mode}")
+    if args.observation_mode != "flat":
+        print(f"  Embed dim:       {args.embed_dim}")
+    if args.pretrained_embeds:
+        print(f"  Pretrained:      {args.pretrained_embeds}")
     print(f"  Device:          {config.device}")
     print("=" * 60)
     print(f"Saving to: {save_dir}")
 
+    # Create network based on observation mode
+    import torch
+    network = None
+    if args.observation_mode == "flat":
+        # Use default AlphaZeroNetwork (created by trainer)
+        pass
+    elif args.observation_mode in ("embedded", "embedded_pretrained"):
+        from essence_wars.agents.embeddings import EmbeddedAlphaZeroNetwork
+
+        pretrained_embeds = None
+        if args.observation_mode == "embedded_pretrained":
+            if not args.pretrained_embeds:
+                raise ValueError("--pretrained-embeds required for embedded_pretrained mode")
+            print(f"\nLoading Card2Vec embeddings from: {args.pretrained_embeds}")
+            checkpoint = torch.load(args.pretrained_embeds, map_location=config.device)
+            if isinstance(checkpoint, dict) and "embeddings" in checkpoint:
+                pretrained_embeds = checkpoint["embeddings"]
+            else:
+                pretrained_embeds = checkpoint
+            print(f"  Embedding shape: {pretrained_embeds.shape}")
+
+        network = EmbeddedAlphaZeroNetwork(
+            embed_dim=args.embed_dim,
+            hidden_dim=args.hidden_dim,
+            num_blocks=args.num_blocks,
+            pretrained_embeds=pretrained_embeds,
+        )
+
     # Create trainer
-    trainer = AlphaZeroTrainer(config=config, writer=writer)
+    trainer = AlphaZeroTrainer(config=config, network=network, writer=writer)
 
     # Load pre-trained model if specified
     if args.load:
         print(f"\nLoading pre-trained model from: {args.load}")
-        import torch
         checkpoint = torch.load(args.load, map_location=config.device, weights_only=False)
 
         # Handle both AlphaZero checkpoints and BC checkpoints

@@ -140,6 +140,17 @@ def parse_args() -> argparse.Namespace:
         default=4,
         help="Number of DataLoader workers",
     )
+    parser.add_argument(
+        "--streaming",
+        action="store_true",
+        help="Use memory-efficient streaming loader (recommended for large datasets)",
+    )
+    parser.add_argument(
+        "--chunk-size",
+        type=int,
+        default=50_000,
+        help="Chunk size for streaming loader (default: 50000, ~175 MB)",
+    )
     return parser.parse_args()
 
 
@@ -339,31 +350,57 @@ def main() -> None:
 
     # Load dataset
     print("\nLoading dataset...")
-    dataset = MCTSDataset(args.dataset, max_games=args.max_games, normalize=False)
 
-    # Split into train/val
-    val_size = int(len(dataset) * args.val_split)
-    train_size = len(dataset) - val_size
-    train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+    if args.streaming:
+        # Memory-efficient streaming loader (recommended for large datasets)
+        from essence_wars.data import ChunkedMCTSDataset
 
-    print(f"  Train samples: {len(train_dataset):,}")
-    print(f"  Val samples:   {len(val_dataset):,}")
+        print(f"  Using streaming loader (chunk_size={args.chunk_size:,})")
+        print(f"  Memory budget: ~{args.chunk_size * 3.5 / 1000:.0f} MB per worker")
 
-    # Create data loaders
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=args.batch_size,
-        shuffle=True,
-        num_workers=args.num_workers,
-        pin_memory=device.type == "cuda",
-    )
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=args.batch_size,
-        shuffle=False,
-        num_workers=args.num_workers,
-        pin_memory=device.type == "cuda",
-    )
+        if args.val_split > 0:
+            print("  Note: Validation disabled in streaming mode")
+
+        train_dataset = ChunkedMCTSDataset(
+            args.dataset,
+            chunk_size=args.chunk_size,
+            shuffle=True,
+        )
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+            pin_memory=device.type == "cuda",
+        )
+        val_loader = None
+        print(f"  Streaming from: {args.dataset}")
+    else:
+        # Standard in-memory loader
+        dataset = MCTSDataset(args.dataset, max_games=args.max_games, normalize=False)
+
+        # Split into train/val
+        val_size = int(len(dataset) * args.val_split)
+        train_size = len(dataset) - val_size
+        train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+
+        print(f"  Train samples: {len(train_dataset):,}")
+        print(f"  Val samples:   {len(val_dataset):,}")
+
+        # Create data loaders
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=args.batch_size,
+            shuffle=True,
+            num_workers=args.num_workers,
+            pin_memory=device.type == "cuda",
+        )
+        val_loader = DataLoader(
+            val_dataset,
+            batch_size=args.batch_size,
+            shuffle=False,
+            num_workers=args.num_workers,
+            pin_memory=device.type == "cuda",
+        )
 
     # Create model
     print("\n=== Model Configuration ===")
@@ -420,33 +457,45 @@ def main() -> None:
             args.policy_weight, args.value_weight,
         )
 
-        # Validate
-        val_metrics = validate(
-            model, val_loader, device,
-            args.policy_weight, args.value_weight,
-        )
+        # Validate (if validation loader available)
+        if val_loader is not None:
+            val_metrics = validate(
+                model, val_loader, device,
+                args.policy_weight, args.value_weight,
+            )
+        else:
+            val_metrics = None
 
         # Update scheduler
         scheduler.step()
 
         # Print progress
         epoch_time = time.time() - epoch_start
-        print(
-            f"Epoch {epoch+1:3d}/{args.epochs} | "
-            f"Train Loss: {train_metrics['total_loss']:.4f} | "
-            f"Val Loss: {val_metrics['total_loss']:.4f} | "
-            f"Policy Acc: {val_metrics['policy_acc']:.2%} | "
-            f"Value Acc: {val_metrics['value_sign_acc']:.2%} | "
-            f"LR: {scheduler.get_last_lr()[0]:.2e} | "
-            f"Time: {epoch_time:.1f}s"
-        )
+        if val_metrics is not None:
+            print(
+                f"Epoch {epoch+1:3d}/{args.epochs} | "
+                f"Train Loss: {train_metrics['total_loss']:.4f} | "
+                f"Val Loss: {val_metrics['total_loss']:.4f} | "
+                f"Policy Acc: {val_metrics['policy_acc']:.2%} | "
+                f"Value Acc: {val_metrics['value_sign_acc']:.2%} | "
+                f"LR: {scheduler.get_last_lr()[0]:.2e} | "
+                f"Time: {epoch_time:.1f}s"
+            )
+        else:
+            print(
+                f"Epoch {epoch+1:3d}/{args.epochs} | "
+                f"Train Loss: {train_metrics['total_loss']:.4f} | "
+                f"LR: {scheduler.get_last_lr()[0]:.2e} | "
+                f"Time: {epoch_time:.1f}s"
+            )
 
         # Log to TensorBoard
         if writer:
             for k, v in train_metrics.items():
                 writer.add_scalar(f"train/{k}", v, epoch)
-            for k, v in val_metrics.items():
-                writer.add_scalar(f"val/{k}", v, epoch)
+            if val_metrics is not None:
+                for k, v in val_metrics.items():
+                    writer.add_scalar(f"val/{k}", v, epoch)
             writer.add_scalar("lr", scheduler.get_last_lr()[0], epoch)
 
         # Save checkpoint

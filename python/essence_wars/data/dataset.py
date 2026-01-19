@@ -29,9 +29,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import IO, Any
 
+import random
+
 import numpy as np
 import torch
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, IterableDataset
 
 
 @dataclass
@@ -226,6 +228,186 @@ class StreamingMCTSDataset:
                 mcts_policy=np.array(move["mcts_policy"], dtype=np.float32),
                 value_target=value_target,
             )
+
+
+class ChunkedMCTSDataset(IterableDataset):
+    """Memory-efficient chunked dataset for large MCTS files.
+
+    Streams data in fixed-size chunks with in-chunk shuffling.
+    Memory is bounded to chunk_size × ~3.5 KB per sample.
+
+    This is the recommended loader for large datasets (10k+ games)
+    as it avoids loading everything into memory at once.
+
+    Features:
+    - Bounded memory usage (configurable via chunk_size)
+    - In-chunk shuffling for training randomness
+    - Multi-worker safe (workers process different chunks)
+    - Compatible with standard PyTorch DataLoader
+
+    Example:
+        >>> dataset = ChunkedMCTSDataset(
+        ...     "data/datasets/mcts_100k.jsonl.gz",
+        ...     chunk_size=50_000,  # ~175 MB max memory
+        ...     shuffle=True,
+        ... )
+        >>> loader = DataLoader(dataset, batch_size=512, num_workers=4)
+        >>> for batch in loader:
+        ...     train_step(batch)
+
+    Memory estimates by chunk_size:
+        - 10,000 samples: ~35 MB
+        - 50,000 samples: ~175 MB
+        - 100,000 samples: ~350 MB
+    """
+
+    def __init__(
+        self,
+        path: str | Path,
+        *,
+        chunk_size: int = 50_000,
+        shuffle: bool = True,
+        player_perspective: bool = True,
+        seed: int | None = None,
+    ) -> None:
+        """Initialize chunked MCTS dataset.
+
+        Args:
+            path: Path to JSONL or JSONL.gz file
+            chunk_size: Maximum samples to hold in memory at once
+            shuffle: Whether to shuffle within each chunk
+            player_perspective: If True, flip value targets based on player
+            seed: Random seed for shuffling (None = random each epoch)
+        """
+        self.path = Path(path)
+        self.chunk_size = chunk_size
+        self.shuffle = shuffle
+        self.player_perspective = player_perspective
+        self.seed = seed
+
+    def __iter__(self) -> Iterator[dict[str, torch.Tensor]]:
+        """Iterate through dataset in chunks."""
+        # Get worker info for multi-worker DataLoader
+        worker_info = torch.utils.data.get_worker_info()
+        worker_id = worker_info.id if worker_info else 0
+        num_workers = worker_info.num_workers if worker_info else 1
+
+        # Set random seed for reproducibility
+        if self.seed is not None:
+            random.seed(self.seed + worker_id)
+
+        # Open file
+        open_fn: Callable[[Path], IO[str]]
+        if self.path.suffix == ".gz":
+            open_fn = lambda p: gzip.open(p, "rt", encoding="utf-8")
+        else:
+            open_fn = lambda p: open(p, encoding="utf-8")
+
+        chunk: list[MCTSSample] = []
+        game_idx = 0
+
+        with open_fn(self.path) as f:
+            for line in f:
+                # Multi-worker: each worker handles different games
+                if game_idx % num_workers != worker_id:
+                    game_idx += 1
+                    continue
+                game_idx += 1
+
+                game = json.loads(line)
+                samples = list(self._process_game(game))
+                chunk.extend(samples)
+
+                # Yield chunk when full
+                if len(chunk) >= self.chunk_size:
+                    yield from self._yield_chunk(chunk)
+                    chunk = []
+
+        # Yield remaining samples
+        if chunk:
+            yield from self._yield_chunk(chunk)
+
+    def _process_game(self, game: dict[str, Any]) -> Iterator[MCTSSample]:
+        """Process a game record and yield samples."""
+        winner = game["winner"]
+
+        for move in game["moves"]:
+            player = move["player"]
+
+            if winner == -1:
+                value_target = 0.0
+            elif self.player_perspective:
+                value_target = 1.0 if winner == player else -1.0
+            else:
+                value_target = 1.0 if winner == 0 else -1.0
+
+            yield MCTSSample(
+                state_tensor=np.array(move["state_tensor"], dtype=np.float32),
+                action_mask=np.array(move["action_mask"], dtype=np.float32),
+                action=move["action"],
+                mcts_policy=np.array(move["mcts_policy"], dtype=np.float32),
+                value_target=value_target,
+            )
+
+    def _yield_chunk(
+        self, chunk: list[MCTSSample]
+    ) -> Iterator[dict[str, torch.Tensor]]:
+        """Shuffle and yield samples from a chunk."""
+        if self.shuffle:
+            random.shuffle(chunk)
+
+        for sample in chunk:
+            yield sample.to_tensors()
+
+
+def load_chunked_mcts_dataset(
+    path: str | Path,
+    *,
+    batch_size: int = 256,
+    chunk_size: int = 50_000,
+    shuffle: bool = True,
+    num_workers: int = 4,
+    seed: int | None = None,
+) -> tuple[ChunkedMCTSDataset, DataLoader]:
+    """Load MCTS dataset with memory-efficient chunked streaming.
+
+    Recommended for large datasets (10k+ games) to avoid OOM crashes.
+
+    Args:
+        path: Path to JSONL or JSONL.gz file
+        batch_size: Batch size for DataLoader
+        chunk_size: Samples per chunk (controls memory usage)
+        shuffle: Whether to shuffle within chunks
+        num_workers: Number of DataLoader workers
+        seed: Random seed for reproducibility
+
+    Returns:
+        Tuple of (dataset, dataloader)
+
+    Example:
+        >>> dataset, loader = load_chunked_mcts_dataset(
+        ...     "data/mcts_100k.jsonl.gz",
+        ...     batch_size=512,
+        ...     chunk_size=50_000,  # ~175 MB max
+        ... )
+        >>> for epoch in range(10):
+        ...     for batch in loader:
+        ...         train_step(batch)
+    """
+    dataset = ChunkedMCTSDataset(
+        path,
+        chunk_size=chunk_size,
+        shuffle=shuffle,
+        seed=seed,
+    )
+    loader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        num_workers=num_workers,
+        pin_memory=torch.cuda.is_available(),
+        # Note: shuffle=False because IterableDataset handles its own shuffling
+    )
+    return dataset, loader
 
 
 def load_mcts_dataset(
