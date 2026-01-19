@@ -4,9 +4,10 @@ use std::sync::Arc;
 
 use bevy::prelude::*;
 use cardgame::cards::CardDatabase;
-use cardgame::client_api::{GameClient, GameEvent, IntrospectionConfig};
+use cardgame::client_api::{GameClient, GameEvent};
+use cardgame::bots::IntrospectionConfig;
 use cardgame::decks::DeckRegistry;
-use cardgame::bots::{BotDecision, MctsSnapshot};
+use cardgame::bots::{BotDecision, MctsTreeSnapshot};
 
 /// Resource that bridges the cardgame engine to Bevy.
 #[derive(Resource)]
@@ -19,7 +20,8 @@ pub struct GameBridge {
     pub deck_registry: Arc<DeckRegistry>,
     /// Last AI decision for glassbox visualization
     pub last_decision: Option<BotDecision>,
-    /// AI introspection configuration
+    /// AI introspection configuration (used for future AI visualization)
+    #[allow(dead_code)]
     pub ai_config: IntrospectionConfig,
 }
 
@@ -50,8 +52,10 @@ impl GameBridge {
         let deck2 = self.deck_registry.get(deck2_id)
             .ok_or_else(|| format!("Deck not found: {}", deck2_id))?;
 
-        let mut client = GameClient::new(&self.card_db);
-        client.start_game(deck1.cards.clone(), deck2.cards.clone(), seed);
+        let mut client = GameClient::new(self.card_db.clone());
+        let deck1_cards: Vec<cardgame::types::CardId> = deck1.cards.iter().map(|&id| cardgame::types::CardId(id)).collect();
+        let deck2_cards: Vec<cardgame::types::CardId> = deck2.cards.iter().map(|&id| cardgame::types::CardId(id)).collect();
+        client.start_game(deck1_cards, deck2_cards, seed);
 
         self.client = Some(client);
         self.last_decision = None;
@@ -60,24 +64,27 @@ impl GameBridge {
     }
 
     /// Check if a game is currently active.
+    #[allow(dead_code)]
     pub fn is_game_active(&self) -> bool {
         self.client.as_ref().map(|c| !c.is_game_over()).unwrap_or(false)
     }
 
     /// Get current game events.
+    #[allow(dead_code)]
     pub fn drain_events(&mut self) -> Vec<GameEvent> {
         self.client.as_mut()
-            .map(|c| c.drain_events().collect())
+            .map(|c| c.drain_events().into_iter().collect())
             .unwrap_or_default()
     }
 
     /// Get the MCTS snapshot from the last decision for visualization.
-    pub fn get_mcts_snapshot(&self) -> Option<&MctsSnapshot> {
+    pub fn get_mcts_snapshot(&self) -> Option<&MctsTreeSnapshot> {
         self.last_decision.as_ref()
             .and_then(|d| d.mcts_snapshot.as_ref())
     }
 
     /// Store a bot decision for visualization.
+    #[allow(dead_code)]
     pub fn store_decision(&mut self, decision: BotDecision) {
         self.last_decision = Some(decision);
     }
@@ -90,5 +97,6 @@ impl Default for GameBridge {
 }
 
 /// Event emitted when a game event occurs in the cardgame engine.
+#[allow(dead_code)]
 #[derive(Event, Clone)]
 pub struct BevyGameEvent(pub GameEvent);

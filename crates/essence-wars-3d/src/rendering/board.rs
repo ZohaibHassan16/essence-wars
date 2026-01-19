@@ -18,6 +18,7 @@ impl Plugin for BoardPlugin {
 pub struct GameBoard;
 
 /// Component marking a creature slot on the board.
+#[allow(dead_code)]
 #[derive(Component)]
 pub struct CreatureSlot {
     /// Player who owns this slot (0 or 1)

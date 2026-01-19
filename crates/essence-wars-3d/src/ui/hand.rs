@@ -20,8 +20,7 @@ fn draw_hand(
 ) {
     let Some(bridge) = bridge else { return };
     let Some(client) = &bridge.client else { return };
-
-    let state = client.game_state();
+    let Some(state) = client.get_state() else { return };
     let card_db = &bridge.card_db;
 
     // Show Player 1's hand at the bottom
@@ -30,8 +29,8 @@ fn draw_hand(
             ui.label(egui::RichText::new("Your Hand:").strong());
             ui.separator();
 
-            for card_id in &state.players[0].hand {
-                if let Some(card) = card_db.get(*card_id) {
+            for card_instance in &state.players[0].hand {
+                if let Some(card) = card_db.get(card_instance.card_id) {
                     ui.group(|ui| {
                         ui.vertical(|ui| {
                             ui.label(egui::RichText::new(&card.name).strong());

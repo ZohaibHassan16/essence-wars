@@ -20,8 +20,7 @@ fn draw_hud(
 ) {
     let Some(bridge) = bridge else { return };
     let Some(client) = &bridge.client else { return };
-
-    let state = client.game_state();
+    let Some(state) = client.get_state() else { return };
 
     egui::TopBottomPanel::top("game_hud").show(contexts.ctx_mut(), |ui| {
         ui.horizontal(|ui| {
@@ -41,7 +40,7 @@ fn draw_hud(
             // Turn info
             ui.group(|ui| {
                 ui.label(format!("Turn {}", state.current_turn));
-                let current_player = if state.active_player == cardgame::types::PlayerId::Player1 {
+                let current_player = if state.active_player == cardgame::types::PlayerId::PLAYER_ONE {
                     "Player 1"
                 } else {
                     "Player 2"

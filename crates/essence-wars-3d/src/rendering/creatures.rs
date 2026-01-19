@@ -13,6 +13,7 @@ impl Plugin for CreaturePlugin {
 }
 
 /// Component marking a creature entity.
+#[allow(dead_code)]
 #[derive(Component)]
 pub struct Creature3D {
     /// Instance ID from the game engine
@@ -30,6 +31,7 @@ pub struct Creature3D {
 }
 
 /// Resource storing creature mesh and material handles.
+#[allow(dead_code)]
 #[derive(Resource)]
 pub struct CreatureAssets {
     pub mesh: Handle<Mesh>,
@@ -38,6 +40,7 @@ pub struct CreatureAssets {
 }
 
 /// Spawn a creature at the given slot.
+#[allow(dead_code)]
 pub fn spawn_creature(
     commands: &mut Commands,
     assets: &CreatureAssets,
@@ -71,6 +74,7 @@ fn despawn_all_creatures(
 }
 
 /// Update creature position based on slot assignment.
+#[allow(dead_code)]
 pub fn update_creature_position(
     transform: &mut Transform,
     creature: &Creature3D,

@@ -89,7 +89,7 @@ fn draw_main_menu(
             // Show available decks
             if let Some(bridge) = &bridge {
                 ui.collapsing("Available Decks", |ui| {
-                    for deck_id in bridge.deck_registry.list() {
+                    for deck_id in bridge.deck_registry.deck_ids() {
                         ui.label(deck_id);
                     }
                 });
@@ -112,20 +112,23 @@ fn draw_game_over(
 
             if let Some(bridge) = bridge {
                 if let Some(client) = &bridge.client {
-                    let state = client.game_state();
-                    if let Some(winner) = state.winner {
-                        let winner_name = if winner == cardgame::types::PlayerId::Player1 {
-                            "Player 1"
-                        } else {
-                            "Player 2"
-                        };
-                        ui.label(egui::RichText::new(format!("{} Wins!", winner_name)).size(32.0));
+                    if let Some(state) = client.get_state() {
+                        if let Some(cardgame::state::GameResult::Win { winner, .. }) = state.result {
+                            let winner_name = if winner == cardgame::types::PlayerId::PLAYER_ONE {
+                                "Player 1"
+                            } else {
+                                "Player 2"
+                            };
+                            ui.label(egui::RichText::new(format!("{} Wins!", winner_name)).size(32.0));
+                        } else if let Some(cardgame::state::GameResult::Draw) = state.result {
+                            ui.label(egui::RichText::new("Draw!").size(32.0));
+                        }
+                        ui.label(format!("Final Turn: {}", state.current_turn));
+                        ui.label(format!("P1 Life: {} | P2 Life: {}",
+                            state.players[0].life,
+                            state.players[1].life
+                        ));
                     }
-                    ui.label(format!("Final Turn: {}", state.current_turn));
-                    ui.label(format!("P1 Life: {} | P2 Life: {}",
-                        state.players[0].life,
-                        state.players[1].life
-                    ));
                 }
             }
 
