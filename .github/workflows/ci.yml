@@ -1,5 +1,8 @@
 # CI Workflow - Runs on every push and PR
 # Standard tests + quick validation (~5 minutes)
+#
+# Note: Only builds/tests the cardgame crate. The essence-wars-3d crate
+# requires system graphics libraries (Wayland, X11) not available in CI.
 
 name: CI
 
@@ -38,7 +41,7 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Run tests
-        run: cargo nextest run --status-level=fail
+        run: cargo nextest run -p cardgame --status-level=fail
 
   build:
     name: Build Release
@@ -61,4 +64,4 @@ jobs:
             ${{ runner.os }}-cargo-release-
 
       - name: Build release
-        run: cargo build --release
+        run: cargo build --release -p cardgame

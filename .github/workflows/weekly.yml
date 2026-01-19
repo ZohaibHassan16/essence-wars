@@ -1,5 +1,8 @@
 # Weekly Workflow - Runs exhaustive overnight tests
 # Scheduled for Sunday 3 AM UTC (~2-3 hours)
+#
+# Note: Only builds/tests the cardgame crate. The essence-wars-3d crate
+# requires system graphics libraries (Wayland, X11) not available in CI.
 
 name: Weekly Exhaustive Tests
 
@@ -44,15 +47,15 @@ jobs:
             ${{ runner.os }}-cargo-release-
 
       - name: Build release
-        run: cargo build --release
+        run: cargo build --release -p cardgame
 
       - name: Run standard tests
-        run: cargo nextest run --status-level=fail
+        run: cargo nextest run -p cardgame --status-level=fail
 
       - name: Run ALL stress tests (including 100k games)
         run: |
           # Run all ignored tests except golden data generator
-          cargo nextest run --release --status-level=fail --run-ignored=ignored-only \
+          cargo nextest run -p cardgame --release --status-level=fail --run-ignored=ignored-only \
             -E 'not test(/generate_golden/)'
 
   notify-on-failure:

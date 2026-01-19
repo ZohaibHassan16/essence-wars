@@ -1,5 +1,8 @@
 # Nightly Workflow - Runs comprehensive stress tests
 # Scheduled for 2 AM UTC daily (~30-60 minutes)
+#
+# Note: Only builds/tests the cardgame crate. The essence-wars-3d crate
+# requires system graphics libraries (Wayland, X11) not available in CI.
 
 name: Nightly Stress Tests
 
@@ -44,16 +47,16 @@ jobs:
             ${{ runner.os }}-cargo-release-
 
       - name: Build release
-        run: cargo build --release
+        run: cargo build --release -p cardgame
 
       - name: Run standard tests
-        run: cargo nextest run --status-level=fail
+        run: cargo nextest run -p cardgame --status-level=fail
 
       - name: Run stress tests (excluding overnight tier)
         run: |
           # Run all ignored tests EXCEPT the 100k game tests (overnight tier)
           # These are: tier_quick, tier_medium, tier_long
-          cargo nextest run --release --status-level=fail --run-ignored=ignored-only \
+          cargo nextest run -p cardgame --release --status-level=fail --run-ignored=ignored-only \
             -E 'not (test(/100k/) | test(/generate_golden/))'
         continue-on-error: false
 
