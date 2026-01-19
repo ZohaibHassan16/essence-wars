@@ -11,16 +11,22 @@
 ## Quick Commands
 
 ```bash
-# Build
-cargo build --release
+# Build (from workspace root)
+cargo build --release                    # Build all crates
+cargo build --release -p cardgame        # Build core engine only
+cargo build --release -p essence-wars-3d # Build 3D client only
+
+# Run 3D client (Glassbox AI visualization)
+cargo run --release -p essence-wars-3d   # Launch Bevy 3D client
 
 # Run all tests
-cargo nextest run --status-level=fail  # ~576 tests (only shows failures)
+cargo nextest run --status-level=fail  # ~629 tests (only shows failures)
 cargo test                              # Alternative: use standard cargo test
 
 # Run Linter (production code only, excludes tests)
 ./scripts/run-clippy.sh                 # Recommended: checks lib + binaries
-cargo clippy --lib --bins -- -D warnings  # Same as above
+cargo clippy -p cardgame --lib --bins -- -D warnings  # Core engine only
+cargo clippy -p essence-wars-3d -- -D warnings        # 3D client only
 
 # Run stress tests by tier
 ./scripts/run-tests.sh                  # Standard tests only
@@ -36,17 +42,17 @@ cargo run --release --bin arena -- --list-decks
 
 # Run weight tuning (outputs to experiments/mcts/)
 cargo run --release --bin tune -- --mode generalist --tag my_run --generations 50
-cargo run --release --bin tune -- --mode specialist --deck argentum_control --opponent symbiote_aggro --tag matchup_test
+cargo run --release --bin tune -- --mode specialist --deck architect_fortify --opponent broodmother_swarm --tag matchup_test
 cargo run --release --bin tune -- --mode faction-specialist --faction argentum --tag argentum_v1
 
 # Analyze tuning results
 ./scripts/analyze-tuning.sh --latest
 ./scripts/analyze-tuning.sh --all
 
-# Run balance validation (round-robin: 40 deck matchups × 2 directions × games)
-cargo run --release --bin validate -- --games 100              # 8k total games - quick check
-cargo run --release --bin validate -- --games 500 --output results.json  # 40k total - full validation
-cargo run --release --bin validate -- --games 1500             # 120k total games - comprehensive
+# Run balance validation (round-robin: 66 deck matchups × 2 directions × games)
+cargo run --release --bin validate -- --games 100              # 13.2k total games - quick check
+cargo run --release --bin validate -- --games 500 --output results.json  # 66k total - full validation
+cargo run --release --bin validate -- --games 1500             # 198k total games - comprehensive
 
 # Run P1/P2 asymmetry diagnostics
 cargo run --release --bin diagnose -- 200                                  # Basic analysis
@@ -55,7 +61,7 @@ cargo run --release --bin diagnose -- 500 --export csv --output ./diag     # Exp
 cargo run --release --bin diagnose -- 500 --export all --include-turns     # Full export with per-turn data
 
 # Run benchmarks
-cargo bench
+cargo bench -p cardgame      # Criterion benchmarks for core engine
 ./scripts/run-benchmarks.sh  # Full benchmark suite with report
 
 # Modal cloud training (requires Modal CLI: uv tool install modal && modal token new)
@@ -67,146 +73,189 @@ modal run modal_tune.py::main --no-deploy             # Full pipeline without au
 
 ## Project Structure
 
+This project uses a **Cargo workspace** with two crates:
+
+| Crate | Purpose |
+|-------|---------|
+| `cardgame` | Core game engine, AI bots, tuning infrastructure |
+| `essence-wars-3d` | Bevy 3D client with Glassbox AI visualization |
+
 ```
 ai-cardgame/
-├── src/
-│   ├── lib.rs              # Module exports
-│   ├── version.rs          # Version info for reproducibility
-│   ├── tensor.rs           # State to tensor conversion (326 floats)
-│   ├── decks.rs            # DeckDefinition, DeckRegistry, Faction enum
-│   ├── core/               # Core game engine
-│   │   ├── mod.rs
-│   │   ├── types.rs        # CardId, PlayerId, Slot, Rarity, Tag
-│   │   ├── keywords.rs     # 14 keywords as u16 bitfield
-│   │   ├── config.rs       # GameConfig with all parameters
-│   │   ├── effects.rs      # Trigger, Effect, EffectTarget, TargetingRule
-│   │   ├── state.rs        # GameState, PlayerState, Creature, Support
-│   │   ├── cards.rs        # CardDefinition, CardDatabase, YAML loading
-│   │   ├── actions.rs      # Action enum with index mapping (256 actions)
-│   │   ├── legal.rs        # Legal action generation
-│   │   ├── combat.rs       # Combat resolution with keyword interactions
-│   │   └── tracing.rs      # Debug tracing infrastructure
-│   ├── engine/             # Game engine implementation
-│   │   ├── mod.rs
-│   │   ├── game_engine.rs  # Core GameEngine, game loop, turn structure
-│   │   ├── effect_queue.rs # Effect queue processing system
-│   │   ├── effect_convert.rs
-│   │   ├── passive.rs      # Passive effect resolution
-│   │   └── environment.rs  # GameEnvironment trait for AI
-│   ├── bots/
-│   │   ├── mod.rs          # Bot trait definition
-│   │   ├── random.rs       # RandomBot - uniform random selection
-│   │   ├── greedy.rs       # GreedyBot - heuristic evaluation
-│   │   ├── mcts.rs         # MctsBot - Monte Carlo Tree Search
-│   │   ├── weights.rs      # BotWeights, GreedyWeights (24 params)
-│   │   └── factory.rs      # BotType enum, create_bot(), resolve_weights()
-│   ├── execution/          # Shared parallel execution utilities
-│   │   ├── mod.rs          # Module exports
-│   │   ├── seeds.rs        # GameSeeds for deterministic parallel execution
-│   │   ├── progress.rs     # ProgressReporter with background thread
-│   │   └── parallel.rs     # BatchConfig, run_batch_parallel()
-│   ├── arena/
-│   │   ├── mod.rs          # Arena module exports
-│   │   ├── runner.rs       # GameRunner for executing matches
-│   │   ├── logger.rs       # ActionLogger for debug tracing
-│   │   └── stats.rs        # MatchStats for win rate tracking
-│   ├── tuning/
-│   │   ├── mod.rs          # Tuning module exports
-│   │   ├── cmaes.rs        # CMA-ES optimizer implementation
-│   │   └── evaluator.rs    # Fitness evaluation via game matches
-│   ├── diagnostics/        # P1/P2 asymmetry analysis tools
-│   │   ├── mod.rs          # Module exports
-│   │   ├── collector.rs    # DiagnosticRunner, GameDiagnostics, TurnSnapshot
-│   │   ├── analyzer.rs     # AggregatedStats, BalanceAssessment
-│   │   ├── metrics.rs      # BoardAdvantage, TempoMetrics, ResourceEfficiency
-│   │   ├── statistics.rs   # Wilson CI, chi-square, percentiles
-│   │   ├── export.rs       # CSV/JSON export functionality
-│   │   └── report.rs       # Console report printing
-│   └── bin/
-│       ├── arena.rs        # CLI for running bot matches
-│       ├── tune.rs         # CLI for weight optimization
-│       ├── validate.rs     # CLI for balance validation
-│       ├── diagnose.rs     # CLI for P1/P2 asymmetry analysis
-│       └── profile_mcts.rs # MCTS performance profiling
+├── Cargo.toml                      # Workspace root (shared dependencies)
+├── crates/
+│   ├── cardgame/                   # Core game engine library
+│   │   ├── Cargo.toml
+│   │   ├── src/
+│   │   │   ├── lib.rs              # Module exports
+│   │   │   ├── version.rs          # Version info for reproducibility
+│   │   │   ├── tensor.rs           # State to tensor conversion (326 floats)
+│   │   │   ├── decks.rs            # DeckDefinition, DeckRegistry, Faction enum
+│   │   │   ├── core/               # Core game engine
+│   │   │   │   ├── mod.rs
+│   │   │   │   ├── types.rs        # CardId, PlayerId, Slot, Rarity, Tag
+│   │   │   │   ├── keywords.rs     # 14 keywords as u16 bitfield
+│   │   │   │   ├── config.rs       # GameConfig with all parameters
+│   │   │   │   ├── effects.rs      # Trigger, Effect, EffectTarget, TargetingRule
+│   │   │   │   ├── state.rs        # GameState, PlayerState, Creature, Support
+│   │   │   │   ├── cards.rs        # CardDefinition, CardDatabase, YAML loading
+│   │   │   │   ├── actions.rs      # Action enum with index mapping (256 actions)
+│   │   │   │   ├── legal.rs        # Legal action generation
+│   │   │   │   ├── combat.rs       # Combat resolution with keyword interactions
+│   │   │   │   └── tracing.rs      # Debug tracing infrastructure
+│   │   │   ├── engine/             # Game engine implementation
+│   │   │   │   ├── mod.rs
+│   │   │   │   ├── game_engine.rs  # Core GameEngine, game loop, turn structure
+│   │   │   │   ├── effect_queue.rs # Effect queue processing system
+│   │   │   │   ├── effect_convert.rs
+│   │   │   │   ├── passive.rs      # Passive effect resolution
+│   │   │   │   └── environment.rs  # GameEnvironment trait for AI
+│   │   │   ├── bots/
+│   │   │   │   ├── mod.rs          # Bot trait definition
+│   │   │   │   ├── random.rs       # RandomBot - uniform random selection
+│   │   │   │   ├── greedy.rs       # GreedyBot - heuristic evaluation
+│   │   │   │   ├── mcts.rs         # MctsBot - Monte Carlo Tree Search
+│   │   │   │   ├── introspection.rs # AI decision introspection for Glassbox
+│   │   │   │   ├── weights.rs      # BotWeights, GreedyWeights (24 params)
+│   │   │   │   └── factory.rs      # BotType enum, create_bot(), resolve_weights()
+│   │   │   ├── execution/          # Shared parallel execution utilities
+│   │   │   │   ├── mod.rs          # Module exports
+│   │   │   │   ├── seeds.rs        # GameSeeds for deterministic parallel execution
+│   │   │   │   ├── progress.rs     # ProgressReporter with background thread
+│   │   │   │   └── parallel.rs     # BatchConfig, run_batch_parallel()
+│   │   │   ├── arena/
+│   │   │   │   ├── mod.rs          # Arena module exports
+│   │   │   │   ├── runner.rs       # GameRunner for executing matches
+│   │   │   │   ├── logger.rs       # ActionLogger for debug tracing
+│   │   │   │   └── stats.rs        # MatchStats for win rate tracking
+│   │   │   ├── tuning/
+│   │   │   │   ├── mod.rs          # Tuning module exports
+│   │   │   │   ├── cmaes.rs        # CMA-ES optimizer implementation
+│   │   │   │   └── evaluator.rs    # Fitness evaluation via game matches
+│   │   │   ├── diagnostics/        # P1/P2 asymmetry analysis tools
+│   │   │   │   ├── mod.rs          # Module exports
+│   │   │   │   ├── collector.rs    # DiagnosticRunner, GameDiagnostics
+│   │   │   │   ├── analyzer.rs     # AggregatedStats, BalanceAssessment
+│   │   │   │   ├── metrics.rs      # BoardAdvantage, TempoMetrics
+│   │   │   │   ├── statistics.rs   # Wilson CI, chi-square, percentiles
+│   │   │   │   ├── export.rs       # CSV/JSON export functionality
+│   │   │   │   └── report.rs       # Console report printing
+│   │   │   └── bin/
+│   │   │       ├── arena.rs        # CLI for running bot matches
+│   │   │       ├── tune.rs         # CLI for weight optimization
+│   │   │       ├── validate.rs     # CLI for balance validation
+│   │   │       ├── diagnose.rs     # CLI for P1/P2 asymmetry analysis
+│   │   │       ├── profile_mcts.rs # MCTS performance profiling
+│   │   │       └── generate_dataset.rs # Generate training datasets
+│   │   ├── tests/
+│   │   │   ├── common/             # Shared test utilities
+│   │   │   ├── unit/               # Unit tests (separate from src)
+│   │   │   │   ├── types_tests.rs
+│   │   │   │   ├── keywords_tests.rs
+│   │   │   │   ├── combat_tests.rs
+│   │   │   │   └── ... (23 files total)
+│   │   │   ├── unit.rs             # Unit test entry point
+│   │   │   ├── engine_tests.rs
+│   │   │   ├── stress_mcts_tests.rs
+│   │   │   └── ... (12 integration test files)
+│   │   └── benches/
+│   │       └── game_benchmarks.rs  # Criterion benchmarks
+│   │
+│   └── essence-wars-3d/            # Bevy 3D client
+│       ├── Cargo.toml
+│       ├── README.md
+│       └── src/
+│           ├── main.rs             # Bevy app entry point
+│           ├── game/
+│           │   ├── mod.rs          # Game module exports
+│           │   ├── bridge.rs       # GameBridge resource (wraps GameClient)
+│           │   └── state.rs        # AppState enum (Menu, Playing, GameOver)
+│           ├── rendering/
+│           │   ├── mod.rs
+│           │   ├── board.rs        # 3D board with creature slots
+│           │   ├── creatures.rs    # Creature3D component and spawning
+│           │   ├── camera.rs       # Camera controller
+│           │   └── lighting.rs     # Scene lighting
+│           ├── ui/
+│           │   ├── mod.rs
+│           │   ├── hud.rs          # Game HUD (life, essence, turn)
+│           │   ├── hand.rs         # Player hand display
+│           │   └── menu.rs         # Main menu and game over screens
+│           └── glassbox/           # AI visualization (Glassbox mode)
+│               ├── mod.rs          # GlassboxState resource and plugin
+│               ├── mcts_panel.rs   # MCTS tree visualization
+│               ├── action_probs.rs # Action probability bars
+│               └── value_gauge.rs  # Value estimate gauge
+│
 ├── data/
-│   ├── cards/core_set/         # 140 cards (4 faction files)
-│   │   ├── argentum.yaml       # IDs 1000-1034 (35 cards)
-│   │   ├── symbiote.yaml       # IDs 2000-2044 (45 cards)
-│   │   ├── obsidion.yaml       # IDs 3000-3039 (40 cards)
-│   │   └── neutral.yaml        # IDs 4000-4019 (20 cards)
-│   ├── decks/                  # 6 predefined decks (organized by faction)
-│   │   ├── argentum/
-│   │   │   ├── control.toml    # Argentum Control
-│   │   │   └── midrange.toml   # Argentum Midrange
-│   │   ├── symbiote/
-│   │   │   ├── aggro.toml      # Symbiote Aggro
-│   │   │   └── tempo.toml      # Symbiote Tempo
-│   │   └── obsidion/
-│   │       ├── burst.toml      # Obsidion Burst
-│   │       └── control.toml    # Obsidion Control
+│   ├── cards/core_set/             # 300 cards (4 faction files, 75 each)
+│   │   ├── argentum.yaml           # IDs 1000-1074 (75 cards)
+│   │   ├── symbiote.yaml           # IDs 2000-2074 (75 cards)
+│   │   ├── obsidion.yaml           # IDs 3000-3074 (75 cards)
+│   │   └── neutral.yaml            # IDs 4000-4074 (75 cards)
+│   ├── decks/                      # 12 commander decks (organized by faction)
+│   │   ├── argentum/               # 4 decks
+│   │   ├── symbiote/               # 4 decks
+│   │   └── obsidion/               # 4 decks
 │   └── weights/
-│       ├── generalist.toml           # Cross-faction weights
+│       ├── generalist.toml         # Cross-faction weights
 │       └── specialists/
 │           ├── argentum.toml
 │           ├── symbiote.toml
 │           └── obsidion.toml
-├── experiments/                # Experiment outputs (GITIGNORED)
+├── experiments/                    # Experiment outputs (GITIGNORED)
 │   └── mcts/
 │       └── YYYY-MM-DD_HHMM_tag/
-│           ├── train.log       # Full training log
-│           ├── weights.toml    # Best weights found
-│           ├── version.toml    # Engine version for reproducibility
-│           ├── summary.txt     # Quick stats
-│           └── plots/          # Generated visualizations
+│           ├── train.log           # Full training log
+│           ├── weights.toml        # Best weights found
+│           ├── version.toml        # Engine version for reproducibility
+│           ├── summary.txt         # Quick stats
+│           └── plots/              # Generated visualizations
 ├── scripts/
-│   ├── run-tests.sh            # Test tier runner
-│   ├── run-clippy.sh           # Linter (lib + binaries)
-│   ├── run-benchmarks.sh       # Full benchmark suite
-│   ├── run-all-tuning.sh       # Train all specialists + generalist
-│   ├── analyze-tuning.sh       # Python analysis wrapper
-│   ├── balance-test.sh         # Faction balance verification
-│   └── perf-stats.sh           # Performance statistics
+│   ├── run-tests.sh                # Test tier runner
+│   ├── run-clippy.sh               # Linter (lib + binaries)
+│   ├── run-benchmarks.sh           # Full benchmark suite
+│   ├── run-all-tuning.sh           # Train all specialists + generalist
+│   ├── analyze-tuning.sh           # Python analysis wrapper
+│   ├── balance-test.sh             # Faction balance verification
+│   └── perf-stats.sh               # Performance statistics
 ├── python/
 │   ├── cardgame/
-│   │   ├── infra/              # Experiment management
-│   │   └── analysis/           # Visualization & stats tools
+│   │   ├── infra/                  # Experiment management
+│   │   └── analysis/               # Visualization & stats tools
 │   │       ├── parse_log.py
 │   │       └── visualize.py
 │   └── scripts/
-│       └── analyze_tuning.py   # Main analysis CLI
-├── tests/
-│   ├── common/                 # Shared test utilities
-│   ├── unit/                   # Unit tests (separate from src)
-│   │   ├── types_tests.rs
-│   │   ├── keywords_tests.rs
-│   │   ├── combat_tests.rs
-│   │   └── ... (23 files total)
-│   ├── unit.rs                 # Unit test entry point
-│   ├── engine_tests.rs
-│   ├── stress_mcts_tests.rs
-│   ├── coverage_tests.rs
-│   └── ... (12 integration test files)
-├── benches/
-│   └── game_benchmarks.rs      # Criterion benchmarks
+│       └── analyze_tuning.py       # Main analysis CLI
 ├── docs/
-│   ├── essence-wars-design.md
-│   ├── design-engine.md
-│   └── modal-cloud-setup.md    # Cloud training guide
+│   ├── essence-wars-design.md      # Game design document
+│   ├── design-engine.md            # Engine architecture
+│   ├── jrpg-architecture.md        # Bevy 3D client architecture
+│   ├── bevy-glassbox-implementation.md  # Glassbox AI visualization
+│   ├── workspace-migration.md      # Cargo workspace setup
+│   ├── development-setup.md        # Developer getting started
+│   ├── cards-new-horizons.md       # 300-card expansion details
+│   ├── tuning-pipeline.md          # Weight optimization guide
+│   ├── modal-cloud-setup.md        # Cloud training guide
+│   ├── game-modes.md               # Game mode documentation
+│   ├── data-strategy.md            # Data organization
+│   ├── performance.md              # Performance optimization
+│   └── lore.md                     # Faction lore and worldbuilding
 └── .github/workflows/
-    ├── ci.yml                  # Every push: tests
-    ├── nightly.yml             # Daily: stress tests
-    └── weekly.yml              # Sunday: exhaustive tests
+    ├── ci.yml                      # Every push: tests
+    ├── nightly.yml                 # Daily: stress tests
+    └── weekly.yml                  # Sunday: exhaustive tests
 ```
 
 ## Test Organization
 
 **IMPORTANT**: This project keeps unit tests **separate from source code**, not inline with `#[cfg(test)] mod tests` blocks. This reduces token usage when AI assistants read source files.
 
-- **Unit tests**: `tests/unit/<module>_tests.rs`
-- **Integration tests**: `tests/*.rs`
-- **Shared utilities**: `tests/common/mod.rs`
+- **Unit tests**: `crates/cardgame/tests/unit/<module>_tests.rs`
+- **Integration tests**: `crates/cardgame/tests/*.rs`
+- **Shared utilities**: `crates/cardgame/tests/common/mod.rs`
 
-When adding new tests, create them in `tests/unit/` and add the module to `tests/unit.rs`.
+When adding new tests, create them in `crates/cardgame/tests/unit/` and add the module to `crates/cardgame/tests/unit.rs`.
 
 ## Test Tiers & CI/CD
 
@@ -286,6 +335,38 @@ pub trait Bot: Send {
 | Keywords | guard, lethal, lifesteal, rush, ranged, piercing, shield, quick |
 | Terminal | win_bonus, lose_penalty |
 
+### Bot Introspection (AI Transparency)
+
+The `cardgame::bots` module provides introspection types for AI decision transparency, used by the Bevy 3D client's Glassbox visualization.
+
+**Location**: `crates/cardgame/src/bots/introspection.rs`
+
+| Type | Purpose |
+|------|---------|
+| `MctsNodeStats` | Per-action statistics (action, visits, win_rate) |
+| `MctsTreeSnapshot` | Complete MCTS state at decision time |
+| `BotDecision` | Full decision record with optional MCTS snapshot |
+| `IntrospectionConfig` | Configuration for what data to collect |
+
+**Quick Usage:**
+
+```rust
+use cardgame::bots::{MctsBot, IntrospectionConfig};
+
+let bot = MctsBot::new(1000).with_introspection(IntrospectionConfig::full());
+// After bot makes decision:
+if let Some(decision) = bot.last_decision() {
+    if let Some(snapshot) = &decision.mcts_snapshot {
+        println!("Simulations: {}", snapshot.total_simulations);
+        println!("Selected: {:?}", snapshot.selected_action);
+    }
+}
+```
+
+**Glassbox Integration**: The Bevy 3D client accesses these types via `GameBridge.last_decision` to render real-time AI visualization panels (MCTS tree, action probabilities, value gauge).
+
+**Full Documentation**: See `docs/jrpg-architecture.md` Section 3.2 and Section 4 for comprehensive Glassbox Mode details.
+
 ## Weight Tuning Pipeline
 
 ### CMA-ES Optimizer
@@ -317,8 +398,8 @@ cargo run --release --bin tune -- \
 # Specialist for specific matchup
 cargo run --release --bin tune -- \
   --mode specialist \
-  --deck argentum_control \
-  --opponent symbiote_aggro \
+  --deck architect_fortify \
+  --opponent broodmother_swarm \
   --tag argentum_vs_symbiote \
   --generations 50
 
@@ -400,16 +481,31 @@ modal run modal_tune.py --no-deploy
 
 ## Deck System
 
-### Available Decks (6)
+### Available Decks (12 Commander Decks)
 
-| Deck ID | Name | Archetype | Faction |
-|---------|------|-----------|---------|
-| `argentum_control` | Argentum Control | Control | Argentum |
-| `argentum_midrange` | Argentum Midrange | Midrange | Argentum |
-| `symbiote_aggro` | Symbiote Aggro | Aggro | Symbiote |
-| `symbiote_tempo` | Symbiote Tempo | Tempo | Symbiote |
-| `obsidion_burst` | Obsidion Burst | Combo | Obsidion |
-| `obsidion_control` | Obsidion Control | Control | Obsidion |
+**Argentum Combine (4 decks):**
+| Deck ID | Name | Commander | Archetype |
+|---------|------|-----------|-----------|
+| `architect_fortify` | Architect's Bastion | Architect Prime | Guard/Fortify |
+| `artificer_tokens` | Artificer's Workshop | Master Artificer | Token swarm |
+| `colossus_wall` | Colossus Defense | Iron Colossus | Wall/Defense |
+| `vex_piercing` | Vex's Assault | Vex, the Piercer | Piercing aggro |
+
+**Symbiote Circles (4 decks):**
+| Deck ID | Name | Commander | Archetype |
+|---------|------|-----------|-----------|
+| `alpha_frenzy` | Alpha's Hunt | Alpha Predator | Frenzy aggro |
+| `broodmother_swarm` | Broodmother's Hive | Broodmother | Swarm/Rush |
+| `grove_regenerate` | Grove's Embrace | Grove Warden | Regenerate/Sustain |
+| `plague_volatile` | Plague Bearers | Plague Carrier | Volatile/Damage |
+
+**Obsidion Syndicate (4 decks):**
+| Deck ID | Name | Commander | Archetype |
+|---------|------|-----------|-----------|
+| `archon_burst` | Archon's Gambit | Shadow Archon | Burst damage |
+| `kael_assassin` | Kael's Blades | Kael, Shadow Blade | Lethal/Assassin |
+| `shadow_weaver` | Shadow Weaver | Shadow Weaver | Control/Stealth |
+| `sovereign_lifesteal` | Sovereign's Reign | Sovereign | Lifesteal/Sustain |
 
 ### Deck Organization
 
@@ -417,26 +513,33 @@ Decks are organized by faction in subdirectories:
 ```
 data/decks/
 ├── argentum/
-│   ├── control.toml
-│   └── midrange.toml
+│   ├── architect_fortify.toml
+│   ├── artificer_tokens.toml
+│   ├── colossus_wall.toml
+│   └── vex_piercing.toml
 ├── symbiote/
-│   ├── aggro.toml
-│   └── tempo.toml
+│   ├── alpha_frenzy.toml
+│   ├── broodmother_swarm.toml
+│   ├── grove_regenerate.toml
+│   └── plague_volatile.toml
 └── obsidion/
-    ├── burst.toml
-    └── control.toml
+    ├── archon_burst.toml
+    ├── kael_assassin.toml
+    ├── shadow_weaver.toml
+    └── sovereign_lifesteal.toml
 ```
 
 ### TOML Format
 
 ```toml
-id = "argentum_control"
-name = "Argentum Control"
-description = "Defensive deck featuring Argentum Combine constructs."
-tags = ["control", "defensive", "faction", "argentum"]
+id = "architect_fortify"
+name = "Architect's Bastion"
+description = "Defensive deck featuring Architect Prime and fortify synergies."
+commander = 1060  # Architect Prime
+tags = ["control", "defensive", "fortify", "argentum"]
 
 cards = [
-    1000, 1000,  # Brass Sentinel x2
+    1060, 1001, 1002, # Commander + core cards
     # ... 30 card entries total (21 faction + 9 neutral)
 ]
 ```
@@ -449,14 +552,14 @@ cargo run --release --bin arena -- --list-decks
 
 # Run match with specific decks
 cargo run --release --bin arena -- \
-  --deck1 argentum_control --deck2 symbiote_aggro \
+  --deck1 architect_fortify --deck2 broodmother_swarm \
   --bot1 mcts --bot2 greedy \
   --games 100 --progress
 
 # Agent specialist matches
 cargo run --release --bin arena -- \
-  --bot1 agent-argentum --deck1 argentum_control \
-  --bot2 agent-symbiote --deck2 symbiote_aggro \
+  --bot1 agent-argentum --deck1 colossus_wall \
+  --bot2 agent-symbiote --deck2 alpha_frenzy \
   --games 100 --progress
 
 # Debug mode (sequential, with logging)
@@ -483,7 +586,7 @@ cargo run --release --bin diagnose -- 500 --export csv --output ./diagnostics
 cargo run --release --bin diagnose -- 500 --export all --include-turns --output ./full_export
 
 # Use specific deck and seed for reproducibility
-cargo run --release --bin diagnose -- 500 --deck argentum_control --seed 12345
+cargo run --release --bin diagnose -- 500 --deck architect_fortify --seed 12345
 ```
 
 **Output includes:**
@@ -525,7 +628,7 @@ STANDARD DECK: 30 cards
 ## Performance
 
 ```bash
-cargo bench                    # Criterion benchmarks
+cargo bench -p cardgame        # Criterion benchmarks for core engine
 ./scripts/run-benchmarks.sh    # Full suite with report
 ```
 
@@ -577,20 +680,20 @@ cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --games 100 --mode 
 ## Card System
 
 ### Card Counts
-- **Total**: 140 cards (Core Set)
-- **Argentum Combine**: 35 cards (IDs 1000-1034)
-- **Symbiote Circles**: 45 cards (IDs 2000-2044)
-- **Obsidion Syndicate**: 40 cards (IDs 3000-3039)
-- **Free-Walkers (Neutral)**: 20 cards (IDs 4000-4019)
+- **Total**: 300 cards (New Horizons Edition)
+- **Argentum Combine**: 75 cards (IDs 1000-1074)
+- **Symbiote Circles**: 75 cards (IDs 2000-2074)
+- **Obsidion Syndicate**: 75 cards (IDs 3000-3074)
+- **Free-Walkers (Neutral)**: 75 cards (IDs 4000-4074)
 
 ### Card ID Ranges
 
 | Faction | ID Range | Current | Reserved For |
 |---------|----------|---------|--------------|
-| Argentum | 1000-1999 | 1000-1034 | Future expansion |
-| Symbiote | 2000-2999 | 2000-2044 | Future expansion |
-| Obsidion | 3000-3999 | 3000-3039 | Future expansion |
-| Neutral | 4000-4999 | 4000-4019 | Future expansion |
+| Argentum | 1000-1999 | 1000-1074 | Future expansion |
+| Symbiote | 2000-2999 | 2000-2074 | Future expansion |
+| Obsidion | 3000-3999 | 3000-3074 | Future expansion |
+| Neutral | 4000-4999 | 4000-4074 | Future expansion |
 
 ### YAML Schema
 
@@ -737,11 +840,11 @@ cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --games 100 --mode 
 - Core game engine with 14 keywords
 - Essence/mana system (grows +1/turn, caps at 10)
 - AI interface (tensor, action mask, rewards)
-- 140-card Core Set (Phase 4 complete)
+- **300-card New Horizons Edition** (75 cards × 4 factions)
 - Faction system (3 factions + neutrals)
 - Bot system (RandomBot, GreedyBot, MctsBot)
 - Arena CLI with parallel execution and progress indicator
-- Deck system with 6+ TOML definitions (organized by faction)
+- **12 commander decks** (4 per faction with unique commanders)
 - Weight tuning pipeline with CMA-ES optimizer
 - Analysis pipeline with visualizations
 - P1/P2 asymmetry diagnostics with statistical analysis
@@ -750,18 +853,198 @@ cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --games 100 --mode 
 - Phase 4 engine: Creature filters, conditional triggers, bounce effect
 - Criterion benchmarks
 - CI/CD with GitHub Actions (nightly + weekly)
-- ~576 tests passing
+- Cargo workspace migration (cardgame + essence-wars-3d crates)
+- Replay system for game recording/playback
+- **Bevy 3D client with Glassbox AI visualization:**
+  - 3D board rendering with creature slots
+  - egui-based UI (HUD, hand display, menus)
+  - MCTS tree panel showing AI decision process
+  - Action probability bars and value gauge
+  - Press 'G' to toggle glassbox panels
+- **Python/ML infrastructure** (published to PyPI as `essence-wars`):
+  - PyO3 bindings with PyGame and PyParallelGames classes
+  - Gymnasium v26+ environment with action masking
+  - PettingZoo multi-agent environment
+  - PPO and AlphaZero neural network trainers
+  - Dataset generation and PyTorch DataLoader integration
+  - Benchmark framework with Elo ratings
+  - ~268k steps/sec vectorized throughput
+- ~629 tests passing (Rust) + comprehensive Python test suite
 
-**Current Focus (see PROJECT-300.md):**
-- Card expansion to 300 cards (Project 300 - Phase 5 next)
-- Modal cloud training pipeline
-- Documentation updates
+**Current Focus:**
+- Modal cloud training pipeline optimization
+- Bevy 3D client enhancements (creature animations, card rendering)
+- ML trainer integration testing (end-to-end validation)
+
+**ML/AI Infrastructure (Complete):**
+- **Python bindings (PyO3)**: `PyGame` and `PyParallelGames` classes, published to PyPI as `essence-wars`
+- **Gymnasium environment**: v26+ API compliant with action masking, vectorized environments (~268k steps/sec)
+- **PettingZoo multi-agent**: Two-player turn-based environment for MARL algorithms
+- **PPO trainer**: Policy-value network with action masking, self-play support
+- **AlphaZero trainer**: Residual network with MCTS integration
+- **Dataset infrastructure**: JSONL format, gzip compression, PyTorch DataLoader ready
+- **Benchmark framework**: Elo ratings, cross-faction evaluation, baseline comparisons
+- **HuggingFace Hub**: Model/dataset upload and download utilities
 
 **Future Work:**
-- Python bindings (PyO3) for ML training
-- Gym environment bridge
-- PPO and AlphaZero agents
-- Web-based game viewer
+- Network multiplayer for 3D client
+- Story mode and overworld (Phase 5B)
+- ML training cookbook/examples documentation
+
+## Bevy 3D Client
+
+The `essence-wars-3d` crate provides a 3D visualization client built with Bevy 0.15.
+
+### Running the Client
+
+```bash
+cargo run --release -p essence-wars-3d
+```
+
+**Requirements:**
+- Linux/WSL: X11 or Wayland display server (WSLg works)
+- Graphics drivers with OpenGL/Vulkan support
+
+### Glassbox AI Visualization
+
+Press **'G'** to toggle Glassbox mode, which shows AI decision-making in real-time:
+
+| Panel | Location | Shows |
+|-------|----------|-------|
+| **MCTS Tree** | Right sidebar | Top actions by visit count, win rates |
+| **Action Probs** | Bottom-left | Win rate bars for top 5 actions |
+| **Value Gauge** | Top-left | Position evaluation (-1.0 to +1.0) |
+
+### Architecture
+
+The client uses the `GameBridge` resource to wrap the cardgame engine:
+
+```rust
+// GameBridge provides access to game state and AI decisions
+pub struct GameBridge {
+    pub client: Option<GameClient>,
+    pub card_db: Arc<CardDatabase>,
+    pub deck_registry: Arc<DeckRegistry>,
+    pub last_decision: Option<BotDecision>,  // For glassbox visualization
+}
+```
+
+See `crates/essence-wars-3d/README.md` for full documentation.
+
+## Python/ML Infrastructure
+
+The project includes a complete Python ML training infrastructure, published to PyPI as `essence-wars`.
+
+### Installation
+
+```bash
+# From PyPI (recommended)
+pip install essence-wars
+
+# With training dependencies
+pip install essence-wars[train]
+
+# Development install
+maturin develop
+```
+
+### Core Python Classes
+
+**PyGame** - Single game environment:
+```python
+from essence_wars import PyGame
+
+game = PyGame(deck1="architect_fortify", deck2="broodmother_swarm")
+game.reset(seed=42)
+
+obs = game.observe()           # (326,) state tensor
+mask = game.action_mask()      # (256,) legal action mask
+reward, done = game.step(action)
+```
+
+**PyParallelGames** - Vectorized environments (~268k steps/sec):
+```python
+from essence_wars import PyParallelGames
+
+envs = PyParallelGames(num_envs=64, deck1="architect_fortify", deck2="broodmother_swarm")
+envs.reset(seeds=list(range(64)))
+
+obs_batch = envs.observe_batch()      # (64, 326)
+mask_batch = envs.action_mask_batch() # (64, 256)
+rewards, dones = envs.step_batch(actions)
+```
+
+### Gymnasium Environment
+
+```python
+from essence_wars import EssenceWarsEnv
+
+env = EssenceWarsEnv(opponent="greedy")
+obs, info = env.reset(seed=42)
+obs, reward, terminated, truncated, info = env.step(action)
+
+# Action masking for SB3
+mask = env.action_masks()  # or info["action_mask"]
+```
+
+### PettingZoo Multi-Agent
+
+```python
+from essence_wars import parallel_env
+
+env = parallel_env()
+observations, infos = env.reset(seed=42)
+# Two-player turn-based: only active player has legal actions
+```
+
+### Neural Network Agents
+
+```python
+from essence_wars.agents import EssenceWarsNetwork, AlphaZeroNetwork
+
+# PPO policy-value network
+ppo_net = EssenceWarsNetwork(hidden_dim=256)
+logits, value = ppo_net(obs_tensor, mask_tensor)
+
+# AlphaZero with residual blocks
+az_net = AlphaZeroNetwork(hidden_dim=256, num_residual=4)
+policy, value = az_net(obs_tensor)
+```
+
+### Dataset Generation
+
+```bash
+# Generate MCTS self-play data
+cargo run --release --bin generate_dataset -- \
+  --games 1000 --sims 100 --output data.jsonl.gz
+```
+
+```python
+from essence_wars.data import MCTSDataset
+from torch.utils.data import DataLoader
+
+dataset = MCTSDataset("data.jsonl.gz")
+loader = DataLoader(dataset, batch_size=256, shuffle=True)
+```
+
+### Package Structure
+```
+python/essence_wars/
+├── __init__.py          # Main exports (PyGame, PyParallelGames)
+├── _core.so             # Compiled Rust bindings
+├── env.py               # Gymnasium environment
+├── parallel_env.py      # PettingZoo multi-agent
+├── agents/
+│   ├── networks.py      # Neural network architectures
+│   ├── ppo.py           # PPO trainer
+│   └── alphazero.py     # AlphaZero trainer
+├── data/
+│   └── dataset.py       # MCTSDataset for PyTorch
+├── benchmark/
+│   └── framework.py     # Evaluation benchmarks
+├── hub.py               # HuggingFace Hub integration
+└── analysis/            # Visualization dashboards
+```
 
 ## Python Tooling
 
@@ -771,16 +1054,6 @@ uv sync --all-groups
 uv run pytest python/tests -v
 uv run ruff check python/
 uv run mypy python/
-```
-
-### Package Structure
-```
-python/
-├── cardgame/
-│   ├── infra/       # Experiment management
-│   └── analysis/    # Visualization tools
-└── scripts/
-    └── analyze_tuning.py
 ```
 
 ## Data & Experiment Strategy
@@ -809,7 +1082,7 @@ Example: `2026-01-14_0755_generalist-v0.4`
 
 ## Versioning
 
-Version is in `Cargo.toml` line 3. Uses Semantic Versioning: `MAJOR.MINOR.PATCH`
+Version is in the **root `Cargo.toml`** under `[workspace.package]`. Both crates use `version.workspace = true` to share the same version. Uses Semantic Versioning: `MAJOR.MINOR.PATCH`
 
 | Change Type | Version Bump | Examples |
 |-------------|--------------|----------|
@@ -821,10 +1094,12 @@ Version is in `Cargo.toml` line 3. Uses Semantic Versioning: `MAJOR.MINOR.PATCH`
 
 ### Version Update Checklist
 
-1. Update `Cargo.toml`: `version = "X.Y.Z"`
-2. Update `src/version.rs`: Update test assertion
+1. Update root `Cargo.toml` `[workspace.package]`: `version = "X.Y.Z"`
+2. Update `crates/cardgame/src/version.rs`: Update test assertion
 3. Update `CHANGELOG.md`: Add entry
 4. Run tests: `cargo nextest run --status-level=fail`
+
+Note: Both `cardgame` and `essence-wars-3d` crates share the workspace version automatically.
 
 ### Reproducibility
 
@@ -834,5 +1109,5 @@ Experiments save `version.toml` with engine version + git hash:
 use cardgame::version::{self, VersionInfo};
 
 println!("Engine: {}", version::version_string());
-// Output: "cardgame v0.4.0 (ac0f5dd)"
+// Output: "cardgame v0.6.0 (91887b3)"
 ```

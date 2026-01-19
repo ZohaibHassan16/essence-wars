@@ -49,13 +49,13 @@
 - [x] Create PyO3 Python bindings
 - [x] Implement Gymnasium environment interface
 - [x] Publish `essence-wars` package to PyPI (`pip install essence-wars`)
-- [ ] Train first proof-of-concept PPO agent
+- [ ] Train first proof-of-concept Generalist PPO agent 
 - [x] Validate Gym interface with standard RL libraries (Stable-Baselines3, CleanRL)
 - [x] Write researcher quickstart guide
-- [ ] Design JRPG integration architecture (`docs/jrpg-architecture.md`)
-- [ ] Define clean API layer for external game clients
-- [ ] Build minimal Bevy 3D integration prototype (validates JRPG tech stack)
-- [ ] Design analytics API for Glassbox Mode (decision trees, replay system)
+- [x] Design JRPG integration architecture (`docs/jrpg-architecture.md`)
+- [x] Define clean API layer for external game clients
+- [x] Build minimal Bevy 3D integration prototype (validates JRPG tech stack)
+- [x] Design analytics API for Glassbox Mode (decision trees, replay system)
 
 ---
 

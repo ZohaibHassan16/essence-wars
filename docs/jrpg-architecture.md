@@ -215,82 +215,78 @@ loop {
 
 ---
 
-### 3.2 Analytics API (Glassbox Mode)
+### 3.2 Bot Introspection System (Glassbox Mode)
 
 **Purpose**: Expose AI decision-making internals for visualization
 
-**Location**: `src/analytics/mod.rs` (new module)
+**Location**: `src/bots/introspection.rs` (implemented)
 
 **Core Types:**
 
 ```rust
-/// Analytics collector for AI decision-making
-pub struct AnalyticsCollector {
-    mcts_snapshots: Vec<MctsSnapshot>,
-    policy_outputs: Vec<PolicyOutput>,
-    value_estimates: Vec<ValueEstimate>,
-}
+use cardgame::bots::{MctsNodeStats, MctsTreeSnapshot, BotDecision, IntrospectionConfig};
 
-/// Snapshot of MCTS tree at a decision point
-pub struct MctsSnapshot {
-    pub turn: u16,
-    pub root_visits: u32,
-    pub children: Vec<MctsChildInfo>,
-}
-
-pub struct MctsChildInfo {
+/// Per-action statistics from MCTS tree search
+pub struct MctsNodeStats {
     pub action: Action,
     pub visits: u32,
-    pub wins: i32,
-    pub ucb1_score: f32,
+    pub win_rate: f32,
 }
 
-/// Neural network policy output
-pub struct PolicyOutput {
-    pub turn: u16,
-    pub action_probs: Vec<(Action, f32)>,  // Top-N actions with probabilities
+/// Complete MCTS state at decision time
+pub struct MctsTreeSnapshot {
+    pub total_simulations: u32,
+    pub children: Vec<MctsNodeStats>,
+    pub selected_action: Action,
+    pub root_value: f32,
 }
 
-/// Value estimate for current state
-pub struct ValueEstimate {
-    pub turn: u16,
-    pub player: PlayerId,
-    pub value: f32,  // -1.0 to +1.0 (expected outcome)
+/// Complete decision record from any bot
+pub struct BotDecision {
+    pub mcts_snapshot: Option<MctsTreeSnapshot>,
+    // Future: policy network outputs, value estimates, etc.
 }
 
-impl AnalyticsCollector {
-    /// Attach to a bot to track decisions
-    pub fn attach(&mut self, bot: &mut dyn Bot);
-    
-    /// Export collected data as JSON
-    pub fn export_json(&self) -> String;
-    
-    /// Get visualization data for specific turn
-    pub fn get_turn_analytics(&self, turn: u16) -> TurnAnalytics;
+/// Configuration for what introspection data to collect
+pub struct IntrospectionConfig {
+    pub capture_mcts_tree: bool,
+    pub max_children_to_report: usize,
+    // Future: capture_policy_output, capture_value_estimate
 }
 ```
 
-**Integration with Bots:**
+**Integration with MctsBot:**
+
+The `MctsBot` automatically captures tree statistics when introspection is enabled:
 
 ```rust
-// Modify MctsBot to expose tree state
 impl MctsBot {
-    /// Get current tree state for visualization
-    pub fn get_tree_snapshot(&self) -> MctsSnapshot {
-        MctsSnapshot {
-            root_visits: self.root.borrow().visits,
-            children: self.root.borrow().children.iter()
-                .map(|child| {
-                    let c = child.borrow();
-                    MctsChildInfo {
-                        action: c.action.unwrap(),
-                        visits: c.visits,
-                        wins: c.wins,
-                        ucb1_score: c.ucb1(self.root.borrow().visits, self.config.exploration),
-                    }
-                })
-                .collect(),
-        }
+    /// Enable introspection with configuration
+    pub fn with_introspection(mut self, config: IntrospectionConfig) -> Self;
+
+    /// Get the last decision's introspection data
+    pub fn last_decision(&self) -> Option<&BotDecision>;
+}
+```
+
+**Bevy Client Integration (GameBridge):**
+
+The 3D JRPG client accesses MCTS introspection via the `GameBridge` resource:
+
+```rust
+// In crates/essence-wars-3d/src/game/bridge.rs
+
+#[derive(Resource)]
+pub struct GameBridge {
+    // ... game state fields ...
+    last_decision: Option<BotDecision>,
+}
+
+impl GameBridge {
+    /// Get MCTS tree snapshot from the last AI decision
+    pub fn get_mcts_snapshot(&self) -> Option<&MctsTreeSnapshot> {
+        self.last_decision.as_ref()
+            .and_then(|d| d.mcts_snapshot.as_ref())
     }
 }
 ```
@@ -298,31 +294,43 @@ impl MctsBot {
 **Glassbox UI Flow:**
 
 ```rust
-let mut client = GameClient::new(&CARD_DB);
-let mut analytics = AnalyticsCollector::new();
-let mut bot1 = MctsBot::new(...);
-let mut bot2 = GreedyBot::new(...);
+// In Bevy system for AI turn visualization
+fn visualize_ai_decision(
+    bridge: Res<GameBridge>,
+    mut ui_state: ResMut<GlassboxUI>,
+) {
+    if let Some(snapshot) = bridge.get_mcts_snapshot() {
+        // Display total simulations run
+        ui_state.show_simulation_count(snapshot.total_simulations);
 
-analytics.attach(&mut bot1);
-analytics.attach(&mut bot2);
+        // Show root value estimate
+        ui_state.show_value_bar(snapshot.root_value);
 
-client.start_game(...);
+        // Render action distribution chart
+        for node in &snapshot.children {
+            ui_state.add_action_bar(
+                &node.action,
+                node.visits,
+                node.win_rate,
+            );
+        }
 
-// Step-by-step execution with analytics capture
-while !client.is_terminal() {
-    let action = bot1.select_action_with_engine(&client.engine);
-    
-    // Capture MCTS tree before move
-    analytics.record_mcts_snapshot(bot1.get_tree_snapshot());
-    
-    client.apply_action(action)?;
-    
-    // UI can now visualize the decision tree
+        // Highlight selected action
+        ui_state.highlight_selected(&snapshot.selected_action);
+    }
 }
-
-// Export for researchers
-std::fs::write("replay_analytics.json", analytics.export_json())?;
 ```
+
+**Data Available for Visualization:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `total_simulations` | u32 | Number of MCTS rollouts performed |
+| `root_value` | f32 | Estimated win probability at root (-1.0 to 1.0) |
+| `children[].action` | Action | The action this node represents |
+| `children[].visits` | u32 | How many times this action was explored |
+| `children[].win_rate` | f32 | Win rate from simulations through this action |
+| `selected_action` | Action | The action the bot ultimately chose |
 
 ---
 
@@ -379,53 +387,147 @@ impl<'a> ReplayIterator<'a> {
 
 ---
 
-## 4. 3D JRPG Integration (Phase 5B)
+## 4. Glassbox AI Visualization
 
-### 4.1 Bevy Project Structure
+### 4.1 Overview
+
+Glassbox mode provides real-time AI decision transparency in the Bevy 3D client. When enabled, players can observe the AI's thought process as it plays, including MCTS tree exploration, action probabilities, and position evaluation. This feature serves both as an educational tool for players learning the game and as a debugging aid during development.
+
+### 4.2 UI Components
+
+**MCTS Panel (Right Sidebar)**
+
+The MCTS panel displays the top 10 actions by visit count from the most recent AI decision:
+
+- **Progress Bars**: Visual representation of visit count relative to total simulations
+- **Win Rate Display**: Percentage showing expected win probability for each action
+- **Action Labels**: Human-readable description of each action (e.g., "Play Brass Sentinel to slot 2")
+- **Selection Highlight**: The action the AI ultimately chose is highlighted with a distinct border
+
+**Action Probabilities (Bottom-Left)**
+
+Shows the top 5 actions ranked by win rate with color-coded bars:
+
+| Win Rate | Color |
+|----------|-------|
+| > 60%    | Green |
+| 40-60%   | Yellow |
+| < 40%    | Red |
+
+This panel helps players understand which moves the AI considers strongest regardless of exploration frequency.
+
+**Value Gauge (Top-Left)**
+
+A vertical gauge displaying the AI's position evaluation:
+
+- **Range**: -1.0 (P2 winning) to +1.0 (P1 winning)
+- **Center**: 0.0 represents an even position
+- **Color Gradient**: Red (P2 advantage) through Yellow (even) to Green (P1 advantage)
+- **Label**: Shows numeric value (e.g., "+0.35")
+
+### 4.3 Data Flow
 
 ```
-crates/essence-game-3d/
+MctsBot → BotDecision (with MctsTreeSnapshot) → GameBridge.last_decision → Glassbox panels query and render
+```
+
+**Step-by-Step:**
+
+1. `MctsBot::select_action_with_engine()` performs tree search
+2. After search completes, MCTS statistics are captured into `MctsTreeSnapshot`
+3. The snapshot is wrapped in `BotDecision` and stored in the bot
+4. `GameBridge` copies the decision when processing the AI turn
+5. Glassbox UI systems query `GameBridge::get_mcts_snapshot()` each frame
+6. Panels render the data using Bevy UI components
+
+### 4.4 Key Types
+
+From `cardgame::bots::introspection`:
+
+```rust
+/// Statistics for a single action node in the MCTS tree
+pub struct MctsNodeStats {
+    pub action: Action,      // The action this node represents
+    pub visits: u32,         // Number of times this action was explored
+    pub win_rate: f32,       // Win rate from simulations (0.0 to 1.0)
+}
+
+/// Complete snapshot of MCTS tree state at decision time
+pub struct MctsTreeSnapshot {
+    pub total_simulations: u32,      // Total rollouts performed
+    pub children: Vec<MctsNodeStats>, // Stats for each explored action
+    pub selected_action: Action,      // The action chosen by the bot
+    pub root_value: f32,              // Position evaluation (-1.0 to 1.0)
+}
+
+/// Decision record from any bot (extensible for future bot types)
+pub struct BotDecision {
+    pub mcts_snapshot: Option<MctsTreeSnapshot>,
+    // Future: policy network outputs, value estimates, etc.
+}
+```
+
+### 4.5 Toggle Control
+
+**Keyboard Shortcut**: Press **'G'** key to show/hide all Glassbox panels
+
+The toggle affects all three panels simultaneously. When hidden, no performance overhead is incurred from rendering the visualization UI.
+
+**Implementation:**
+
+```rust
+fn toggle_glassbox(
+    keyboard: Res<ButtonInput<KeyCode>>,
+    mut glassbox_state: ResMut<GlassboxState>,
+) {
+    if keyboard.just_pressed(KeyCode::KeyG) {
+        glassbox_state.visible = !glassbox_state.visible;
+    }
+}
+```
+
+---
+
+## 5. 3D JRPG Integration (Phase 5B)
+
+### 5.1 Bevy Project Structure
+
+The 3D client is implemented as a separate crate in the workspace:
+
+```
+crates/essence-wars-3d/
 ├── Cargo.toml             # Depends on: essence-wars (workspace), bevy
-├── src/
-│   ├── main.rs            # Entry point
-│   ├── lib.rs             # Re-export core modules
-│   │
-│   ├── battle/            # Card game integration
-│   │   ├── mod.rs
-│   │   ├── bridge.rs      # GameClient → Bevy ECS bridge
-│   │   ├── ui.rs          # Battle UI (hand, board, stats)
-│   │   ├── animations.rs  # Card play, attack, death animations
-│   │   └── camera.rs      # Battle camera (fixed 2.5D view)
-│   │
-│   ├── overworld/         # 3D exploration
-│   │   ├── mod.rs
-│   │   ├── player.rs      # Character controller
-│   │   ├── camera.rs      # Third-person follow camera
-│   │   ├── npc.rs         # Dialogue system
-│   │   └── encounters.rs  # Trigger battles from 3D world
-│   │
-│   ├── story/             # Campaign system
-│   │   ├── mod.rs
-│   │   ├── campaign.rs    # Story progress tracking
-│   │   ├── dialogue.rs    # Dialogue trees
-│   │   ├── quests.rs      # Quest system
-│   │   └── progression.rs # Unlock cards via story
-│   │
-│   └── shared/            # Cross-cutting concerns
-│       ├── state.rs       # Bevy States (Menu, Overworld, Battle)
-│       ├── assets.rs      # Asset loading
-│       └── ui.rs          # Shared UI components
-│
-└── assets/
-    ├── models/            # GLTF/GLB files
-    ├── textures/
-    ├── audio/
-    └── data/
-        ├── campaigns/     # Story definitions (RON/YAML)
-        └── scenes/        # 3D scene layouts (Blender exports)
+└── src/
+    ├── main.rs            # App entry point, plugin registration
+    │
+    ├── game/              # Core game integration
+    │   ├── mod.rs         # Game module exports
+    │   ├── bridge.rs      # GameBridge resource wrapping GameClient
+    │   └── state.rs       # AppState enum (Menu, Playing, GameOver)
+    │
+    ├── rendering/         # 3D visualization
+    │   ├── mod.rs         # Rendering module exports
+    │   ├── board.rs       # 3D board with creature slots
+    │   ├── creatures.rs   # Creature3D component and spawning
+    │   ├── camera.rs      # Camera controller
+    │   └── lighting.rs    # Scene lighting setup
+    │
+    ├── ui/                # User interface
+    │   ├── mod.rs         # UI module exports
+    │   ├── hud.rs         # Game HUD (life, essence, turn)
+    │   ├── hand.rs        # Player hand display
+    │   └── menu.rs        # Main menu and game over screens
+    │
+    └── glassbox/          # AI visualization (Glassbox Mode)
+        ├── mod.rs         # Glassbox state and plugin
+        ├── mcts_panel.rs  # MCTS tree visualization
+        ├── action_probs.rs # Action probability bars
+        └── value_gauge.rs # Value estimate gauge
 ```
 
-### 4.2 Battle System Integration
+**Note**: The `overworld/` and `story/` modules for 3D exploration and campaign systems are planned for Phase 5B but not yet implemented.
+
+### 5.2 Battle System Integration
 
 **Key Challenge**: Bridge stateless card engine with stateful Bevy ECS
 
@@ -536,7 +638,10 @@ fn process_events(
 }
 ```
 
-### 4.3 Story-Battle Integration
+### 5.3 Story-Battle Integration (Planned for Phase 5B)
+
+> **Status**: This section describes planned functionality for Phase 5B.
+> **Current Implementation**: The `essence-wars-3d` client focuses on the battle system and Glassbox AI visualization. Story mode, overworld exploration, dialogue system, and quest progression features are planned for Phase 5B.
 
 **Data Flow:**
 
@@ -544,7 +649,7 @@ fn process_events(
 Story Event → Triggers Battle → Configure Decks → Battle Plays → Update Story State
 ```
 
-**Implementation:**
+**Planned Implementation:**
 
 ```rust
 // story/campaign.rs
@@ -600,21 +705,48 @@ fn check_battle_trigger(
 
 ---
 
-## 5. Web Client (Phase 5A)
+## 6. Web Client (Phase 5A)
 
-### 5.1 Technology Options
+### 6.1 Technology Options
 
-**Option A: Bevy WASM** (Unified codebase)
-- **Pros**: Same code as 3D game, Bevy UI, Rust type safety
-- **Cons**: Large bundle size (~5MB), slower compile times
+> **Current Situation**: The `cardgame` crate has optional WASM support via `wasm-bindgen`, and Bevy can compile to WASM natively using WebGL/WebGPU. No final decision has been made on the web approach.
 
-**Option B: Web-Native (TypeScript + Canvas)** (Separate UI)
-- **Pros**: Smaller bundle, faster iteration, familiar web stack
-- **Cons**: Duplicate UI logic, WASM FFI overhead
+**Option A: Bevy WASM (Recommended)**
 
-**Key Decision**: **Option B** for Phase 5A (faster iteration on UI/UX)
+Compile the `essence-wars-3d` client directly to WASM using Bevy's native WASM support.
 
-### 5.2 WASM Bridge
+| Pros | Cons |
+|------|------|
+| Single codebase for desktop and web | Larger bundle size (~5-10MB) |
+| Full 3D rendering in browser via WebGL/WebGPU | Slower compile times |
+| Glassbox AI visualization works identically | Requires WebGPU for best performance |
+| Bevy UI and game logic reused completely | Mobile browser support varies |
+| Rust type safety throughout | |
+
+**Option B: Lightweight TypeScript UI**
+
+Use the `cardgame` crate's existing `wasm-bindgen` bindings with a custom TypeScript/React frontend.
+
+| Pros | Cons |
+|------|------|
+| Smaller bundle size (~1-2MB) | Must reimplement entire UI from scratch |
+| Simpler deployment (static files) | Duplicate UI logic between clients |
+| Faster iteration on web-specific features | WASM FFI overhead for each call |
+| Familiar web development stack | No 3D visualization (2D only) |
+| Better mobile browser compatibility | Glassbox Mode needs reimplementation |
+
+**Recommended Path: Option A**
+
+Since the Bevy 3D client (`essence-wars-3d`) already exists and Bevy has mature WASM support, Option A is the likely path forward. This approach:
+
+1. Eliminates duplicate UI development effort
+2. Ensures feature parity between desktop and web
+3. Allows Glassbox AI visualization to work identically in browser
+4. Leverages Bevy's growing WebGPU support for modern browsers
+
+Option B remains viable for scenarios requiring minimal bundle size or maximum mobile compatibility, but would require significant UI reimplementation work.
+
+### 6.2 WASM Bridge (Option B)
 
 ```rust
 // src/wasm/mod.rs (new module)
@@ -691,9 +823,9 @@ for (const event of events) {
 
 ---
 
-## 6. Data Flow & Serialization
+## 7. Data Flow & Serialization
 
-### 6.1 Core Data Formats
+### 7.1 Core Data Formats
 
 **GameState → JSON** (Already implemented in `serde`)
 ```json
@@ -730,39 +862,44 @@ std::fs::write("replay.msgpack", bytes)?;
 
 ---
 
-## 7. Implementation Roadmap
+## 8. Implementation Roadmap
 
-### Phase 3: ML Infrastructure
-- [ ] Add `Serialize` + `Deserialize` to all public types (already done)
-- [ ] Create `client_api` module with `GameClient`
-- [ ] Create `analytics` module with `AnalyticsCollector`
-- [ ] Add MCTS/Greedy bot introspection methods
-- [ ] Write `docs/api-reference.md`
-- [ ] Build minimal Bevy prototype (single battle scene)
-- [ ] Test `GameClient` → Bevy ECS bridge
-- [ ] Implement basic 3D→Battle transition
-- [ ] Validate WASM build with `wasm-pack`
-- [ ] Create `replay` module with serialization
+### Phase 1-2: Core Engine ✅ Complete
+- [x] Game engine with 14 keywords
+- [x] Bot system (Random, Greedy, MCTS)
+- [x] Arena CLI and tuning pipeline
 
-### Phase 5A: Web Playable
-- [ ] Implement full `GameClient` with event system
-- [ ] Build TypeScript web UI (2D card game)
-- [ ] Integrate WASM bridge
-- [ ] Create Glassbox Mode UI (MCTS tree visualization)
-- [ ] Deploy to Huggingface Spaces
+### Phase 3: Client API ✅ Complete
+- [x] GameClient wrapper
+- [x] Bot introspection system (MctsTreeSnapshot, BotDecision)
+- [x] Event system foundation
 
-### Phase 5B: JRPG Campaign
-- [ ] Expand Bevy prototype to full game structure
-- [ ] Implement story/campaign system
-- [ ] Build 3D overworld + battle integration
-- [ ] Create three faction campaigns
-- [ ] Polish animations and UI
+### Phase 4: Bevy 3D Client ✅ Complete (January 2026)
+- [x] Cargo workspace migration
+- [x] 3D board and creature rendering
+- [x] egui UI panels (HUD, hand, menus)
+- [x] Glassbox AI visualization (MCTS panel, action probs, value gauge)
+
+### Phase 5A: Card Expansion 🔄 In Progress
+- [ ] Expand to 300 cards
+- [ ] Balance validation
+
+### Phase 5B: Story Mode 📋 Planned
+- [ ] Overworld exploration
+- [ ] Dialogue system
+- [ ] Quest progression
+- [ ] Story-battle integration
+
+### Phase 6: Network & Distribution 📋 Planned
+- [ ] Multiplayer support
+- [ ] WASM/web deployment
+- [ ] Python bindings for RL
 
 ---
 
-## 8. Testing Strategy
+## 9. Testing Strategy
 
-### 8.1 Client API Tests
+### 9.1 Client API Tests
 
 ```rust
 #[cfg(test)]
@@ -805,7 +942,7 @@ mod tests {
 }
 ```
 
-### 8.2 Integration Tests
+### 9.2 Integration Tests
 
 ```rust
 // tests/bevy_integration_tests.rs
@@ -824,15 +961,15 @@ fn test_battle_bridge() {
 
 ---
 
-## 9. Performance Considerations
+## 10. Performance Considerations
 
-### 9.1 Clone Overhead
+### 10.1 Clone Overhead
 
 **Current**: `GameEngine::fork()` clones entire state (~2KB)
 - Fast for MCTS (1000s of clones per second)
 - No issue for JRPG (1 clone per action at most)
 
-### 9.2 WASM Bundle Size
+### 10.2 WASM Bundle Size
 
 **Estimated Sizes:**
 - Core engine: ~500KB (optimized)
@@ -849,7 +986,7 @@ codegen-units = 1    # Better optimization
 strip = true         # Strip symbols
 ```
 
-### 9.3 Bevy Performance
+### 10.3 Bevy Performance
 
 **Target**: 60 FPS battle animations
 - Card game logic: <1ms per action (headroom: 16ms/frame)
@@ -858,9 +995,9 @@ strip = true         # Strip symbols
 
 ---
 
-## 10. Open Questions & Future Work
+## 11. Open Questions & Future Work
 
-### 10.1 Network Multiplayer (Phase 6?)
+### 11.1 Network Multiplayer (Phase 6?)
 
 **Challenge**: Current engine is single-process only
 
@@ -871,7 +1008,7 @@ strip = true         # Strip symbols
 
 **Recommendation**: Defer to Phase 6, not essential for JRPG
 
-### 10.2 Mod Support (Phase 6?)
+### 11.2 Mod Support (Phase 6?)
 
 **Current**: Cards are YAML + Rust code (effects hardcoded)
 
@@ -881,7 +1018,7 @@ strip = true         # Strip symbols
 
 ---
 
-## 11. Conclusion
+## 12. Conclusion
 
 The current Essence Wars architecture is **exceptionally well-suited** for JRPG integration:
 

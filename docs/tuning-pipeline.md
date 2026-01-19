@@ -318,7 +318,7 @@ Bots load weights in this order:
 
 1. **Command-line override**: `--weights1 path/to/custom.toml` (highest priority)
 2. **Auto-deployed weights**: `data/weights/generalist.toml` or `specialists/{faction}.toml`
-3. **Hardcoded fallback**: Default weights in `src/bots/weights.rs` (lowest priority)
+3. **Hardcoded fallback**: Default weights in `crates/cardgame/src/bots/weights.rs` (lowest priority)
 
 ### Manual Override
 
