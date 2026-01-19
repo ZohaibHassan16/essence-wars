@@ -374,34 +374,39 @@ impl MctsNode {
     }
 }
 
+/// Configuration for game generation.
+struct GameConfig<'a> {
+    deck1_id: &'a str,
+    deck2_id: &'a str,
+    sims: u32,
+    seed: u64,
+    game_mode: GameMode,
+    weights: Option<&'a BotWeights>,
+}
+
 /// Generate a single game and return the record.
 fn generate_game(
     card_db: &CardDatabase,
     deck_registry: &DeckRegistry,
-    deck1_id: &str,
-    deck2_id: &str,
-    sims: u32,
-    seed: u64,
-    game_mode: GameMode,
-    weights: Option<&BotWeights>,
+    config: GameConfig,
 ) -> GameRecord {
-    let mut rng = SmallRng::seed_from_u64(seed);
+    let mut rng = SmallRng::seed_from_u64(config.seed);
 
     // Load decks
-    let deck1 = deck_registry.get(deck1_id).expect("Deck 1 not found");
-    let deck2 = deck_registry.get(deck2_id).expect("Deck 2 not found");
+    let deck1 = deck_registry.get(config.deck1_id).expect("Deck 1 not found");
+    let deck2 = deck_registry.get(config.deck2_id).expect("Deck 2 not found");
 
     // Create engine
     let mut engine = GameEngine::new(card_db);
     let deck1_cards: Vec<CardId> = deck1.cards.iter().map(|&id| CardId(id)).collect();
     let deck2_cards: Vec<CardId> = deck2.cards.iter().map(|&id| CardId(id)).collect();
-    engine.start_game_with_mode(deck1_cards, deck2_cards, seed, game_mode);
+    engine.start_game_with_mode(deck1_cards, deck2_cards, config.seed, config.game_mode);
 
     // Create MCTS searcher
-    let searcher = if let Some(w) = weights {
-        MctsSearcher::new(card_db, sims).with_weights(w.default.greedy.clone())
+    let searcher = if let Some(w) = config.weights {
+        MctsSearcher::new(card_db, config.sims).with_weights(w.default.greedy.clone())
     } else {
-        MctsSearcher::new(card_db, sims)
+        MctsSearcher::new(card_db, config.sims)
     };
 
     let mut moves = Vec::new();
@@ -445,16 +450,16 @@ fn generate_game(
     };
 
     GameRecord {
-        game_id: format!("g_{:08x}", seed),
-        deck1: deck1_id.to_string(),
-        deck2: deck2_id.to_string(),
+        game_id: format!("g_{:08x}", config.seed),
+        deck1: config.deck1_id.to_string(),
+        deck2: config.deck2_id.to_string(),
         winner,
         moves,
         metadata: GameMetadata {
             total_turns: engine.get_state().current_turn as u8,
-            mcts_sims: sims,
-            seed,
-            game_mode: format!("{:?}", game_mode),
+            mcts_sims: config.sims,
+            seed: config.seed,
+            game_mode: format!("{:?}", config.game_mode),
         },
     }
 }
@@ -574,10 +579,10 @@ fn main() {
     let total_moves = AtomicU64::new(0);
 
     // Prepare output file path
-    let use_compression = !args.no_compress && args.output.extension().map_or(false, |e| e == "gz");
+    let use_compression = !args.no_compress && args.output.extension().is_some_and(|e| e == "gz");
     let output_path = if use_compression {
         args.output.clone()
-    } else if args.output.extension().map_or(true, |e| e != "jsonl") {
+    } else if args.output.extension().is_none_or(|e| e != "jsonl") {
         args.output.with_extension("jsonl")
     } else {
         args.output.clone()
@@ -599,7 +604,7 @@ fn main() {
     let writer_handle = std::thread::spawn(move || {
         let file = File::create(&output_path_clone).expect("Failed to create output file");
         
-        if use_compression || output_path_clone.extension().map_or(false, |e| e == "gz") {
+        if use_compression || output_path_clone.extension().is_some_and(|e| e == "gz") {
             let encoder = GzEncoder::new(file, Compression::default());
             let mut writer = BufWriter::new(encoder);
             for record in rx {
@@ -629,12 +634,14 @@ fn main() {
             let record = generate_game(
                 &card_db,
                 &deck_registry,
-                &d1,
-                &d2,
-                args.sims,
-                seed,
-                game_mode,
-                weights.as_ref(),
+                GameConfig {
+                    deck1_id: &d1,
+                    deck2_id: &d2,
+                    sims: args.sims,
+                    seed,
+                    game_mode,
+                    weights: weights.as_ref(),
+                },
             );
 
             let moves = record.moves.len() as u64;

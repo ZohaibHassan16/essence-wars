@@ -22,9 +22,16 @@
 //! obs_batch = games.observe_batch()  # numpy array (64, 326)
 //! ```
 
+// Allow clippy::useless_conversion for PyO3 method returns
+// PyO3 macros require PyResult even though clippy 1.92.0 sees it as redundant
+#![allow(clippy::useless_conversion)]
+
 use pyo3::prelude::*;
 use pyo3::exceptions::{PyValueError, PyRuntimeError};
 use numpy::{PyArray1, PyArray2, PyReadonlyArray1, PyArrayMethods};
+
+/// Type alias for the complex return type used in batched step operations
+type BatchStepResult<'py> = (Bound<'py, PyArray1<f32>>, Bound<'py, PyArray1<bool>>);
 
 use crate::core::cards::CardDatabase;
 use crate::core::config::tensor::STATE_TENSOR_SIZE;
@@ -153,7 +160,7 @@ impl PyGame {
     ///         - done is True if the game has ended
     fn step(&mut self, action: u8) -> PyResult<(f32, bool)> {
         self.engine.apply_action_by_index(action)
-            .map_err(|e| PyValueError::new_err(e))?;
+            .map_err(PyValueError::new_err)?;
 
         let done = self.engine.is_game_over();
         let reward = if done {
@@ -425,7 +432,7 @@ impl PyParallelGames {
         &mut self,
         py: Python<'py>,
         actions: PyReadonlyArray1<'py, u8>,
-    ) -> PyResult<(Bound<'py, PyArray1<f32>>, Bound<'py, PyArray1<bool>>)> {
+    ) -> PyResult<BatchStepResult<'py>> {
         let actions = actions.as_slice()?;
 
         if actions.len() != self.num_envs {
