@@ -45,13 +45,8 @@ def main():
     )
     args = parser.parse_args()
 
-    from essence_wars.benchmark.agents import (
-        GreedyAgent,
-        MCTSAgent,
-        NeuralAgent,
-        RandomAgent,
-    )
-    from essence_wars.benchmark.api import run_matches
+    from essence_wars.benchmark.agents import NeuralAgent
+    from essence_wars.benchmark.api import EssenceWarsBenchmark
 
     print(f"Loading checkpoint: {args.checkpoint}")
     agent = NeuralAgent.from_checkpoint(str(args.checkpoint), name="evaluated")
@@ -66,43 +61,31 @@ def main():
 
     print(f"Running evaluation ({games} games per opponent)...")
 
+    # Determine baselines
+    if args.full_eval:
+        baselines = ["random", "greedy", "mcts50", "mcts100"]
+    else:
+        baselines = ["random", "greedy"]
+
+    # Run benchmark
+    benchmark = EssenceWarsBenchmark(games_per_opponent=games, verbose=True)
+    bench_results = benchmark.evaluate(agent, baselines=baselines)
+
+    # Build results dictionary
     results = {
         "checkpoint": str(args.checkpoint),
         "games_per_opponent": games,
-        "games_played": 0,
+        "games_played": bench_results.total_games,
+        "win_rate_vs_random": bench_results.win_rate_vs_random,
+        "win_rate_vs_greedy": bench_results.win_rate_vs_greedy,
     }
 
-    # Evaluate vs each baseline
-    baselines = [
-        ("random", RandomAgent()),
-        ("greedy", GreedyAgent()),
-    ]
-
     if args.full_eval:
-        baselines.extend([
-            ("mcts50", MCTSAgent(simulations=50)),
-            ("mcts100", MCTSAgent(simulations=100)),
-        ])
+        results["win_rate_vs_mcts50"] = bench_results.win_rate_vs_mcts50
+        results["win_rate_vs_mcts100"] = bench_results.win_rate_vs_mcts100
 
-    for name, opponent in baselines:
-        print(f"  vs {name}...", end=" ", flush=True)
-        match_results = run_matches(agent, opponent, num_games=games)
-        win_rate = match_results["wins"] / games
-        results[f"win_rate_vs_{name}"] = win_rate
-        results["games_played"] += games
-        print(f"{win_rate:.1%}")
-
-    # Estimate Elo based on win rate vs Greedy
-    import math
-
-    win_rate = results["win_rate_vs_greedy"]
-    if 0 < win_rate < 1:
-        elo_diff = -400 * math.log10((1 / win_rate) - 1)
-        results["elo_rating"] = round(1300 + elo_diff)
-    elif win_rate >= 1:
-        results["elo_rating"] = 1600
-    else:
-        results["elo_rating"] = 1000
+    # Use benchmark's Elo rating
+    results["elo_rating"] = round(bench_results.elo_rating)
 
     # Save results
     with open(args.output, "w") as f:

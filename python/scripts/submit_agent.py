@@ -55,30 +55,19 @@ def validate_checkpoint(checkpoint_path: Path) -> tuple[bool, str]:
 
 def quick_evaluate(checkpoint_path: Path, games: int = 20) -> dict:
     """Run quick evaluation against Greedy and Random."""
-    from essence_wars.benchmark.agents import GreedyAgent, NeuralAgent, RandomAgent
-    from essence_wars.benchmark.api import run_matches
+    from essence_wars.benchmark.agents import NeuralAgent
+    from essence_wars.benchmark.api import EssenceWarsBenchmark
 
     agent = NeuralAgent.from_checkpoint(str(checkpoint_path), name="submitted")
 
-    print(f"  Running {games} games vs Greedy...")
-    greedy_results = run_matches(agent, GreedyAgent(), num_games=games)
-    win_rate_greedy = greedy_results["wins"] / games
+    # Use the benchmark's quick_evaluate method
+    benchmark = EssenceWarsBenchmark(games_per_opponent=games, verbose=False)
+    print(f"  Running {games * 2} games (vs Greedy and Random)...")
+    results = benchmark.quick_evaluate(agent, games=games * 2)
 
-    print(f"  Running {games} games vs Random...")
-    random_results = run_matches(agent, RandomAgent(), num_games=games)
-    win_rate_random = random_results["wins"] / games
-
-    # Estimate Elo based on win rate vs Greedy (baseline 1300)
-    # Using simplified Elo estimation
-    if win_rate_greedy > 0 and win_rate_greedy < 1:
-        import math
-
-        elo_diff = -400 * math.log10((1 / win_rate_greedy) - 1)
-        estimated_elo = 1300 + elo_diff
-    elif win_rate_greedy >= 1:
-        estimated_elo = 1600
-    else:
-        estimated_elo = 1000
+    win_rate_greedy = results["vs_greedy"]
+    win_rate_random = results["vs_random"]
+    estimated_elo = results["elo"]
 
     return {
         "win_rate_vs_greedy": win_rate_greedy,

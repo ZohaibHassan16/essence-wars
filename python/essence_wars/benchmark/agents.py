@@ -239,7 +239,7 @@ class NeuralAgent(BaseAgent):
     ) -> NeuralAgent:
         """Load a neural agent from a checkpoint file.
 
-        Supports both AlphaZero and Behavioral Cloning checkpoints.
+        Supports PPO, AlphaZero, and Behavioral Cloning checkpoints.
 
         Args:
             checkpoint_path: Path to .pt checkpoint file
@@ -252,32 +252,67 @@ class NeuralAgent(BaseAgent):
         """
         from pathlib import Path
 
-        from essence_wars.agents.networks import AlphaZeroNetwork
-
         checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+
+        # Extract config - handle both dict and dataclass configs
+        config = checkpoint.get("config", {})
+        if hasattr(config, "__dict__"):
+            # Dataclass config (e.g., PPOConfig)
+            config_dict = vars(config)
+        elif isinstance(config, dict):
+            config_dict = config
+        else:
+            config_dict = {}
 
         # Determine network architecture from checkpoint
         if "model_state_dict" in checkpoint:
             # BC checkpoint
             state_dict = checkpoint["model_state_dict"]
             args = checkpoint.get("args", {})
+            if hasattr(args, "__dict__"):
+                args = vars(args)
+            config_dict.update(args)
         elif "network_state_dict" in checkpoint:
-            # AlphaZero checkpoint
+            # AlphaZero or PPO checkpoint
             state_dict = checkpoint["network_state_dict"]
-            args = checkpoint.get("config", {})
         else:
             raise ValueError(f"Unknown checkpoint format: {checkpoint_path}")
 
-        # Create network with matching architecture
-        hidden_dim = args.get("hidden_dim", 256)
-        num_blocks = args.get("num_blocks", 4)
+        # Get network parameters
+        hidden_dim = config_dict.get("hidden_dim", 256)
+        num_blocks = config_dict.get("num_blocks", 4)
+        observation_mode = config_dict.get("observation_mode", "flat")
+        embed_dim = config_dict.get("embed_dim", 64)
 
-        network = AlphaZeroNetwork(
-            obs_dim=326,
-            action_dim=256,
-            hidden_dim=hidden_dim,
-            num_blocks=num_blocks,
-        )
+        # Determine network type from observation mode
+        if observation_mode in ("embedded", "embedded_pretrained"):
+            # PPO with embeddings
+            from essence_wars.agents.embeddings import EmbeddedPPONetwork
+
+            network = EmbeddedPPONetwork(
+                embed_dim=embed_dim,
+                hidden_dim=hidden_dim,
+            )
+        elif "num_blocks" in config_dict:
+            # AlphaZero-style network
+            from essence_wars.agents.networks import AlphaZeroNetwork
+
+            network = AlphaZeroNetwork(
+                obs_dim=326,
+                action_dim=256,
+                hidden_dim=hidden_dim,
+                num_blocks=num_blocks,
+            )
+        else:
+            # Simple PPO network (flat observation)
+            from essence_wars.agents.ppo import PPONetwork
+
+            network = PPONetwork(
+                obs_dim=326,
+                action_dim=256,
+                hidden_dim=hidden_dim,
+            )
+
         network.load_state_dict(state_dict)
 
         # Generate name from filename if not provided
