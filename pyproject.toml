@@ -44,10 +44,10 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/christianwissmann85/essence-wars"
-Documentation = "https://christianwissmann85.github.io/essence-wars/"
-Repository = "https://github.com/christianwissmann85/essence-wars"
-Issues = "https://github.com/christianwissmann85/essence-wars/issues"
+Homepage = "https://github.com/christianWissmann85/essence-wars"
+Documentation = "https://christianWissmann85.github.io/essence-wars/"
+Repository = "https://github.com/christianWissmann85/essence-wars"
+Issues = "https://github.com/christianWissmann85/essence-wars/issues"
 
 # Optional dependencies for pip install essence-wars[extra]
 [project.optional-dependencies]

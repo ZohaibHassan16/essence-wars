@@ -9,7 +9,7 @@ members = [
 version = "0.7.0"
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/christianwissmann85/essence-wars"
+repository = "https://github.com/christianWissmann85/essence-wars"
 
 [workspace.dependencies]
 # Core dependencies

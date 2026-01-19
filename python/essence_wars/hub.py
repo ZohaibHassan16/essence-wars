@@ -432,7 +432,7 @@ If you use this model in your research, please cite:
   title={Essence Wars: A Card Game Environment for RL Research},
   author={Wissmann, Christian},
   year={2025},
-  url={https://github.com/christianwissmann85/ai-cardgame}
+  url={https://github.com/christianWissmann85/essence-wars}
 }
 ```
 """

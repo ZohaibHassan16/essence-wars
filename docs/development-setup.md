@@ -13,8 +13,8 @@
 ## Clone and Build
 
 ```bash
-git clone https://github.com/your-repo/ai-cardgame
-cd ai-cardgame
+git clone https://github.com/christianWissmann85/essence-wars
+cd essence-wars
 
 # Build all crates
 cargo build --release
