@@ -88,6 +88,8 @@ all = [
 ]
 
 [tool.maturin]
+# Point to the cardgame crate in the workspace
+manifest-path = "crates/cardgame/Cargo.toml"
 # Build with the python feature
 features = ["python"]
 # Python source directory
