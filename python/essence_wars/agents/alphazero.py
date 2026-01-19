@@ -676,47 +676,47 @@ class AlphaZeroTrainer:
                 self.generate_self_play_games(self.config.games_per_iteration)
                 print(f"  Replay buffer size: {len(self.replay_buffer)}")
 
-            # Training
-            if len(self.replay_buffer) >= self.config.min_replay_size:
-                print(f"  Training for {self.config.training_steps_per_iteration} steps...")
-                iter_losses = []
-                for _ in range(self.config.training_steps_per_iteration):
-                    loss_info = self.train_step()
-                    iter_losses.append(loss_info["total_loss"])
-                    all_losses.append(loss_info["total_loss"])
+                # Training (now correctly inside the loop!)
+                if len(self.replay_buffer) >= self.config.min_replay_size:
+                    print(f"  Training for {self.config.training_steps_per_iteration} steps...")
+                    iter_losses = []
+                    for _ in range(self.config.training_steps_per_iteration):
+                        loss_info = self.train_step()
+                        iter_losses.append(loss_info["total_loss"])
+                        all_losses.append(loss_info["total_loss"])
 
-                mean_loss = np.mean(iter_losses)
-                print(f"  Mean loss: {mean_loss:.4f}")
+                    mean_loss = np.mean(iter_losses)
+                    print(f"  Mean loss: {mean_loss:.4f}")
 
-                if self.writer is not None:
-                    self.writer.add_scalar("loss/total", mean_loss, iteration)
-                    self.writer.add_scalar("loss/policy", loss_info["policy_loss"], iteration)
-                    self.writer.add_scalar("loss/value", loss_info["value_loss"], iteration)
+                    if self.writer is not None:
+                        self.writer.add_scalar("loss/total", mean_loss, iteration)
+                        self.writer.add_scalar("loss/policy", loss_info["policy_loss"], iteration)
+                        self.writer.add_scalar("loss/value", loss_info["value_loss"], iteration)
 
-            # Evaluation
-            if iteration % self.config.eval_interval == 0:
-                win_rate_greedy = self.evaluate_vs_greedy(self.config.eval_games)
-                win_rate_random = self.evaluate_vs_random(self.config.eval_games)
-                print(f"  Eval vs Greedy: {win_rate_greedy:.1%}")
-                print(f"  Eval vs Random: {win_rate_random:.1%}")
+                # Evaluation
+                if iteration % self.config.eval_interval == 0:
+                    win_rate_greedy = self.evaluate_vs_greedy(self.config.eval_games)
+                    win_rate_random = self.evaluate_vs_random(self.config.eval_games)
+                    print(f"  Eval vs Greedy: {win_rate_greedy:.1%}")
+                    print(f"  Eval vs Random: {win_rate_random:.1%}")
 
-                if self.writer is not None:
-                    self.writer.add_scalar("eval/win_rate_vs_greedy", win_rate_greedy, iteration)
-                    self.writer.add_scalar("eval/win_rate_vs_random", win_rate_random, iteration)
+                    if self.writer is not None:
+                        self.writer.add_scalar("eval/win_rate_vs_greedy", win_rate_greedy, iteration)
+                        self.writer.add_scalar("eval/win_rate_vs_random", win_rate_random, iteration)
 
-            # Periodic checkpoint saving
-            if (
-                self.config.checkpoint_interval > 0
-                and iteration % self.config.checkpoint_interval == 0
-                and self.save_dir is not None
-            ):
-                from pathlib import Path
-                checkpoint_path = Path(self.save_dir) / f"checkpoint_iter_{iteration}.pt"
-                self.save(str(checkpoint_path))
-                print(f"  [Checkpoint saved: {checkpoint_path.name}]")
+                # Periodic checkpoint saving
+                if (
+                    self.config.checkpoint_interval > 0
+                    and iteration % self.config.checkpoint_interval == 0
+                    and self.save_dir is not None
+                ):
+                    from pathlib import Path
+                    checkpoint_path = Path(self.save_dir) / f"checkpoint_iter_{iteration}.pt"
+                    self.save(str(checkpoint_path))
+                    print(f"  [Checkpoint saved: {checkpoint_path.name}]")
 
-            iter_time = time.time() - iter_start
-            print(f"  Iteration time: {iter_time:.1f}s")
+                iter_time = time.time() - iter_start
+                print(f"  Iteration time: {iter_time:.1f}s")
 
         except KeyboardInterrupt:
             print("\n\n[INTERRUPTED] Training stopped by user")
