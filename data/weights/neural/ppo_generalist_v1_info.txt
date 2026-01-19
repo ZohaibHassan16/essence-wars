@@ -1,0 +1,48 @@
+PPO Generalist Agent v1 - Proof of Concept
+==========================================
+
+Performance:
+  vs GreedyBot:  56.0% win rate (consistent across 5x200 game eval)
+  vs RandomBot:  41.5% win rate
+  vs MCTS(50):   90.0% win rate (50 games)
+  vs MCTS(100):  26.7% win rate (30 games)
+  vs MCTS(200):  10.0% win rate (30 games)
+  vs MCTS(500):  10.0% win rate (30 games)
+
+Training Configuration:
+  Total timesteps: ~300,000
+  Environments: 64 parallel
+  Learning rate: 1e-4
+  Entropy coefficient: 0.05 (high to prevent collapse)
+  Hidden dimension: 256
+  Batch size: 8,192
+  Device: CUDA
+
+Model Details:
+  Network: EssenceWarsNetwork (shared trunk, policy/value heads)
+  Input: 326-dim state tensor (normalized via RunningMeanStd)
+  Output: 256 action logits + scalar value
+  Action masking: Illegal actions masked with -1e8
+
+Training Date: 2026-01-19
+Source: experiments/ppo/20260119_074234/final_model.pt
+Engine Version: 0.6.0
+
+Notes:
+- First proof-of-concept PPO agent for Essence Wars
+- Trained against GreedyBot opponent
+- Beats GreedyBot consistently (56% > 50%)
+- High entropy coefficient (0.05) prevented policy collapse
+- Model includes observation normalizer state
+
+Usage:
+```python
+from essence_wars.agents.ppo import PPOTrainer, PPOConfig
+
+config = PPOConfig(device='cuda')
+trainer = PPOTrainer(config=config)
+trainer.load('data/weights/neural/ppo_generalist_v1.pt')
+
+# Use for inference
+action = trainer.get_action(obs, mask)
+```

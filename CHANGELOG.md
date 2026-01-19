@@ -4,6 +4,48 @@ All notable changes to the Essence Wars engine.
 
 Format: `[version] - YYYY-MM-DD` with categories: Added, Changed, Fixed, Removed.
 
+## [0.7.0] - 2026-01-19
+
+### Added
+- **Cargo Workspace Migration**: Project restructured into multi-crate workspace
+  - `crates/cardgame/`: Core game engine library
+  - `crates/essence-wars-3d/`: Bevy 3D client with Glassbox visualization
+  - Shared dependencies via workspace root `Cargo.toml`
+  - `cardgame::data_dir()` helper for locating data files from any crate
+
+- **Bevy 3D Client (essence-wars-3d)**: New visualization client built with Bevy 0.15
+  - 3D game board with creature slots
+  - Camera controls (orbit, zoom)
+  - egui-based UI: main menu, HUD, hand display, game over screen
+  - **Glassbox AI Visualization** (press 'G' to toggle):
+    - MCTS tree panel showing action visit counts and win rates
+    - Action probability bars for top actions
+    - Value gauge showing position evaluation
+  - `GameBridge` resource wrapping `GameClient` for Bevy integration
+
+- **PPO Generalist Agent v1**: First proof-of-concept neural network agent
+  - 56% win rate vs GreedyBot (consistent across evaluations)
+  - 90% win rate vs MCTS(50 simulations)
+  - Saved to `data/weights/neural/ppo_generalist_v1.pt`
+  - Training with high entropy coefficient (0.05) prevents policy collapse
+
+- **Documentation**:
+  - `docs/workspace-migration.md`: Workspace setup and migration guide
+  - `docs/bevy-glassbox-implementation.md`: Glassbox architecture details
+  - `docs/development-setup.md`: Developer getting started guide
+  - Updated CLAUDE.md with Python/ML infrastructure documentation
+  - Updated jrpg-architecture.md with Glassbox mode details
+
+### Changed
+- Project structure: `src/` → `crates/cardgame/src/`, `tests/` → `crates/cardgame/tests/`
+- Test paths updated for workspace structure
+- `pyproject.toml`: Added `manifest-path` for maturin to find cardgame crate
+- CLAUDE.md: Comprehensive update with 12 commander decks, 300 cards, ML infrastructure
+
+### Fixed
+- Maturin build configuration for workspace-based project
+- Data path resolution in workspace context
+
 ## [0.6.0] - 2026-01-17
 
 ### Added

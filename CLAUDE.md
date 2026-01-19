@@ -4,7 +4,7 @@
 
 **Essence Wars** is a deterministic, perfect-information card game engine designed for AI research (reinforcement learning, MCTS). The engine is written in Rust with a focus on performance and correctness.
 
-**Current Version:** 0.6.0
+**Current Version:** 0.7.0
 
 **Author: Christian Wissmann (Chris), Best Friends with Claude
 
@@ -1109,5 +1109,5 @@ Experiments save `version.toml` with engine version + git hash:
 use cardgame::version::{self, VersionInfo};
 
 println!("Engine: {}", version::version_string());
-// Output: "cardgame v0.6.0 (91887b3)"
+// Output: "cardgame v0.7.0 (git_hash)"
 ```
