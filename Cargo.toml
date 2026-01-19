@@ -1,72 +1,37 @@
-[package]
-name = "cardgame"
+[workspace]
+resolver = "2"
+members = [
+    "crates/cardgame",
+    "crates/essence-wars-3d",
+]
+
+[workspace.package]
 version = "0.6.0"
 edition = "2021"
-description = "High-performance card game engine for AI/RL research"
 license = "MIT"
 repository = "https://github.com/christianwissmann85/essence-wars"
-keywords = ["game", "reinforcement-learning", "ai", "mcts", "gymnasium"]
-categories = ["game-engines", "science"]
 
-[lib]
-name = "cardgame"
-crate-type = ["cdylib", "rlib"]  # cdylib for Python, rlib for Rust
-
-[features]
-default = []
-python = ["dep:pyo3", "dep:numpy"]
-wasm = ["dep:wasm-bindgen", "dep:js-sys", "dep:web-sys", "dep:console_error_panic_hook"]
-
-[dependencies]
+[workspace.dependencies]
+# Core dependencies
 arrayvec = { version = "0.7", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
-serde_yaml = "0.9"
 serde_json = "1.0"
+serde_yaml = "0.9"
 toml = "0.8"
 thiserror = "1.0"
 rand = { version = "0.8", features = ["small_rng"] }
 clap = { version = "4.4", features = ["derive"] }
 rayon = "1.10"
 chrono = "0.4"
-statrs = "0.17"  # Statistical functions for confidence intervals and significance testing
-
-# Optional Python bindings (enabled with --features python)
-pyo3 = { version = "0.22", features = ["extension-module"], optional = true }
-numpy = { version = "0.22", optional = true }
+statrs = "0.17"
 lazy_static = "1.5"
 flate2 = "1.1.8"
 indicatif = "0.18.3"
+anyhow = "1.0"
 
-# Optional WASM bindings (enabled with --features wasm)
-wasm-bindgen = { version = "0.2", optional = true }
-js-sys = { version = "0.3", optional = true }
-web-sys = { version = "0.3", features = ["console"], optional = true }
-console_error_panic_hook = { version = "0.1", optional = true }
-
-[dev-dependencies]
+# Dev dependencies
 criterion = "0.5"
 proptest = "1.4"
 
-[[bin]]
-name = "arena"
-path = "src/bin/arena.rs"
-
-[[bin]]
-name = "tune"
-path = "src/bin/tune.rs"
-
-[[bin]]
-name = "profile_mcts"
-path = "src/bin/profile_mcts.rs"
-
-[[bin]]
-name = "validate"
-path = "src/bin/validate.rs"
-
-[[bin]]
-name = "diagnose"
-path = "src/bin/diagnose.rs"
-
-[[bench]]
-name = "game_benchmarks"
-harness = false
+# Internal crate
+cardgame = { path = "crates/cardgame" }

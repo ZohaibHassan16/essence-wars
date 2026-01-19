@@ -738,8 +738,6 @@ std::fs::write("replay.msgpack", bytes)?;
 - [ ] Create `analytics` module with `AnalyticsCollector`
 - [ ] Add MCTS/Greedy bot introspection methods
 - [ ] Write `docs/api-reference.md`
-
-### Phase 4: Research Platform
 - [ ] Build minimal Bevy prototype (single battle scene)
 - [ ] Test `GameClient` → Bevy ECS bridge
 - [ ] Implement basic 3D→Battle transition
