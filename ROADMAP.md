@@ -42,14 +42,14 @@
 
 ---
 
-## Phase 3: ML Infrastructure 🔄
+## Phase 3: ML Infrastructure ✅
 
 *Make Essence Wars accessible to ML researchers.*
 
 - [x] Create PyO3 Python bindings
 - [x] Implement Gymnasium environment interface
 - [x] Publish `essence-wars` package to PyPI (`pip install essence-wars`)
-- [ ] Train first proof-of-concept Generalist PPO agent 
+- [x] Train first proof-of-concept Generalist PPO agent 
 - [x] Validate Gym interface with standard RL libraries (Stable-Baselines3, CleanRL)
 - [x] Write researcher quickstart guide
 - [x] Design JRPG integration architecture (`docs/jrpg-architecture.md`)
@@ -59,7 +59,7 @@
 
 ---
 
-## Phase 4: Research Platform
+## Phase 4: Research Platform 🔄
 
 *Build the agent ecosystem and benchmarking infrastructure.*
 
@@ -163,7 +163,7 @@
 
 ## Current Status
 
-**Phase**: 2 (New Horizons Edition)
-**Version**: 0.4.0
-**Cards**: 107 / 300
-**Next milestone**: Complete card expansion
+**Phase**: 4 (Research Platform)
+**Version**: 0.7.0
+**Cards**: 140 core set
+**Next milestone**: Complete agent ecosystem
