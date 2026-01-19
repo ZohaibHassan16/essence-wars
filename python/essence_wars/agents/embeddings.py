@@ -182,12 +182,12 @@ class ObservationTransformer(nn.Module):
         else:
             self.card_id_positions = self.positions.non_embed_section_positions()
 
+        # Get non-card positions (excludes ALL card ID positions including embed section)
         self.non_card_positions = get_non_card_positions(self.positions)
-        if not include_embed_section:
-            # Add embed section back to non-card positions
-            self.non_card_positions = sorted(
-                self.non_card_positions + self.positions.embed_section
-            )
+        # NOTE: When include_embed_section=False, we do NOT add embed section back
+        # as raw features. Those positions contain card IDs (1000-4074) which would
+        # dominate the input and break learning. Instead, we only embed the 24 card
+        # IDs from hands and supports, and exclude the embed section entirely.
 
         # Pre-compute dimensions
         self.num_card_slots = len(self.card_id_positions)
@@ -302,6 +302,7 @@ class EmbeddedPPONetwork(nn.Module):
         self.hidden_dim = hidden_dim
         self.num_cards = num_cards
         self.include_embed_section = include_embed_section
+        self._using_pretrained_embeds = pretrained_embeds is not None
 
         # Create or load card embedding layer
         if pretrained_embeds is not None:
@@ -362,8 +363,8 @@ class EmbeddedPPONetwork(nn.Module):
         # Smaller initialization for policy output
         nn.init.orthogonal_(self.policy_head[-1].weight, gain=0.01)
 
-        # Initialize embeddings with small values
-        if not hasattr(self.card_embedding, '_from_pretrained'):
+        # Initialize embeddings with small values (only if not using pretrained)
+        if not self._using_pretrained_embeds:
             nn.init.normal_(self.card_embedding.weight, mean=0.0, std=0.1)
             # Zero out padding embedding
             self.card_embedding.weight.data[0].zero_()
@@ -490,6 +491,7 @@ class EmbeddedAlphaZeroNetwork(nn.Module):
         self.embed_dim = embed_dim
         self.hidden_dim = hidden_dim
         self.num_blocks = num_blocks
+        self._using_pretrained_embeds = pretrained_embeds is not None
 
         # Create or load card embedding layer
         if pretrained_embeds is not None:
@@ -552,7 +554,8 @@ class EmbeddedAlphaZeroNetwork(nn.Module):
 
         nn.init.orthogonal_(self.policy_head[-1].weight, gain=0.01)
 
-        if not hasattr(self.card_embedding, '_from_pretrained'):
+        # Initialize embeddings with small values (only if not using pretrained)
+        if not self._using_pretrained_embeds:
             nn.init.normal_(self.card_embedding.weight, mean=0.0, std=0.1)
             self.card_embedding.weight.data[0].zero_()
 

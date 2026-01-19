@@ -362,6 +362,13 @@ class PPOTrainer:
             self._opponent_decks = FACTION_DECKS[self.config.opponent_faction].copy()
         elif self.config.opponent_deck:
             self._opponent_decks = [self.config.opponent_deck]
+        elif self.config.player_faction:
+            # Faction specialist: opponent uses OTHER factions only (no mirror matches)
+            self._opponent_decks = [
+                deck for faction, decks in FACTION_DECKS.items()
+                if faction != self.config.player_faction
+                for deck in decks
+            ]
         else:
             self._opponent_decks = ALL_DECKS.copy()  # All decks for opponent variety
 
