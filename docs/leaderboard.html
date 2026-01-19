@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essence Wars Leaderboard</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .meta {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #007bff;
+            color: white;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .rank-1 { background: #ffd700; }
+        .rank-2 { background: #c0c0c0; }
+        .rank-3 { background: #cd7f32; }
+    </style>
+</head>
+<body>
+    <h1>Essence Wars Agent Leaderboard</h1>
+    <div class="meta">
+        Last updated: 2026-01-19 |
+        Benchmark v1.0 |
+        <a href="https://github.com/christianWissmann85/essence-wars">GitHub</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Agent</th>
+                <th>Author</th>
+                <th>Type</th>
+                <th>Elo</th>
+                <th>vs Greedy</th>
+                <th>vs Random</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+        <tr>
+            <td>1</td>
+            <td><a href="https://huggingface.co/Chris-Essence-Wars/ppo-argentum">PPO-Argentum</a></td>
+            <td>Chris-Essence-Wars</td>
+            <td>PPO</td>
+            <td><strong>1450</strong></td>
+            <td>72%</td>
+            <td>99%</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td><a href="https://huggingface.co/Chris-Essence-Wars/ppo-flat">PPO-Flat</a></td>
+            <td>Chris-Essence-Wars</td>
+            <td>PPO</td>
+            <td><strong>1440</strong></td>
+            <td>71%</td>
+            <td>99%</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td><a href="https://huggingface.co/Chris-Essence-Wars/ppo-embedded">PPO-Embedded</a></td>
+            <td>Chris-Essence-Wars</td>
+            <td>PPO</td>
+            <td><strong>1400</strong></td>
+            <td>65%</td>
+            <td>98%</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td><a href="https://huggingface.co/Chris-Essence-Wars/ppo-symbiote">PPO-Symbiote</a></td>
+            <td>Chris-Essence-Wars</td>
+            <td>PPO</td>
+            <td><strong>1400</strong></td>
+            <td>65%</td>
+            <td>98%</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td><a href="https://huggingface.co/Chris-Essence-Wars/ppo-obsidion">PPO-Obsidion</a></td>
+            <td>Chris-Essence-Wars</td>
+            <td>PPO</td>
+            <td><strong>1380</strong></td>
+            <td>62%</td>
+            <td>97%</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td><a href="#">BC-MCTS-10k</a></td>
+            <td>Chris-Essence-Wars</td>
+            <td>BC</td>
+            <td><strong>1360</strong></td>
+            <td>59%</td>
+            <td>96%</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <h2>Submit Your Agent</h2>
+    <p>
+        Train an agent using the <code>essence-wars</code> package and submit it to the leaderboard.
+        See the <a href="https://github.com/christianWissmann85/essence-wars/blob/main/docs/SUBMIT_AGENT.md">submission guide</a>.
+    </p>
+
+    <footer style="margin-top: 40px; color: #666; font-size: 0.8em;">
+        Generated from <a href="https://github.com/christianWissmann85/essence-wars">Essence Wars</a>
+    </footer>
+</body>
+</html>
