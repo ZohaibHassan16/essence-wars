@@ -1,11 +1,16 @@
 #!/bin/bash
 # Train the full PPO Agent Roster for Essence Wars
 #
-# This script trains 7 PPO agents:
-#   - 4 generalist variants (architecture comparison)
-#   - 3 faction specialists (specialization comparison)
+# This script trains 7 PPO agents with improvements to reduce policy collapse:
+#   - Higher entropy coefficient (0.02)
+#   - Best checkpoint saving (automatically saves best model)
+#   - Embedded architecture for faction specialists
 #
-# Estimated time: ~3.5 hours total (~30 min per agent)
+# Agents:
+#   - 4 generalist variants (architecture comparison)
+#   - 3 faction specialists (using embedded architecture)
+#
+# Estimated time: ~30-45 min total
 #
 # Usage:
 #   ./scripts/train_ppo_roster.sh           # Run all 7 agents
@@ -16,6 +21,7 @@ set -e  # Exit on error
 # Configuration
 TIMESTEPS=300000
 EVAL_INTERVAL=25000
+ENT_COEF=0.02
 CARD2VEC_PATH="models/card2vec_20260119_120507.pt"
 
 # Check for quick mode
@@ -26,9 +32,11 @@ if [[ "$1" == "--quick" ]]; then
 fi
 
 echo "============================================================"
-echo "PPO Agent Roster Training"
+echo "PPO Agent Roster Training (v2 - with improvements)"
 echo "============================================================"
 echo "  Timesteps per agent: $TIMESTEPS"
+echo "  Entropy coefficient: $ENT_COEF (higher to reduce collapse)"
+echo "  Best checkpoint:     enabled (saves best_model.pt)"
 echo "  Total agents: 7"
 echo "  Card2Vec path: $CARD2VEC_PATH"
 echo "============================================================"
@@ -44,8 +52,10 @@ fi
 # Track results
 RESULTS_FILE="experiments/ppo/roster_results_$(date +%Y%m%d_%H%M%S).txt"
 mkdir -p experiments/ppo
-echo "PPO Roster Training Results - $(date)" > "$RESULTS_FILE"
+echo "PPO Roster Training Results v2 - $(date)" > "$RESULTS_FILE"
 echo "==========================================" >> "$RESULTS_FILE"
+echo "Improvements: ent_coef=$ENT_COEF, best checkpoint, embedded specialists" >> "$RESULTS_FILE"
+echo "" >> "$RESULTS_FILE"
 
 train_agent() {
     local name="$1"
@@ -61,6 +71,7 @@ train_agent() {
     uv run python python/scripts/train_ppo.py \
         --timesteps $TIMESTEPS \
         --eval-interval $EVAL_INTERVAL \
+        --ent-coef $ENT_COEF \
         $args
 
     END_TIME=$(date +%s)
@@ -79,11 +90,11 @@ echo "============================================================"
 echo "TIER 1: Architecture Comparison (4 Generalists)"
 echo "============================================================"
 
-# 1. Flat baseline
-train_agent "ppo-generalist-flat" "--observation-mode flat"
-
-# 2. Learned embeddings
+# 1. Learned embeddings (best performer from previous run)
 train_agent "ppo-generalist-embedded" "--observation-mode embedded"
+
+# 2. Flat baseline
+train_agent "ppo-generalist-flat" "--observation-mode flat"
 
 # 3. Pretrained Card2Vec (fine-tuned)
 if [[ -z "$SKIP_PRETRAINED" ]]; then
@@ -98,22 +109,22 @@ else
 fi
 
 # ============================================================
-# Tier 2: Faction Specialists (Flat architecture)
+# Tier 2: Faction Specialists (Using embedded architecture)
 # ============================================================
 
 echo ""
 echo "============================================================"
-echo "TIER 2: Faction Specialists (3 agents)"
+echo "TIER 2: Faction Specialists (3 agents, embedded architecture)"
 echo "============================================================"
 
-# 5. Argentum specialist
-train_agent "ppo-argentum-specialist" "--player-faction argentum"
+# 5. Argentum specialist (embedded to reduce collapse)
+train_agent "ppo-argentum-specialist" "--player-faction argentum --observation-mode embedded"
 
-# 6. Symbiote specialist
-train_agent "ppo-symbiote-specialist" "--player-faction symbiote"
+# 6. Symbiote specialist (embedded to reduce collapse)
+train_agent "ppo-symbiote-specialist" "--player-faction symbiote --observation-mode embedded"
 
-# 7. Obsidion specialist
-train_agent "ppo-obsidion-specialist" "--player-faction obsidion"
+# 7. Obsidion specialist (embedded to reduce collapse)
+train_agent "ppo-obsidion-specialist" "--player-faction obsidion --observation-mode embedded"
 
 # ============================================================
 # Summary
@@ -130,6 +141,11 @@ echo ""
 echo "Models saved to: experiments/ppo/"
 ls -la experiments/ppo/ | grep "$(date +%Y%m%d)" | head -10
 echo ""
+echo "Note: Each agent folder contains:"
+echo "  - final_model.pt (last checkpoint)"
+echo "  - best_model.pt (highest eval win rate)"
+echo "  - summary.txt (training stats)"
+echo ""
 echo "Next steps:"
-echo "  1. Evaluate models: uv run python python/scripts/evaluate_models.py"
+echo "  1. Compare best_model.pt vs final_model.pt for each agent"
 echo "  2. Upload to HuggingFace: uv run python python/scripts/upload_models.py"

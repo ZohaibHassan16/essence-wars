@@ -108,10 +108,14 @@ class PPOConfig:
     # PPO specific
     clip_coef: float = 0.2
     clip_vloss: bool = True
-    ent_coef: float = 0.01
+    ent_coef: float = 0.02  # Increased from 0.01 to reduce policy collapse
     vf_coef: float = 0.5
     max_grad_norm: float = 0.5
     target_kl: float | None = None  # Early stopping KL threshold
+
+    # Early stopping and best checkpoint
+    save_best: bool = True  # Save checkpoint when eval improves
+    early_stopping_patience: int | None = None  # Stop if no improvement for N evals (None = disabled)
 
     # Network
     hidden_dim: int = 256
@@ -339,6 +343,11 @@ class PPOTrainer:
         # Episode tracking
         self.episode_rewards = []
         self.episode_lengths = []
+
+        # Best checkpoint tracking
+        self.best_win_rate = 0.0
+        self.best_checkpoint_path: str | None = None
+        self.evals_without_improvement = 0
 
     def _setup_deck_cycling(self) -> None:
         """Setup deck lists for faction specialist training."""
@@ -592,6 +601,7 @@ class PPOTrainer:
         self,
         total_timesteps: int | None = None,
         callback: Callable[[int, dict], bool] | None = None,
+        save_path: str | None = None,
     ) -> dict:
         """
         Train the agent.
@@ -599,12 +609,18 @@ class PPOTrainer:
         Args:
             total_timesteps: Override config total_timesteps
             callback: Optional callback(step, info) -> should_stop
+            save_path: Directory to save best checkpoints
 
         Returns:
             Training statistics
         """
         total_timesteps = total_timesteps or self.config.total_timesteps
         self.start_time = time.time()
+
+        # Setup best checkpoint path
+        if save_path and self.config.save_best:
+            import os
+            self.best_checkpoint_path = os.path.join(save_path, "best_model.pt")
 
         # Initialize first observation
         self._last_obs, self._last_masks = self.envs.reset(seed=42)
@@ -664,10 +680,29 @@ class PPOTrainer:
             # Evaluation
             if update % (self.config.eval_interval // self.config.batch_size + 1) == 0:
                 win_rate = self.evaluate_vs_greedy(self.config.eval_episodes)
-                print(f"  -> Eval vs Greedy: {win_rate:.1%} win rate")
+                print(f"  -> Eval vs Greedy: {win_rate:.1%} win rate", end="")
+
+                # Best checkpoint saving
+                if win_rate > self.best_win_rate:
+                    self.best_win_rate = win_rate
+                    self.evals_without_improvement = 0
+                    if self.best_checkpoint_path:
+                        self.save(self.best_checkpoint_path)
+                        print(f" [NEW BEST]", end="")
+                else:
+                    self.evals_without_improvement += 1
+
+                print()  # End the line
 
                 if self.writer is not None:
                     self.writer.add_scalar("eval/win_rate_vs_greedy", win_rate, self.global_step)
+                    self.writer.add_scalar("eval/best_win_rate", self.best_win_rate, self.global_step)
+
+                # Early stopping check
+                if (self.config.early_stopping_patience is not None and
+                    self.evals_without_improvement >= self.config.early_stopping_patience):
+                    print(f"  -> Early stopping: no improvement for {self.evals_without_improvement} evals")
+                    break
 
             # Callback
             if callback is not None:
@@ -683,6 +718,7 @@ class PPOTrainer:
             "total_timesteps": self.global_step,
             "mean_reward": np.mean(all_episode_rewards) if all_episode_rewards else 0,
             "final_win_rate": self.evaluate_vs_greedy(100),
+            "best_win_rate": self.best_win_rate,
         }
 
     def evaluate_vs_greedy(self, num_games: int = 100) -> float:

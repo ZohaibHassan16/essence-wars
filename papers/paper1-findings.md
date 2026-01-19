@@ -156,15 +156,53 @@ Extracted from MCTS games for Card2Vec training:
 | Method | Timesteps/Samples | Win Rate vs Greedy | Win Rate vs Random |
 |--------|-------------------|--------------------|--------------------|
 | RandomBot | - | ~15% | 50% |
-| PPO (flat) | 295k | **56%** | 41.5% |
-| PPO (flat) | 1M | 31.5% | 27% |
+| PPO (flat) | 300k | 10.5% | 6.5% |
+| PPO (embedded) | 300k | **60%** | 36% |
+| PPO (pretrained) | 300k | 45.5% | 38.5% |
+| PPO (pretrained-frozen) | 300k | 17.5% | 7.5% |
 | BC (epoch 10) | 900k samples | **59%** | 49% |
 | BC (epoch 50) | 900k samples | 48% | 53% |
 | AlphaZero (5 iter) | 9k samples | 0% | 0% |
 | AlphaZero fine-tune (LR=1e-3) | BC + 10 iter | 0% | - |
 | AlphaZero fine-tune (LR=1e-4) | BC + 10 iter | 0% | - |
 
-### 4.2 AlphaZero Fine-tuning Results
+### 4.2 PPO Architecture Comparison (Embedding Study)
+
+**Experiment**: Compare four PPO architectures over 300k timesteps each.
+
+| Architecture | Input Dim | Peak Win Rate | Final Win Rate | Stability |
+|--------------|-----------|---------------|----------------|-----------|
+| flat | 326 | 63% @ 32k | 10.5% | ❌ Collapsed |
+| embedded | 1,668 | 65% @ 163k | **60%** | ✅ Stable |
+| pretrained | 1,668 | 54% @ 163k | 45.5% | ✅ Stable |
+| pretrained-frozen | 1,668 | 26% @ 229k | 17.5% | ❌ Slow |
+
+**Key Finding**: Learned embeddings dramatically outperform flat input representation.
+
+**Policy Collapse Pattern**: All agents except `embedded` showed performance collapse:
+- `flat`: 63% → 43% → 7% → 10.5%
+- `pretrained`: peaked at 54%, drifted to 45.5%
+- `pretrained-frozen`: never exceeded 26%
+
+**Entropy Analysis**: Entropy dropped from ~1.8 to ~1.0-1.1 across all runs, but `embedded` maintained stable performance while `flat` collapsed. The larger input dimension (1,668 vs 326) may provide implicit regularization.
+
+**Bug Fixes Required**: Two critical bugs were discovered in the embedding implementation:
+1. **Pretrained weights not loading**: `_init_weights()` checked a non-existent attribute, causing pretrained embeddings to be overwritten with random initialization.
+2. **Raw card IDs passed as features**: When `include_embed_section=False`, 170 raw card ID values (1000-4074) were incorrectly passed to the network as unnormalized features, completely breaking learning.
+
+Before fixes: embedded=0%, pretrained=0%. After fixes: embedded=60%, pretrained=45.5%.
+
+### 4.3 Faction Specialist Results
+
+| Specialist | Final Win Rate | Peak Win Rate | Notes |
+|------------|----------------|---------------|-------|
+| Argentum | 10% | 27% @ 163k | Collapsed |
+| Symbiote | 7% | 62% @ 65k | Strong start, collapsed |
+| Obsidion | 2% | 20% @ 65k | Collapsed |
+
+**Key Finding**: Faction specialists suffer from severe policy collapse despite early promising performance. The deck cycling (changing player/opponent decks every 25k steps) may destabilize learning.
+
+### 4.4 AlphaZero Fine-tuning Results
 
 **Experiment**: Initialize AlphaZero with BC checkpoint (59% vs Greedy), continue self-play training.
 
@@ -184,15 +222,17 @@ Extracted from MCTS games for Card2Vec training:
 - Even lower learning rate (1e-5) or learning rate warmup
 - Freeze early layers during initial fine-tuning
 
-### 4.3 Key Observations
+### 4.5 Key Observations
 
-1. **BC outperforms PPO** at similar compute: 59% vs 56% win rate
-2. **Early stopping critical for BC**: Performance drops from 59% → 48% between epoch 10 and 50
-3. **PPO can overfit**: 1M timesteps performed worse than 295k timesteps
-4. **AlphaZero needs more iterations**: 5 iterations insufficient for learning
-5. **Win rate vs Random not correlated with vs Greedy**: Different skills required
+1. **Embeddings are crucial for PPO**: Learned embeddings (60%) dramatically outperform flat input (10.5%)
+2. **End-to-end embeddings beat pretrained**: Learning embeddings jointly with policy (60%) > Card2Vec pretrained (45.5%)
+3. **Freezing embeddings hurts performance**: Frozen pretrained (17.5%) << fine-tuned pretrained (45.5%)
+4. **Policy collapse is a major issue**: Most architectures show strong early performance followed by collapse
+5. **BC still competitive**: BC (59%) matches PPO-embedded (60%) with potentially less compute
+6. **Early stopping critical**: For both BC and PPO, more training often hurts
+7. **Win rate vs Random not correlated with vs Greedy**: Different skills required
 
-### 4.3 Training Efficiency
+### 4.6 Training Efficiency
 
 | Method | Wall Clock Time | Hardware | Throughput |
 |--------|-----------------|----------|------------|
@@ -222,24 +262,41 @@ Extracted from MCTS games for Card2Vec training:
 
 1. **AlphaZero training loop**: Training/evaluation code was outside the iteration loop (indentation bug), causing 0% win rate despite 22 hours of training.
 
+2. **Embedding pretrained weights not loading** (`embeddings.py`): The `_init_weights()` method checked `hasattr(self.card_embedding, '_from_pretrained')`, but PyTorch's `nn.Embedding.from_pretrained()` doesn't set this attribute. Result: pretrained embeddings were always overwritten with random initialization. Fix: Added explicit `_using_pretrained_embeds` flag.
+
+3. **Raw card IDs passed as features** (`embeddings.py`): When `include_embed_section=False`, the embed section (positions 156-325) containing raw card IDs (values 1000-4074) was added back to `non_card_positions`. These 170 unnormalized values (up to 4074) dominated the network input (other features normalized to [-1, 1]), completely preventing learning. Fix: Exclude embed section entirely when not embedding it.
+
+**Impact of embedding bugs**: Before fixes, both `embedded` and `pretrained` modes achieved 0% win rate. After fixes: `embedded`=60%, `pretrained`=45.5%.
+
 ---
 
 ## 6. Planned Experiments
 
 ### 6.1 Embedding Comparison
-- [ ] PPO (flat) vs PPO (embedded) vs PPO (pretrained) sample efficiency
+- [x] PPO (flat) vs PPO (embedded) vs PPO (pretrained) sample efficiency - **Done: embedded wins (60% vs 10.5%)**
 - [ ] Same comparison for AlphaZero
+- [ ] Investigate why pretrained underperforms end-to-end (Card2Vec trained on different objective)
 
 ### 6.2 AlphaZero Fine-tuning
 - [x] BC → AlphaZero fine-tuning (initialize from 59% BC model) - **Failed: catastrophic forgetting**
 - [ ] Test mitigation strategies (KL penalty, mixed replay, lower LR)
 - [ ] Compare to training from scratch (longer run)
+- [ ] Try AlphaZero with embedded architecture
 
 ### 6.3 Faction Specialists
-- [ ] Train PPO specialists per faction
-- [ ] Compare generalist vs specialist performance
+- [x] Train PPO specialists per faction - **Done: all collapsed (2-10% final)**
+- [x] Compare generalist vs specialist performance - **Generalist wins due to specialist collapse**
+- [ ] Investigate deck cycling impact on stability
+- [ ] Try training specialists with embedded architecture
 
-### 6.4 Scaling Laws
+### 6.4 Policy Collapse Investigation
+- [ ] Higher entropy coefficient (0.02-0.05 vs current 0.01)
+- [ ] Lower learning rate (1e-4 vs current 3e-4)
+- [ ] Entropy bonus scheduling (anneal from high to low)
+- [ ] Early stopping based on eval performance (save best checkpoint)
+- [ ] Separate policy and value networks
+
+### 6.5 Scaling Laws
 - [ ] Performance vs compute budget
 - [ ] Performance vs dataset size (BC)
 - [ ] Performance vs MCTS simulations (AlphaZero)
@@ -306,7 +363,8 @@ uv run python python/scripts/train_alphazero.py \
 
 | Model | Path | Performance |
 |-------|------|-------------|
-| PPO (best) | `experiments/ppo/20260119_074234/final_model.pt` | 56% vs Greedy |
+| PPO-embedded (best) | `experiments/ppo/20260119_144555_embedded/final_model.pt` | **60% vs Greedy** |
+| PPO-pretrained | `experiments/ppo/20260119_144650_embedded_pretrained/final_model.pt` | 45.5% vs Greedy |
 | BC (best) | `models/bc_mcts_10k_best.pt` | 59% vs Greedy |
 | Card2Vec | `models/card2vec_20260119_120507.pt` | Embeddings (64-dim) |
 

@@ -84,8 +84,14 @@ def parse_args():
     parser.add_argument(
         "--ent-coef",
         type=float,
-        default=0.01,
-        help="Entropy coefficient (default: 0.01)",
+        default=0.02,
+        help="Entropy coefficient (default: 0.02, higher reduces policy collapse)",
+    )
+    parser.add_argument(
+        "--early-stopping-patience",
+        type=int,
+        default=None,
+        help="Stop if no improvement for N evals (default: None = disabled)",
     )
     parser.add_argument(
         "--hidden-dim",
@@ -294,6 +300,8 @@ def main():
         log_interval=args.log_interval,
         save_interval=args.save_interval,
         device=device,
+        save_best=True,
+        early_stopping_patience=args.early_stopping_patience,
     )
 
     # Create trainer
@@ -312,11 +320,12 @@ def main():
 
     # Train
     try:
-        results = trainer.train(callback=save_callback)
+        results = trainer.train(callback=save_callback, save_path=str(save_path))
     except KeyboardInterrupt:
         print("\nTraining interrupted by user")
         results = {
             "total_timesteps": trainer.global_step,
+            "best_win_rate": trainer.best_win_rate,
             "interrupted": True,
         }
 
@@ -336,12 +345,14 @@ def main():
     print(f"  vs RandomBot: {win_rate_random:.1%} win rate")
 
     # Save summary
+    best_win_rate = results.get("best_win_rate", trainer.best_win_rate)
     summary_path = save_path / "summary.txt"
     with open(summary_path, "w") as f:
         f.write("Essence Wars PPO Training Summary\n")
         f.write("=" * 40 + "\n\n")
         f.write(f"Timesteps: {trainer.global_step:,}\n")
-        f.write(f"Win rate vs Greedy: {win_rate_greedy:.1%}\n")
+        f.write(f"Final win rate vs Greedy: {win_rate_greedy:.1%}\n")
+        f.write(f"Best win rate vs Greedy: {best_win_rate:.1%}\n")
         f.write(f"Win rate vs Random: {win_rate_random:.1%}\n")
         f.write("\nConfig:\n")
         for key, value in vars(config).items():
@@ -350,6 +361,11 @@ def main():
 
     print(f"\nSummary saved to: {summary_path}")
     print(f"Model saved to: {final_path}")
+
+    # Note best model if it was saved
+    best_model_path = save_path / "best_model.pt"
+    if best_model_path.exists():
+        print(f"Best model saved to: {best_model_path} ({best_win_rate:.1%} win rate)")
 
     # Success check
     if win_rate_greedy >= 0.6:

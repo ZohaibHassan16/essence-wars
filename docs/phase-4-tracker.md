@@ -260,7 +260,7 @@ Shadow Rewards: Dense signals for intermediate states (not used for final evalua
 
 ### D3. HuggingFace Publishing
 
-**Namespace**: `christianwissmann/` (personal) or `Chris-Essence-Wars/`
+**Namespace**:  `Chris-Essence-Wars/`
 
 **Models to Upload**:
 | Model | HF Path | Status |
