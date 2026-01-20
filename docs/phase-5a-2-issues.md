@@ -8,16 +8,18 @@
 
 ## Summary
 
-**Overall Phase 5A-2 Status: ~65% Complete**
+**Overall Phase 5A-2 Status: ~75% Complete**
 
 | Category | Status | Blockers |
 |----------|--------|----------|
 | Turn Progression | 90% | Lane-grouped combat |
-| AI Integration | 85% | Introspection pipeline, bot selection UI |
+| AI Integration | 90% | ~~Introspection pipeline~~, bot selection UI |
 | Card Interaction | 40% | Drag-and-drop, spell targeting |
 | Rendering | 50% | Support slots, visual effects |
-| Game Over | 70% | Win reason display, draw condition |
-| Glassbox | 30% | Data pipeline broken |
+| Game Over | 100% | ~~Win reason display~~, ~~draw condition~~, ~~Play Again~~ |
+| Glassbox | 50% | ~~Data pipeline~~ (basic wired, full MCTS tree TBD) |
+
+**Phase 1 Quick Wins: COMPLETE** (5/5 issues resolved)
 
 ---
 
@@ -33,7 +35,8 @@
   - MCTS tree snapshots unavailable to UI
 - **Fix**: After `client.select_bot_action(&mut bot)`, capture `bot.last_decision()` and store in `GameBridge`
 - **Effort**: 30 min
-- **Status**: [ ] Open
+- **Status**: [x] COMPLETED (2026-01-20)
+- **Notes**: Basic pipeline wired - captures timing, action, PolicyOutput. Full MCTS tree snapshot requires implementing `AnalyzableBot` for `MctsBot` (future enhancement).
 
 ### ISSUE-002: Support Slots Not Rendered
 - **Severity**: HIGH (feature incomplete)
@@ -85,7 +88,7 @@
   - Game over screen shows winner but not why they won
 - **Fix**: Pattern match on `reason`, display human-readable text
 - **Effort**: 10 min
-- **Status**: [ ] Open
+- **Status**: [x] COMPLETED (2026-01-20)
 
 ### ISSUE-006: Draw Condition Never Set
 - **Severity**: MEDIUM
@@ -97,7 +100,7 @@
   - UI has placeholder for draw screen but it's unreachable
 - **Fix**: Add check in `check_life_victory()` for simultaneous deaths
 - **Effort**: 15 min
-- **Status**: [ ] Open
+- **Status**: [x] COMPLETED (2026-01-20)
 
 ### ISSUE-007: Bot Type Selection Missing
 - **Severity**: MEDIUM
@@ -183,7 +186,7 @@
   - Should have "Play Again" for quick rematch
 - **Fix**: Add button that calls `bridge.restart_with_seed(new_seed)`
 - **Effort**: 5 min
-- **Status**: [ ] Open
+- **Status**: [x] COMPLETED (2026-01-20)
 
 ---
 
@@ -204,7 +207,7 @@
   2. Show CURRENT player's hand (not always P1) for better spectating
   3. Export `is_human_turn` from `player_input.rs` for reuse
 - **Effort**: 15 min
-- **Status**: [ ] Open
+- **Status**: [x] COMPLETED (2026-01-20)
 
 ### ISSUE-015: HeadlessStats Not Shared with UI
 - **Severity**: LOW
@@ -222,27 +225,27 @@
 
 ## Resolution Order (Recommended)
 
-### Phase 1: Quick Wins (< 1 hour total)
-1. [ ] ISSUE-005: Display win reason (10 min)
-2. [ ] ISSUE-006: Implement draw condition (15 min)
-3. [ ] ISSUE-013: Add "Play Again" button (5 min)
-4. [ ] ISSUE-014: Fix hand display overlap + spectator mode (15 min)
-5. [ ] ISSUE-001: Wire introspection pipeline (30 min)
+### Phase 1: Quick Wins (< 1 hour total) ✅ COMPLETE
+1. [x] ISSUE-005: Display win reason (10 min)
+2. [x] ISSUE-006: Implement draw condition (15 min)
+3. [x] ISSUE-013: Add "Play Again" button (5 min)
+4. [x] ISSUE-014: Fix hand display overlap + spectator mode (15 min)
+5. [x] ISSUE-001: Wire introspection pipeline (30 min)
 
 ### Phase 2: Core Features (2-4 hours)
-5. [ ] ISSUE-007: Bot type selection UI (1-2 hrs)
-6. [ ] ISSUE-003: Spell targeting (2-3 hrs)
+6. [ ] ISSUE-007: Bot type selection UI (1-2 hrs)
+7. [ ] ISSUE-003: Spell targeting (2-3 hrs)
 
 ### Phase 3: Major Features (4-8 hours)
-7. [ ] ISSUE-004: Drag-and-drop interaction (4-6 hrs)
-8. [ ] ISSUE-002: Support slot rendering (3-4 hrs)
-9. [ ] ISSUE-008: Lane-grouped combat (2-3 hrs)
+8. [ ] ISSUE-004: Drag-and-drop interaction (4-6 hrs)
+9. [ ] ISSUE-002: Support slot rendering (3-4 hrs)
+10. [ ] ISSUE-008: Lane-grouped combat (2-3 hrs)
 
 ### Phase 4: Visual Polish (Phase 5A-3)
-10. [ ] ISSUE-009: Gem/crystal creature meshes
-11. [ ] ISSUE-010: Spawn/death effects
-12. [ ] ISSUE-011: Damage number styling
-13. [ ] ISSUE-012: Farsight Table aesthetic
+11. [ ] ISSUE-009: Gem/crystal creature meshes
+12. [ ] ISSUE-010: Spawn/death effects
+13. [ ] ISSUE-011: Damage number styling
+14. [ ] ISSUE-012: Farsight Table aesthetic
 
 ---
 
@@ -262,4 +265,4 @@
 
 ---
 
-*Last Updated: 2026-01-20*
+*Last Updated: 2026-01-20 (Phase 1 Quick Wins completed)*

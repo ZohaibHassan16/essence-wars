@@ -4,10 +4,11 @@
 //! and human-controlled players.
 
 use std::collections::VecDeque;
+use std::time::Instant;
 
 use bevy::prelude::*;
 use cardgame::actions::Action;
-use cardgame::bots::{BotType, IntrospectionConfig, MctsBot, MctsConfig};
+use cardgame::bots::{BotDecision, BotType, IntrospectionConfig, MctsBot, MctsConfig, PolicyOutput, PolicySource};
 use cardgame::client_api::GameEvent;
 
 use super::{AppState, GameBridge, HeadlessStats};
@@ -244,10 +245,12 @@ fn execute_ai_turn(
     );
 
     // Select action using the bot with full engine access
-    // TODO: Add introspection support for Glassbox visualization
+    // Time the decision for introspection
+    let decision_start = Instant::now();
     let Some(action) = client.select_bot_action(&mut bot) else {
         return;
     };
+    let thinking_time_us = decision_start.elapsed().as_micros() as u64;
 
     // Get game info for logging
     let turn = client.get_state().map(|s| s.current_turn).unwrap_or(0);
@@ -263,6 +266,25 @@ fn execute_ai_turn(
             turn, current_player, action
         );
     }
+
+    // Create a basic BotDecision for Glassbox visualization
+    // Note: Full MCTS tree introspection requires implementing AnalyzableBot for MctsBot
+    let bot_decision = BotDecision {
+        turn,
+        player: current_player,
+        action: action.clone(),
+        policy: Some(PolicyOutput {
+            action_scores: vec![(action.clone(), 1.0)], // Placeholder - just the selected action
+            value_estimate: 0.0, // Unknown without full introspection
+            confidence: 1.0,
+            source: PolicySource::Mcts,
+        }),
+        mcts_snapshot: None, // Full snapshot requires AnalyzableBot implementation
+        thinking_time_us,
+    };
+
+    // Store decision for Glassbox visualization
+    bridge.last_decision = Some(bot_decision);
 
     // Now get mutable access to client for applying the action
     let client = bridge.client.as_mut().unwrap();

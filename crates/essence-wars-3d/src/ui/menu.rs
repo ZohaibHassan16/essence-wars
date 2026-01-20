@@ -167,7 +167,7 @@ fn draw_game_over(
             ui.heading(egui::RichText::new("Game Over").size(48.0));
             ui.add_space(20.0);
 
-            if let Some(bridge) = bridge {
+            if let Some(ref bridge) = bridge {
                 if let Some(client) = &bridge.client {
                     if let Some(state) = client.get_state() {
                         if let Some(cardgame::state::GameResult::Win { winner, reason }) = &state.result {
