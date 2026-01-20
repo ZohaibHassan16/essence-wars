@@ -8,19 +8,20 @@
 
 ## Summary
 
-**Overall Phase 5A-2 Status: ~85% Complete**
+**Overall Phase 5A-2 Status: ~95% Complete**
 
 | Category | Status | Blockers |
 |----------|--------|----------|
 | Turn Progression | 90% | Lane-grouped combat |
 | AI Integration | 100% | ~~Introspection pipeline~~, ~~bot selection UI~~ |
-| Card Interaction | 70% | Drag-and-drop, ~~spell targeting~~ |
-| Rendering | 50% | Support slots, visual effects |
+| Card Interaction | 100% | ~~Drag-and-drop~~, ~~spell targeting~~ |
+| Rendering | 90% | ~~Support slots~~, visual effects (Phase 5A-3) |
 | Game Over | 100% | ~~Win reason display~~, ~~draw condition~~, ~~Play Again~~ |
 | Glassbox | 50% | ~~Data pipeline~~ (basic wired, full MCTS tree TBD) |
 
 **Phase 1 Quick Wins: COMPLETE** (5/5 issues resolved)
 **Phase 2 Core Features: COMPLETE** (2/2 issues resolved)
+**Phase 3 Major Features: 2/3 complete** (drag-and-drop, support slots done)
 
 ---
 
@@ -49,7 +50,15 @@
   - Design calls for "Floating Rune Plates" with durability pips
 - **Fix**: Add support slot meshes (floating planes), render support cards, show durability
 - **Effort**: 3-4 hrs
-- **Status**: [ ] Open
+- **Status**: [x] COMPLETED (2026-01-20)
+- **Implementation**:
+  - Added SupportSlot component in board.rs
+  - Support slot markers: purple cylindrical plates at board edges
+  - Created supports.rs module with SupportPlugin
+  - Support cards rendered as glowing cylindrical tokens
+  - Syncs with game state, listens for SupportDurabilityChanged/SupportRemoved events
+  - Low durability visual feedback (darker material when durability <= 1)
+  - Player 1 slots on left edge, Player 2 on right edge
 
 ### ISSUE-003: Spell Targeting Incomplete
 - **Severity**: HIGH (feature incomplete)
@@ -83,8 +92,15 @@
   - Missing: trajectory line, snap-to-slot, visual feedback during drag
 - **Fix**: Implement egui drag payload system or 3D raycasting for drag-and-drop
 - **Effort**: 4-6 hrs
-- **Status**: [ ] Open
+- **Status**: [x] COMPLETED (2026-01-20)
 - **Decision**: User confirmed: implement drag-and-drop
+- **Implementation**:
+  - Added CardDragPayload struct with hand_index and CardSlotType
+  - Creatures and Supports: Drag from hand using `ui.dnd_drag_source()`
+  - Drop zones appear when dragging, using `ui.dnd_drop_zone()`
+  - Visual feedback: Semi-transparent overlay with slot buttons
+  - Spells still use click-to-select modal (for targeting UI)
+  - Empty/occupied slots have different colors (green/red)
 
 ---
 
@@ -252,9 +268,9 @@
 6. [x] ISSUE-007: Bot type selection UI (1-2 hrs)
 7. [x] ISSUE-003: Spell targeting (2-3 hrs)
 
-### Phase 3: Major Features (4-8 hours)
-8. [ ] ISSUE-004: Drag-and-drop interaction (4-6 hrs)
-9. [ ] ISSUE-002: Support slot rendering (3-4 hrs)
+### Phase 3: Major Features (4-8 hours) - IN PROGRESS
+8. [x] ISSUE-004: Drag-and-drop interaction (4-6 hrs)
+9. [x] ISSUE-002: Support slot rendering (3-4 hrs)
 10. [ ] ISSUE-008: Lane-grouped combat (2-3 hrs)
 
 ### Phase 4: Visual Polish (Phase 5A-3)

@@ -4,6 +4,9 @@
 //! - Attack animations (creature movement)
 //! - Damage number displays
 //! - Visual feedback for combat resolution
+//! - Lane-grouped combat (processes combats sequentially by lane with delays)
+
+use std::collections::VecDeque;
 
 use bevy::prelude::*;
 use cardgame::client_api::GameEvent;
@@ -21,7 +24,8 @@ impl Plugin for CombatPlugin {
             .add_systems(
                 Update,
                 (
-                    process_combat_events,
+                    queue_combat_events,
+                    process_combat_queue,
                     animate_attacks,
                     animate_damage_numbers,
                 )
@@ -32,11 +36,29 @@ impl Plugin for CombatPlugin {
     }
 }
 
+/// A queued combat event with lane information.
+#[derive(Clone)]
+pub struct QueuedCombat {
+    /// Lane index (0-4) - used for grouping
+    pub lane: u8,
+    /// The original combat event data
+    pub attacker_player: PlayerId,
+    pub attacker_slot: u8,
+    pub defender_player: PlayerId,
+    pub defender_slot: u8,
+}
+
 /// Resource tracking current combat state.
 #[derive(Resource, Default)]
 pub struct CombatState {
     /// Active attack animation (if any)
     pub active_attack: Option<AttackAnimation>,
+    /// Queue of pending combat events (processed sequentially)
+    pub combat_queue: VecDeque<QueuedCombat>,
+    /// Delay timer between lane combats
+    pub lane_delay_timer: Option<Timer>,
+    /// Last processed lane (for grouping visualization)
+    pub last_lane: Option<u8>,
 }
 
 /// Data for an active attack animation.

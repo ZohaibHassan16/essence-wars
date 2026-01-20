@@ -1,16 +1,18 @@
-//! 3D rendering module for the game board and creatures.
+//! 3D rendering module for the game board, creatures, and supports.
 
 mod board;
 mod camera;
 mod combat;
 mod creatures;
 mod lighting;
+mod supports;
 
 pub use board::BoardPlugin;
 pub use camera::CameraPlugin;
 pub use combat::CombatPlugin;
 pub use creatures::CreaturePlugin;
 pub use lighting::LightingPlugin;
+pub use supports::SupportPlugin;
 
 use bevy::prelude::*;
 
@@ -23,6 +25,7 @@ impl Plugin for RenderingPlugin {
             .add_plugins(CameraPlugin)
             .add_plugins(CombatPlugin)
             .add_plugins(CreaturePlugin)
-            .add_plugins(LightingPlugin);
+            .add_plugins(LightingPlugin)
+            .add_plugins(SupportPlugin);
     }
 }
