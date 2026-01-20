@@ -340,23 +340,33 @@ class NeuralMctsBot:
                 self.config.dirichlet_epsilon,
             )
 
+        # Get root player for value perspective tracking
+        root_player = game.current_player()
+
         # Run simulations
         for _ in range(self.config.num_simulations):
             # Fork game for simulation
             sim_game = game.fork()
             node = root
             search_path = [node]
+            # Track player at each position (before each action)
+            players_at_nodes = [root_player]
 
             # Selection: traverse tree using UCB
             while node.is_expanded and not sim_game.is_done():
                 action, node = node.select_child(self.config.c_puct)
                 sim_game.step(action)
                 search_path.append(node)
+                # Track player at this new position (or -1 if terminal)
+                players_at_nodes.append(
+                    sim_game.current_player() if not sim_game.is_done() else -1
+                )
 
-            # Get value
+            # Get value from the leaf position
             if sim_game.is_done():
-                # Terminal: use actual result
-                value = sim_game.get_reward(0)
+                # Terminal: use actual result from root player's perspective
+                value = sim_game.get_reward(root_player)
+                leaf_from_root_perspective = True
             else:
                 # Non-terminal: expand and evaluate
                 sim_obs = sim_game.observe()
@@ -366,14 +376,31 @@ class NeuralMctsBot:
                 if sim_legal:
                     policy, value = self._evaluate(sim_obs, sim_mask)
                     node.expand(sim_legal, policy)
+                    # Neural net returns value from current player's perspective
+                    leaf_player = sim_game.current_player()
+                    # Convert to root player's perspective
+                    if leaf_player != root_player:
+                        value = -value
+                    leaf_from_root_perspective = True
                 else:
                     value = 0.0
+                    leaf_from_root_perspective = True
 
             # Backup: propagate value up the tree
-            for node in reversed(search_path):
+            # Value is always from root_player's perspective
+            for i, node in enumerate(reversed(search_path)):
+                # Get index in forward order
+                idx = len(search_path) - 1 - i
+                player_at_node = players_at_nodes[idx]
+
+                # Store value from this player's perspective
+                if player_at_node == root_player:
+                    node_value = value
+                else:
+                    node_value = -value
+
                 node.visit_count += 1
-                node.value_sum += value
-                value = -value  # Flip for opponent
+                node.value_sum += node_value
 
         # Get action probabilities from visit counts
         action_probs = np.zeros(256, dtype=np.float32)
