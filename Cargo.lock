@@ -2137,6 +2137,7 @@ dependencies = [
  "cardgame",
  "console_error_panic_hook",
  "getrandom 0.3.4",
+ "js-sys",
  "serde",
  "serde_json",
  "wasm-bindgen",

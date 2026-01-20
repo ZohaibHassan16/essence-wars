@@ -53,9 +53,18 @@ fn hide_loading_after_startup(mut ran: Local<bool>) {
 }
 
 fn main() {
-    // Very first thing - log that main() was called (using simple extern)
+    // Very first thing - log that main() was called (try multiple methods)
     #[cfg(target_arch = "wasm32")]
-    log("[Essence Wars] main() called!");
+    {
+        // Method 1: Our extern log
+        log("[Essence Wars] main() called! (extern)");
+
+        // Method 2: js_sys::eval as fallback
+        let _ = js_sys::eval("console.log('[Essence Wars] main() called! (js_sys::eval)')");
+
+        // Method 3: web_sys
+        web_sys::console::log_1(&"[Essence Wars] main() called! (web_sys)".into());
+    }
 
     // WASM-specific initialization
     #[cfg(target_arch = "wasm32")]

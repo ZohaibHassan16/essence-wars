@@ -157,9 +157,24 @@
             document.querySelector('.loading-progress').textContent = 'Error: ' + event.reason;
         });
 
-        // Listen for WASM module events
+        // Listen for WASM module events and call main()
         window.addEventListener('TrunkApplicationStarted', function(event) {
             console.log('[Essence Wars] TrunkApplicationStarted event received!', event.detail);
+
+            // The WASM exports main() but it's not being called automatically
+            // Let's call it manually
+            if (event.detail && event.detail.wasm && event.detail.wasm.main) {
+                console.log('[Essence Wars] Calling wasm.main() manually...');
+                try {
+                    event.detail.wasm.main();
+                    console.log('[Essence Wars] wasm.main() returned');
+                } catch (e) {
+                    console.error('[Essence Wars] Error calling main():', e);
+                    document.querySelector('.loading-progress').textContent = 'Error: ' + e.message;
+                }
+            } else {
+                console.error('[Essence Wars] No main() function found in WASM exports!');
+            }
         });
 
         console.log('[Essence Wars] Error handlers installed');
