@@ -20,12 +20,34 @@ pub enum AppState {
     GameOver,
 }
 
+/// What type of card is being dragged.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+pub enum DragType {
+    #[default]
+    None,
+    Creature,
+    Support,
+}
+
+/// Resource tracking drag state for slot highlighting.
+/// Shared between UI (sets it) and rendering (reads it to highlight slots).
+#[derive(Resource, Default)]
+pub struct DragState {
+    /// What type of card is being dragged
+    pub drag_type: DragType,
+    /// Which slots are occupied (for showing red vs green highlight)
+    pub occupied_slots: [bool; 5],
+    /// Which support slots are occupied
+    pub occupied_supports: [bool; 2],
+}
+
 /// Plugin that manages game state and the cardgame engine integration.
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<AppState>()
+            .init_resource::<DragState>()
             .add_plugins(TurnLoopPlugin)
             .add_systems(OnEnter(AppState::Loading), setup_game_resources)
             .add_systems(Update, check_loading_complete.run_if(in_state(AppState::Loading)));

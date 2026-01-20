@@ -9,6 +9,6 @@ mod stats;
 pub mod turn_loop;
 
 pub use bridge::GameBridge;
-pub use state::{AppState, GamePlugin};
+pub use state::{AppState, DragState, DragType, GamePlugin};
 pub use stats::HeadlessStats;
 pub use turn_loop::GameEventWrapper;

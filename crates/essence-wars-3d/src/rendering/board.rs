@@ -7,14 +7,18 @@
 
 use bevy::prelude::*;
 use cardgame::decks::Faction;
-use crate::game::{AppState, GameBridge};
+use crate::game::{AppState, DragState, DragType, GameBridge};
 
 /// Plugin for rendering the game board.
 pub struct BoardPlugin;
 
 impl Plugin for BoardPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(AppState::Playing), spawn_board)
+        app.add_systems(OnEnter(AppState::Playing), (spawn_board, setup_slot_materials))
+            .add_systems(
+                Update,
+                highlight_slots_on_drag.run_if(in_state(AppState::Playing)),
+            )
             .add_systems(OnExit(AppState::Playing), despawn_board);
     }
 }
@@ -46,6 +50,23 @@ pub struct SupportSlot {
 /// Component marking the lane divider.
 #[derive(Component)]
 pub struct LaneDivider;
+
+/// Resource holding material handles for slot highlighting.
+#[derive(Resource)]
+pub struct SlotMaterials {
+    /// Normal materials for creature slots (player 1, player 2)
+    pub creature_normal: [Handle<StandardMaterial>; 2],
+    /// Highlighted materials for creature slots (player 1, player 2)
+    pub creature_highlight: [Handle<StandardMaterial>; 2],
+    /// Occupied (red) materials for creature slots
+    pub creature_occupied: Handle<StandardMaterial>,
+    /// Normal materials for support slots (player 1, player 2)
+    pub support_normal: [Handle<StandardMaterial>; 2],
+    /// Highlighted materials for support slots (player 1, player 2)
+    pub support_highlight: [Handle<StandardMaterial>; 2],
+    /// Occupied (red) materials for support slots
+    pub support_occupied: Handle<StandardMaterial>,
+}
 
 /// Get Player 1's faction from the current game.
 fn get_player1_faction(bridge: &GameBridge) -> Option<Faction> {
@@ -297,4 +318,159 @@ fn despawn_board(
         commands.entity(entity).despawn_recursive();
     }
     info!("Game board despawned");
+}
+
+/// Set up slot materials for highlighting.
+fn setup_slot_materials(
+    mut commands: Commands,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    // Player 1 creature slot - normal (semi-transparent blue)
+    let creature_normal_p1 = materials.add(StandardMaterial {
+        base_color: Color::srgba(0.2, 0.4, 0.8, 0.3),
+        alpha_mode: AlphaMode::Blend,
+        ..default()
+    });
+
+    // Player 2 creature slot - normal (semi-transparent red)
+    let creature_normal_p2 = materials.add(StandardMaterial {
+        base_color: Color::srgba(0.8, 0.2, 0.2, 0.3),
+        alpha_mode: AlphaMode::Blend,
+        ..default()
+    });
+
+    // Player 1 creature slot - highlighted (brighter blue with glow)
+    let creature_highlight_p1 = materials.add(StandardMaterial {
+        base_color: Color::srgba(0.3, 0.6, 1.0, 0.6),
+        alpha_mode: AlphaMode::Blend,
+        emissive: LinearRgba::new(0.2, 0.4, 0.8, 1.0),
+        ..default()
+    });
+
+    // Player 2 creature slot - highlighted (brighter red with glow)
+    let creature_highlight_p2 = materials.add(StandardMaterial {
+        base_color: Color::srgba(1.0, 0.3, 0.3, 0.6),
+        alpha_mode: AlphaMode::Blend,
+        emissive: LinearRgba::new(0.8, 0.2, 0.2, 1.0),
+        ..default()
+    });
+
+    // Occupied slot (red warning)
+    let creature_occupied = materials.add(StandardMaterial {
+        base_color: Color::srgba(0.8, 0.1, 0.1, 0.5),
+        alpha_mode: AlphaMode::Blend,
+        emissive: LinearRgba::new(0.5, 0.0, 0.0, 1.0),
+        ..default()
+    });
+
+    // Player 1 support slot - normal (semi-transparent purple)
+    let support_normal_p1 = materials.add(StandardMaterial {
+        base_color: Color::srgba(0.4, 0.2, 0.6, 0.4),
+        alpha_mode: AlphaMode::Blend,
+        emissive: LinearRgba::new(0.05, 0.02, 0.08, 1.0),
+        ..default()
+    });
+
+    // Player 2 support slot - normal (semi-transparent magenta)
+    let support_normal_p2 = materials.add(StandardMaterial {
+        base_color: Color::srgba(0.6, 0.2, 0.4, 0.4),
+        alpha_mode: AlphaMode::Blend,
+        emissive: LinearRgba::new(0.08, 0.02, 0.05, 1.0),
+        ..default()
+    });
+
+    // Player 1 support slot - highlighted (brighter purple with glow)
+    let support_highlight_p1 = materials.add(StandardMaterial {
+        base_color: Color::srgba(0.6, 0.3, 0.9, 0.7),
+        alpha_mode: AlphaMode::Blend,
+        emissive: LinearRgba::new(0.3, 0.15, 0.5, 1.0),
+        ..default()
+    });
+
+    // Player 2 support slot - highlighted
+    let support_highlight_p2 = materials.add(StandardMaterial {
+        base_color: Color::srgba(0.9, 0.3, 0.6, 0.7),
+        alpha_mode: AlphaMode::Blend,
+        emissive: LinearRgba::new(0.5, 0.15, 0.3, 1.0),
+        ..default()
+    });
+
+    // Occupied support slot
+    let support_occupied = materials.add(StandardMaterial {
+        base_color: Color::srgba(0.8, 0.1, 0.1, 0.5),
+        alpha_mode: AlphaMode::Blend,
+        emissive: LinearRgba::new(0.5, 0.0, 0.0, 1.0),
+        ..default()
+    });
+
+    commands.insert_resource(SlotMaterials {
+        creature_normal: [creature_normal_p1, creature_normal_p2],
+        creature_highlight: [creature_highlight_p1, creature_highlight_p2],
+        creature_occupied,
+        support_normal: [support_normal_p1, support_normal_p2],
+        support_highlight: [support_highlight_p1, support_highlight_p2],
+        support_occupied,
+    });
+
+    info!("Slot materials initialized for highlighting");
+}
+
+/// Highlight slots based on current drag state.
+fn highlight_slots_on_drag(
+    drag_state: Res<DragState>,
+    slot_materials: Option<Res<SlotMaterials>>,
+    mut creature_slots: Query<(&CreatureSlot, &mut MeshMaterial3d<StandardMaterial>)>,
+    mut support_slots: Query<
+        (&SupportSlot, &mut MeshMaterial3d<StandardMaterial>),
+        Without<CreatureSlot>,
+    >,
+) {
+    let Some(materials) = slot_materials else {
+        return;
+    };
+
+    // Update creature slot materials
+    for (slot, mut material) in creature_slots.iter_mut() {
+        // Only highlight player 1's slots (the human player)
+        if slot.player != 0 {
+            // Reset player 2 slots to normal
+            material.0 = materials.creature_normal[1].clone();
+            continue;
+        }
+
+        let new_material = match drag_state.drag_type {
+            DragType::Creature => {
+                // Check if this slot is occupied
+                if drag_state.occupied_slots[slot.index] {
+                    materials.creature_occupied.clone()
+                } else {
+                    materials.creature_highlight[0].clone()
+                }
+            }
+            _ => materials.creature_normal[0].clone(),
+        };
+        material.0 = new_material;
+    }
+
+    // Update support slot materials
+    for (slot, mut material) in support_slots.iter_mut() {
+        // Only highlight player 1's slots
+        if slot.player != 0 {
+            material.0 = materials.support_normal[1].clone();
+            continue;
+        }
+
+        let new_material = match drag_state.drag_type {
+            DragType::Support => {
+                // Check if this slot is occupied
+                if drag_state.occupied_supports[slot.index] {
+                    materials.support_occupied.clone()
+                } else {
+                    materials.support_highlight[0].clone()
+                }
+            }
+            _ => materials.support_normal[0].clone(),
+        };
+        material.0 = new_material;
+    }
 }
