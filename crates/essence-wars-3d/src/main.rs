@@ -24,6 +24,10 @@ extern "C" {
 
     #[wasm_bindgen(js_namespace = window)]
     fn updateLoadingProgress(text: &str);
+
+    // Direct console.log access
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
 }
 
 /// WASM entry point
@@ -33,7 +37,7 @@ fn setup_wasm() {
     console_error_panic_hook::set_once();
 
     // Log to browser console
-    web_sys::console::log_1(&"[Essence Wars] WASM module starting...".into());
+    log("[Essence Wars] WASM module starting...");
 
     // Update loading progress
     updateLoadingProgress("Initializing game engine...");
@@ -49,9 +53,16 @@ fn hide_loading_after_startup(mut ran: Local<bool>) {
 }
 
 fn main() {
+    // Very first thing - log that main() was called (using simple extern)
+    #[cfg(target_arch = "wasm32")]
+    log("[Essence Wars] main() called!");
+
     // WASM-specific initialization
     #[cfg(target_arch = "wasm32")]
     setup_wasm();
+
+    #[cfg(target_arch = "wasm32")]
+    log("[Essence Wars] Creating Bevy App...");
 
     let mut app = App::new();
 
@@ -70,7 +81,7 @@ fn main() {
 
     #[cfg(target_arch = "wasm32")]
     {
-        web_sys::console::log_1(&"[Essence Wars] Configuring Bevy for WASM...".into());
+        log("[Essence Wars] Configuring Bevy for WASM...");
         app.add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Essence Wars - Glassbox Mode".into(),
@@ -83,7 +94,7 @@ fn main() {
             }),
             ..default()
         }));
-        web_sys::console::log_1(&"[Essence Wars] Bevy plugins configured".into());
+        log("[Essence Wars] Bevy plugins configured");
     }
 
     app.add_plugins(EguiPlugin)
@@ -96,5 +107,12 @@ fn main() {
     #[cfg(target_arch = "wasm32")]
     app.add_systems(Update, hide_loading_after_startup);
 
+    #[cfg(target_arch = "wasm32")]
+    log("[Essence Wars] Starting Bevy app.run()...");
+
     app.run();
+
+    // This won't be reached in WASM since app.run() takes over
+    #[cfg(target_arch = "wasm32")]
+    log("[Essence Wars] app.run() returned (unexpected in WASM)");
 }
