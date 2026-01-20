@@ -482,8 +482,13 @@ def get_dataset_stats(path: str | Path, max_games: int | None = None) -> dict[st
             total_games += 1
             total_moves += len(game["moves"])
 
-            decks.add(game["deck1"])
-            decks.add(game["deck2"])
+            # Handle both original MCTS format (deck1/deck2) and ExIt format (game_seed)
+            if "deck1" in game:
+                decks.add(game["deck1"])
+            if "deck2" in game:
+                decks.add(game["deck2"])
+            if "game_seed" in game:
+                decks.add(f"seed_{game['game_seed']}")
 
             if game["winner"] == 0:
                 p1_wins += 1
