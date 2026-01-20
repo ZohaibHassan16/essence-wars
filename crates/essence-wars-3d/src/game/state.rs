@@ -2,6 +2,8 @@
 
 use bevy::prelude::*;
 
+use super::turn_loop::TurnLoopPlugin;
+
 /// Main application states for the game.
 #[derive(States, Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum AppState {
@@ -22,6 +24,7 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<AppState>()
+            .add_plugins(TurnLoopPlugin)
             .add_systems(OnEnter(AppState::Loading), setup_game_resources)
             .add_systems(Update, check_loading_complete.run_if(in_state(AppState::Loading)));
     }

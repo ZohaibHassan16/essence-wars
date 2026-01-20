@@ -7,7 +7,7 @@
 
 use std::sync::Arc;
 
-use crate::bots::Bot;
+use crate::bots::{AnalyzableBot, Bot, BotDecision, IntrospectionConfig};
 use crate::client_api::diff::{diff_states, StateSnapshot};
 use crate::client_api::events::GameEvent;
 use crate::core::actions::Action;
@@ -401,6 +401,9 @@ impl GameClient {
     /// Get a hint from an AI bot for the current position.
     ///
     /// This is useful for showing suggested moves to human players.
+    /// Note: This uses the basic `select_action()` method which may not work
+    /// optimally for bots that need engine simulation (like MCTS/Greedy).
+    /// Use `select_bot_action()` for full bot functionality.
     pub fn get_ai_hint(&self, bot: &mut dyn Bot) -> Option<Action> {
         let engine = self.engine.as_ref()?;
 
@@ -414,6 +417,43 @@ impl GameClient {
         let legal_actions = engine.get_legal_actions();
 
         Some(bot.select_action(&state_tensor, &legal_mask, &legal_actions))
+    }
+
+    /// Select an action using a bot with full engine access.
+    ///
+    /// This method gives bots access to the game engine, enabling simulation-based
+    /// bots like MCTS and GreedyBot to use their full capabilities (tree search,
+    /// action evaluation via simulation, etc.).
+    ///
+    /// Returns None if the game is not active or is already terminal.
+    pub fn select_bot_action(&self, bot: &mut dyn Bot) -> Option<Action> {
+        let engine = self.engine.as_ref()?;
+
+        if engine.is_terminal() {
+            return None;
+        }
+
+        Some(bot.select_action_with_engine(engine))
+    }
+
+    /// Select an action using an analyzable bot with introspection data.
+    ///
+    /// This method returns both the selected action and introspection data
+    /// (policy outputs, MCTS tree snapshots, etc.) for visualization.
+    ///
+    /// Returns None if the game is not active or is already terminal.
+    pub fn select_bot_action_with_introspection(
+        &self,
+        bot: &mut dyn AnalyzableBot,
+        config: &IntrospectionConfig,
+    ) -> Option<(Action, Option<BotDecision>)> {
+        let engine = self.engine.as_ref()?;
+
+        if engine.is_terminal() {
+            return None;
+        }
+
+        Some(bot.select_action_with_introspection(engine, config))
     }
 
     /// Get the card database.

@@ -1066,17 +1066,24 @@ fn load_cards() -> String {
 
 ## 11. Implementation Roadmap
 
-### Phase 5A-1: WASM Foundation
+### Phase 5A-1: WASM Foundation ✅
 
 **Goal:** Prove the technical pipeline works.
 
-- [ ] Add `web` feature flag to `cardgame` crate
-- [ ] Feature-gate `rayon` usage
-- [ ] Embed card/deck data for WASM builds
-- [ ] Configure Trunk build pipeline
-- [ ] Get basic Bevy scene running in browser
-- [ ] Benchmark MCTS performance in WASM
-- [ ] Set up HuggingFace Space (placeholder)
+- [x] Add `web` feature flag to `cardgame` crate
+- [x] Feature-gate `rayon` usage (parallel/sequential code paths)
+- [x] Embed card/deck data for WASM builds (`embedded_data.rs`)
+- [x] Configure Trunk build pipeline (`Trunk.toml`, `index.html`)
+- [x] Get basic Bevy scene running in browser
+- [x] Benchmark MCTS performance in WASM (~50 games/sec native baseline)
+- [ ] Set up HuggingFace Space (deferred until polish complete)
+
+**Implementation Notes (2026-01-20):**
+- WASM binary size: ~29MB (release, wasm-opt)
+- Required manual `main()` call via JS (wasm-bindgen quirk with Trunk)
+- Fixed tonemapping (Reinhard, no LUT required)
+- Fixed deck defaults to MVP decks
+- All 634 cardgame tests pass
 
 ### Phase 5A-2: Core Gameplay Loop
 
