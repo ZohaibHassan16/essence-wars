@@ -1,0 +1,30 @@
+# Trunk configuration for Essence Wars 3D WASM build
+# Build with: trunk build --release
+# Serve with: trunk serve
+
+[build]
+# Target the essence-wars-3d binary
+target = "index.html"
+# Release builds for deployment
+release = true
+# Output directory
+dist = "dist"
+
+[watch]
+# Watch these paths for changes
+watch = ["src", "index.html"]
+# Ignore these patterns (use absolute paths for workspace-level directories)
+ignore = ["dist"]
+
+[serve]
+# Development server settings
+addresses = ["127.0.0.1"]
+port = 8080
+# Open browser automatically
+open = false
+
+[[hooks]]
+# Copy assets to dist folder
+stage = "post_build"
+command = "sh"
+command_arguments = ["-c", "cp -r ../../assets dist/ 2>/dev/null || true"]

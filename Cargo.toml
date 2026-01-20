@@ -33,5 +33,5 @@ anyhow = "1.0"
 criterion = "0.5"
 proptest = "1.4"
 
-# Internal crate
-cardgame = { path = "crates/cardgame" }
+# Internal crate (default-features = false to allow target-specific feature selection)
+cardgame = { path = "crates/cardgame", default-features = false }

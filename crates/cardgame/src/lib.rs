@@ -21,12 +21,16 @@ pub mod tensor;
 pub mod bots;
 pub mod arena;
 pub mod decks;
+
+// Tuning module (requires parallel feature for heavy computation)
+#[cfg(feature = "parallel")]
 pub mod tuning;
 
-// Execution utilities for parallel game running
+// Execution utilities for game running (parallel when available)
 pub mod execution;
 
-// Validation module for balance testing
+// Validation module for balance testing (requires parallel feature)
+#[cfg(feature = "parallel")]
 pub mod validation;
 
 // Diagnostics module for P1/P2 asymmetry analysis
@@ -37,6 +41,9 @@ pub mod client_api;
 
 // Replay system for game recording and playback
 pub mod replay;
+
+// Embedded data for WASM/web builds (no filesystem access)
+pub mod embedded_data;
 
 // Python bindings (only compiled with --features python)
 #[cfg(feature = "python")]
@@ -75,6 +82,9 @@ pub use decks::{DeckDefinition, DeckRegistry, DeckError, Faction, FactionParseEr
 /// 1. CARDGAME_DATA_DIR environment variable
 /// 2. Relative to workspace root (crates/cardgame -> ../../data)
 /// 3. Fallback to "data" (for when running from workspace root)
+///
+/// Note: Not available in WASM builds - use embedded data instead.
+#[cfg(not(target_arch = "wasm32"))]
 pub fn data_dir() -> std::path::PathBuf {
     std::env::var("CARDGAME_DATA_DIR")
         .map(std::path::PathBuf::from)

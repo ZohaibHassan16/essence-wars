@@ -4,13 +4,18 @@ version.workspace = true
 edition.workspace = true
 description = "3D Bevy client for Essence Wars card game"
 
+[features]
+default = []
+dev = ["bevy/dynamic_linking"]
+# Web feature enables WASM-compatible cardgame
+web = ["cardgame/web"]
+
 [dependencies]
-cardgame.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 anyhow.workspace = true
 
-# Bevy with audio disabled (avoids alsa-sys dependency on Linux)
+# Common Bevy features for both native and web
 bevy = { version = "0.15", default-features = false, features = [
     "bevy_asset",
     "bevy_color",
@@ -25,13 +30,28 @@ bevy = { version = "0.15", default-features = false, features = [
     "bevy_ui",
     "bevy_window",
     "bevy_winit",
-    "multi_threaded",
     "png",
-    "x11",
-    "wayland",
 ] }
 bevy_egui = "0.31"
 
-[features]
-default = []
-dev = ["bevy/dynamic_linking"]
+# Native-only: cardgame with parallel feature, platform-specific Bevy features
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+cardgame = { workspace = true, features = ["parallel"] }
+bevy = { version = "0.15", default-features = false, features = [
+    "multi_threaded",
+    "x11",
+    "wayland",
+] }
+
+# WASM-only: cardgame with web feature, WebGL2 rendering
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+cardgame = { workspace = true, features = ["web"] }
+bevy = { version = "0.15", default-features = false, features = [
+    "webgl2",
+] }
+# WASM utilities
+wasm-bindgen = "0.2"
+web-sys = { version = "0.3", features = ["Window"] }
+console_error_panic_hook = "0.1"
+# Enable JS-based random number generation for WASM
+getrandom = { version = "0.3", features = ["wasm_js"] }

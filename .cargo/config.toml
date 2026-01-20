@@ -1,0 +1,10 @@
+# Cargo configuration for Essence Wars
+
+# WASM-specific settings
+[target.wasm32-unknown-unknown]
+rustflags = [
+    # Enable getrandom's JS backend for WASM builds
+    "--cfg=getrandom_backend=\"wasm_js\"",
+    # Enable unstable web-sys APIs for bevy_egui clipboard support
+    "--cfg=web_sys_unstable_apis",
+]

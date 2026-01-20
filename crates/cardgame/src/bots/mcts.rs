@@ -6,11 +6,13 @@
 //! - GreedyBot for rollout policy (smarter than random)
 
 use std::cell::RefCell;
+#[cfg(feature = "parallel")]
 use std::collections::HashMap;
 use std::rc::Rc;
 
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
+#[cfg(feature = "parallel")]
 use rayon::prelude::*;
 
 use crate::actions::Action;
@@ -181,6 +183,7 @@ impl MctsNode {
     }
 
     /// Record multiple visits and wins (for parallel rollouts).
+    #[cfg(feature = "parallel")]
     fn update_batch(&mut self, num_visits: u32, num_wins: u32) {
         self.visits += num_visits;
         self.wins += num_wins as i32;
@@ -229,6 +232,8 @@ impl<'a> MctsBot<'a> {
     }
 
     /// Load default rollout weights from file, or use hardcoded defaults.
+    /// Note: In WASM builds, always uses hardcoded defaults (no filesystem access).
+    #[cfg(not(target_arch = "wasm32"))]
     fn load_default_weights() -> Option<GreedyWeights> {
         let default_path = crate::data_dir().join("weights/default.toml");
         match BotWeights::load(&default_path) {
@@ -241,6 +246,12 @@ impl<'a> MctsBot<'a> {
                 None
             }
         }
+    }
+
+    /// WASM version: always use hardcoded defaults (no filesystem access).
+    #[cfg(target_arch = "wasm32")]
+    fn load_default_weights() -> Option<GreedyWeights> {
+        None // Use hardcoded defaults in rollouts
     }
 
     /// Create an MCTS bot with custom configuration.
@@ -323,6 +334,7 @@ impl<'a> MctsBot<'a> {
 
     /// Run parallel MCTS search with multiple independent trees.
     /// Each tree runs independently, then we vote on the best action.
+    #[cfg(feature = "parallel")]
     fn search_parallel(&mut self, engine: &GameEngine, legal_actions: &[Action]) -> Action {
         let num_trees = self.config.parallel_trees as usize;
         let config = self.config.clone();
@@ -360,6 +372,14 @@ impl<'a> MctsBot<'a> {
             .max_by_key(|(_, count)| *count)
             .map(|(action, _)| action)
             .unwrap_or(legal_actions[0])
+    }
+
+    /// Sequential fallback for parallel search (used in WASM builds).
+    #[cfg(not(feature = "parallel"))]
+    fn search_parallel(&mut self, engine: &GameEngine, legal_actions: &[Action]) -> Action {
+        // Without parallel feature, fall back to single-tree search
+        // This ignores parallel_trees config, but WASM users should set it to 1 anyway
+        self.search_single_tree(engine, legal_actions)
     }
 
     /// Run a single MCTS tree search (sequential).
@@ -405,7 +425,8 @@ impl<'a> MctsBot<'a> {
             }
 
             // Rollout: simulate to end using GreedyBot
-            // Use parallel rollouts if configured
+            // Use parallel rollouts if configured and parallel feature is enabled
+            #[cfg(feature = "parallel")]
             if self.config.leaf_rollouts > 1 {
                 let num_rollouts = self.config.leaf_rollouts as usize;
                 let seeds: Vec<u64> = (0..num_rollouts).map(|i| self.rng.gen::<u64>().wrapping_add(i as u64)).collect();
@@ -436,6 +457,15 @@ impl<'a> MctsBot<'a> {
                     node.borrow_mut().update(win);
                 }
             }
+
+            // Sequential rollout when parallel feature is disabled
+            #[cfg(not(feature = "parallel"))]
+            {
+                let win = self.rollout(&mut sim_engine, player);
+                for node in path.iter() {
+                    node.borrow_mut().update(win);
+                }
+            }
         }
 
         // Select most visited action
@@ -451,6 +481,7 @@ impl<'a> MctsBot<'a> {
     }
 
     /// Static helper for parallel tree search (no &self needed).
+    #[cfg(feature = "parallel")]
     fn search_tree_static(
         engine: &GameEngine,
         legal_actions: &[Action],
@@ -577,6 +608,7 @@ impl<'a> MctsBot<'a> {
     }
 
     /// Static version of rollout for parallel execution.
+    #[cfg(feature = "parallel")]
     fn rollout_static(
         engine: &mut GameEngine,
         perspective: PlayerId,

@@ -49,6 +49,8 @@ impl<'a> GreedyBot<'a> {
     }
 
     /// Load default weights from file, or use hardcoded defaults.
+    /// Note: In WASM builds, always uses hardcoded defaults (no filesystem access).
+    #[cfg(not(target_arch = "wasm32"))]
     fn load_default_weights() -> GreedyWeights {
         let default_path = crate::data_dir().join("weights/default.toml");
         match BotWeights::load(&default_path) {
@@ -62,6 +64,12 @@ impl<'a> GreedyBot<'a> {
                 GreedyWeights::default()
             }
         }
+    }
+
+    /// WASM version: always use hardcoded defaults (no filesystem access).
+    #[cfg(target_arch = "wasm32")]
+    fn load_default_weights() -> GreedyWeights {
+        GreedyWeights::default()
     }
 
     /// Create a GreedyBot with custom weights.

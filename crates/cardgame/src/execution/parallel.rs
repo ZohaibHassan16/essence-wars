@@ -1,8 +1,12 @@
-//! Parallel batch execution utilities for game matches.
+//! Batch execution utilities for game matches.
 //!
-//! Provides reusable infrastructure for running games in parallel
-//! with progress reporting.
+//! Provides reusable infrastructure for running games with optional parallelism
+//! and progress reporting.
+//!
+//! When the `parallel` feature is enabled (default), games run in parallel using rayon.
+//! When disabled (e.g., for WASM builds), games run sequentially.
 
+#[cfg(feature = "parallel")]
 use rayon::prelude::*;
 use std::sync::atomic::Ordering;
 use std::time::{Duration, Instant};
@@ -131,7 +135,10 @@ impl BatchResult {
     }
 }
 
-/// Run a batch of games in parallel.
+/// Run a batch of games.
+///
+/// When the `parallel` feature is enabled, games run in parallel using rayon.
+/// When disabled, games run sequentially (suitable for WASM).
 ///
 /// # Arguments
 /// * `config` - Batch execution configuration
@@ -148,6 +155,7 @@ impl BatchResult {
 ///     GameOutcome::new(Some(PlayerId::PLAYER_ONE), 25, Duration::from_millis(50))
 /// });
 /// ```
+#[cfg(feature = "parallel")]
 pub fn run_batch_parallel<F>(config: &BatchConfig, run_game: F) -> BatchResult
 where
     F: Fn(GameSeeds) -> GameOutcome + Send + Sync,
@@ -192,7 +200,52 @@ where
     }
 }
 
-/// Run a batch of games in parallel for a specific matchup.
+/// Run a batch of games sequentially (WASM-compatible fallback).
+#[cfg(not(feature = "parallel"))]
+pub fn run_batch_parallel<F>(config: &BatchConfig, run_game: F) -> BatchResult
+where
+    F: Fn(GameSeeds) -> GameOutcome,
+{
+    let start_time = Instant::now();
+
+    // Set up progress reporting
+    let progress = if config.show_progress {
+        Some(
+            ProgressReporter::new(config.games)
+                .with_style(config.progress_style)
+                .with_prefix(config.progress_prefix.clone())
+                .start(),
+        )
+    } else {
+        None
+    };
+
+    let counter = progress.as_ref().map(|p| p.counter());
+
+    // Run games sequentially
+    let outcomes: Vec<GameOutcome> = (0..config.games)
+        .map(|i| {
+            let seeds = GameSeeds::for_game(config.base_seed, i);
+            let outcome = run_game(seeds);
+            if let Some(ref c) = counter {
+                c.fetch_add(1, Ordering::Relaxed);
+            }
+            outcome
+        })
+        .collect();
+
+    // Finish progress reporting
+    if let Some(p) = progress {
+        p.finish();
+    }
+
+    BatchResult {
+        outcomes,
+        wall_clock_time: start_time.elapsed(),
+    }
+}
+
+/// Run a batch of games for a specific matchup.
 ///
 /// Similar to `run_batch_parallel` but uses matchup-aware seed derivation.
 ///
@@ -201,6 +254,7 @@ where
 /// * `matchup_index` - Index of this matchup (for seed derivation)
 /// * `reverse_direction` - Whether this is the reverse direction
 /// * `run_game` - Closure that takes `GameSeeds` and returns `GameOutcome`
+#[cfg(feature = "parallel")]
 pub fn run_batch_parallel_matchup<F>(
     config: &BatchConfig,
     matchup_index: usize,
@@ -251,6 +305,57 @@ where
     }
 }
 
+/// Run a batch of games for a specific matchup (sequential fallback).
+#[cfg(not(feature = "parallel"))]
+pub fn run_batch_parallel_matchup<F>(
+    config: &BatchConfig,
+    matchup_index: usize,
+    reverse_direction: bool,
+    run_game: F,
+) -> BatchResult
+where
+    F: Fn(GameSeeds) -> GameOutcome,
+{
+    let start_time = Instant::now();
+
+    // Set up progress reporting
+    let progress = if config.show_progress {
+        Some(
+            ProgressReporter::new(config.games)
+                .with_style(config.progress_style)
+                .with_prefix(config.progress_prefix.clone())
+                .start(),
+        )
+    } else {
+        None
+    };
+
+    let counter = progress.as_ref().map(|p| p.counter());
+
+    // Run games sequentially
+    let outcomes: Vec<GameOutcome> = (0..config.games)
+        .map(|i| {
+            let seeds =
+                GameSeeds::for_matchup(config.base_seed, matchup_index, i, reverse_direction);
+            let outcome = run_game(seeds);
+            if let Some(ref c) = counter {
+                c.fetch_add(1, Ordering::Relaxed);
+            }
+            outcome
+        })
+        .collect();
+
+    // Finish progress reporting
+    if let Some(p) = progress {
+        p.finish();
+    }
+
+    BatchResult {
+        outcomes,
+        wall_clock_time: start_time.elapsed(),
+    }
+}
+
 /// Configure the global rayon thread pool.
 ///
 /// # Arguments
@@ -258,6 +363,9 @@ where
 ///
 /// # Returns
 /// The actual number of threads configured.
+///
+/// Note: This is a no-op when the `parallel` feature is disabled.
+#[cfg(feature = "parallel")]
 pub fn configure_thread_pool(threads: usize) -> usize {
     if threads > 0 {
         rayon::ThreadPoolBuilder::new()
@@ -268,6 +376,12 @@ pub fn configure_thread_pool(threads: usize) -> usize {
     } else {
         rayon::current_num_threads()
     }
+}
+
+/// No-op thread pool configuration for non-parallel builds.
+#[cfg(not(feature = "parallel"))]
+pub fn configure_thread_pool(_threads: usize) -> usize {
+    1 // Single-threaded
 }
 
 #[cfg(test)]
@@ -339,8 +453,16 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "parallel")]
     fn test_configure_thread_pool_default() {
         let threads = configure_thread_pool(0);
         assert!(threads > 0);
+    }
+
+    #[test]
+    #[cfg(not(feature = "parallel"))]
+    fn test_configure_thread_pool_sequential() {
+        let threads = configure_thread_pool(4);
+        assert_eq!(threads, 1); // Always single-threaded without parallel feature
     }
 }

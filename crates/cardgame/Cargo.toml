@@ -14,9 +14,15 @@ name = "cardgame"
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = []
+default = ["parallel"]
+# Enable parallel execution via rayon (disable for WASM)
+parallel = ["dep:rayon"]
+# Python bindings for ML/AI research
 python = ["dep:pyo3", "dep:numpy"]
+# WASM bindings for web deployment (mutually exclusive with parallel)
 wasm = ["dep:wasm-bindgen", "dep:js-sys", "dep:web-sys", "dep:console_error_panic_hook"]
+# Web feature combines WASM with embedded data
+web = ["wasm"]
 
 [dependencies]
 arrayvec.workspace = true
@@ -27,7 +33,7 @@ toml.workspace = true
 thiserror.workspace = true
 rand.workspace = true
 clap.workspace = true
-rayon.workspace = true
+rayon = { workspace = true, optional = true }
 chrono.workspace = true
 statrs.workspace = true
 lazy_static.workspace = true
@@ -51,26 +57,32 @@ proptest.workspace = true
 [[bin]]
 name = "arena"
 path = "src/bin/arena.rs"
+required-features = ["parallel"]
 
 [[bin]]
 name = "tune"
 path = "src/bin/tune.rs"
+required-features = ["parallel"]
 
 [[bin]]
 name = "profile_mcts"
 path = "src/bin/profile_mcts.rs"
+required-features = ["parallel"]
 
 [[bin]]
 name = "validate"
 path = "src/bin/validate.rs"
+required-features = ["parallel"]
 
 [[bin]]
 name = "diagnose"
 path = "src/bin/diagnose.rs"
+required-features = ["parallel"]
 
 [[bin]]
 name = "generate_dataset"
 path = "src/bin/generate_dataset.rs"
+required-features = ["parallel"]
 
 [[bench]]
 name = "game_benchmarks"

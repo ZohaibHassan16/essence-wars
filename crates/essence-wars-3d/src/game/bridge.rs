@@ -27,6 +27,8 @@ pub struct GameBridge {
 
 impl GameBridge {
     /// Create a new GameBridge, loading game data.
+    /// On native builds, loads from filesystem. On WASM, uses embedded data.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn new() -> Self {
         let data_dir = cardgame::data_dir();
 
@@ -35,6 +37,23 @@ impl GameBridge {
 
         let deck_registry = DeckRegistry::load_from_directory(data_dir.join("decks"))
             .expect("Failed to load deck registry");
+
+        Self {
+            client: None,
+            card_db: Arc::new(card_db),
+            deck_registry: Arc::new(deck_registry),
+            last_decision: None,
+            ai_config: IntrospectionConfig::full(),
+        }
+    }
+
+    /// WASM version: Create a new GameBridge using embedded game data.
+    #[cfg(target_arch = "wasm32")]
+    pub fn new() -> Self {
+        use cardgame::embedded_data;
+
+        let (card_db, deck_registry) = embedded_data::load_embedded_game_data()
+            .expect("Failed to load embedded game data");
 
         Self {
             client: None,
