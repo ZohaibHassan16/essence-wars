@@ -1,13 +1,16 @@
 //! Creature visualization and management.
 //!
 //! This module handles spawning and despawning 3D creature representations
-//! based on game events.
+//! based on game events. Creatures are rendered as faceted gem tokens with
+//! faction-specific materials.
 
 use bevy::prelude::*;
 use cardgame::client_api::GameEvent;
+use cardgame::decks::Faction;
 use cardgame::types::PlayerId;
 
 use crate::game::{AppState, GameBridge, GameEventWrapper};
+use super::meshes::create_detailed_gem_mesh;
 
 /// Plugin for creature rendering.
 pub struct CreaturePlugin;
@@ -52,44 +55,131 @@ pub struct CreatureAssets {
     pub damaged_material_p2: Handle<StandardMaterial>,
 }
 
+/// Get faction for a player's deck.
+fn get_player_faction(bridge: &GameBridge, player: usize) -> Option<Faction> {
+    let deck_id = if player == 0 {
+        bridge.current_deck1.as_ref()?
+    } else {
+        bridge.current_deck2.as_ref()?
+    };
+    let deck = bridge.deck_registry.get(deck_id)?;
+    deck.faction()
+}
+
+/// Create faction-specific gem material for a player.
+fn create_gem_material(faction: Option<Faction>, is_player1: bool) -> StandardMaterial {
+    match (faction, is_player1) {
+        // Argentum - Brass/gold crystalline gems
+        (Some(Faction::Argentum), true) => StandardMaterial {
+            base_color: Color::srgb(0.8, 0.65, 0.3),
+            metallic: 0.8,
+            perceptual_roughness: 0.2,
+            emissive: LinearRgba::new(0.2, 0.15, 0.05, 1.0),
+            ..default()
+        },
+        (Some(Faction::Argentum), false) => StandardMaterial {
+            base_color: Color::srgb(0.6, 0.5, 0.25),
+            metallic: 0.7,
+            perceptual_roughness: 0.25,
+            emissive: LinearRgba::new(0.15, 0.1, 0.03, 1.0),
+            ..default()
+        },
+        // Symbiote - Organic green/purple gems
+        (Some(Faction::Symbiote), true) => StandardMaterial {
+            base_color: Color::srgb(0.2, 0.7, 0.4),
+            metallic: 0.3,
+            perceptual_roughness: 0.4,
+            emissive: LinearRgba::new(0.05, 0.2, 0.1, 1.0),
+            ..default()
+        },
+        (Some(Faction::Symbiote), false) => StandardMaterial {
+            base_color: Color::srgb(0.5, 0.3, 0.6),
+            metallic: 0.3,
+            perceptual_roughness: 0.4,
+            emissive: LinearRgba::new(0.1, 0.05, 0.15, 1.0),
+            ..default()
+        },
+        // Obsidion - Dark crystalline with red/purple glow
+        (Some(Faction::Obsidion), true) => StandardMaterial {
+            base_color: Color::srgb(0.15, 0.05, 0.1),
+            metallic: 0.9,
+            perceptual_roughness: 0.15,
+            emissive: LinearRgba::new(0.25, 0.05, 0.1, 1.0),
+            ..default()
+        },
+        (Some(Faction::Obsidion), false) => StandardMaterial {
+            base_color: Color::srgb(0.2, 0.05, 0.15),
+            metallic: 0.85,
+            perceptual_roughness: 0.2,
+            emissive: LinearRgba::new(0.2, 0.02, 0.08, 1.0),
+            ..default()
+        },
+        // Default/Neutral - Blue for P1, Red for P2
+        (_, true) => StandardMaterial {
+            base_color: Color::srgb(0.3, 0.5, 0.9),
+            metallic: 0.6,
+            perceptual_roughness: 0.3,
+            emissive: LinearRgba::new(0.05, 0.1, 0.2, 1.0),
+            ..default()
+        },
+        (_, false) => StandardMaterial {
+            base_color: Color::srgb(0.9, 0.3, 0.3),
+            metallic: 0.6,
+            perceptual_roughness: 0.3,
+            emissive: LinearRgba::new(0.2, 0.05, 0.05, 1.0),
+            ..default()
+        },
+    }
+}
+
+/// Create damaged gem material (darker, cracked appearance).
+fn create_damaged_gem_material(faction: Option<Faction>, is_player1: bool) -> StandardMaterial {
+    let mut mat = create_gem_material(faction, is_player1);
+    // Darken the base color
+    let srgba = mat.base_color.to_srgba();
+    mat.base_color = Color::srgb(
+        srgba.red * 0.6,
+        srgba.green * 0.6,
+        srgba.blue * 0.6,
+    );
+    // Reduce emissive
+    mat.emissive = LinearRgba::new(
+        mat.emissive.red * 0.3,
+        mat.emissive.green * 0.3,
+        mat.emissive.blue * 0.3,
+        1.0,
+    );
+    // Make it rougher (cracked)
+    mat.perceptual_roughness = (mat.perceptual_roughness + 0.3).min(1.0);
+    mat
+}
+
 /// Setup creature assets when entering Playing state.
 fn setup_creature_assets(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    bridge: Res<GameBridge>,
 ) {
-    // Create a simple capsule mesh for creatures (placeholder)
-    let mesh = meshes.add(Capsule3d::new(0.4, 0.8));
+    // Create a faceted gem mesh for creatures
+    // Width: 0.8, Height: 1.2, Bevel: 0.3 for a nice crystal shape
+    let mesh = meshes.add(create_detailed_gem_mesh(0.8, 1.2, 0.3));
 
-    // Player 1 materials (blue tones)
-    let material_p1 = materials.add(StandardMaterial {
-        base_color: Color::srgb(0.2, 0.5, 0.9),
-        metallic: 0.3,
-        perceptual_roughness: 0.6,
-        ..default()
-    });
+    // Get factions for both players
+    let faction_p1 = get_player_faction(&bridge, 0);
+    let faction_p2 = get_player_faction(&bridge, 1);
 
-    let damaged_material_p1 = materials.add(StandardMaterial {
-        base_color: Color::srgb(0.5, 0.3, 0.7),
-        metallic: 0.3,
-        perceptual_roughness: 0.6,
-        ..default()
-    });
+    info!(
+        "Creating gem materials - P1: {:?}, P2: {:?}",
+        faction_p1.map(|f| f.display_name()),
+        faction_p2.map(|f| f.display_name())
+    );
 
-    // Player 2 materials (red tones)
-    let material_p2 = materials.add(StandardMaterial {
-        base_color: Color::srgb(0.9, 0.3, 0.2),
-        metallic: 0.3,
-        perceptual_roughness: 0.6,
-        ..default()
-    });
-
-    let damaged_material_p2 = materials.add(StandardMaterial {
-        base_color: Color::srgb(0.7, 0.2, 0.4),
-        metallic: 0.3,
-        perceptual_roughness: 0.6,
-        ..default()
-    });
+    // Create faction-specific materials
+    let material_p1 = materials.add(create_gem_material(faction_p1, true));
+    let material_p2 = materials.add(create_gem_material(faction_p2, false));
+    let damaged_material_p1 = materials.add(create_damaged_gem_material(faction_p1, true));
+    let damaged_material_p2 = materials.add(create_damaged_gem_material(faction_p2, false));
 
     commands.insert_resource(CreatureAssets {
         mesh,
@@ -99,7 +189,7 @@ fn setup_creature_assets(
         damaged_material_p2,
     });
 
-    info!("Creature assets initialized");
+    info!("Creature gem assets initialized");
 }
 
 /// Process creature-related events using Bevy's event system.

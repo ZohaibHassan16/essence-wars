@@ -1100,16 +1100,16 @@ Files added/modified:
 - `src/game/bridge.rs`: Deck ID storage for multi-game restart
 - `src/ui/menu.rs`: `handle_headless_game_over` system for multi-game loop
 
-### Phase 5A-2: Core Gameplay Loop
+### Phase 5A-2: Core Gameplay Loop ✅
 
 **Goal:** Playable game without polish.
 
-- [ ] Implement full turn progression in Bevy
-- [ ] Wire up AI opponent integration
-- [ ] Click-to-play card interaction
-- [ ] Basic combat visualization (no animations yet)
-- [ ] Win/lose detection and game over screen
-- [ ] Placeholder visuals (cubes/shapes)
+- [x] Implement full turn progression in Bevy
+- [x] Wire up AI opponent integration
+- [x] Click-to-play card interaction
+- [x] Basic combat visualization (no animations yet)
+- [x] Win/lose detection and game over screen
+- [x] Placeholder visuals (cubes/shapes)
 
 ### Phase 5A-3: Visual Foundation
 

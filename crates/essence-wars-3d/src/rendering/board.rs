@@ -1,7 +1,13 @@
 //! 3D game board rendering.
+//!
+//! The board uses a "Farsight Table" aesthetic with faction-specific materials:
+//! - **Argentum**: Polished dark wood with brass/metal inlays, amber glow
+//! - **Symbiote**: Living wood with bioluminescent veins, green/purple glow
+//! - **Obsidion**: Obsidian glass with crimson veins, purple/red glow
 
 use bevy::prelude::*;
-use crate::game::AppState;
+use cardgame::decks::Faction;
+use crate::game::{AppState, GameBridge};
 
 /// Plugin for rendering the game board.
 pub struct BoardPlugin;
@@ -37,20 +43,157 @@ pub struct SupportSlot {
     pub index: usize,
 }
 
+/// Component marking the lane divider.
+#[derive(Component)]
+pub struct LaneDivider;
+
+/// Get Player 1's faction from the current game.
+fn get_player1_faction(bridge: &GameBridge) -> Option<Faction> {
+    let deck_id = bridge.current_deck1.as_ref()?;
+    let deck = bridge.deck_registry.get(deck_id)?;
+    deck.faction()
+}
+
+/// Create faction-specific table material.
+fn create_table_material(faction: Option<Faction>) -> StandardMaterial {
+    match faction {
+        Some(Faction::Argentum) => StandardMaterial {
+            // Polished dark wood with brass undertones
+            base_color: Color::srgb(0.15, 0.1, 0.05),
+            metallic: 0.3,
+            perceptual_roughness: 0.4,
+            emissive: LinearRgba::new(0.05, 0.03, 0.01, 1.0), // Warm amber edge glow
+            ..default()
+        },
+        Some(Faction::Symbiote) => StandardMaterial {
+            // Living wood with bioluminescent undertones
+            base_color: Color::srgb(0.08, 0.12, 0.06),
+            metallic: 0.1,
+            perceptual_roughness: 0.6,
+            emissive: LinearRgba::new(0.02, 0.08, 0.04, 1.0), // Green bioluminescence
+            ..default()
+        },
+        Some(Faction::Obsidion) => StandardMaterial {
+            // Obsidian glass with crimson veins
+            base_color: Color::srgb(0.05, 0.02, 0.05),
+            metallic: 0.7,
+            perceptual_roughness: 0.2,
+            emissive: LinearRgba::new(0.06, 0.01, 0.03, 1.0), // Deep crimson glow
+            ..default()
+        },
+        _ => StandardMaterial {
+            // Default neutral table (warm brown)
+            base_color: Color::srgb(0.2, 0.15, 0.1),
+            metallic: 0.1,
+            perceptual_roughness: 0.7,
+            ..default()
+        },
+    }
+}
+
+/// Create faction-specific edge trim material.
+fn create_edge_material(faction: Option<Faction>) -> StandardMaterial {
+    match faction {
+        Some(Faction::Argentum) => StandardMaterial {
+            // Brass/gold metallic trim
+            base_color: Color::srgb(0.7, 0.5, 0.2),
+            metallic: 0.9,
+            perceptual_roughness: 0.3,
+            emissive: LinearRgba::new(0.15, 0.1, 0.02, 1.0),
+            ..default()
+        },
+        Some(Faction::Symbiote) => StandardMaterial {
+            // Bioluminescent vein accent
+            base_color: Color::srgb(0.2, 0.5, 0.3),
+            metallic: 0.2,
+            perceptual_roughness: 0.5,
+            emissive: LinearRgba::new(0.05, 0.2, 0.1, 1.0),
+            ..default()
+        },
+        Some(Faction::Obsidion) => StandardMaterial {
+            // Crimson crystal accent
+            base_color: Color::srgb(0.4, 0.05, 0.1),
+            metallic: 0.6,
+            perceptual_roughness: 0.3,
+            emissive: LinearRgba::new(0.2, 0.02, 0.05, 1.0),
+            ..default()
+        },
+        _ => StandardMaterial {
+            // Default neutral edge
+            base_color: Color::srgb(0.3, 0.25, 0.2),
+            metallic: 0.4,
+            perceptual_roughness: 0.5,
+            emissive: LinearRgba::new(0.02, 0.02, 0.02, 1.0),
+            ..default()
+        },
+    }
+}
+
 /// Spawn the game board.
 fn spawn_board(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    bridge: Res<GameBridge>,
 ) {
-    // Board base
+    // Determine faction from Player 1's deck
+    let faction = get_player1_faction(&bridge);
+    let faction_name = faction.map(|f| f.display_name()).unwrap_or("Neutral");
+    info!("Spawning Farsight Table with {} theme", faction_name);
+
+    // Board base (main table surface)
+    let table_material = materials.add(create_table_material(faction));
     commands.spawn((
         Mesh3d(meshes.add(Cuboid::new(12.0, 0.2, 8.0))),
-        MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: Color::srgb(0.2, 0.15, 0.1),
-            ..default()
-        })),
+        MeshMaterial3d(table_material),
         Transform::from_xyz(0.0, -0.1, 0.0),
+        GameBoard,
+    ));
+
+    // Edge trim (decorative border around the table)
+    let edge_material = materials.add(create_edge_material(faction));
+    let edge_mesh = meshes.add(Cuboid::new(12.4, 0.25, 0.2));
+    let side_edge_mesh = meshes.add(Cuboid::new(0.2, 0.25, 8.0));
+
+    // Front and back edges
+    commands.spawn((
+        Mesh3d(edge_mesh.clone()),
+        MeshMaterial3d(edge_material.clone()),
+        Transform::from_xyz(0.0, -0.075, 4.1),
+        GameBoard,
+    ));
+    commands.spawn((
+        Mesh3d(edge_mesh),
+        MeshMaterial3d(edge_material.clone()),
+        Transform::from_xyz(0.0, -0.075, -4.1),
+        GameBoard,
+    ));
+    // Left and right edges
+    commands.spawn((
+        Mesh3d(side_edge_mesh.clone()),
+        MeshMaterial3d(edge_material.clone()),
+        Transform::from_xyz(-6.1, -0.075, 0.0),
+        GameBoard,
+    ));
+    commands.spawn((
+        Mesh3d(side_edge_mesh),
+        MeshMaterial3d(edge_material),
+        Transform::from_xyz(6.1, -0.075, 0.0),
+        GameBoard,
+    ));
+
+    // Lane divider (glowing line between player rows)
+    let divider_material = materials.add(StandardMaterial {
+        base_color: Color::srgba(0.8, 0.8, 0.9, 0.6),
+        alpha_mode: AlphaMode::Blend,
+        emissive: LinearRgba::new(0.3, 0.3, 0.4, 1.0),
+        ..default()
+    });
+    commands.spawn((
+        Mesh3d(meshes.add(Cuboid::new(10.0, 0.05, 0.1))),
+        MeshMaterial3d(divider_material),
+        Transform::from_xyz(0.0, 0.05, 0.0),
+        LaneDivider,
         GameBoard,
     ));
 
