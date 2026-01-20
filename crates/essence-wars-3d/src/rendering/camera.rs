@@ -1,6 +1,7 @@
 //! Camera controller for the 3D view.
 
 use bevy::prelude::*;
+use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::input::mouse::{MouseMotion, MouseWheel};
 
 /// Plugin for camera management.
@@ -45,6 +46,8 @@ fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         Camera3d::default(),
         Transform::from_translation(position).looking_at(camera.focus, Vec3::Y),
+        // Use Reinhard tonemapping which doesn't require LUT
+        Tonemapping::Reinhard,
         camera,
     ));
 

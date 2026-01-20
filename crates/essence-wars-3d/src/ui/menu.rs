@@ -29,12 +29,12 @@ fn draw_main_menu(
     mut next_state: ResMut<NextState<AppState>>,
     mut bridge: Option<ResMut<GameBridge>>,
 ) {
-    // Set defaults if empty
+    // Set defaults if empty (use MVP deck IDs from embedded_data)
     if menu_state.deck1.is_empty() {
-        menu_state.deck1 = "argentum_control".to_string();
+        menu_state.deck1 = "colossus_wall".to_string(); // Iron Colossus Prime (Argentum)
     }
     if menu_state.deck2.is_empty() {
-        menu_state.deck2 = "symbiote_aggro".to_string();
+        menu_state.deck2 = "broodmother_swarm".to_string(); // The Broodmother (Symbiote)
     }
     if menu_state.seed.is_empty() {
         menu_state.seed = "42".to_string();
