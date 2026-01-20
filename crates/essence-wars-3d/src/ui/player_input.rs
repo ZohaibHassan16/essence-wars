@@ -2,6 +2,7 @@
 //!
 //! This module handles card selection and slot targeting for human players.
 //! Supports both click-to-select and drag-and-drop for playing cards.
+//! Drop zones are rendered at 3D world positions for intuitive board interaction.
 
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
@@ -11,6 +12,7 @@ use cardgame::effects::TargetingRule;
 use cardgame::types::PlayerId;
 
 use crate::game::{AppState, GameBridge};
+use crate::rendering::GameCamera;
 
 /// Plugin for human player input.
 pub struct PlayerInputPlugin;
@@ -243,14 +245,17 @@ fn draw_player_hand(
         });
 }
 
-/// Draw drop zones for creature and support slots.
+/// Draw drop zones at the 3D world positions of creature and support slots.
+/// This allows intuitive drag-and-drop directly onto the board.
 fn draw_drop_zones(
     mut contexts: EguiContexts,
     bridge: Res<GameBridge>,
     mut input_state: ResMut<PlayerInputState>,
+    camera_query: Query<(&Camera, &GlobalTransform), With<GameCamera>>,
 ) {
     let Some(client) = &bridge.client else { return };
     let Some(state) = client.get_state() else { return };
+    let Ok((camera, camera_transform)) = camera_query.get_single() else { return };
 
     let current_player = state.active_player;
     let player_idx = if current_player == PlayerId::PLAYER_ONE { 0 } else { 1 };
@@ -258,10 +263,13 @@ fn draw_drop_zones(
 
     // Check if we're dragging something
     let ctx = contexts.ctx_mut();
-    let is_dragging_creature = egui::DragAndDrop::payload::<CardDragPayload>(ctx)
+    let drag_payload = egui::DragAndDrop::payload::<CardDragPayload>(ctx);
+    let is_dragging_creature = drag_payload
+        .as_ref()
         .map(|p| p.slot_type == CardSlotType::Creature)
         .unwrap_or(false);
-    let is_dragging_support = egui::DragAndDrop::payload::<CardDragPayload>(ctx)
+    let is_dragging_support = drag_payload
+        .as_ref()
         .map(|p| p.slot_type == CardSlotType::Support)
         .unwrap_or(false);
 
@@ -272,119 +280,144 @@ fn draw_drop_zones(
         return;
     }
 
-    // Create a central panel for drop zones
-    egui::Area::new(egui::Id::new("drop_zones"))
-        .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
+    // Draw creature drop zones at 3D slot positions
+    if is_dragging_creature {
+        // Player 1's row is at Z=2.0, Player 2's at Z=-2.0
+        let z = if current_player == PlayerId::PLAYER_ONE { 2.0 } else { -2.0 };
+
+        for slot in 0..5u8 {
+            let is_empty = player.creatures.iter().all(|c| c.slot.0 != slot);
+            let x = (slot as f32 - 2.0) * 2.0;
+            let world_pos = Vec3::new(x, 0.5, z);
+
+            if let Ok(screen_pos) = camera.world_to_viewport(camera_transform, world_pos) {
+                draw_world_drop_zone(
+                    ctx,
+                    &mut input_state,
+                    screen_pos,
+                    slot,
+                    is_empty,
+                    false, // is_support
+                );
+            }
+        }
+    }
+
+    // Draw support drop zones at 3D slot positions
+    if is_dragging_support {
+        // Player 1's supports at X=-5.5, Player 2's at X=5.5
+        let (x, z_base) = if current_player == PlayerId::PLAYER_ONE {
+            (-5.5, 1.0)
+        } else {
+            (5.5, -1.0)
+        };
+
+        for slot in 0..2u8 {
+            let is_empty = player.supports.iter().all(|s| s.slot.0 != slot);
+            let z = if current_player == PlayerId::PLAYER_ONE {
+                z_base + slot as f32 * 2.0
+            } else {
+                z_base - slot as f32 * 2.0
+            };
+            let world_pos = Vec3::new(x, 0.5, z);
+
+            if let Ok(screen_pos) = camera.world_to_viewport(camera_transform, world_pos) {
+                draw_world_drop_zone(
+                    ctx,
+                    &mut input_state,
+                    screen_pos,
+                    slot,
+                    is_empty,
+                    true, // is_support
+                );
+            }
+        }
+    }
+
+    // Show instruction text at top of screen
+    egui::Area::new(egui::Id::new("drop_instruction"))
+        .anchor(egui::Align2::CENTER_TOP, [0.0, 60.0])
         .show(ctx, |ui| {
             egui::Frame::none()
                 .fill(egui::Color32::from_rgba_unmultiplied(0, 0, 0, 180))
-                .inner_margin(20.0)
-                .rounding(10.0)
+                .inner_margin(10.0)
+                .rounding(8.0)
                 .show(ui, |ui| {
-                    if is_dragging_creature {
-                        ui.label(egui::RichText::new("Drop on a creature slot:").strong().size(18.0));
-                        ui.add_space(10.0);
-                        ui.horizontal(|ui| {
-                            for slot in 0..5u8 {
-                                let is_empty = player.creatures.iter().all(|c| c.slot.0 != slot);
-                                draw_creature_drop_slot(ui, slot, is_empty, &mut input_state);
-                            }
-                        });
-                    } else if is_dragging_support {
-                        ui.label(egui::RichText::new("Drop on a support slot:").strong().size(18.0));
-                        ui.add_space(10.0);
-                        ui.horizontal(|ui| {
-                            for slot in 0..2u8 {
-                                let is_empty = player.supports.iter().all(|s| s.slot.0 != slot);
-                                draw_support_drop_slot(ui, slot, is_empty, &mut input_state);
-                            }
-                        });
-                    }
-
-                    ui.add_space(10.0);
-                    ui.label(egui::RichText::new("Release outside to cancel").small().weak());
+                    let msg = if is_dragging_creature {
+                        "Drop on a creature slot (green = empty)"
+                    } else {
+                        "Drop on a support slot (green = empty)"
+                    };
+                    ui.label(egui::RichText::new(msg).size(16.0).color(egui::Color32::WHITE));
                 });
         });
 }
 
-/// Draw a single creature drop slot.
-fn draw_creature_drop_slot(
-    ui: &mut egui::Ui,
+/// Draw a single drop zone at a screen position (projected from 3D world).
+fn draw_world_drop_zone(
+    ctx: &egui::Context,
+    input_state: &mut ResMut<PlayerInputState>,
+    screen_pos: Vec2,
     slot: u8,
     is_empty: bool,
-    input_state: &mut ResMut<PlayerInputState>,
+    is_support: bool,
 ) {
-    let frame = egui::Frame::none()
-        .fill(if is_empty {
-            egui::Color32::from_rgb(40, 80, 40)
-        } else {
-            egui::Color32::from_rgb(60, 40, 40)
-        })
-        .stroke(egui::Stroke::new(2.0, egui::Color32::WHITE))
-        .inner_margin(15.0)
-        .rounding(8.0);
+    let zone_size = if is_support { 70.0 } else { 90.0 };
+    let half_size = zone_size / 2.0;
 
-    let (_, dropped) = ui.dnd_drop_zone::<CardDragPayload, ()>(frame, |ui| {
-        ui.set_min_size(egui::vec2(80.0, 60.0));
-        ui.centered_and_justified(|ui| {
-            if is_empty {
-                ui.label(egui::RichText::new(format!("Slot {}", slot + 1)).size(16.0));
-            } else {
-                ui.label(egui::RichText::new("[Occupied]").size(14.0).weak());
+    let (bg_color, border_color) = if is_empty {
+        (
+            egui::Color32::from_rgba_unmultiplied(40, 120, 40, 180),
+            egui::Color32::from_rgb(100, 255, 100),
+        )
+    } else {
+        (
+            egui::Color32::from_rgba_unmultiplied(80, 40, 40, 150),
+            egui::Color32::from_rgb(150, 80, 80),
+        )
+    };
+
+    let id_prefix = if is_support { "support_drop" } else { "creature_drop" };
+    let zone_id = egui::Id::new((id_prefix, slot));
+
+    egui::Area::new(zone_id)
+        .fixed_pos(egui::pos2(screen_pos.x - half_size, screen_pos.y - half_size))
+        .order(egui::Order::Middle)
+        .show(ctx, |ui| {
+            let frame = egui::Frame::none()
+                .fill(bg_color)
+                .stroke(egui::Stroke::new(3.0, border_color))
+                .rounding(8.0)
+                .inner_margin(8.0);
+
+            let (_, dropped) = ui.dnd_drop_zone::<CardDragPayload, ()>(frame, |ui| {
+                ui.set_min_size(egui::vec2(zone_size - 16.0, zone_size - 16.0));
+                ui.centered_and_justified(|ui| {
+                    let label = if is_support {
+                        format!("S{}", slot + 1)
+                    } else {
+                        format!("{}", slot + 1)
+                    };
+                    let text = if is_empty {
+                        egui::RichText::new(label).size(20.0).strong().color(egui::Color32::WHITE)
+                    } else {
+                        egui::RichText::new("X").size(18.0).color(egui::Color32::from_rgb(180, 80, 80))
+                    };
+                    ui.label(text);
+                });
+            });
+
+            // Handle drop
+            if let Some(payload) = dropped {
+                if is_empty {
+                    let action = Action::PlayCard {
+                        hand_index: payload.hand_index as u8,
+                        slot: cardgame::types::Slot(slot),
+                    };
+                    input_state.pending_action = Some(action);
+                }
             }
         });
-    });
-
-    // Handle drop
-    if let Some(payload) = dropped {
-        if is_empty {
-            let action = Action::PlayCard {
-                hand_index: payload.hand_index as u8,
-                slot: cardgame::types::Slot(slot),
-            };
-            input_state.pending_action = Some(action);
-        }
-    }
-}
-
-/// Draw a single support drop slot.
-fn draw_support_drop_slot(
-    ui: &mut egui::Ui,
-    slot: u8,
-    is_empty: bool,
-    input_state: &mut ResMut<PlayerInputState>,
-) {
-    let frame = egui::Frame::none()
-        .fill(if is_empty {
-            egui::Color32::from_rgb(40, 40, 80)
-        } else {
-            egui::Color32::from_rgb(60, 40, 40)
-        })
-        .stroke(egui::Stroke::new(2.0, egui::Color32::WHITE))
-        .inner_margin(15.0)
-        .rounding(8.0);
-
-    let (_, dropped) = ui.dnd_drop_zone::<CardDragPayload, ()>(frame, |ui| {
-        ui.set_min_size(egui::vec2(100.0, 60.0));
-        ui.centered_and_justified(|ui| {
-            if is_empty {
-                ui.label(egui::RichText::new(format!("Support {}", slot + 1)).size(16.0));
-            } else {
-                ui.label(egui::RichText::new("[Occupied]").size(14.0).weak());
-            }
-        });
-    });
-
-    // Handle drop
-    if let Some(payload) = dropped {
-        if is_empty {
-            let action = Action::PlayCard {
-                hand_index: payload.hand_index as u8,
-                slot: cardgame::types::Slot(slot),
-            };
-            input_state.pending_action = Some(action);
-        }
-    }
 }
 
 /// Draw spell targeting overlay when a spell is selected.
