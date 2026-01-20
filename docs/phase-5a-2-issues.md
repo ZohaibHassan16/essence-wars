@@ -258,7 +258,13 @@
   - Could show action count, game duration for single games too
 - **Fix**: Extract stats display from headless-only to shared component
 - **Effort**: 30 min
-- **Status**: [ ] Open
+- **Status**: [x] COMPLETED (2026-01-20)
+- **Implementation**:
+  - Added `game_start_time: Option<Instant>` to TurnState
+  - Added `game_duration()` method to TurnState
+  - Updated `draw_game_over` to access TurnState
+  - Game over screen now shows: Final Turn, Actions, Duration, Life totals
+  - Added "Avg actions/turn" metric for analysis
 
 ---
 
@@ -279,12 +285,13 @@
 8. [x] ISSUE-004: Drag-and-drop interaction (4-6 hrs)
 9. [x] ISSUE-002: Support slot rendering (3-4 hrs)
 10. [x] ISSUE-008: Lane-grouped combat (2-3 hrs)
+11. [x] ISSUE-015: HeadlessStats Not Shared with UI
 
 ### Phase 4: Visual Polish (Phase 5A-3)
-11. [ ] ISSUE-009: Gem/crystal creature meshes
-12. [ ] ISSUE-010: Spawn/death effects
-13. [ ] ISSUE-011: Damage number styling
-14. [ ] ISSUE-012: Farsight Table aesthetic
+12. [ ] ISSUE-009: Gem/crystal creature meshes
+13. [ ] ISSUE-010: Spawn/death effects
+14. [ ] ISSUE-011: Damage number styling
+15. [ ] ISSUE-012: Farsight Table aesthetic
 
 ---
 

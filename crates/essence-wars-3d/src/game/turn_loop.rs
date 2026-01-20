@@ -57,6 +57,8 @@ pub struct TurnState {
     pub actions_executed: u32,
     /// Is the game paused (for spectator controls)
     pub paused: bool,
+    /// When the current game started (for duration tracking)
+    pub game_start_time: Option<Instant>,
 }
 
 impl TurnState {
@@ -66,6 +68,14 @@ impl TurnState {
         self.wait_timer = Timer::from_seconds(0.3, TimerMode::Once);
         self.actions_executed = 0;
         self.paused = false;
+        self.game_start_time = Some(Instant::now());
+    }
+
+    /// Get game duration since start.
+    pub fn game_duration(&self) -> std::time::Duration {
+        self.game_start_time
+            .map(|t| t.elapsed())
+            .unwrap_or_default()
     }
 }
 

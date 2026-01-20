@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 use cardgame::bots::BotType;
 use crate::game::{AppState, GameBridge, HeadlessStats};
-use crate::game::turn_loop::BotConfig;
+use crate::game::turn_loop::{BotConfig, TurnState};
 use crate::CliArgs;
 use super::player_input::GameModeConfig;
 
@@ -229,6 +229,7 @@ fn draw_game_over(
     mut next_state: ResMut<NextState<AppState>>,
     mut bridge: Option<ResMut<GameBridge>>,
     game_mode: Res<GameModeConfig>,
+    turn_state: Res<TurnState>,
 ) {
     egui::CentralPanel::default().show(contexts.ctx_mut(), |ui| {
         ui.vertical_centered(|ui| {
@@ -269,11 +270,37 @@ fn draw_game_over(
                             ui.label(egui::RichText::new("Draw!").size(32.0));
                             ui.label(egui::RichText::new("Both players reached zero life simultaneously").italics());
                         }
-                        ui.label(format!("Final Turn: {}", state.current_turn));
-                        ui.label(format!("P1 Life: {} | P2 Life: {}",
-                            state.players[0].life,
-                            state.players[1].life
-                        ));
+
+                        ui.add_space(15.0);
+
+                        // Game statistics
+                        ui.group(|ui| {
+                            ui.label(egui::RichText::new("Game Statistics").strong());
+                            ui.add_space(5.0);
+
+                            ui.horizontal(|ui| {
+                                ui.label(format!("Final Turn: {}", state.current_turn));
+                                ui.separator();
+                                ui.label(format!("Actions: {}", turn_state.actions_executed));
+                                ui.separator();
+                                let duration = turn_state.game_duration();
+                                ui.label(format!("Duration: {:.1}s", duration.as_secs_f64()));
+                            });
+
+                            ui.horizontal(|ui| {
+                                ui.label(format!("P1 Life: {}", state.players[0].life));
+                                ui.separator();
+                                ui.label(format!("P2 Life: {}", state.players[1].life));
+                            });
+
+                            // Actions per turn metric
+                            if state.current_turn > 0 {
+                                let actions_per_turn = turn_state.actions_executed as f64 / state.current_turn as f64;
+                                ui.label(egui::RichText::new(
+                                    format!("Avg {:.1} actions/turn", actions_per_turn)
+                                ).small().weak());
+                            }
+                        });
                     }
                 }
             }
