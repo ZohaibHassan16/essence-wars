@@ -2,6 +2,22 @@
 //!
 //! This client provides a 3D view of the card game with MCTS decision
 //! tree visualization for AI transparency.
+//!
+//! # CLI Arguments (native only)
+//!
+//! ```bash
+//! # Interactive mode (default)
+//! cargo run --release -p essence-wars-3d
+//!
+//! # Headless mode - auto-start AI vs AI game
+//! cargo run --release -p essence-wars-3d -- --headless
+//!
+//! # With custom decks and seed
+//! cargo run --release -p essence-wars-3d -- --headless --deck1 colossus_wall --deck2 broodmother_swarm --seed 42
+//!
+//! # Human vs AI mode
+//! cargo run --release -p essence-wars-3d -- --headless --human
+//! ```
 
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
@@ -10,6 +26,61 @@ mod game;
 mod rendering;
 mod ui;
 mod glassbox;
+
+// Native-only CLI
+#[cfg(not(target_arch = "wasm32"))]
+use clap::Parser;
+
+/// CLI arguments for native builds.
+#[cfg(not(target_arch = "wasm32"))]
+#[derive(Parser, Debug, Clone, Resource)]
+#[command(name = "essence-wars-3d")]
+#[command(about = "3D card game with AI visualization")]
+pub struct CliArgs {
+    /// Run in headless mode (auto-start game, skip menu)
+    #[arg(long)]
+    pub headless: bool,
+
+    /// Player 1 deck ID
+    #[arg(long, default_value = "colossus_wall")]
+    pub deck1: String,
+
+    /// Player 2 deck ID
+    #[arg(long, default_value = "broodmother_swarm")]
+    pub deck2: String,
+
+    /// Random seed
+    #[arg(long, default_value = "42")]
+    pub seed: u64,
+
+    /// Human player mode (player 1 is human)
+    #[arg(long)]
+    pub human: bool,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+impl Default for CliArgs {
+    fn default() -> Self {
+        Self {
+            headless: false,
+            deck1: "colossus_wall".to_string(),
+            deck2: "broodmother_swarm".to_string(),
+            seed: 42,
+            human: false,
+        }
+    }
+}
+
+// WASM doesn't have CLI args
+#[cfg(target_arch = "wasm32")]
+#[derive(Clone, Resource, Default)]
+pub struct CliArgs {
+    pub headless: bool,
+    pub deck1: String,
+    pub deck2: String,
+    pub seed: u64,
+    pub human: bool,
+}
 
 // WASM-specific imports
 #[cfg(target_arch = "wasm32")]
@@ -53,6 +124,13 @@ fn hide_loading_after_startup(mut ran: Local<bool>) {
 }
 
 fn main() {
+    // Parse CLI args (native only)
+    #[cfg(not(target_arch = "wasm32"))]
+    let cli_args = CliArgs::parse();
+
+    #[cfg(target_arch = "wasm32")]
+    let cli_args = CliArgs::default();
+
     // Very first thing - log that main() was called (try multiple methods)
     #[cfg(target_arch = "wasm32")]
     {
@@ -74,6 +152,9 @@ fn main() {
     log("[Essence Wars] Creating Bevy App...");
 
     let mut app = App::new();
+
+    // Insert CLI args as a resource
+    app.insert_resource(cli_args);
 
     // Configure window differently for native vs web
     #[cfg(not(target_arch = "wasm32"))]

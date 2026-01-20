@@ -143,39 +143,38 @@ fn draw_player_hand(
                             egui::Color32::from_rgb(40, 40, 50)
                         };
 
-                        let response = ui.scope(|ui| {
-                            ui.visuals_mut().widgets.inactive.weak_bg_fill = button_color;
-                            ui.visuals_mut().widgets.hovered.weak_bg_fill =
-                                egui::Color32::from_rgb(80, 80, 100);
+                        // Set visual style for this card
+                        ui.visuals_mut().widgets.inactive.weak_bg_fill = button_color;
+                        ui.visuals_mut().widgets.hovered.weak_bg_fill =
+                            egui::Color32::from_rgb(80, 80, 100);
 
-                            ui.group(|ui| {
-                                ui.set_min_width(100.0);
-                                ui.vertical(|ui| {
-                                    ui.label(egui::RichText::new(&card.name).strong());
-                                    ui.label(format!("Cost: {}", card.cost));
-                                    match &card.card_type {
-                                        cardgame::cards::CardType::Creature { attack, health, keywords, .. } => {
-                                            ui.label(format!("{}/{}", attack, health));
-                                            if !keywords.is_empty() {
-                                                ui.label(
-                                                    egui::RichText::new(keywords.join(", "))
-                                                        .small()
-                                                );
-                                            }
-                                        }
-                                        cardgame::cards::CardType::Spell { .. } => {
-                                            ui.label("Spell");
-                                        }
-                                        cardgame::cards::CardType::Support { durability, .. } => {
-                                            ui.label(format!("Support ({})", durability));
+                        let group_response = ui.group(|ui| {
+                            ui.set_min_width(100.0);
+                            ui.vertical(|ui| {
+                                ui.label(egui::RichText::new(&card.name).strong());
+                                ui.label(format!("Cost: {}", card.cost));
+                                match &card.card_type {
+                                    cardgame::cards::CardType::Creature { attack, health, keywords, .. } => {
+                                        ui.label(format!("{}/{}", attack, health));
+                                        if !keywords.is_empty() {
+                                            ui.label(
+                                                egui::RichText::new(keywords.join(", "))
+                                                    .small()
+                                            );
                                         }
                                     }
-                                });
+                                    cardgame::cards::CardType::Spell { .. } => {
+                                        ui.label("Spell");
+                                    }
+                                    cardgame::cards::CardType::Support { durability, .. } => {
+                                        ui.label(format!("Support ({})", durability));
+                                    }
+                                }
                             });
                         });
 
-                        // Handle click
-                        if response.response.interact(egui::Sense::click()).clicked() && playable {
+                        // Handle click on the group
+                        if group_response.response.interact(egui::Sense::click()).clicked() && playable {
                             if is_selected {
                                 // Deselect
                                 input_state.selected_card = None;

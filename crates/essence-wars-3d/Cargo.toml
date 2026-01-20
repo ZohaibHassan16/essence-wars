@@ -37,6 +37,7 @@ bevy_egui = "0.31"
 # Native-only: cardgame with parallel feature, platform-specific Bevy features
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 cardgame = { workspace = true, features = ["parallel"] }
+clap = { version = "4", features = ["derive"] }
 bevy = { version = "0.15", default-features = false, features = [
     "multi_threaded",
     "x11",

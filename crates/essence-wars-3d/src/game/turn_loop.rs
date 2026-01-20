@@ -87,9 +87,9 @@ impl Default for BotConfig {
             player1_type: BotType::Mcts,
             player2_type: BotType::Mcts,
             mcts_config: MctsConfig {
-                simulations: 200,
+                simulations: 500,
                 exploration: 1.414,
-                max_rollout_depth: 50,
+                max_rollout_depth: 100, // Match arena default
                 parallel_trees: 1,  // Single-threaded for WASM compatibility
                 leaf_rollouts: 1,
             },
@@ -218,10 +218,16 @@ fn execute_ai_turn(
 
     // Create MCTS bot for the current player
     // We create a fresh bot each time since MCTS doesn't benefit from persistence
+    // Use a consistent seed per player (matching arena behavior)
+    let player_seed = if current_player == cardgame::types::PlayerId::PLAYER_ONE {
+        bot_config.bot_seed
+    } else {
+        bot_config.bot_seed.wrapping_add(1)
+    };
     let mut bot = MctsBot::with_config(
         &bridge.card_db,
         bot_config.mcts_config.clone(),
-        bot_config.bot_seed.wrapping_add(turn_state.actions_executed as u64),
+        player_seed,
     );
 
     // Select action using the bot with full engine access

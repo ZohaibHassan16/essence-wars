@@ -205,8 +205,8 @@ impl GameClient {
             });
         }
 
-        // Return recent events
-        Ok(self.event_buffer.clone())
+        // Return and drain recent events
+        Ok(std::mem::take(&mut self.event_buffer))
     }
 
     /// Enhance events based on the action that was taken.
