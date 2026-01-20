@@ -27,9 +27,10 @@ After extensive AlphaZero experimentation, we concluded that self-play from scra
 
 ### Track A: Expert Iteration (ExIt)
 
-**Status**: ❌ Not Started
-**Priority**: ⭐⭐ High (2nd)
+**Status**: ⚠️ Iteration 1 Failed
+**Priority**: ⭐ Lower (needs investigation)
 **Estimated Effort**: Medium
+**Result**: BC-v2 regressed to 51% (from 61%), MCTS hurts model
 
 #### Concept
 
@@ -331,14 +332,17 @@ reward = (
 | 2026-01-20 | B | PPO-Argentum + MCTS-100 | 59% → 63% | +4% improvement |
 | 2026-01-20 | B | BC + MCTS-100 | 64% → 68% | +4% improvement |
 | 2026-01-20 | B | Track B complete | ✅ | 25 sims is sweet spot |
+| 2026-01-20 | A | ExIt data generation | 1k games, 100k samples | 45 min, BC+MCTS-50 |
+| 2026-01-20 | A | BC-v2 (ExIt iter 1) | **51%** (was 61%) | **-10% FAILED** ❌ |
+| 2026-01-20 | A | BC-v2 + MCTS | 36% / 32% | **MCTS hurts model** |
 
 ---
 
 ## Current Focus
 
-**Next Action**: Track A (Expert Iteration) or Track D (PPO Improvements)
+**Next Action**: Investigate ExIt failure or pivot to Track D (PPO Improvements)
 
-**Rationale**: Track B complete with modest gains (+6%). Expert Iteration could potentially break through the ~65% ceiling by generating better training data.
+**Rationale**: Track A ExIt iteration 1 failed dramatically. The BC-v2 model regressed from 61% to 51%, and MCTS augmentation makes it even worse (36%), indicating a broken value function. Need to determine if this is a data size issue (100k vs 900k samples) or fundamental problem with neural-guided MCTS.
 
 ---
 

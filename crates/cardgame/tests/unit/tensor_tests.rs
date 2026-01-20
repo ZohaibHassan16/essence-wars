@@ -247,8 +247,8 @@ fn test_support_encoding_occupied() {
     assert_eq!(tensor[support_offset], 1.0);
     // [1]: durability / 5.0 = 0.6
     assert_eq!(tensor[support_offset + 1], 0.6);
-    // [2]: card_id = 100.0
-    assert_eq!(tensor[support_offset + 2], 100.0);
+    // [2]: card_id = 100.0 / 5000.0 = 0.02 (normalized)
+    assert_eq!(tensor[support_offset + 2], 100.0 / 5000.0);
 }
 
 #[test]
@@ -263,10 +263,10 @@ fn test_hand_cards_encoding() {
     let tensor = state_to_tensor(&state);
     let player1_offset = player_state_offset(0);
 
-    // Hand cards start at offset 5 within player state
-    assert_eq!(tensor[player1_offset + 5], 1.0); // Card ID 1
-    assert_eq!(tensor[player1_offset + 6], 5.0); // Card ID 5
-    assert_eq!(tensor[player1_offset + 7], 10.0); // Card ID 10
+    // Hand cards start at offset 5 within player state (normalized by 5000.0)
+    assert_eq!(tensor[player1_offset + 5], 1.0 / 5000.0); // Card ID 1 normalized
+    assert_eq!(tensor[player1_offset + 6], 5.0 / 5000.0); // Card ID 5 normalized
+    assert_eq!(tensor[player1_offset + 7], 10.0 / 5000.0); // Card ID 10 normalized
     assert_eq!(tensor[player1_offset + 8], 0.0); // Empty slot
 }
 

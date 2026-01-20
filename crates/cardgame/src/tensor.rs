@@ -17,6 +17,10 @@ const CREATURE_SLOT_SIZE: usize = 10;
 /// Number of floats per support slot encoding
 const SUPPORT_SLOT_SIZE: usize = 5;
 
+/// Normalization constant for card IDs (max card ID is ~4074, use 5000 for safety)
+/// This prevents feature explosion in neural networks when card IDs are used as inputs.
+const CARD_ID_NORMALIZER: f32 = 5000.0;
+
 /// Convert a GameState to a neural network input tensor
 pub fn state_to_tensor(state: &GameState) -> [f32; STATE_TENSOR_SIZE] {
     let mut tensor = [0.0f32; STATE_TENSOR_SIZE];
@@ -86,12 +90,12 @@ fn encode_player_state(
     tensor[*idx] = player.hand.len() as f32 / player::MAX_HAND_SIZE as f32;
     *idx += 1;
 
-    // [5-14]: hand_cards (card IDs as floats, 0 if empty)
+    // [5-14]: hand_cards (normalized card IDs, 0 if empty)
     for i in 0..player::MAX_HAND_SIZE {
         tensor[*idx] = player
             .hand
             .get(i)
-            .map(|c| c.card_id.0 as f32)
+            .map(|c| c.card_id.0 as f32 / CARD_ID_NORMALIZER)
             .unwrap_or(0.0);
         *idx += 1;
     }
@@ -183,8 +187,8 @@ fn encode_support_slot(support: Option<&Support>, tensor: &mut [f32], idx: &mut 
             tensor[*idx] = s.current_durability as f32 / 5.0;
             *idx += 1;
 
-            // [2]: card_id as float
-            tensor[*idx] = s.card_id.0 as f32;
+            // [2]: card_id normalized
+            tensor[*idx] = s.card_id.0 as f32 / CARD_ID_NORMALIZER;
             *idx += 1;
 
             // [3-4]: reserved
@@ -193,36 +197,36 @@ fn encode_support_slot(support: Option<&Support>, tensor: &mut [f32], idx: &mut 
     }
 }
 
-/// Encode card embedding IDs from all hands and boards
+/// Encode card embedding IDs from all hands and boards (normalized)
 fn encode_card_embeddings(state: &GameState, tensor: &mut [f32], idx: &mut usize) {
-    // Fill the remaining tensor space with card IDs for embedding lookup
+    // Fill the remaining tensor space with normalized card IDs for embedding lookup
     // This allows the neural network to learn card-specific behaviors
 
     for player in &state.players {
-        // Hand card IDs
+        // Hand card IDs (normalized)
         for card in &player.hand {
             if *idx >= STATE_TENSOR_SIZE {
                 break;
             }
-            tensor[*idx] = card.card_id.0 as f32;
+            tensor[*idx] = card.card_id.0 as f32 / CARD_ID_NORMALIZER;
             *idx += 1;
         }
 
-        // Board creature card IDs
+        // Board creature card IDs (normalized)
         for creature in &player.creatures {
             if *idx >= STATE_TENSOR_SIZE {
                 break;
             }
-            tensor[*idx] = creature.card_id.0 as f32;
+            tensor[*idx] = creature.card_id.0 as f32 / CARD_ID_NORMALIZER;
             *idx += 1;
         }
 
-        // Board support card IDs
+        // Board support card IDs (normalized)
         for support in &player.supports {
             if *idx >= STATE_TENSOR_SIZE {
                 break;
             }
-            tensor[*idx] = support.card_id.0 as f32;
+            tensor[*idx] = support.card_id.0 as f32 / CARD_ID_NORMALIZER;
             *idx += 1;
         }
     }
