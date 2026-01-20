@@ -71,6 +71,7 @@ class NeuralMctsConfig:
     dirichlet_alpha: float = 0.3
     dirichlet_epsilon: float = 0.25
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
+    use_value: bool = True  # Whether to use value function for leaf evaluation
 
 
 class MCTSNode:
@@ -78,6 +79,7 @@ class MCTSNode:
     Node in the MCTS tree.
 
     Stores visit counts, value sums, and prior probabilities.
+    All values are stored from player 0's perspective for consistency.
     """
 
     __slots__ = ['prior', 'visit_count', 'value_sum', 'children', 'is_expanded']
@@ -85,13 +87,13 @@ class MCTSNode:
     def __init__(self, prior: float = 0.0) -> None:
         self.prior = prior
         self.visit_count = 0
-        self.value_sum = 0.0
+        self.value_sum = 0.0  # Sum of values from player 0's perspective
         self.children: dict[int, MCTSNode] = {}
         self.is_expanded = False
 
     @property
     def value(self) -> float:
-        """Mean value Q(s,a) = W(s,a) / N(s,a)."""
+        """Mean value Q(s,a) = W(s,a) / N(s,a) from player 0's perspective."""
         if self.visit_count == 0:
             return 0.0
         return self.value_sum / self.visit_count
@@ -107,8 +109,13 @@ class MCTSNode:
         for i, action in enumerate(legal_actions):
             self.children[action] = MCTSNode(prior=legal_priors[i])
 
-    def select_child(self, c_puct: float) -> tuple[int, "MCTSNode"]:
-        """Select child with highest UCB score."""
+    def select_child(self, c_puct: float, current_player: int) -> tuple[int, "MCTSNode"]:
+        """Select child with highest UCB score.
+
+        Values are stored from player 0's perspective.
+        - At player 0's turn: maximize Q (higher Q = better for P0)
+        - At player 1's turn: minimize Q (higher Q = better for P0 = worse for P1)
+        """
         best_score = -float("inf")
         best_action = -1
         best_child = None
@@ -116,8 +123,11 @@ class MCTSNode:
         sqrt_total = math.sqrt(self.visit_count + 1)
 
         for action, child in self.children.items():
-            # UCB = Q(a) + c_puct * P(a) * sqrt(N) / (1 + n(a))
+            # Q is from player 0's perspective
             q_value = child.value
+            # At player 1's turn, flip sign (P1 wants low Q for P0)
+            if current_player == 1:
+                q_value = -q_value
             u_value = c_puct * child.prior * sqrt_total / (1 + child.visit_count)
             score = q_value + u_value
 
@@ -186,12 +196,14 @@ class NeuralMctsBot:
         temperature: float = 0.0,
         device: str | None = None,
         obs_normalizer: ObsNormalizer | None = None,
+        use_value: bool = True,
     ) -> None:
         self.config = NeuralMctsConfig(
             num_simulations=num_simulations,
             c_puct=c_puct,
             temperature=temperature,
             device=device or ("cuda" if torch.cuda.is_available() else "cpu"),
+            use_value=use_value,
         )
         self.device = torch.device(self.config.device)
         self.network = network.to(self.device)
@@ -340,7 +352,7 @@ class NeuralMctsBot:
                 self.config.dirichlet_epsilon,
             )
 
-        # Get root player for value perspective tracking
+        # All values stored from player 0's perspective
         root_player = game.current_player()
 
         # Run simulations
@@ -349,24 +361,20 @@ class NeuralMctsBot:
             sim_game = game.fork()
             node = root
             search_path = [node]
-            # Track player at each position (before each action)
-            players_at_nodes = [root_player]
+            current_player = root_player
 
             # Selection: traverse tree using UCB
             while node.is_expanded and not sim_game.is_done():
-                action, node = node.select_child(self.config.c_puct)
+                action, node = node.select_child(self.config.c_puct, current_player)
                 sim_game.step(action)
                 search_path.append(node)
-                # Track player at this new position (or -1 if terminal)
-                players_at_nodes.append(
-                    sim_game.current_player() if not sim_game.is_done() else -1
-                )
+                if not sim_game.is_done():
+                    current_player = sim_game.current_player()
 
-            # Get value from the leaf position
+            # Get value from the leaf position (always from player 0's perspective)
             if sim_game.is_done():
-                # Terminal: use actual result from root player's perspective
-                value = sim_game.get_reward(root_player)
-                leaf_from_root_perspective = True
+                # Terminal: use actual result from player 0's perspective
+                value = sim_game.get_reward(0)
             else:
                 # Non-terminal: expand and evaluate
                 sim_obs = sim_game.observe()
@@ -374,33 +382,30 @@ class NeuralMctsBot:
                 sim_legal = np.where(sim_mask > 0)[0].tolist()
 
                 if sim_legal:
-                    policy, value = self._evaluate(sim_obs, sim_mask)
-                    node.expand(sim_legal, policy)
-                    # Neural net returns value from current player's perspective
+                    policy, nn_value = self._evaluate(sim_obs, sim_mask)
                     leaf_player = sim_game.current_player()
-                    # Convert to root player's perspective
-                    if leaf_player != root_player:
-                        value = -value
-                    leaf_from_root_perspective = True
+                    node.expand(sim_legal, policy)
+
+                    if self.config.use_value:
+                        # Use neural network value estimate
+                        value = nn_value
+                        # Convert to player 0's perspective
+                        if leaf_player != 0:
+                            value = -value
+                    else:
+                        # Do random rollout to get actual outcome
+                        rollout_game = sim_game.fork()
+                        while not rollout_game.is_done():
+                            rollout_game.step(rollout_game.random_action())
+                        value = rollout_game.get_reward(0)
                 else:
                     value = 0.0
-                    leaf_from_root_perspective = True
 
             # Backup: propagate value up the tree
-            # Value is always from root_player's perspective
-            for i, node in enumerate(reversed(search_path)):
-                # Get index in forward order
-                idx = len(search_path) - 1 - i
-                player_at_node = players_at_nodes[idx]
-
-                # Store value from this player's perspective
-                if player_at_node == root_player:
-                    node_value = value
-                else:
-                    node_value = -value
-
+            # Value is always from player 0's perspective - just accumulate it
+            for node in reversed(search_path):
                 node.visit_count += 1
-                node.value_sum += node_value
+                node.value_sum += value
 
         # Get action probabilities from visit counts
         action_probs = np.zeros(256, dtype=np.float32)
