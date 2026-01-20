@@ -20,7 +20,11 @@ impl Plugin for CreaturePlugin {
         app.add_systems(OnEnter(AppState::Playing), setup_creature_assets)
             .add_systems(
                 Update,
-                (sync_creatures_with_game_state, process_creature_events)
+                (
+                    sync_creatures_with_game_state,
+                    process_creature_events,
+                    animate_idle_creatures,
+                )
                     .chain()
                     .run_if(in_state(AppState::Playing)),
             )
@@ -397,4 +401,26 @@ fn despawn_all_creatures(
         commands.entity(entity).despawn_recursive();
     }
     info!("All creatures despawned");
+}
+
+/// Animate creatures with subtle idle bob/sway motion.
+/// Each creature bobs gently up and down with a unique phase based on slot.
+fn animate_idle_creatures(
+    time: Res<Time>,
+    mut creatures: Query<(&mut Transform, &Creature3D)>,
+) {
+    let base_height = 0.6; // Base Y position for creature gems
+    let bob_amplitude = 0.04; // How far up/down to bob
+    let bob_speed = 1.8; // Cycles per second
+
+    for (mut transform, creature) in creatures.iter_mut() {
+        // Each creature has a unique phase based on slot and owner
+        // This prevents all creatures bobbing in sync
+        let phase = (creature.slot as f32 * 0.7) + (creature.owner as f32 * 2.5);
+        let t = time.elapsed_secs();
+        let bob = (t * bob_speed + phase).sin() * bob_amplitude;
+
+        // Update only Y position, preserve X and Z
+        transform.translation.y = base_height + bob;
+    }
 }

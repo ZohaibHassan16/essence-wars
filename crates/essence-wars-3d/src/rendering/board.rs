@@ -76,6 +76,7 @@ fn get_player1_faction(bridge: &GameBridge) -> Option<Faction> {
 }
 
 /// Create faction-specific table material.
+/// Emissive values boosted to serve as primary light source in dark void.
 fn create_table_material(faction: Option<Faction>) -> StandardMaterial {
     match faction {
         Some(Faction::Argentum) => StandardMaterial {
@@ -83,7 +84,7 @@ fn create_table_material(faction: Option<Faction>) -> StandardMaterial {
             base_color: Color::srgb(0.15, 0.1, 0.05),
             metallic: 0.3,
             perceptual_roughness: 0.4,
-            emissive: LinearRgba::new(0.05, 0.03, 0.01, 1.0), // Warm amber edge glow
+            emissive: LinearRgba::new(0.12, 0.08, 0.02, 1.0), // Warm amber glow (boosted)
             ..default()
         },
         Some(Faction::Symbiote) => StandardMaterial {
@@ -91,7 +92,7 @@ fn create_table_material(faction: Option<Faction>) -> StandardMaterial {
             base_color: Color::srgb(0.08, 0.12, 0.06),
             metallic: 0.1,
             perceptual_roughness: 0.6,
-            emissive: LinearRgba::new(0.02, 0.08, 0.04, 1.0), // Green bioluminescence
+            emissive: LinearRgba::new(0.04, 0.18, 0.08, 1.0), // Green bioluminescence (boosted)
             ..default()
         },
         Some(Faction::Obsidion) => StandardMaterial {
@@ -99,7 +100,7 @@ fn create_table_material(faction: Option<Faction>) -> StandardMaterial {
             base_color: Color::srgb(0.05, 0.02, 0.05),
             metallic: 0.7,
             perceptual_roughness: 0.2,
-            emissive: LinearRgba::new(0.06, 0.01, 0.03, 1.0), // Deep crimson glow
+            emissive: LinearRgba::new(0.14, 0.02, 0.06, 1.0), // Deep crimson glow (boosted)
             ..default()
         },
         _ => StandardMaterial {
@@ -107,12 +108,14 @@ fn create_table_material(faction: Option<Faction>) -> StandardMaterial {
             base_color: Color::srgb(0.2, 0.15, 0.1),
             metallic: 0.1,
             perceptual_roughness: 0.7,
+            emissive: LinearRgba::new(0.06, 0.04, 0.02, 1.0), // Subtle warm glow
             ..default()
         },
     }
 }
 
 /// Create faction-specific edge trim material.
+/// Edge trim has stronger emissive for prominent glow effect in dark void.
 fn create_edge_material(faction: Option<Faction>) -> StandardMaterial {
     match faction {
         Some(Faction::Argentum) => StandardMaterial {
@@ -120,7 +123,7 @@ fn create_edge_material(faction: Option<Faction>) -> StandardMaterial {
             base_color: Color::srgb(0.7, 0.5, 0.2),
             metallic: 0.9,
             perceptual_roughness: 0.3,
-            emissive: LinearRgba::new(0.15, 0.1, 0.02, 1.0),
+            emissive: LinearRgba::new(0.25, 0.18, 0.04, 1.0), // Boosted
             ..default()
         },
         Some(Faction::Symbiote) => StandardMaterial {
@@ -128,7 +131,7 @@ fn create_edge_material(faction: Option<Faction>) -> StandardMaterial {
             base_color: Color::srgb(0.2, 0.5, 0.3),
             metallic: 0.2,
             perceptual_roughness: 0.5,
-            emissive: LinearRgba::new(0.05, 0.2, 0.1, 1.0),
+            emissive: LinearRgba::new(0.08, 0.35, 0.15, 1.0), // Boosted
             ..default()
         },
         Some(Faction::Obsidion) => StandardMaterial {
@@ -136,7 +139,7 @@ fn create_edge_material(faction: Option<Faction>) -> StandardMaterial {
             base_color: Color::srgb(0.4, 0.05, 0.1),
             metallic: 0.6,
             perceptual_roughness: 0.3,
-            emissive: LinearRgba::new(0.2, 0.02, 0.05, 1.0),
+            emissive: LinearRgba::new(0.35, 0.04, 0.10, 1.0), // Boosted
             ..default()
         },
         _ => StandardMaterial {
@@ -144,7 +147,7 @@ fn create_edge_material(faction: Option<Faction>) -> StandardMaterial {
             base_color: Color::srgb(0.3, 0.25, 0.2),
             metallic: 0.4,
             perceptual_roughness: 0.5,
-            emissive: LinearRgba::new(0.02, 0.02, 0.02, 1.0),
+            emissive: LinearRgba::new(0.08, 0.06, 0.04, 1.0), // Subtle warm glow
             ..default()
         },
     }
@@ -205,18 +208,31 @@ fn spawn_board(
 
     // Lane divider (glowing line between player rows)
     let divider_material = materials.add(StandardMaterial {
-        base_color: Color::srgba(0.8, 0.8, 0.9, 0.6),
+        base_color: Color::srgba(0.7, 0.7, 0.8, 0.4),
         alpha_mode: AlphaMode::Blend,
-        emissive: LinearRgba::new(0.3, 0.3, 0.4, 1.0),
+        emissive: LinearRgba::new(0.15, 0.15, 0.2, 1.0), // Faint glow
         ..default()
     });
     commands.spawn((
         Mesh3d(meshes.add(Cuboid::new(10.0, 0.05, 0.1))),
-        MeshMaterial3d(divider_material),
+        MeshMaterial3d(divider_material.clone()),
         Transform::from_xyz(0.0, 0.05, 0.0),
         LaneDivider,
         GameBoard,
     ));
+
+    // Vertical lane separators (between lanes 1-2, 2-3, 3-4, 4-5)
+    // Creates faint grid overlay for spatial clarity
+    let vertical_line_mesh = meshes.add(Cuboid::new(0.04, 0.03, 4.2));
+    for i in 0..4 {
+        let x = -3.0 + i as f32 * 2.0; // x = -3, -1, 1, 3
+        commands.spawn((
+            Mesh3d(vertical_line_mesh.clone()),
+            MeshMaterial3d(divider_material.clone()),
+            Transform::from_xyz(x, 0.03, 0.0),
+            GameBoard,
+        ));
+    }
 
     // Creature slots for Player 1 (front row)
     let slot_material_p1 = materials.add(StandardMaterial {

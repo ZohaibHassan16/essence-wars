@@ -4,6 +4,7 @@ mod board;
 pub mod camera;
 mod combat;
 mod creatures;
+mod crystal_nodes;
 mod lighting;
 pub mod meshes;
 mod supports;
@@ -12,6 +13,7 @@ pub use board::BoardPlugin;
 pub use camera::{CameraPlugin, GameCamera};
 pub use combat::CombatPlugin;
 pub use creatures::{Creature3D, CreaturePlugin};
+pub use crystal_nodes::CrystalNodePlugin;
 pub use lighting::LightingPlugin;
 pub use supports::{Support3D, SupportPlugin};
 
@@ -26,6 +28,7 @@ impl Plugin for RenderingPlugin {
             .add_plugins(CameraPlugin)
             .add_plugins(CombatPlugin)
             .add_plugins(CreaturePlugin)
+            .add_plugins(CrystalNodePlugin)
             .add_plugins(LightingPlugin)
             .add_plugins(SupportPlugin);
     }
