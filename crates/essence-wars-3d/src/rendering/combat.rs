@@ -26,6 +26,7 @@ impl Plugin for CombatPlugin {
                 (
                     queue_combat_events,
                     process_combat_queue,
+                    process_other_combat_events,
                     animate_attacks,
                     animate_damage_numbers,
                 )
@@ -95,57 +96,119 @@ pub struct DamageNumber {
     pub start_y: f32,
 }
 
-/// Process combat events using Bevy's event system.
-fn process_combat_events(
-    mut commands: Commands,
+/// Queue combat events for sequential processing (lane-by-lane visualization).
+fn queue_combat_events(
     mut event_reader: EventReader<GameEventWrapper>,
     mut combat_state: ResMut<CombatState>,
+) {
+    for GameEventWrapper(event) in event_reader.read() {
+        if let GameEvent::CombatStarted {
+            attacker_player,
+            attacker_slot,
+            defender_player,
+            defender_slot,
+        } = event
+        {
+            // Queue the combat event for sequential processing
+            // Lane is determined by the attacker's slot (combat happens in their lane)
+            let queued = QueuedCombat {
+                lane: attacker_slot.0,
+                attacker_player: *attacker_player,
+                attacker_slot: attacker_slot.0,
+                defender_player: *defender_player,
+                defender_slot: defender_slot.0,
+            };
+            combat_state.combat_queue.push_back(queued);
+            debug!(
+                "Queued combat: lane {} (slot {} attacks slot {})",
+                attacker_slot.0, attacker_slot.0, defender_slot.0
+            );
+        }
+    }
+}
+
+/// Process queued combats sequentially with delays between lanes.
+fn process_combat_queue(
+    time: Res<Time>,
+    mut combat_state: ResMut<CombatState>,
+    creatures: Query<(Entity, &Creature3D, &Transform)>,
+) {
+    // Don't process queue if animation is in progress
+    if combat_state.active_attack.is_some() {
+        return;
+    }
+
+    // Handle delay timer between lane combats
+    if let Some(ref mut timer) = combat_state.lane_delay_timer {
+        timer.tick(time.delta());
+        if !timer.finished() {
+            return;
+        }
+        combat_state.lane_delay_timer = None;
+    }
+
+    // Get next combat from queue
+    let Some(queued) = combat_state.combat_queue.pop_front() else {
+        return;
+    };
+
+    // Check if we're switching to a new lane (add delay for visual separation)
+    if let Some(last_lane) = combat_state.last_lane {
+        if queued.lane != last_lane {
+            // Put the event back and start a delay
+            combat_state.combat_queue.push_front(queued);
+            combat_state.lane_delay_timer = Some(Timer::from_seconds(0.3, TimerMode::Once));
+            info!("Lane change: {} -> {} (adding delay)", last_lane, combat_state.combat_queue.front().map(|q| q.lane).unwrap_or(0));
+            return;
+        }
+    }
+
+    // Process this combat
+    let attacker_owner = if queued.attacker_player == PlayerId::PLAYER_ONE { 0 } else { 1 };
+    let defender_owner = if queued.defender_player == PlayerId::PLAYER_ONE { 0 } else { 1 };
+    let attacker_slot_idx = queued.attacker_slot as usize;
+    let defender_slot_idx = queued.defender_slot as usize;
+
+    let mut attacker_entity = None;
+    let mut attacker_pos = Vec3::ZERO;
+    let mut defender_pos = Vec3::ZERO;
+
+    for (entity, creature, transform) in creatures.iter() {
+        if creature.owner == attacker_owner && creature.slot == attacker_slot_idx {
+            attacker_entity = Some(entity);
+            attacker_pos = transform.translation;
+        }
+        if creature.owner == defender_owner && creature.slot == defender_slot_idx {
+            defender_pos = transform.translation;
+        }
+    }
+
+    // Start attack animation if we found both creatures
+    if let Some(entity) = attacker_entity {
+        combat_state.active_attack = Some(AttackAnimation {
+            attacker_entity: entity,
+            attacker_origin: attacker_pos,
+            defender_pos,
+            progress: 0.0,
+            phase: AttackPhase::Forward,
+        });
+        combat_state.last_lane = Some(queued.lane);
+        info!(
+            "Combat started (lane {}): slot {} attacks slot {}",
+            queued.lane, attacker_slot_idx, defender_slot_idx
+        );
+    }
+}
+
+/// Process non-combat events that still need immediate handling.
+fn process_other_combat_events(
+    mut commands: Commands,
+    mut event_reader: EventReader<GameEventWrapper>,
+    combat_state: Res<CombatState>,
     creatures: Query<(Entity, &Creature3D, &Transform)>,
 ) {
     for GameEventWrapper(event) in event_reader.read() {
         match event {
-            GameEvent::CombatStarted {
-                attacker_player,
-                attacker_slot,
-                defender_player,
-                defender_slot,
-            } => {
-                // Find attacker and defender entities
-                let attacker_owner = if *attacker_player == PlayerId::PLAYER_ONE { 0 } else { 1 };
-                let defender_owner = if *defender_player == PlayerId::PLAYER_ONE { 0 } else { 1 };
-                let attacker_slot_idx = attacker_slot.0 as usize;
-                let defender_slot_idx = defender_slot.0 as usize;
-
-                let mut attacker_entity = None;
-                let mut attacker_pos = Vec3::ZERO;
-                let mut defender_pos = Vec3::ZERO;
-
-                for (entity, creature, transform) in creatures.iter() {
-                    if creature.owner == attacker_owner && creature.slot == attacker_slot_idx {
-                        attacker_entity = Some(entity);
-                        attacker_pos = transform.translation;
-                    }
-                    if creature.owner == defender_owner && creature.slot == defender_slot_idx {
-                        defender_pos = transform.translation;
-                    }
-                }
-
-                // Start attack animation if we found both creatures
-                if let Some(entity) = attacker_entity {
-                    combat_state.active_attack = Some(AttackAnimation {
-                        attacker_entity: entity,
-                        attacker_origin: attacker_pos,
-                        defender_pos,
-                        progress: 0.0,
-                        phase: AttackPhase::Forward,
-                    });
-                    info!(
-                        "Combat started: slot {} attacks slot {}",
-                        attacker_slot_idx, defender_slot_idx
-                    );
-                }
-            }
-
             GameEvent::CombatResolved {
                 attacker_damage_dealt,
                 defender_damage_dealt,
@@ -309,6 +372,9 @@ fn cleanup_combat_effects(
     damage_numbers: Query<Entity, With<DamageNumber>>,
 ) {
     combat_state.active_attack = None;
+    combat_state.combat_queue.clear();
+    combat_state.lane_delay_timer = None;
+    combat_state.last_lane = None;
     for entity in damage_numbers.iter() {
         commands.entity(entity).despawn();
     }

@@ -8,11 +8,11 @@
 
 ## Summary
 
-**Overall Phase 5A-2 Status: ~95% Complete**
+**Overall Phase 5A-2 Status: 100% Complete** (core features done, visual polish deferred to Phase 5A-3)
 
 | Category | Status | Blockers |
 |----------|--------|----------|
-| Turn Progression | 90% | Lane-grouped combat |
+| Turn Progression | 100% | ~~Lane-grouped combat~~ |
 | AI Integration | 100% | ~~Introspection pipeline~~, ~~bot selection UI~~ |
 | Card Interaction | 100% | ~~Drag-and-drop~~, ~~spell targeting~~ |
 | Rendering | 90% | ~~Support slots~~, visual effects (Phase 5A-3) |
@@ -21,7 +21,7 @@
 
 **Phase 1 Quick Wins: COMPLETE** (5/5 issues resolved)
 **Phase 2 Core Features: COMPLETE** (2/2 issues resolved)
-**Phase 3 Major Features: 2/3 complete** (drag-and-drop, support slots done)
+**Phase 3 Major Features: COMPLETE** (3/3 issues resolved)
 
 ---
 
@@ -148,7 +148,7 @@
 
 ### ISSUE-008: Combat Not Grouped by Lane
 - **Severity**: MEDIUM
-- **Location**: `crates/essence-wars-3d/src/game/turn_loop.rs`
+- **Location**: `crates/essence-wars-3d/src/rendering/combat.rs`
 - **Problem**: Combat events processed individually, not lane-by-lane
 - **Details**:
   - Design Section 3.1: "Combat resolves lane by lane (Lane 1 → Lane 2 → ... → Lane 5)"
@@ -156,7 +156,14 @@
   - Missing: Visual pause between lane combats
 - **Fix**: Buffer combat events, group by lane, add delays between lanes
 - **Effort**: 2-3 hrs
-- **Status**: [ ] Open
+- **Status**: [x] COMPLETED (2026-01-20)
+- **Implementation**:
+  - Added CombatState with combat_queue (VecDeque) for buffering events
+  - QueuedCombat struct stores lane info (0-4) with combat data
+  - Sequential processing: waits for animation to complete before next combat
+  - Lane change detection with 0.3s delay between different lanes
+  - Tracks last_lane to detect lane transitions
+  - Cleanup properly resets queue and timers
 
 ---
 
@@ -268,10 +275,10 @@
 6. [x] ISSUE-007: Bot type selection UI (1-2 hrs)
 7. [x] ISSUE-003: Spell targeting (2-3 hrs)
 
-### Phase 3: Major Features (4-8 hours) - IN PROGRESS
+### Phase 3: Major Features (4-8 hours) ✅ COMPLETE
 8. [x] ISSUE-004: Drag-and-drop interaction (4-6 hrs)
 9. [x] ISSUE-002: Support slot rendering (3-4 hrs)
-10. [ ] ISSUE-008: Lane-grouped combat (2-3 hrs)
+10. [x] ISSUE-008: Lane-grouped combat (2-3 hrs)
 
 ### Phase 4: Visual Polish (Phase 5A-3)
 11. [ ] ISSUE-009: Gem/crystal creature meshes
