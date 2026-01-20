@@ -21,13 +21,15 @@ impl Plugin for TurnLoopPlugin {
         app.init_resource::<TurnState>()
             .init_resource::<BotConfig>()
             .init_resource::<GameEventQueue>()
+            .add_event::<GameEventWrapper>()
             .add_systems(OnEnter(AppState::Playing), reset_turn_state)
             .add_systems(
                 Update,
                 (
                     execute_human_action,
                     execute_ai_turn,
-                    process_game_events,
+                    dispatch_game_events,
+                    log_game_events,
                     check_game_end,
                 )
                     .chain()
@@ -35,6 +37,11 @@ impl Plugin for TurnLoopPlugin {
             );
     }
 }
+
+/// Bevy event wrapper for game events.
+/// This allows multiple systems to read the same event.
+#[derive(Event, Clone)]
+pub struct GameEventWrapper(pub GameEvent);
 
 /// Current state of the turn loop.
 #[derive(Resource, Default)]
@@ -258,20 +265,25 @@ fn execute_ai_turn(
     }
 }
 
-/// System to process game events from the queue.
-fn process_game_events(
+/// System to dispatch game events from queue to Bevy events.
+/// This drains the queue and sends events that can be read by multiple systems.
+fn dispatch_game_events(
     mut event_queue: ResMut<GameEventQueue>,
+    mut event_writer: EventWriter<GameEventWrapper>,
+) {
+    // Drain all events from the queue and dispatch as Bevy events
+    while let Some(event) = event_queue.events.pop_front() {
+        event_writer.send(GameEventWrapper(event));
+    }
+}
+
+/// System to log game events.
+fn log_game_events(
+    mut event_reader: EventReader<GameEventWrapper>,
     bridge: Res<GameBridge>,
 ) {
-    // Process a batch of events each frame
-    let batch_size = 10;
-    for _ in 0..batch_size {
-        let Some(event) = event_queue.events.pop_front() else {
-            break;
-        };
-
-        // Log significant events
-        match &event {
+    for GameEventWrapper(event) in event_reader.read() {
+        match event {
             GameEvent::TurnStarted { turn_number, player, .. } => {
                 info!("=== Turn {} - {:?} ===", turn_number, player);
             }

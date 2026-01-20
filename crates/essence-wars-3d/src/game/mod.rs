@@ -9,4 +9,5 @@ mod turn_loop;
 
 pub use bridge::GameBridge;
 pub use state::{AppState, GamePlugin};
-pub use turn_loop::GameEventQueue;
+pub use turn_loop::GameEventWrapper;
+// GameEventQueue is still used internally by turn_loop

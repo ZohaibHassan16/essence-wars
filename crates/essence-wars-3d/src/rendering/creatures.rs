@@ -5,8 +5,9 @@
 
 use bevy::prelude::*;
 use cardgame::client_api::GameEvent;
+use cardgame::types::PlayerId;
 
-use crate::game::{AppState, GameBridge, GameEventQueue};
+use crate::game::{AppState, GameBridge, GameEventWrapper};
 
 /// Plugin for creature rendering.
 pub struct CreaturePlugin;
@@ -101,41 +102,16 @@ fn setup_creature_assets(
     info!("Creature assets initialized");
 }
 
-/// Process creature-related events from the event queue.
+/// Process creature-related events using Bevy's event system.
 fn process_creature_events(
     mut commands: Commands,
-    mut event_queue: ResMut<GameEventQueue>,
+    mut event_reader: EventReader<GameEventWrapper>,
     assets: Option<Res<CreatureAssets>>,
     mut creatures: Query<(Entity, &Creature3D, &mut MeshMaterial3d<StandardMaterial>)>,
 ) {
     let Some(assets) = assets else { return };
 
-    // Collect events to process (we'll drain creature events)
-    let mut events_to_requeue = Vec::new();
-    let mut creature_events = Vec::new();
-
-    while let Some(event) = event_queue.events.pop_front() {
-        match &event {
-            GameEvent::CreatureSpawned { .. }
-            | GameEvent::CreatureDied { .. }
-            | GameEvent::CreatureDamaged { .. }
-            | GameEvent::CreatureHealed { .. }
-            | GameEvent::CreatureStatsChanged { .. } => {
-                creature_events.push(event);
-            }
-            _ => {
-                events_to_requeue.push(event);
-            }
-        }
-    }
-
-    // Put non-creature events back
-    for event in events_to_requeue {
-        event_queue.events.push_back(event);
-    }
-
-    // Process creature events
-    for event in creature_events {
+    for GameEventWrapper(event) in event_reader.read() {
         match event {
             GameEvent::CreatureSpawned {
                 player,
@@ -146,7 +122,7 @@ fn process_creature_events(
                 health,
                 ..
             } => {
-                let owner = if player.0 == 0 { 0 } else { 1 };
+                let owner = if *player == PlayerId::PLAYER_ONE { 0 } else { 1 };
                 let slot_idx = slot.0 as usize;
 
                 // Calculate position
@@ -168,8 +144,8 @@ fn process_creature_events(
                         card_id: card_id.0,
                         owner,
                         slot: slot_idx,
-                        attack,
-                        health,
+                        attack: *attack,
+                        health: *health,
                     },
                 ));
 
@@ -199,13 +175,12 @@ fn process_creature_events(
                 ..
             } => {
                 // Update creature health and potentially material
-                let owner = if player.0 == 0 { 0 } else { 1 };
+                let owner = if *player == PlayerId::PLAYER_ONE { 0 } else { 1 };
                 let slot_idx = slot.0 as usize;
                 for (_, creature, mut material) in creatures.iter_mut() {
                     if creature.owner == owner && creature.slot == slot_idx {
-                        // Note: We can't mutate creature.health since Creature3D fields are read from events
                         // Change to damaged material if health is low
-                        if new_health <= 2 {
+                        if *new_health <= 2 {
                             material.0 = if owner == 0 {
                                 assets.damaged_material_p1.clone()
                             } else {
@@ -224,12 +199,12 @@ fn process_creature_events(
                 ..
             } => {
                 // Update creature visual
-                let owner = if player.0 == 0 { 0 } else { 1 };
+                let owner = if *player == PlayerId::PLAYER_ONE { 0 } else { 1 };
                 let slot_idx = slot.0 as usize;
                 for (_, creature, mut material) in creatures.iter_mut() {
                     if creature.owner == owner && creature.slot == slot_idx {
                         // Restore normal material if healed above threshold
-                        if new_health > 2 {
+                        if *new_health > 2 {
                             material.0 = if owner == 0 {
                                 assets.material_p1.clone()
                             } else {
@@ -247,8 +222,7 @@ fn process_creature_events(
                 ..
             } => {
                 // Stats changed - could add visual indicator here
-                // For now just log that it happened
-                let owner = if player.0 == 0 { 0 } else { 1 };
+                let owner = if *player == PlayerId::PLAYER_ONE { 0 } else { 1 };
                 let slot_idx = slot.0 as usize;
                 debug!(
                     "Creature stats changed: player {} slot {}",

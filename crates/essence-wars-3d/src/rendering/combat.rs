@@ -9,7 +9,7 @@ use bevy::prelude::*;
 use cardgame::client_api::GameEvent;
 use cardgame::types::PlayerId;
 
-use crate::game::{AppState, GameEventQueue};
+use crate::game::{AppState, GameEventWrapper};
 use super::creatures::Creature3D;
 
 /// Plugin for combat visualization.
@@ -73,38 +73,14 @@ pub struct DamageNumber {
     pub start_y: f32,
 }
 
-/// Process combat events from the queue.
+/// Process combat events using Bevy's event system.
 fn process_combat_events(
     mut commands: Commands,
-    mut event_queue: ResMut<GameEventQueue>,
+    mut event_reader: EventReader<GameEventWrapper>,
     mut combat_state: ResMut<CombatState>,
     creatures: Query<(Entity, &Creature3D, &Transform)>,
 ) {
-    // Collect combat events
-    let mut events_to_requeue = Vec::new();
-    let mut combat_events = Vec::new();
-
-    while let Some(event) = event_queue.events.pop_front() {
-        match &event {
-            GameEvent::CombatStarted { .. }
-            | GameEvent::CombatResolved { .. }
-            | GameEvent::CreatureDamaged { .. }
-            | GameEvent::LifeChanged { .. } => {
-                combat_events.push(event);
-            }
-            _ => {
-                events_to_requeue.push(event);
-            }
-        }
-    }
-
-    // Put non-combat events back
-    for event in events_to_requeue {
-        event_queue.events.push_back(event);
-    }
-
-    // Process combat events
-    for event in combat_events {
+    for GameEventWrapper(event) in event_reader.read() {
         match event {
             GameEvent::CombatStarted {
                 attacker_player,
@@ -113,8 +89,8 @@ fn process_combat_events(
                 defender_slot,
             } => {
                 // Find attacker and defender entities
-                let attacker_owner = if attacker_player == PlayerId::PLAYER_ONE { 0 } else { 1 };
-                let defender_owner = if defender_player == PlayerId::PLAYER_ONE { 0 } else { 1 };
+                let attacker_owner = if *attacker_player == PlayerId::PLAYER_ONE { 0 } else { 1 };
+                let defender_owner = if *defender_player == PlayerId::PLAYER_ONE { 0 } else { 1 };
                 let attacker_slot_idx = attacker_slot.0 as usize;
                 let defender_slot_idx = defender_slot.0 as usize;
 
@@ -156,19 +132,19 @@ fn process_combat_events(
                 // Spawn damage numbers at both positions
                 if let Some(ref attack) = combat_state.active_attack {
                     // Damage to defender (at defender position)
-                    if attacker_damage_dealt > 0 {
+                    if *attacker_damage_dealt > 0 {
                         spawn_damage_number(
                             &mut commands,
                             attack.defender_pos,
-                            attacker_damage_dealt,
+                            *attacker_damage_dealt,
                         );
                     }
                     // Damage to attacker (at attacker origin)
-                    if defender_damage_dealt > 0 {
+                    if *defender_damage_dealt > 0 {
                         spawn_damage_number(
                             &mut commands,
                             attack.attacker_origin,
-                            defender_damage_dealt,
+                            *defender_damage_dealt,
                         );
                     }
                 }
@@ -186,14 +162,14 @@ fn process_combat_events(
                 ..
             } => {
                 // Spawn damage number at creature position
-                if damage > 0 {
-                    let owner = if player == PlayerId::PLAYER_ONE { 0 } else { 1 };
+                if *damage > 0 {
+                    let owner = if *player == PlayerId::PLAYER_ONE { 0 } else { 1 };
                     let slot_idx = slot.0 as usize;
 
                     // Find creature position
                     for (_, creature, transform) in creatures.iter() {
                         if creature.owner == owner && creature.slot == slot_idx {
-                            spawn_damage_number(&mut commands, transform.translation, damage);
+                            spawn_damage_number(&mut commands, transform.translation, *damage);
                             break;
                         }
                     }
@@ -207,10 +183,10 @@ fn process_combat_events(
                 ..
             } => {
                 // Show damage to player life
-                let damage = old_life.saturating_sub(new_life) as u8;
+                let damage = old_life.saturating_sub(*new_life) as u8;
                 if damage > 0 {
                     // Spawn damage number at player's side of board
-                    let z = if player == PlayerId::PLAYER_ONE { 4.0 } else { -4.0 };
+                    let z = if *player == PlayerId::PLAYER_ONE { 4.0 } else { -4.0 };
                     let position = Vec3::new(0.0, 0.5, z);
                     spawn_damage_number(&mut commands, position, damage);
                     info!("{:?} takes {} damage (life: {} -> {})", player, damage, old_life, new_life);
