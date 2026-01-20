@@ -5,6 +5,8 @@ use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 use cardgame::bots::BotType;
 use crate::game::{AppState, GameBridge, HeadlessStats};
+#[cfg(not(target_arch = "wasm32"))]
+use crate::game::ScreenshotState;
 use crate::game::turn_loop::{BotConfig, TurnState};
 use crate::CliArgs;
 use super::player_input::GameModeConfig;
@@ -15,8 +17,11 @@ pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, draw_main_menu.run_if(in_state(AppState::Menu)))
-            .add_systems(Update, draw_game_over.run_if(in_state(AppState::GameOver)))
-            .add_systems(Update, handle_headless_game_over.run_if(in_state(AppState::GameOver)));
+            .add_systems(Update, draw_game_over.run_if(in_state(AppState::GameOver)));
+
+        // Headless game over handling (native only due to screenshot dependency)
+        #[cfg(not(target_arch = "wasm32"))]
+        app.add_systems(Update, handle_headless_game_over.run_if(in_state(AppState::GameOver)));
     }
 }
 
@@ -335,6 +340,7 @@ fn draw_game_over(
 }
 
 /// Handle game over in headless mode for multi-game benchmark runs.
+#[cfg(not(target_arch = "wasm32"))]
 fn handle_headless_game_over(
     cli_args: Option<Res<CliArgs>>,
     mut headless_stats: Option<ResMut<HeadlessStats>>,
@@ -342,6 +348,7 @@ fn handle_headless_game_over(
     mut next_state: ResMut<NextState<AppState>>,
     mut exit: EventWriter<AppExit>,
     turn_state: Res<crate::game::turn_loop::TurnState>,
+    screenshot_state: Option<Res<ScreenshotState>>,
 ) {
     // Only run in headless mode with stats tracking
     let Some(args) = cli_args.as_ref() else {
@@ -411,11 +418,22 @@ fn handle_headless_game_over(
         return;
     }
 
+    // Wait for screenshots to complete before exiting
+    if let Some(ss_state) = screenshot_state.as_ref() {
+        if ss_state.needs_screenshot_delay() {
+            return; // Wait for screenshot to be saved
+        }
+    }
+
     // All games complete - output results
     if args.json {
         let deck1 = bridge.current_deck1.as_deref().unwrap_or("unknown");
         let deck2 = bridge.current_deck2.as_deref().unwrap_or("unknown");
-        let output = stats.to_json_output(deck1, deck2, args.seed);
+        let screenshots = screenshot_state
+            .as_ref()
+            .map(|s| s.screenshot_paths.clone())
+            .unwrap_or_default();
+        let output = stats.to_json_output(deck1, deck2, args.seed, screenshots);
         match serde_json::to_string_pretty(&output) {
             Ok(json) => println!("{}", json),
             Err(e) => {

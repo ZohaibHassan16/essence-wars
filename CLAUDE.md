@@ -287,6 +287,19 @@ cargo run --release -p essence-wars-3d -- --headless --fast --debug
 
 # Custom decks and seed
 cargo run --release -p essence-wars-3d -- --headless --deck1 colossus_wall --deck2 broodmother_swarm --seed 42
+
+# Screenshot capture at specific turns
+cargo run --release -p essence-wars-3d -- --headless --fast \
+    --screenshot-turns 1,5,10 --screenshot-dir ./debug_shots
+
+# Screenshot capture on events (turn_start, combat, game_over)
+cargo run --release -p essence-wars-3d -- --headless --fast \
+    --screenshot-events game_over --screenshot-dir ./debug_shots
+
+# Combined: screenshots + JSON output for visual debugging
+cargo run --release -p essence-wars-3d -- --headless --fast --json \
+    --screenshot-turns 1 --screenshot-events game_over \
+    --screenshot-dir ./debug_shots
 ```
 
 | Flag | Description |
@@ -297,6 +310,12 @@ cargo run --release -p essence-wars-3d -- --headless --deck1 colossus_wall --dec
 | `--json` | Output results as JSON (for scripting) |
 | `--debug` | Per-action logging like arena binary |
 | `--human` | Player 1 is human (interactive) |
+| `--screenshot-turns 1,5,10` | Capture screenshots at specific turn numbers |
+| `--screenshot-interval 2.0` | Capture screenshots every N seconds |
+| `--screenshot-events X,Y` | Capture on events: `turn_start`, `combat`, `game_over` |
+| `--screenshot-dir PATH` | Output directory for screenshots (default: `screenshots/`) |
+
+**Screenshot filename pattern:** `game_{game_num}_turn_{turn}_{event}_{elapsed}s.png`
 
 **JSON output format:**
 ```json
@@ -305,7 +324,8 @@ cargo run --release -p essence-wars-3d -- --headless --deck1 colossus_wall --dec
   "config": { "deck1": "...", "deck2": "...", "seed": 42, "games": 100 },
   "results": { "player1_wins": 54, "player2_wins": 43, "draws": 3, ... },
   "timing": { "total_seconds": 12.45, "avg_game_ms": 124.5, "games_per_second": 8.03 },
-  "metrics": { "avg_turns": 18.5, "avg_actions": 42.3 }
+  "metrics": { "avg_turns": 18.5, "avg_actions": 42.3 },
+  "screenshots": ["screenshots/game_1_turn_1_turn_start_0s.png", "..."]
 }
 ```
 

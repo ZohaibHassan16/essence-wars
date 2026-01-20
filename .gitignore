@@ -106,3 +106,4 @@ data/datasets/
 # Allow sample dataset for tutorials
 !data/datasets/sample_1k.jsonl.gz
 .archive/
+test_shots/

@@ -72,6 +72,22 @@ pub struct CliArgs {
     /// Debug logging - print each action like arena
     #[arg(long)]
     pub debug: bool,
+
+    /// Capture screenshots at specific turn numbers (comma-separated)
+    #[arg(long, value_delimiter = ',')]
+    pub screenshot_turns: Option<Vec<u16>>,
+
+    /// Capture screenshots every N seconds
+    #[arg(long)]
+    pub screenshot_interval: Option<f32>,
+
+    /// Capture screenshots on events (comma-separated: turn_start, combat, game_over)
+    #[arg(long, value_delimiter = ',')]
+    pub screenshot_events: Option<Vec<String>>,
+
+    /// Output directory for screenshots
+    #[arg(long, default_value = "screenshots")]
+    pub screenshot_dir: String,
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -87,6 +103,10 @@ impl Default for CliArgs {
             games: 1,
             json: false,
             debug: false,
+            screenshot_turns: None,
+            screenshot_interval: None,
+            screenshot_events: None,
+            screenshot_dir: "screenshots".to_string(),
         }
     }
 }
@@ -104,6 +124,10 @@ pub struct CliArgs {
     pub games: usize,
     pub json: bool,
     pub debug: bool,
+    pub screenshot_turns: Option<Vec<u16>>,
+    pub screenshot_interval: Option<f32>,
+    pub screenshot_events: Option<Vec<String>>,
+    pub screenshot_dir: String,
 }
 
 // WASM-specific imports
@@ -230,6 +254,10 @@ fn main() {
         .add_plugins(rendering::RenderingPlugin)
         .add_plugins(ui::UiPlugin)
         .add_plugins(glassbox::GlassboxPlugin);
+
+    // Add screenshot plugin for native builds only
+    #[cfg(not(target_arch = "wasm32"))]
+    app.add_plugins(game::ScreenshotPlugin);
 
     // Add system to hide loading screen after startup (WASM only)
     #[cfg(target_arch = "wasm32")]

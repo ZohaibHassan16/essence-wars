@@ -350,7 +350,7 @@ fn execute_ai_turn(
 
 /// System to dispatch game events from queue to Bevy events.
 /// This drains the queue and sends events that can be read by multiple systems.
-fn dispatch_game_events(
+pub fn dispatch_game_events(
     mut event_queue: ResMut<GameEventQueue>,
     mut event_writer: EventWriter<GameEventWrapper>,
 ) {

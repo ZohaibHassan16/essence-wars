@@ -118,6 +118,8 @@ pub struct BenchmarkOutput {
     pub results: BenchmarkResults,
     pub timing: BenchmarkTiming,
     pub metrics: BenchmarkMetrics,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub screenshots: Vec<String>,
 }
 
 #[derive(Serialize)]
@@ -152,7 +154,13 @@ pub struct BenchmarkMetrics {
 
 impl HeadlessStats {
     /// Generate JSON output for benchmark results.
-    pub fn to_json_output(&self, deck1: &str, deck2: &str, seed: u64) -> BenchmarkOutput {
+    pub fn to_json_output(
+        &self,
+        deck1: &str,
+        deck2: &str,
+        seed: u64,
+        screenshots: Vec<String>,
+    ) -> BenchmarkOutput {
         let total_games = self.games_played.max(1) as f64;
 
         BenchmarkOutput {
@@ -179,6 +187,7 @@ impl HeadlessStats {
                 avg_turns: self.avg_turns(),
                 avg_actions: self.avg_actions(),
             },
+            screenshots,
         }
     }
 }
