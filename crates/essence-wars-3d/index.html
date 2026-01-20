@@ -146,6 +146,24 @@
     </div>
 
     <script>
+        // Catch any unhandled errors during WASM initialization
+        window.addEventListener('error', function(event) {
+            console.error('[Essence Wars] Global error:', event.message, event.filename, event.lineno);
+            document.querySelector('.loading-progress').textContent = 'Error: ' + event.message;
+        });
+
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('[Essence Wars] Unhandled promise rejection:', event.reason);
+            document.querySelector('.loading-progress').textContent = 'Error: ' + event.reason;
+        });
+
+        // Listen for WASM module events
+        window.addEventListener('TrunkApplicationStarted', function(event) {
+            console.log('[Essence Wars] TrunkApplicationStarted event received!', event.detail);
+        });
+
+        console.log('[Essence Wars] Error handlers installed');
+
         // Check for required browser features
         function checkBrowserSupport() {
             const issues = [];
