@@ -23,12 +23,15 @@ impl Plugin for CreaturePlugin {
                 (
                     sync_creatures_with_game_state,
                     process_creature_events,
+                    update_creature_state_visuals,
+                    sync_creature_auras,
                     animate_idle_creatures,
+                    animate_auras,
                 )
                     .chain()
                     .run_if(in_state(AppState::Playing)),
             )
-            .add_systems(OnExit(AppState::Playing), despawn_all_creatures);
+            .add_systems(OnExit(AppState::Playing), (despawn_all_creatures, despawn_all_auras));
     }
 }
 
@@ -49,6 +52,20 @@ pub struct Creature3D {
     pub health: i8,
 }
 
+/// Component marking a buff aura entity (golden glow).
+#[derive(Component)]
+pub struct BuffAura {
+    /// The creature instance this aura belongs to
+    pub creature_instance_id: u32,
+}
+
+/// Component marking a debuff aura entity (dark shadow).
+#[derive(Component)]
+pub struct DebuffAura {
+    /// The creature instance this aura belongs to
+    pub creature_instance_id: u32,
+}
+
 /// Resource storing creature mesh and material handles.
 #[derive(Resource)]
 pub struct CreatureAssets {
@@ -57,6 +74,16 @@ pub struct CreatureAssets {
     pub material_p2: Handle<StandardMaterial>,
     pub damaged_material_p1: Handle<StandardMaterial>,
     pub damaged_material_p2: Handle<StandardMaterial>,
+    /// Glowing material for creatures that can attack
+    pub ready_material_p1: Handle<StandardMaterial>,
+    pub ready_material_p2: Handle<StandardMaterial>,
+    /// Dimmed material for exhausted creatures
+    pub exhausted_material_p1: Handle<StandardMaterial>,
+    pub exhausted_material_p2: Handle<StandardMaterial>,
+    /// Aura assets for buff/debuff visualization
+    pub aura_mesh: Handle<Mesh>,
+    pub buff_aura_material: Handle<StandardMaterial>,
+    pub debuff_aura_material: Handle<StandardMaterial>,
 }
 
 /// Get faction for a player's deck.
@@ -158,6 +185,50 @@ fn create_damaged_gem_material(faction: Option<Faction>, is_player1: bool) -> St
     mat
 }
 
+/// Create ready-to-attack material (bright glowing).
+fn create_ready_gem_material(faction: Option<Faction>, is_player1: bool) -> StandardMaterial {
+    let mut mat = create_gem_material(faction, is_player1);
+    // Boost emissive significantly for glowing effect
+    mat.emissive = LinearRgba::new(
+        mat.emissive.red * 3.0,
+        mat.emissive.green * 3.0,
+        mat.emissive.blue * 3.0,
+        1.0,
+    );
+    // Slightly brighter base
+    let srgba = mat.base_color.to_srgba();
+    mat.base_color = Color::srgb(
+        (srgba.red * 1.1).min(1.0),
+        (srgba.green * 1.1).min(1.0),
+        (srgba.blue * 1.1).min(1.0),
+    );
+    mat
+}
+
+/// Create exhausted material (dimmed, desaturated).
+fn create_exhausted_gem_material(faction: Option<Faction>, is_player1: bool) -> StandardMaterial {
+    let mut mat = create_gem_material(faction, is_player1);
+    // Desaturate and darken
+    let srgba = mat.base_color.to_srgba();
+    let gray = (srgba.red + srgba.green + srgba.blue) / 3.0;
+    // Blend toward gray (50% desaturation)
+    mat.base_color = Color::srgb(
+        (srgba.red * 0.5 + gray * 0.5) * 0.5,
+        (srgba.green * 0.5 + gray * 0.5) * 0.5,
+        (srgba.blue * 0.5 + gray * 0.5) * 0.5,
+    );
+    // Very dim emissive
+    mat.emissive = LinearRgba::new(
+        mat.emissive.red * 0.15,
+        mat.emissive.green * 0.15,
+        mat.emissive.blue * 0.15,
+        1.0,
+    );
+    // Increased roughness
+    mat.perceptual_roughness = (mat.perceptual_roughness + 0.2).min(1.0);
+    mat
+}
+
 /// Setup creature assets when entering Playing state.
 fn setup_creature_assets(
     mut commands: Commands,
@@ -184,6 +255,36 @@ fn setup_creature_assets(
     let material_p2 = materials.add(create_gem_material(faction_p2, false));
     let damaged_material_p1 = materials.add(create_damaged_gem_material(faction_p1, true));
     let damaged_material_p2 = materials.add(create_damaged_gem_material(faction_p2, false));
+    let ready_material_p1 = materials.add(create_ready_gem_material(faction_p1, true));
+    let ready_material_p2 = materials.add(create_ready_gem_material(faction_p2, false));
+    let exhausted_material_p1 = materials.add(create_exhausted_gem_material(faction_p1, true));
+    let exhausted_material_p2 = materials.add(create_exhausted_gem_material(faction_p2, false));
+
+    // Create aura mesh (torus ring around creature)
+    let aura_mesh = meshes.add(
+        bevy::math::primitives::Torus {
+            minor_radius: 0.05,
+            major_radius: 0.55,
+        }
+    );
+
+    // Golden buff aura - bright and warm
+    let buff_aura_material = materials.add(StandardMaterial {
+        base_color: Color::srgba(1.0, 0.85, 0.3, 0.6),
+        emissive: LinearRgba::new(1.0, 0.7, 0.2, 1.0),
+        alpha_mode: AlphaMode::Blend,
+        unlit: true,
+        ..default()
+    });
+
+    // Dark debuff aura - shadowy purple/red
+    let debuff_aura_material = materials.add(StandardMaterial {
+        base_color: Color::srgba(0.4, 0.1, 0.3, 0.5),
+        emissive: LinearRgba::new(0.3, 0.05, 0.15, 1.0),
+        alpha_mode: AlphaMode::Blend,
+        unlit: true,
+        ..default()
+    });
 
     commands.insert_resource(CreatureAssets {
         mesh,
@@ -191,9 +292,16 @@ fn setup_creature_assets(
         material_p2,
         damaged_material_p1,
         damaged_material_p2,
+        ready_material_p1,
+        ready_material_p2,
+        exhausted_material_p1,
+        exhausted_material_p2,
+        aura_mesh,
+        buff_aura_material,
+        debuff_aura_material,
     });
 
-    info!("Creature gem assets initialized");
+    info!("Creature gem assets initialized (with state materials and auras)");
 }
 
 /// Process creature-related events using Bevy's event system.
@@ -422,5 +530,239 @@ fn animate_idle_creatures(
 
         // Update only Y position, preserve X and Z
         transform.translation.y = base_height + bob;
+    }
+}
+
+/// Update creature materials based on their game state (ready/exhausted/damaged).
+fn update_creature_state_visuals(
+    bridge: Res<GameBridge>,
+    assets: Option<Res<CreatureAssets>>,
+    mut creatures: Query<(&Creature3D, &mut MeshMaterial3d<StandardMaterial>)>,
+) {
+    let Some(assets) = assets else { return };
+    let Some(client) = &bridge.client else { return };
+    let Some(state) = client.get_state() else { return };
+
+    let current_turn = state.current_turn;
+
+    for (creature_3d, mut material) in creatures.iter_mut() {
+        // Find the corresponding game state creature
+        let game_creature = state.players[creature_3d.owner]
+            .creatures
+            .iter()
+            .find(|c| c.instance_id.0 == creature_3d.instance_id);
+
+        let Some(game_creature) = game_creature else {
+            continue;
+        };
+
+        // Determine the appropriate material based on state
+        // Priority: Exhausted > Damaged > Ready > Normal
+        let is_exhausted = game_creature.status.is_exhausted();
+        let can_attack = game_creature.can_attack(current_turn);
+        let is_damaged = game_creature.current_health <= 2 && game_creature.current_health < game_creature.base_health as i8;
+        let is_player1 = creature_3d.owner == 0;
+
+        let new_material = if is_exhausted {
+            // Exhausted takes priority - creature has acted
+            if is_player1 {
+                assets.exhausted_material_p1.clone()
+            } else {
+                assets.exhausted_material_p2.clone()
+            }
+        } else if is_damaged {
+            // Damaged but not exhausted
+            if is_player1 {
+                assets.damaged_material_p1.clone()
+            } else {
+                assets.damaged_material_p2.clone()
+            }
+        } else if can_attack {
+            // Ready to attack - glow!
+            if is_player1 {
+                assets.ready_material_p1.clone()
+            } else {
+                assets.ready_material_p2.clone()
+            }
+        } else {
+            // Normal state (summoning sick or no attack)
+            if is_player1 {
+                assets.material_p1.clone()
+            } else {
+                assets.material_p2.clone()
+            }
+        };
+
+        material.0 = new_material;
+    }
+}
+
+/// Sync buff/debuff auras with creature state.
+/// Buff = attack > base_attack OR max_health > base_health
+/// Debuff = attack < base_attack
+fn sync_creature_auras(
+    mut commands: Commands,
+    bridge: Res<GameBridge>,
+    assets: Option<Res<CreatureAssets>>,
+    creatures: Query<(&Creature3D, &Transform)>,
+    buff_auras: Query<(Entity, &BuffAura)>,
+    debuff_auras: Query<(Entity, &DebuffAura)>,
+) {
+    let Some(assets) = assets else { return };
+    let Some(client) = &bridge.client else { return };
+    let Some(state) = client.get_state() else { return };
+
+    // Build sets of which creatures currently have auras
+    let existing_buff_auras: std::collections::HashSet<u32> = buff_auras
+        .iter()
+        .map(|(_, aura)| aura.creature_instance_id)
+        .collect();
+    let existing_debuff_auras: std::collections::HashSet<u32> = debuff_auras
+        .iter()
+        .map(|(_, aura)| aura.creature_instance_id)
+        .collect();
+
+    for (creature_3d, transform) in creatures.iter() {
+        // Find the corresponding game state creature
+        let game_creature = state.players[creature_3d.owner]
+            .creatures
+            .iter()
+            .find(|c| c.instance_id.0 == creature_3d.instance_id);
+
+        let Some(game_creature) = game_creature else {
+            continue;
+        };
+
+        // Check for buffs: attack > base_attack OR max_health > base_health
+        let is_buffed = game_creature.attack > game_creature.base_attack as i8
+            || game_creature.max_health > game_creature.base_health as i8;
+
+        // Check for debuffs: attack < base_attack (negative buffs)
+        let is_debuffed = game_creature.attack < game_creature.base_attack as i8;
+
+        let instance_id = creature_3d.instance_id;
+
+        // Spawn/despawn buff aura
+        if is_buffed && !existing_buff_auras.contains(&instance_id) {
+            commands.spawn((
+                Mesh3d(assets.aura_mesh.clone()),
+                MeshMaterial3d(assets.buff_aura_material.clone()),
+                Transform::from_translation(transform.translation)
+                    .with_rotation(Quat::from_rotation_x(std::f32::consts::FRAC_PI_2)),
+                BuffAura { creature_instance_id: instance_id },
+            ));
+        } else if !is_buffed && existing_buff_auras.contains(&instance_id) {
+            for (entity, aura) in buff_auras.iter() {
+                if aura.creature_instance_id == instance_id {
+                    commands.entity(entity).despawn_recursive();
+                    break;
+                }
+            }
+        }
+
+        // Spawn/despawn debuff aura
+        if is_debuffed && !existing_debuff_auras.contains(&instance_id) {
+            commands.spawn((
+                Mesh3d(assets.aura_mesh.clone()),
+                MeshMaterial3d(assets.debuff_aura_material.clone()),
+                Transform::from_translation(transform.translation + Vec3::Y * 0.1)
+                    .with_rotation(Quat::from_rotation_x(std::f32::consts::FRAC_PI_2)),
+                DebuffAura { creature_instance_id: instance_id },
+            ));
+        } else if !is_debuffed && existing_debuff_auras.contains(&instance_id) {
+            for (entity, aura) in debuff_auras.iter() {
+                if aura.creature_instance_id == instance_id {
+                    commands.entity(entity).despawn_recursive();
+                    break;
+                }
+            }
+        }
+    }
+
+    // Clean up auras for dead creatures
+    let alive_creatures: std::collections::HashSet<u32> = creatures
+        .iter()
+        .map(|(c, _)| c.instance_id)
+        .collect();
+
+    for (entity, aura) in buff_auras.iter() {
+        if !alive_creatures.contains(&aura.creature_instance_id) {
+            commands.entity(entity).despawn_recursive();
+        }
+    }
+    for (entity, aura) in debuff_auras.iter() {
+        if !alive_creatures.contains(&aura.creature_instance_id) {
+            commands.entity(entity).despawn_recursive();
+        }
+    }
+}
+
+/// Animate auras: rotate and pulse.
+fn animate_auras(
+    time: Res<Time>,
+    creatures: Query<(&Creature3D, &Transform)>,
+    mut buff_auras: Query<(&BuffAura, &mut Transform), Without<Creature3D>>,
+    mut debuff_auras: Query<(&DebuffAura, &mut Transform), (Without<Creature3D>, Without<BuffAura>)>,
+) {
+    let t = time.elapsed_secs();
+    let rotation_speed = 1.5;
+    let pulse_speed = 3.0;
+
+    // Build a map of creature positions
+    let creature_positions: std::collections::HashMap<u32, Vec3> = creatures
+        .iter()
+        .map(|(c, t)| (c.instance_id, t.translation))
+        .collect();
+
+    // Animate buff auras (rotate clockwise, pulse scale)
+    for (aura, mut transform) in buff_auras.iter_mut() {
+        if let Some(&creature_pos) = creature_positions.get(&aura.creature_instance_id) {
+            // Follow creature position
+            transform.translation.x = creature_pos.x;
+            transform.translation.z = creature_pos.z;
+            transform.translation.y = creature_pos.y - 0.3;
+
+            // Rotate around Y axis
+            let rotation = Quat::from_rotation_x(std::f32::consts::FRAC_PI_2)
+                * Quat::from_rotation_z(t * rotation_speed);
+            transform.rotation = rotation;
+
+            // Pulse scale
+            let pulse = 1.0 + 0.1 * (t * pulse_speed).sin();
+            transform.scale = Vec3::splat(pulse);
+        }
+    }
+
+    // Animate debuff auras (rotate counter-clockwise, slightly different timing)
+    for (aura, mut transform) in debuff_auras.iter_mut() {
+        if let Some(&creature_pos) = creature_positions.get(&aura.creature_instance_id) {
+            // Follow creature position (slightly higher than buff aura)
+            transform.translation.x = creature_pos.x;
+            transform.translation.z = creature_pos.z;
+            transform.translation.y = creature_pos.y - 0.2;
+
+            // Rotate counter-clockwise
+            let rotation = Quat::from_rotation_x(std::f32::consts::FRAC_PI_2)
+                * Quat::from_rotation_z(-t * rotation_speed * 0.8);
+            transform.rotation = rotation;
+
+            // Pulse scale (different phase)
+            let pulse = 1.0 + 0.08 * (t * pulse_speed + 1.5).sin();
+            transform.scale = Vec3::splat(pulse);
+        }
+    }
+}
+
+/// Despawn all auras when leaving game.
+fn despawn_all_auras(
+    mut commands: Commands,
+    buff_auras: Query<Entity, With<BuffAura>>,
+    debuff_auras: Query<Entity, With<DebuffAura>>,
+) {
+    for entity in buff_auras.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+    for entity in debuff_auras.iter() {
+        commands.entity(entity).despawn_recursive();
     }
 }
