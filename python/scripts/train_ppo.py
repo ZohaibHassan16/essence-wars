@@ -10,7 +10,7 @@ Usage:
     python train_ppo.py --timesteps 300000        # Recommended timesteps
     python train_ppo.py --player-faction argentum # Train Argentum specialist
     python train_ppo.py --observation-mode embedded  # Use card embeddings
-    python train_ppo.py --tensorboard             # Enable TensorBoard
+    python train_ppo.py --no-tensorboard          # Disable TensorBoard (enabled by default)
 
 Examples:
     # Generalist (flat architecture) - baseline
@@ -170,9 +170,9 @@ def parse_args():
 
     # Logging
     parser.add_argument(
-        "--tensorboard",
+        "--no-tensorboard",
         action="store_true",
-        help="Enable TensorBoard logging",
+        help="Disable TensorBoard logging (enabled by default)",
     )
     parser.add_argument(
         "--log-interval",
@@ -266,15 +266,15 @@ def main():
     save_path.mkdir(parents=True, exist_ok=True)
     print(f"Saving to: {save_path}")
 
-    # Setup TensorBoard
+    # Setup TensorBoard (enabled by default)
     writer = None
-    if args.tensorboard:
+    if not args.no_tensorboard:
         try:
             from torch.utils.tensorboard import SummaryWriter
             writer = SummaryWriter(log_dir=str(save_path / "tensorboard"))
-            print(f"TensorBoard logging enabled: {save_path / 'tensorboard'}")
+            print(f"TensorBoard logging to: {save_path / 'tensorboard'}")
         except ImportError:
-            print("Warning: TensorBoard not available, skipping logging")
+            print("Warning: TensorBoard not installed, skipping logging")
 
     # Create config
     from essence_wars.agents.ppo import PPOConfig, PPOTrainer

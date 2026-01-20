@@ -63,17 +63,16 @@
 
 *Build the agent ecosystem and benchmarking infrastructure.*
 
-- [ ] Implement AlphaZero agent
-- [ ] Create Agent Roster (baseline agents: MCTS, PPO, AlphaZero)
-- [ ] Build Elo leaderboard system for agent rankings
-- [ ] Host trained models on Huggingface
-- [ ] Create benchmark suite for reproducible comparisons
-- [ ] Publish dataset of self-play games
-- [ ] Write documentation for agent submission
-- [ ] Add Learned Card Embeddings `observation_mode="flat"` vs `observation_mode="embedded"`  
+- [x] Implement AlphaZero agent
+- [x] Create Agent Roster (baseline agents: MCTS, PPO, AlphaZero)
+- [x] Build Elo leaderboard system for agent rankings
+- [x] Host trained models on Huggingface
+- [x] Create benchmark suite for reproducible comparisons
+- [x] Publish dataset of self-play games
+- [x] Write documentation for agent submission
+- [x] Add Learned Card Embeddings `observation_mode="flat"` vs `observation_mode="embedded"`  
   - Research contribution: Compare both in a paper!
-- [ ] Review and Improve Tutorial Notebooks 📓, add one or two using the new Agent Roster
-- [ ] Idea: Use the Bitnet Approach for Reward Shaping: Rewards remain binary -1, 1, but we can add 'shadow reward shapes' that are using smaller values to give the neural nets something to work for like 1.58b Bitnet Does it for LLMs ? 
+- [x] Review and Improve Tutorial Notebooks 📓, add one or two using the new Agent Roster
 - [ ] Write Paper 1: "Essence Wars: A High-Performance Card Game Engine for RL Research (see `/home/chris/ai-cardgame/research-agenda.md` for reference)
 
 ---

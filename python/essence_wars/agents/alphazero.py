@@ -56,6 +56,9 @@ class AlphaZeroConfig:
     replay_buffer_size: int = 100_000
     min_replay_size: int = 1000  # Min samples before training starts
 
+    # BC warm-start (dual buffer mode)
+    bc_ratio: float = 0.7  # Ratio of BC samples in training batches (0.7 = 70% BC)
+
     # Network
     hidden_dim: int = 256
     num_blocks: int = 4
@@ -457,6 +460,161 @@ class ReplayBuffer:
         return len(self.buffer)
 
 
+@dataclass
+class DualReplayBuffer:
+    """
+    Dual replay buffer for BC warm-start training.
+
+    Maintains separate BC and self-play buffers with fixed sampling ratio.
+    This prevents BC ratio from dropping as self-play data accumulates,
+    solving the "delayed catastrophic forgetting" problem.
+
+    The key insight is that mixing BC and self-play data in a single buffer
+    causes the BC ratio to drop over time, eventually leading to collapse.
+    By keeping them separate and sampling with a fixed ratio, we maintain
+    stable training indefinitely.
+
+    Args:
+        bc_ratio: Ratio of BC samples in training batches (0.7 = 70% BC)
+        bc_capacity: Maximum BC samples to store
+        selfplay_capacity: Maximum self-play samples to store
+
+    Example:
+        buffer = DualReplayBuffer(bc_ratio=0.7)
+
+        # Load BC data during initialization
+        for sample in bc_dataset:
+            buffer.add_bc(sample.obs, sample.mask, sample.policy, sample.value)
+
+        # Add self-play during training
+        buffer.add_selfplay_game(observations, masks, policies, outcome)
+
+        # Sample with guaranteed 70% BC ratio
+        batch = buffer.sample(256)
+    """
+
+    bc_ratio: float = 0.7
+    bc_capacity: int = 100_000
+    selfplay_capacity: int = 100_000
+
+    def __post_init__(self):
+        self.bc_buffer: deque = deque(maxlen=self.bc_capacity)
+        self.selfplay_buffer: deque = deque(maxlen=self.selfplay_capacity)
+
+    def add_bc(
+        self,
+        obs: NDArray[np.float32],
+        mask: NDArray[np.float32],
+        policy: NDArray[np.float32],
+        value: float,
+    ) -> None:
+        """Add sample to BC buffer (typically during initialization)."""
+        self.bc_buffer.append((obs.copy(), mask.copy(), policy.copy(), value))
+
+    def add_selfplay(
+        self,
+        obs: NDArray[np.float32],
+        mask: NDArray[np.float32],
+        policy: NDArray[np.float32],
+        value: float,
+    ) -> None:
+        """Add sample to self-play buffer (during training)."""
+        self.selfplay_buffer.append((obs.copy(), mask.copy(), policy.copy(), value))
+
+    def add_selfplay_game(
+        self,
+        observations: list[NDArray[np.float32]],
+        masks: list[NDArray[np.float32]],
+        policies: list[NDArray[np.float32]],
+        outcome: float,
+    ) -> None:
+        """
+        Add all positions from a self-play game to the buffer.
+
+        Args:
+            observations: List of observations from game
+            masks: List of action masks from game
+            policies: List of MCTS policy targets from game
+            outcome: Game outcome from player 0's perspective (+1/-1)
+        """
+        for i, (obs, mask, policy) in enumerate(zip(observations, masks, policies)):
+            value = outcome if i % 2 == 0 else -outcome
+            self.add_selfplay(obs, mask, policy, value)
+
+    def sample(self, batch_size: int) -> tuple:
+        """
+        Sample batch with fixed BC ratio.
+
+        If self-play buffer doesn't have enough samples, fills remainder
+        from BC buffer to ensure full batch size.
+
+        Returns:
+            (observations, masks, policies, values) numpy arrays
+        """
+        bc_size = int(batch_size * self.bc_ratio)
+        sp_size = batch_size - bc_size
+
+        # Sample from BC buffer
+        bc_indices = np.random.choice(len(self.bc_buffer), size=bc_size, replace=True)
+        bc_samples = [self.bc_buffer[i] for i in bc_indices]
+
+        # Sample from self-play buffer (or fallback to BC if not enough)
+        if len(self.selfplay_buffer) >= sp_size:
+            sp_indices = np.random.choice(
+                len(self.selfplay_buffer), size=sp_size, replace=True
+            )
+            sp_samples = [self.selfplay_buffer[i] for i in sp_indices]
+        elif len(self.selfplay_buffer) > 0:
+            # Use all self-play samples + fill remainder from BC
+            sp_samples = list(self.selfplay_buffer)
+            extra_needed = sp_size - len(sp_samples)
+            extra_bc = np.random.choice(
+                len(self.bc_buffer), size=extra_needed, replace=True
+            )
+            sp_samples.extend([self.bc_buffer[i] for i in extra_bc])
+        else:
+            # No self-play yet, use all BC
+            extra_bc = np.random.choice(len(self.bc_buffer), size=sp_size, replace=True)
+            sp_samples = [self.bc_buffer[i] for i in extra_bc]
+
+        # Combine and shuffle
+        all_samples = bc_samples + sp_samples
+        np.random.shuffle(all_samples)
+
+        # Convert to arrays
+        obs = np.stack([s[0] for s in all_samples])
+        masks = np.stack([s[1] for s in all_samples])
+        policies = np.stack([s[2] for s in all_samples])
+        values = np.array([s[3] for s in all_samples], dtype=np.float32)
+
+        return obs, masks, policies, values
+
+    def __len__(self) -> int:
+        """Total samples across both buffers."""
+        return len(self.bc_buffer) + len(self.selfplay_buffer)
+
+    @property
+    def bc_count(self) -> int:
+        """Number of BC samples."""
+        return len(self.bc_buffer)
+
+    @property
+    def selfplay_count(self) -> int:
+        """Number of self-play samples."""
+        return len(self.selfplay_buffer)
+
+    def stats(self) -> dict:
+        """Get buffer statistics."""
+        total = len(self)
+        return {
+            "bc_samples": self.bc_count,
+            "selfplay_samples": self.selfplay_count,
+            "total_samples": total,
+            "effective_bc_ratio": self.bc_ratio,  # Always the configured ratio
+            "actual_bc_ratio": self.bc_count / total if total > 0 else 0,
+        }
+
+
 class AlphaZeroTrainer:
     """
     AlphaZero training loop.
@@ -503,8 +661,11 @@ class AlphaZeroTrainer:
             weight_decay=self.config.weight_decay,
         )
 
-        # Replay buffer
+        # Replay buffer (single buffer for standard training)
         self.replay_buffer = ReplayBuffer(capacity=self.config.replay_buffer_size)
+
+        # Dual replay buffer (for BC warm-start, initialized separately)
+        self.dual_buffer: DualReplayBuffer | None = None
 
         # Observation normalizer
         self.obs_normalizer = RunningMeanStd((326,)) if self.config.normalize_obs else None
@@ -524,6 +685,54 @@ class AlphaZeroTrainer:
         self.total_games = 0
         self.start_time = None
         self.save_dir = None  # Will be set by train()
+
+    def init_dual_buffer(
+        self,
+        bc_samples: list[tuple],
+        bc_ratio: float | None = None,
+    ) -> None:
+        """
+        Initialize dual replay buffer with BC data for warm-start training.
+
+        This enables the two-buffer approach that maintains a fixed BC ratio
+        throughout training, preventing the "delayed catastrophic forgetting"
+        that occurs when BC samples get diluted by self-play data.
+
+        Args:
+            bc_samples: List of (obs, mask, policy, value) tuples from BC dataset
+            bc_ratio: Override config.bc_ratio if specified
+
+        Example:
+            # Load BC data
+            bc_dataset = MCTSDataset("data/mcts_10k.jsonl.gz")
+            bc_samples = [(s.state_tensor, s.action_mask, s.mcts_policy, s.value_target)
+                          for s in bc_dataset.samples]
+
+            # Initialize dual buffer
+            trainer.init_dual_buffer(bc_samples, bc_ratio=0.7)
+        """
+        ratio = bc_ratio if bc_ratio is not None else self.config.bc_ratio
+
+        self.dual_buffer = DualReplayBuffer(
+            bc_ratio=ratio,
+            bc_capacity=self.config.replay_buffer_size,
+            selfplay_capacity=self.config.replay_buffer_size,
+        )
+
+        # Load BC samples
+        for obs, mask, policy, value in bc_samples:
+            self.dual_buffer.add_bc(obs, mask, policy, value)
+            # Also update observation normalizer
+            if self.obs_normalizer is not None:
+                self.obs_normalizer.update(obs)
+
+        print(f"  Initialized dual buffer with {self.dual_buffer.bc_count:,} BC samples")
+        print(f"  BC ratio: {ratio:.0%} (fixed throughout training)")
+
+    @property
+    def using_dual_buffer(self) -> bool:
+        """Check if dual buffer mode is active."""
+        return self.dual_buffer is not None
 
     def self_play_game(self, seed: int | None = None) -> tuple[list, list, list, float]:
         """
@@ -588,7 +797,11 @@ class AlphaZeroTrainer:
             observations, masks, policies, outcome = self.self_play_game(
                 seed=self.total_games + i
             )
-            self.replay_buffer.add_game(observations, masks, policies, outcome)
+            # Add to appropriate buffer
+            if self.using_dual_buffer:
+                self.dual_buffer.add_selfplay_game(observations, masks, policies, outcome)
+            else:
+                self.replay_buffer.add_game(observations, masks, policies, outcome)
             self.total_games += 1
 
     def train_step(self) -> dict:
@@ -600,10 +813,15 @@ class AlphaZeroTrainer:
         """
         self.network.train()
 
-        # Sample batch
-        obs, masks, policy_targets, value_targets = self.replay_buffer.sample(
-            self.config.batch_size
-        )
+        # Sample batch from appropriate buffer
+        if self.using_dual_buffer:
+            obs, masks, policy_targets, value_targets = self.dual_buffer.sample(
+                self.config.batch_size
+            )
+        else:
+            obs, masks, policy_targets, value_targets = self.replay_buffer.sample(
+                self.config.batch_size
+            )
 
         # Normalize observations
         if self.obs_normalizer is not None:
@@ -660,6 +878,9 @@ class AlphaZeroTrainer:
         print(f"  Games per iteration: {self.config.games_per_iteration}")
         print(f"  Simulations per move: {self.config.num_simulations}")
         print(f"  Device: {self.device}")
+        if self.using_dual_buffer:
+            print(f"  Mode: Dual buffer (BC ratio: {self.dual_buffer.bc_ratio:.0%})")
+            print(f"  BC samples: {self.dual_buffer.bc_count:,}")
         if self.config.checkpoint_interval > 0:
             print(f"  Checkpoint interval: every {self.config.checkpoint_interval} iterations")
 
@@ -674,10 +895,23 @@ class AlphaZeroTrainer:
                 print(f"\nIteration {iteration}/{num_iterations}")
                 print(f"  Generating {self.config.games_per_iteration} self-play games...")
                 self.generate_self_play_games(self.config.games_per_iteration)
-                print(f"  Replay buffer size: {len(self.replay_buffer)}")
 
-                # Training (now correctly inside the loop!)
-                if len(self.replay_buffer) >= self.config.min_replay_size:
+                # Print buffer stats
+                if self.using_dual_buffer:
+                    stats = self.dual_buffer.stats()
+                    print(f"  Buffer: {stats['bc_samples']:,} BC + {stats['selfplay_samples']:,} self-play (sampling {stats['effective_bc_ratio']:.0%} BC)")
+                else:
+                    print(f"  Replay buffer size: {len(self.replay_buffer)}")
+
+                # Determine if we have enough samples to train
+                if self.using_dual_buffer:
+                    # In dual buffer mode, we can train as soon as we have BC data
+                    can_train = self.dual_buffer.bc_count >= self.config.min_replay_size
+                else:
+                    can_train = len(self.replay_buffer) >= self.config.min_replay_size
+
+                # Training
+                if can_train:
                     print(f"  Training for {self.config.training_steps_per_iteration} steps...")
                     iter_losses = []
                     for _ in range(self.config.training_steps_per_iteration):

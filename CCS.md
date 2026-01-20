@@ -209,6 +209,9 @@ uv run python python/scripts/train_behavioral_cloning.py \
 uv run python python/scripts/mcts_analysis.py --tag generalist
 uv run python python/scripts/diagnose_ppo.py   # PPO infrastructure check
 uv run python python/scripts/benchmark_env.py  # Environment throughput
+
+# Watch TensorBoard with Trainin Metrics
+uv run tensorboard --logdir experiments/alphazero/20260120_063304/tensorboard
 ```
 
 ### Hub (Huggingface)

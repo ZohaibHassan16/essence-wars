@@ -11,21 +11,23 @@ Usage:
     # Quick test
     uv run python python/scripts/train_alphazero.py --iterations 5 --games-per-iter 10 --sims 25
 
-    # Full training with TensorBoard
-    uv run python python/scripts/train_alphazero.py --iterations 200 --tensorboard
+    # Full training (TensorBoard enabled by default)
+    uv run python python/scripts/train_alphazero.py --iterations 200
 
-    # BC warm-start (prevents catastrophic forgetting when fine-tuning)
+    # BC warm-start with dual buffer (prevents catastrophic forgetting)
     uv run python python/scripts/train_alphazero.py \
         --iterations 100 \
         --load models/bc_mcts_10k_best.pt \
         --bc-data data/datasets/mcts_10k_sims100_*.jsonl.gz \
         --bc-max-samples 100000 \
+        --bc-ratio 0.7 \
         --lr 1e-4
 
-    The --bc-data flag pre-fills the replay buffer with BC data, which:
-    - Maintains the BC policy during early training (prevents forgetting)
-    - Creates a natural curriculum from supervised to self-play
-    - Gradually transitions as self-play data fills the buffer
+    The dual buffer approach:
+    - Maintains a FIXED BC ratio (e.g., 70%) throughout training
+    - Separate buffers for BC and self-play data (never diluted)
+    - Prevents the "delayed catastrophic forgetting" that occurs when
+      BC samples get diluted below ~50% in a single mixed buffer
 """
 
 import argparse
@@ -163,9 +165,9 @@ def main():
 
     # Logging
     parser.add_argument(
-        "--tensorboard",
+        "--no-tensorboard",
         action="store_true",
-        help="Enable TensorBoard logging",
+        help="Disable TensorBoard logging (enabled by default)",
     )
     parser.add_argument(
         "--save-dir",
@@ -188,19 +190,27 @@ def main():
         help="Load pre-trained model checkpoint (e.g., from behavioral cloning)",
     )
 
-    # BC warm-start (mixed replay buffer)
+    # BC warm-start (dual buffer mode)
     parser.add_argument(
         "--bc-data",
         type=str,
         default=None,
-        help="Path to BC dataset (JSONL/JSONL.gz) to pre-fill replay buffer. "
-             "This helps prevent catastrophic forgetting when fine-tuning from BC.",
+        help="Path to BC dataset (JSONL/JSONL.gz) for dual buffer warm-start. "
+             "This maintains a fixed BC ratio throughout training, preventing "
+             "catastrophic forgetting when fine-tuning from BC.",
     )
     parser.add_argument(
         "--bc-max-samples",
         type=int,
         default=100_000,
-        help="Maximum BC samples to load into replay buffer",
+        help="Maximum BC samples to load into dual buffer",
+    )
+    parser.add_argument(
+        "--bc-ratio",
+        type=float,
+        default=0.7,
+        help="Ratio of BC samples in training batches (0.7 = 70%% BC, 30%% self-play). "
+             "Higher values anchor more strongly to BC policy.",
     )
 
     args = parser.parse_args()
@@ -236,9 +246,9 @@ def main():
 
     save_dir.mkdir(parents=True, exist_ok=True)
 
-    # Setup TensorBoard
+    # Setup TensorBoard (enabled by default)
     writer = None
-    if args.tensorboard:
+    if not args.no_tensorboard:
         try:
             from torch.utils.tensorboard import SummaryWriter
             writer = SummaryWriter(log_dir=str(save_dir / "tensorboard"))
@@ -315,9 +325,9 @@ def main():
         else:
             raise ValueError(f"Unknown checkpoint format in {args.load}")
 
-    # Pre-fill replay buffer with BC data (prevents catastrophic forgetting)
+    # Initialize dual buffer with BC data (prevents catastrophic forgetting)
     if args.bc_data:
-        print(f"\nPre-filling replay buffer with BC data from: {args.bc_data}")
+        print(f"\nInitializing dual buffer with BC data from: {args.bc_data}")
         from essence_wars.data import MCTSDataset
 
         # Calculate max_games from max_samples (avg ~90 moves per game)
@@ -325,25 +335,21 @@ def main():
 
         bc_dataset = MCTSDataset(args.bc_data, max_games=max_games)
 
-        # Add BC samples to replay buffer
-        samples_added = 0
+        # Collect BC samples (limit to max_samples)
+        bc_samples = []
         for sample in bc_dataset.samples:
-            if samples_added >= args.bc_max_samples:
+            if len(bc_samples) >= args.bc_max_samples:
                 break
-            trainer.replay_buffer.add(
+            bc_samples.append((
                 sample.state_tensor,
                 sample.action_mask,
                 sample.mcts_policy,
                 sample.value_target,
-            )
-            # Also update observation normalizer
-            if trainer.obs_normalizer is not None:
-                trainer.obs_normalizer.update(sample.state_tensor)
-            samples_added += 1
+            ))
 
-        print(f"  Loaded {samples_added:,} BC samples into replay buffer")
-        print(f"  Replay buffer size: {len(trainer.replay_buffer):,}")
-        print("  Note: BC data provides warm-start to prevent catastrophic forgetting")
+        # Initialize dual buffer with BC data
+        trainer.init_dual_buffer(bc_samples, bc_ratio=args.bc_ratio)
+        print(f"  Note: Training batches will always sample {args.bc_ratio:.0%} BC, {1-args.bc_ratio:.0%} self-play")
 
     # Train
     try:

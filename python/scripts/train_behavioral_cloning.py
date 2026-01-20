@@ -13,8 +13,9 @@ Usage:
     uv run python python/scripts/train_behavioral_cloning.py \\
         --dataset data/datasets/mcts_100k.jsonl \\
         --epochs 50 \\
-        --output models/bc_mcts_100k.pt \\
-        --tensorboard
+        --output models/bc_mcts_100k.pt
+
+TensorBoard logging is enabled by default. Use --no-tensorboard to disable.
 """
 
 from __future__ import annotations
@@ -112,9 +113,9 @@ def parse_args() -> argparse.Namespace:
         help="Maximum games to load (for quick testing)",
     )
     parser.add_argument(
-        "--tensorboard",
+        "--no-tensorboard",
         action="store_true",
-        help="Enable TensorBoard logging",
+        help="Disable TensorBoard logging (enabled by default)",
     )
     parser.add_argument(
         "--log-dir",
@@ -327,17 +328,20 @@ def main() -> None:
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Setup TensorBoard
+    # Setup TensorBoard (enabled by default)
     writer = None
-    if args.tensorboard:
-        if args.log_dir:
-            log_dir = Path(args.log_dir)
-        else:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            log_dir = Path(f"experiments/behavioral_cloning/{timestamp}")
-        log_dir.mkdir(parents=True, exist_ok=True)
-        writer = SummaryWriter(log_dir)
-        print(f"TensorBoard logging to: {log_dir}")
+    if not args.no_tensorboard:
+        try:
+            if args.log_dir:
+                log_dir = Path(args.log_dir)
+            else:
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                log_dir = Path(f"experiments/behavioral_cloning/{timestamp}")
+            log_dir.mkdir(parents=True, exist_ok=True)
+            writer = SummaryWriter(log_dir)
+            print(f"TensorBoard logging to: {log_dir}")
+        except ImportError:
+            print("Warning: TensorBoard not installed, skipping logging")
 
     # Print dataset stats
     print("\n=== Dataset Statistics ===")

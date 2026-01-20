@@ -1,7 +1,7 @@
 # Phase 5A: Essence Wars Web Arena - Design Document
 
-> **Status**: Draft v1.0
-> **Last Updated**: 2026-01-19
+> **Status**: Draft v1.1
+> **Last Updated**: 2026-01-20
 > **Target Platform**: HuggingFace Spaces (WebAssembly)
 
 ---
@@ -121,6 +121,76 @@ The 3 MVP commanders receive full 3D treatment:
 
 These effects work for both Tier 1 and Tier 2 units, maintaining visual consistency.
 
+### 1.6 Support Visualization (Floating Rune Plates)
+
+Supports are persistent field effects with durability. Each player has **2 support slots**, positioned flanking the creature battlefield.
+
+**Visual Design: Floating Rune Plates**
+- Hovering stone/metal tablets with glowing faction-colored runes
+- Float slightly above and behind the creature rows
+- Angled toward the center of the battlefield
+- Semi-transparent with ethereal glow
+
+**Faction Variations:**
+- **Argentum**: Brass-framed clockwork plates with gear engravings, amber rune glow
+- **Symbiote**: Organic chitin plates with bioluminescent veins, green/purple rune glow
+- **Obsidion**: Obsidian glass tablets with crimson filigree, purple/red rune glow
+- **Neutral**: Weathered stone with practical metal bindings, white/blue rune glow
+
+**Support State Indicators:**
+
+| State | Visual Treatment |
+|-------|------------------|
+| Durability | Glowing pips/dots along plate edge (3 pips = 3 durability) |
+| Ability Triggered | Pulse effect + runes flare brightly |
+| Low Durability (1) | Cracks appear across plate surface |
+| Destroyed | Plate shatters into fragments, dissolves into essence |
+
+**Support Spawn Effect:**
+1. Rune circle appears at support slot position
+2. Plate materializes from swirling essence particles
+3. Rises to floating position
+4. Runes illuminate in sequence
+5. Final pulse indicates ready state
+
+### 1.7 Spell Casting Visualization
+
+Spells are one-time effects that don't persist on the board. Casting should feel impactful and dramatic.
+
+**Spell Casting Sequence (Default Mode):**
+1. Card rises from hand and centers on screen briefly
+2. Card transforms into swirling energy (faction-colored)
+3. Energy travels to target(s) with trailing particles
+4. Impact effect resolves at target location
+5. Effect-specific visuals play (damage, buff, heal, etc.)
+
+**Spell Casting (F6 Fast Mode):**
+- Card flashes briefly in place
+- Instant energy pulse to target
+- Effect resolves immediately
+- Total duration: <0.5 seconds
+
+**Targeting Visualization:**
+| Targeting Type | Visual Indicator |
+|----------------|------------------|
+| `TargetAllyCreature` | Green highlight glow on valid ally tokens |
+| `TargetEnemyCreature` | Red highlight glow on valid enemy tokens |
+| `TargetAnyCreature` | Yellow highlight glow on all creatures |
+| `TargetSlot` | Empty slots pulse with placement indicator |
+| `NoTarget` | Energy bursts outward from caster's side |
+
+**Spell Effect Categories:**
+
+| Effect Type | Visual Treatment |
+|-------------|------------------|
+| **Damage** | Red/orange projectile, explosion impact, screen edge flash |
+| **Buff** | Golden particles rising on target, brief size pulse |
+| **Heal** | Green particles, health number floats up in green |
+| **Draw** | Cards visually fly from deck pile to hand area |
+| **Bounce** | Target dissolves into particles, reforms in hand |
+| **Destroy** | Dark tendrils wrap target, crushing effect |
+| **Transform** | Target shimmers, morphs into new form |
+
 ---
 
 ## 2. Game Interface
@@ -148,6 +218,10 @@ These effects work for both Tier 1 and Tier 2 units, maintaining visual consiste
 │              [Life: 20]  [Essence: 5/10]  [Hand: 4]            │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
+│  ┌───────┐                                         ┌───────┐   │
+│  │ SUP 1 │    OPPONENT SUPPORT SLOTS (Floating)    │ SUP 2 │   │
+│  └───────┘                                         └───────┘   │
+│                                                                 │
 │     ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐               │
 │     │ S1  │  │ S2  │  │ S3  │  │ S4  │  │ S5  │  ← Opp Slots  │
 │     └─────┘  └─────┘  └─────┘  └─────┘  └─────┘               │
@@ -160,6 +234,10 @@ These effects work for both Tier 1 and Tier 2 units, maintaining visual consiste
 │     │ S1  │  │ S2  │  │ S3  │  │ S4  │  │ S5  │  ← Your Slots │
 │     └─────┘  └─────┘  └─────┘  └─────┘  └─────┘               │
 │                                                                 │
+│  ┌───────┐                                         ┌───────┐   │
+│  │ SUP 1 │    YOUR SUPPORT SLOTS (Floating)        │ SUP 2 │   │
+│  └───────┘                                         └───────┘   │
+│                                                                 │
 ├─────────────────────────────────────────────────────────────────┤
 │                      YOUR INFO BAR                              │
 │              [Life: 20]  [Essence: 5/10]  [Hand: 4]            │
@@ -169,6 +247,11 @@ These effects work for both Tier 1 and Tier 2 units, maintaining visual consiste
 │  └────┘ └────┘ └────┘ └────┘ └────┘ └────┘ └────┘            │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+**Slot Summary:**
+- **5 Creature Slots** per player (lanes 1-5)
+- **2 Support Slots** per player (flanking, floating above battlefield)
+- Supports rendered as Floating Rune Plates (see Section 1.6)
 
 **Data Readouts (Table Edge):**
 - Life totals with visual health bars
@@ -339,6 +422,36 @@ play_spell:
   - "{card} ripples across the battlefield."
   - "The essence surges as {player} unleashes {card}!"
 
+play_support:
+  - "{player} activates {card}."
+  - "A rune plate materializes - {card} is online."
+  - "{card} hums with power as it takes position."
+
+support_triggers:
+  - "{support} activates its effect!"
+  - "The runes on {support} flare brightly."
+  - "{support}'s power resonates across the field."
+
+support_destroyed:
+  - "{support} shatters!"
+  - "The rune plate crumbles to dust."
+  - "{support} can no longer maintain its form."
+
+spell_damage:
+  - "{card} blasts {target} for {damage}!"
+  - "Direct hit! {target} takes {damage} damage from {card}."
+  - "{card}'s energy tears through {target}!"
+
+spell_buff:
+  - "{target} is empowered by {card}!"
+  - "{card} strengthens {target}."
+  - "Power flows into {target}!"
+
+spell_heal:
+  - "{card} restores {amount} life!"
+  - "Healing energy washes over the battlefield."
+  - "{player} recovers {amount} life from {card}."
+
 attack:
   - "{attacker} strikes {defender}!"
   - "{attacker} lunges at {defender} for {damage} damage!"
@@ -444,6 +557,19 @@ essencewars.huggingface.co/replay?seed=42&d1=colossus_wall&d2=broodmother_swarm&
 - Attack: Faction-appropriate impact
 - Damage taken: Thud/crunch
 - Death: Shatter/dissolve
+
+**Spell Sounds:**
+- Spell cast: Arcane charge-up + release
+- Damage spell: Explosive impact
+- Buff spell: Ascending magical chime
+- Heal spell: Gentle restoration tone
+- Draw spell: Card shuffle + whoosh
+- Bounce spell: Reverse materialization
+
+**Support Sounds:**
+- Support play: Rune activation + hover hum
+- Ability trigger: Pulse + magical effect
+- Support destroyed: Glass shatter + fade
 
 **Keyword-Specific:**
 - Guard: Metallic shield clang
@@ -763,6 +889,10 @@ assets/
 │   │   ├── gem_argentum.glb
 │   │   ├── gem_symbiote.glb
 │   │   └── gem_obsidion.glb
+│   ├── supports/
+│   │   ├── rune_plate_argentum.glb
+│   │   ├── rune_plate_symbiote.glb
+│   │   └── rune_plate_obsidion.glb
 │   └── table/
 │       └── farsight_table.glb
 ├── audio/
@@ -1073,13 +1203,16 @@ fn load_cards() -> String {
 
 | Asset Type | MVP Count | Full Game |
 |------------|-----------|-----------|
-| Card 2D Art | ~90 (3 decks) | 300 |
+| Card 2D Art (Creatures) | ~60 (3 decks) | ~210 |
+| Card 2D Art (Spells) | ~15 (3 decks) | ~50 |
+| Card 2D Art (Supports) | ~15 (3 decks) | ~40 |
 | Depth Maps | ~90 | 300 |
 | Commander 3D Models | 3 | 12 |
 | Table Variants | 3 | 3 |
-| Token Gem Models | 3 (faction) | 4 (+neutral) |
+| Creature Token Gem Models | 3 (faction) | 4 (+neutral) |
+| Support Rune Plate Models | 3 (faction) | 4 (+neutral) |
 | Music Tracks | 3 | 3+ |
-| Sound Effects | ~30 | ~50 |
+| Sound Effects | ~40 | ~60 |
 
 ### D. External Services
 
