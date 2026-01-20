@@ -1111,16 +1111,16 @@ Files added/modified:
 - [x] Win/lose detection and game over screen
 - [x] Placeholder visuals (cubes/shapes)
 
-### Phase 5A-3: Visual Foundation
+### Phase 5A-3: Visual Foundation ✅
 
 **Goal:** The Farsight Table aesthetic.
 
-- [ ] Design and model Farsight Table (3 variants)
-- [ ] Implement crystal gem token mesh
-- [ ] Create placeholder card art (text-based)
-- [ ] Board layout with lane grid
-- [ ] Basic lighting and camera setup
-- [ ] HUD with life/essence/turn display
+- [x] Design and model Farsight Table (3 variants)
+- [x] Implement crystal gem token mesh
+- [x] Create placeholder card art (text-based)
+- [x] Board layout with lane grid
+- [x] Basic lighting and camera setup
+- [x] HUD with life/essence/turn display
 
 ### Phase 5A-4: Art Pipeline Execution
 

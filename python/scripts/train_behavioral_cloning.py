@@ -152,6 +152,13 @@ def parse_args() -> argparse.Namespace:
         default=50_000,
         help="Chunk size for streaming loader (default: 50000, ~175 MB)",
     )
+    parser.add_argument(
+        "--use-mcts-value",
+        action="store_true",
+        help="Use MCTS value estimates instead of game outcome for value targets. "
+             "This gives nuanced position evaluations (better for MCTS search) "
+             "rather than binary win/loss predictions.",
+    )
     return parser.parse_args()
 
 
@@ -380,7 +387,12 @@ def main() -> None:
         print(f"  Streaming from: {args.dataset}")
     else:
         # Standard in-memory loader
-        dataset = MCTSDataset(args.dataset, max_games=args.max_games, normalize=False)
+        dataset = MCTSDataset(
+            args.dataset,
+            max_games=args.max_games,
+            normalize=False,
+            use_mcts_value=args.use_mcts_value,
+        )
 
         # Split into train/val
         val_size = int(len(dataset) * args.val_split)

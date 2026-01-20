@@ -83,6 +83,7 @@ class MCTSDataset(Dataset[dict[str, torch.Tensor]]):  # type: ignore[misc]
         max_games: int | None = None,
         player_perspective: bool = True,
         normalize: bool = False,
+        use_mcts_value: bool = False,
     ) -> None:
         """Initialize MCTS dataset.
 
@@ -91,10 +92,14 @@ class MCTSDataset(Dataset[dict[str, torch.Tensor]]):  # type: ignore[misc]
             max_games: Maximum number of games to load (None = all)
             player_perspective: If True, flip value targets based on player
             normalize: If True, normalize state tensors (subtract mean, divide std)
+            use_mcts_value: If True, use MCTS value estimates instead of game outcome.
+                           This gives nuanced position evaluations (better for MCTS search)
+                           rather than binary win/loss predictions.
         """
         self.path = Path(path)
         self.player_perspective = player_perspective
         self.normalize = normalize
+        self.use_mcts_value = use_mcts_value
 
         # Load all samples
         self.samples: list[MCTSSample] = []
@@ -135,13 +140,19 @@ class MCTSDataset(Dataset[dict[str, torch.Tensor]]):  # type: ignore[misc]
         for move in game["moves"]:
             player = move["player"]
 
-            # Determine value target based on outcome
-            if winner == -1:
-                value_target = 0.0  # Draw
-            elif self.player_perspective:
-                value_target = 1.0 if winner == player else -1.0
+            if self.use_mcts_value:
+                # Use MCTS value estimate (nuanced, good for MCTS search)
+                # MCTS value is in [0, 1] (win probability), convert to [-1, 1]
+                mcts_value = move.get("mcts_value", 0.5)
+                value_target = 2.0 * mcts_value - 1.0
             else:
-                value_target = 1.0 if winner == 0 else -1.0
+                # Use game outcome (binary, simpler but less nuanced)
+                if winner == -1:
+                    value_target = 0.0  # Draw
+                elif self.player_perspective:
+                    value_target = 1.0 if winner == player else -1.0
+                else:
+                    value_target = 1.0 if winner == 0 else -1.0
 
             sample = MCTSSample(
                 state_tensor=np.array(move["state_tensor"], dtype=np.float32),
