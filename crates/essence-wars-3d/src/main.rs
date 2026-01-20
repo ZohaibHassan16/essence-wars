@@ -32,6 +32,9 @@ fn setup_wasm() {
     // Set up better panic messages in the browser console
     console_error_panic_hook::set_once();
 
+    // Log to browser console
+    web_sys::console::log_1(&"[Essence Wars] WASM module starting...".into());
+
     // Update loading progress
     updateLoadingProgress("Initializing game engine...");
 }
@@ -67,6 +70,7 @@ fn main() {
 
     #[cfg(target_arch = "wasm32")]
     {
+        web_sys::console::log_1(&"[Essence Wars] Configuring Bevy for WASM...".into());
         app.add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Essence Wars - Glassbox Mode".into(),
@@ -74,10 +78,13 @@ fn main() {
                 fit_canvas_to_parent: true,
                 // Prevent default browser behavior on right-click etc.
                 prevent_default_event_handling: true,
+                // Use the container div we created
+                canvas: Some("#bevy-container".to_string()),
                 ..default()
             }),
             ..default()
         }));
+        web_sys::console::log_1(&"[Essence Wars] Bevy plugins configured".into());
     }
 
     app.add_plugins(EguiPlugin)
