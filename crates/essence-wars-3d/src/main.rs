@@ -78,8 +78,7 @@ fn main() {
                 fit_canvas_to_parent: true,
                 // Prevent default browser behavior on right-click etc.
                 prevent_default_event_handling: true,
-                // Use the container div we created
-                canvas: Some("#bevy-container".to_string()),
+                // Let Bevy create the canvas (it will append to body)
                 ..default()
             }),
             ..default()
