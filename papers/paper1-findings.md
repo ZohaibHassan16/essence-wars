@@ -163,7 +163,8 @@ Extracted from MCTS games for Card2Vec training:
 | **PPO-symbiote (best)** | 300k | **65.0%** | Faction specialist |
 | **PPO-obsidion (best)** | 300k | **62.0%** | Faction specialist |
 | BC (epoch 10) | 900k samples | 59% | Early stopping |
-| AlphaZero (5 iter) | 9k samples | 0% | Insufficient iterations |
+| AlphaZero (100 iter) | 10k games | 0% | Cold-start problem |
+| AlphaZero (BC init) | 10k games | 0% | Catastrophic forgetting |
 
 ### 4.2 PPO Architecture Comparison (Embedding Study)
 
@@ -209,7 +210,57 @@ Before fixes: embedded=0%, pretrained=0%. After fixes: embedded=65%, pretrained=
 - Argentum: Most stable, maintains 60%+ through most of training
 - Symbiote/Obsidion: Peak early (~65k steps) then collapse to 16-45%
 
-### 4.4 AlphaZero Fine-tuning Results
+### 4.4 AlphaZero From-Scratch Training
+
+**Experiment**: Train AlphaZero from random initialization with 100 iterations.
+
+**Configuration**:
+- Iterations: 100
+- Games per iteration: 100
+- Total self-play games: 10,000
+- MCTS simulations: 100 per move
+- Training steps per iteration: 100
+- Batch size: 256
+- Learning rate: 1e-3
+- Network: Flat (326 input, 256 hidden, 4 residual blocks)
+- Training time: ~14.3 hours (51,450 seconds) on RTX 3090
+
+**Results**:
+| Iteration | Win Rate vs Greedy | Loss |
+|-----------|-------------------|------|
+| 5 | 0% | ~3.5 |
+| 50 | 0% | ~2.9 |
+| 100 | **0%** | 2.88 |
+
+**Final Evaluation**:
+- vs GreedyBot: **0%** win rate
+- vs RandomBot: **0%** win rate
+
+**Analysis - The Cold-Start Problem**:
+
+AlphaZero's cold-start problem is severe in Essence Wars:
+
+1. **Bootstrapping failure**: AlphaZero requires MCTS to produce good training signal, but MCTS requires a good value function to guide search. With random initialization, both are terrible.
+
+2. **Sparse rewards**: Games are ~90 moves long with only terminal rewards (+1/-1). Early random networks provide no useful gradient signal for intermediate positions.
+
+3. **Large action space**: With 256 possible actions (many illegal), random exploration rarely finds winning sequences.
+
+4. **Insufficient iterations**: AlphaGo Zero used 4.9M self-play games; we only generated 10k games. The ratio is ~500x less data.
+
+5. **No curriculum**: Starting against random opponents might help the network learn basic heuristics before self-play.
+
+**Comparison to Original AlphaZero**:
+| Aspect | AlphaGo Zero | Essence Wars |
+|--------|--------------|--------------|
+| Self-play games | 4,900,000 | 10,000 |
+| Training time | 40 days | 14 hours |
+| TPUs | 4 | 1 GPU |
+| Compute ratio | ~10,000x more | baseline |
+
+The experiment confirms that AlphaZero-style training from scratch is not viable for this game without significantly more compute or algorithmic improvements.
+
+### 4.5 AlphaZero Fine-tuning from BC
 
 **Experiment**: Initialize AlphaZero with BC checkpoint (59% vs Greedy), continue self-play training.
 
@@ -229,7 +280,7 @@ Before fixes: embedded=0%, pretrained=0%. After fixes: embedded=65%, pretrained=
 - Even lower learning rate (1e-5) or learning rate warmup
 - Freeze early layers during initial fine-tuning
 
-### 4.5 Key Observations
+### 4.6 Key Observations
 
 1. **Best checkpoint saving is essential**: Recovers 7-62% performance lost to policy collapse
 2. **PPO achieves 72% win rate**: Argentum specialist is our best model, beating BC (59%)
@@ -238,15 +289,17 @@ Before fixes: embedded=0%, pretrained=0%. After fixes: embedded=65%, pretrained=
 5. **Pretrained Card2Vec underperforms**: Co-occurrence objective doesn't transfer well to game-winning objective
 6. **Policy collapse is ubiquitous**: All architectures show strong early performance followed by collapse
 7. **Early stopping / best checkpoint critical**: For both BC and PPO, more training often hurts
-8. **Training is fast**: Full roster (7 agents × 300k steps) completes in ~6 minutes on RTX 3090
+8. **AlphaZero from scratch fails**: Cold-start problem + insufficient compute (10k vs 5M games) = 0% win rate
+9. **BC → AlphaZero catastrophic forgetting**: Fine-tuning BC model with AlphaZero immediately destroys learned policy
+10. **Training is fast**: Full roster (7 agents × 300k steps) completes in ~6 minutes on RTX 3090
 
-### 4.6 Training Efficiency
+### 4.7 Training Efficiency
 
 | Method | Wall Clock Time | Hardware | Throughput |
 |--------|-----------------|----------|------------|
 | PPO (500k steps) | ~30 min | RTX 3090 | ~268k steps/sec |
 | BC (50 epochs) | ~12 min | RTX 3090 | ~75k samples/sec |
-| AlphaZero (5 iter) | ~4.5 min | RTX 3090 | ~20 games/min |
+| AlphaZero (100 iter) | ~14.3 hours | RTX 3090 | ~12 games/min |
 
 ---
 

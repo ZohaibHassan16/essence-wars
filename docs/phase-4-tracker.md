@@ -50,9 +50,9 @@ Phase 4 transforms Essence Wars from a working engine into a **research platform
 
 | Item | Status | Owner |
 |------|--------|-------|
-| AlphaZero Training | 🔄 | Running on cloud, finishes tomorrow |
 | Paper 1 | 🔄 | Findings documented, needs formal write-up |
 | Bitnet Reward Shaping | 🔄 | Research spike (deprioritized) |
+| BC + AlphaZero fine-tuning | 🔄 | Investigating mitigations for catastrophic forgetting |
 
 ### Not Started ❌
 
@@ -100,17 +100,35 @@ Phase 4 transforms Essence Wars from a working engine into a **research platform
 **Training Script**: `python/scripts/train_ppo.py`
 **Roster Script**: `scripts/train_ppo_roster.sh`
 
-### A2. AlphaZero Agent 🔄 IN PROGRESS
+### A2. AlphaZero Agent ⚠️ COLD-START FAILURE
 
-| Agent | Self-Play Games | Target Win Rate | Status |
-|-------|-----------------|-----------------|--------|
-| AlphaZero-v1 | 100K+ | >60% vs Greedy | 🔄 Training (finishes tomorrow) |
+| Agent | Self-Play Games | Win Rate vs Greedy | Status |
+|-------|-----------------|-------------------|--------|
+| AlphaZero (from scratch) | 10,000 | **0%** | ❌ Cold-start failure |
+| AlphaZero (BC init, LR=1e-3) | 10,000 | **0%** | ❌ Catastrophic forgetting |
+| AlphaZero (BC init, LR=1e-4) | 10,000 | **0%** | ❌ Catastrophic forgetting |
+
+**Key Findings**:
+
+1. **Cold-Start Problem**: AlphaZero from scratch achieves 0% win rate after 100 iterations (10k games, 14.3 hours). The bootstrapping problem is severe:
+   - MCTS needs good value function → value function trained from MCTS → chicken-and-egg
+   - Sparse rewards (only terminal) provide no gradient signal for intermediate positions
+   - We used 10k games vs AlphaGo Zero's 4.9M games (500x less data)
+
+2. **Catastrophic Forgetting**: Initializing from BC checkpoint (59% → 0%) destroys learned policy immediately, even at LR=1e-4
+
+3. **Potential Mitigations** (to investigate):
+   - KL divergence penalty to anchor to BC policy
+   - Mixed replay buffer (BC data + self-play data)
+   - Freeze early layers during initial fine-tuning
+   - Curriculum: start vs Random before self-play
 
 **Tasks**:
 - [x] Configure self-play parameters
-- [🔄] Train AlphaZero-v1 (running on cloud)
-- [ ] Evaluate against baselines
-- [ ] Upload checkpoint to HF
+- [x] Train AlphaZero from scratch (100 iterations) - **0% win rate**
+- [x] Train AlphaZero from BC checkpoint - **Catastrophic forgetting**
+- [x] Document findings in `papers/paper1-findings.md`
+- [ ] Investigate mitigation strategies (KL penalty, mixed replay)
 
 **Training Script**: `python/scripts/train_alphazero.py`
 
@@ -295,13 +313,13 @@ Shadow Rewards: Dense signals for intermediate states (not used for final evalua
 | PPO-Embedded | [ppo-embedded](https://huggingface.co/Chris-Essence-Wars/ppo-embedded) | 65.0% | ✅ Uploaded |
 | PPO-Symbiote | [ppo-symbiote](https://huggingface.co/Chris-Essence-Wars/ppo-symbiote) | 65.0% | ✅ Uploaded |
 | PPO-Obsidion | [ppo-obsidion](https://huggingface.co/Chris-Essence-Wars/ppo-obsidion) | 62.0% | ✅ Uploaded |
-| AlphaZero-v1 | `Chris-Essence-Wars/alphazero-v1` | TBD | 🔄 Pending (training) |
+| AlphaZero-v1 | N/A | 0% (cold-start failure) | ❌ Not uploaded |
 
 **Tasks**:
 - [x] Train PPO models (Track A)
 - [x] Create model cards with usage examples
 - [x] Upload PPO models via `hub.py` upload functions
-- [ ] Upload AlphaZero after training completes
+- [x] ~~Upload AlphaZero after training completes~~ - Skipped (0% performance)
 - [ ] Verify download works via `load_pretrained()`
 
 ---
@@ -432,7 +450,7 @@ These are ideas noted in the roadmap but not prioritized for Phase 4 core:
 
 Phase 4 is complete when:
 
-1. **Agent Roster**: 5 trained models uploaded to HuggingFace - ✅ **5 PPO models done, AlphaZero pending**
+1. **Agent Roster**: 5 trained models uploaded to HuggingFace - ✅ **5 PPO models done, AlphaZero failed (cold-start)**
 2. **Embeddings**: Comparison documented (flat vs embedded) - ✅ **Complete** (`papers/paper1-findings.md`)
 3. **Reward Shaping**: Bitnet approach evaluated - ⏳ Deprioritized (policy collapse more interesting finding)
 4. **Leaderboard**: Published with all agent Elo ratings - ✅ **Complete** (10 agents, HuggingFace Space live)
@@ -452,7 +470,7 @@ Phase 4 is complete when:
 | Faction specialists trained | Week 1 | ✅ 62-72% vs Greedy |
 | HuggingFace PPO models uploaded | Week 1 | ✅ 5 models uploaded |
 | **Leaderboard & Benchmarking** | Week 1 | ✅ HF Space + submission system live |
-| AlphaZero-v1 trained | Week 1-2 | 🔄 Training (finishes tomorrow) |
+| AlphaZero-v1 trained | Week 1-2 | ❌ Cold-start failure (0% after 100 iter, 14.3 hrs) |
 | Benchmark all agents | Week 2 | ✅ 10 agents evaluated |
 | Paper 1 draft complete | Week 2-3 | 🔄 Findings documented |
 | arXiv submission | Week 3-4 | ⏳ Pending |
@@ -477,6 +495,9 @@ Phase 4 is complete when:
 | 2026-01-19 | **Track C Complete** | Leaderboard + HF Space + submission system + GitHub Actions all working |
 | 2026-01-19 | **Track D1 Complete** | Researcher quickstart + benchmark methodology docs written |
 | 2026-01-19 | **Track D2 Complete** | All 6 notebooks updated, new 06_pretrained_agents.ipynb created |
+| 2026-01-20 | **AlphaZero cold-start failure** | 100 iterations (10k games, 14.3 hrs) → 0% win rate. Bootstrapping problem severe. |
+| 2026-01-20 | **BC→AlphaZero catastrophic forgetting** | Both LR=1e-3 and LR=1e-4 immediately destroy BC policy (59% → 0%) |
+| 2026-01-20 | **Investigating mitigations** | KL penalty, mixed replay buffer, freezing layers as potential solutions |
 
 ---
 

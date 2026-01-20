@@ -13,6 +13,19 @@ Usage:
 
     # Full training with TensorBoard
     uv run python python/scripts/train_alphazero.py --iterations 200 --tensorboard
+
+    # BC warm-start (prevents catastrophic forgetting when fine-tuning)
+    uv run python python/scripts/train_alphazero.py \
+        --iterations 100 \
+        --load models/bc_mcts_10k_best.pt \
+        --bc-data data/datasets/mcts_10k_sims100_*.jsonl.gz \
+        --bc-max-samples 100000 \
+        --lr 1e-4
+
+    The --bc-data flag pre-fills the replay buffer with BC data, which:
+    - Maintains the BC policy during early training (prevents forgetting)
+    - Creates a natural curriculum from supervised to self-play
+    - Gradually transitions as self-play data fills the buffer
 """
 
 import argparse
@@ -175,6 +188,21 @@ def main():
         help="Load pre-trained model checkpoint (e.g., from behavioral cloning)",
     )
 
+    # BC warm-start (mixed replay buffer)
+    parser.add_argument(
+        "--bc-data",
+        type=str,
+        default=None,
+        help="Path to BC dataset (JSONL/JSONL.gz) to pre-fill replay buffer. "
+             "This helps prevent catastrophic forgetting when fine-tuning from BC.",
+    )
+    parser.add_argument(
+        "--bc-max-samples",
+        type=int,
+        default=100_000,
+        help="Maximum BC samples to load into replay buffer",
+    )
+
     args = parser.parse_args()
 
     # Import here to avoid slow startup for --help
@@ -286,6 +314,36 @@ def main():
             print("  Note: Starting fresh training from iteration 0")
         else:
             raise ValueError(f"Unknown checkpoint format in {args.load}")
+
+    # Pre-fill replay buffer with BC data (prevents catastrophic forgetting)
+    if args.bc_data:
+        print(f"\nPre-filling replay buffer with BC data from: {args.bc_data}")
+        from essence_wars.data import MCTSDataset
+
+        # Calculate max_games from max_samples (avg ~90 moves per game)
+        max_games = args.bc_max_samples // 90 + 1
+
+        bc_dataset = MCTSDataset(args.bc_data, max_games=max_games)
+
+        # Add BC samples to replay buffer
+        samples_added = 0
+        for sample in bc_dataset.samples:
+            if samples_added >= args.bc_max_samples:
+                break
+            trainer.replay_buffer.add(
+                sample.state_tensor,
+                sample.action_mask,
+                sample.mcts_policy,
+                sample.value_target,
+            )
+            # Also update observation normalizer
+            if trainer.obs_normalizer is not None:
+                trainer.obs_normalizer.update(sample.state_tensor)
+            samples_added += 1
+
+        print(f"  Loaded {samples_added:,} BC samples into replay buffer")
+        print(f"  Replay buffer size: {len(trainer.replay_buffer):,}")
+        print("  Note: BC data provides warm-start to prevent catastrophic forgetting")
 
     # Train
     try:
