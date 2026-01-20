@@ -10,8 +10,9 @@ use cardgame::actions::Action;
 use cardgame::bots::{BotType, IntrospectionConfig, MctsBot, MctsConfig};
 use cardgame::client_api::GameEvent;
 
-use super::{AppState, GameBridge};
+use super::{AppState, GameBridge, HeadlessStats};
 use crate::ui::{GameModeConfig, PlayerInputState};
+use crate::CliArgs;
 
 /// Plugin for turn loop management.
 pub struct TurnLoopPlugin;
@@ -180,20 +181,32 @@ fn execute_ai_turn(
     game_mode: Res<GameModeConfig>,
     mut bridge: ResMut<GameBridge>,
     mut event_queue: ResMut<GameEventQueue>,
+    cli_args: Option<Res<CliArgs>>,
+    headless_stats: Option<Res<HeadlessStats>>,
 ) {
     // Don't execute if paused
     if turn_state.paused {
         return;
     }
 
-    // Handle pacing between actions
+    // Check if we're in fast mode (skip visual delays)
+    let fast_mode = cli_args.as_ref().map(|a| a.fast).unwrap_or(false);
+    let debug_mode = cli_args.as_ref().map(|a| a.debug).unwrap_or(false);
+
+    // Handle pacing between actions (skip in fast mode)
     if turn_state.waiting {
-        turn_state.wait_timer.tick(time.delta());
-        if !turn_state.wait_timer.finished() {
-            return;
+        if fast_mode {
+            // In fast mode, skip the wait entirely
+            turn_state.waiting = false;
+            turn_state.wait_timer.reset();
+        } else {
+            turn_state.wait_timer.tick(time.delta());
+            if !turn_state.wait_timer.finished() {
+                return;
+            }
+            turn_state.waiting = false;
+            turn_state.wait_timer.reset();
         }
-        turn_state.waiting = false;
-        turn_state.wait_timer.reset();
     }
 
     // Get the game client
@@ -236,12 +249,20 @@ fn execute_ai_turn(
         return;
     };
 
-    // Log the action
+    // Get game info for logging
     let turn = client.get_state().map(|s| s.current_turn).unwrap_or(0);
-    info!(
-        "Turn {}: AI ({:?}) plays {:?}",
-        turn, current_player, action
-    );
+    let game_num = headless_stats.as_ref().map(|s| s.games_played + 1).unwrap_or(1);
+
+    // Debug logging (arena-style)
+    if debug_mode {
+        let player_num = if current_player == cardgame::types::PlayerId::PLAYER_ONE { 1 } else { 2 };
+        eprintln!("[Game {}] Turn {}: P{} {:?}", game_num, turn, player_num, action);
+    } else {
+        info!(
+            "Turn {}: AI ({:?}) plays {:?}",
+            turn, current_player, action
+        );
+    }
 
     // Now get mutable access to client for applying the action
     let client = bridge.client.as_mut().unwrap();
@@ -255,14 +276,19 @@ fn execute_ai_turn(
             }
             turn_state.actions_executed += 1;
 
-            // Start wait timer for pacing (unless it's just EndTurn)
-            if !matches!(action, Action::EndTurn) {
-                turn_state.waiting = true;
-                turn_state.wait_timer = Timer::from_seconds(0.2, TimerMode::Once);
+            // In fast mode, don't wait between actions
+            if fast_mode {
+                turn_state.waiting = false;
             } else {
-                // Shorter delay for end turn
-                turn_state.waiting = true;
-                turn_state.wait_timer = Timer::from_seconds(0.1, TimerMode::Once);
+                // Start wait timer for pacing (unless it's just EndTurn)
+                if !matches!(action, Action::EndTurn) {
+                    turn_state.waiting = true;
+                    turn_state.wait_timer = Timer::from_seconds(0.2, TimerMode::Once);
+                } else {
+                    // Shorter delay for end turn
+                    turn_state.waiting = true;
+                    turn_state.wait_timer = Timer::from_seconds(0.1, TimerMode::Once);
+                }
             }
         }
         Err(e) => {

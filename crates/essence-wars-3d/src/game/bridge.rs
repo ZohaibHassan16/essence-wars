@@ -23,6 +23,12 @@ pub struct GameBridge {
     /// AI introspection configuration (used for future AI visualization)
     #[allow(dead_code)]
     pub ai_config: IntrospectionConfig,
+    /// Current deck 1 ID (for restart in multi-game mode)
+    pub current_deck1: Option<String>,
+    /// Current deck 2 ID (for restart in multi-game mode)
+    pub current_deck2: Option<String>,
+    /// Current seed (for restart in multi-game mode)
+    pub current_seed: u64,
 }
 
 impl GameBridge {
@@ -44,6 +50,9 @@ impl GameBridge {
             deck_registry: Arc::new(deck_registry),
             last_decision: None,
             ai_config: IntrospectionConfig::full(),
+            current_deck1: None,
+            current_deck2: None,
+            current_seed: 42,
         }
     }
 
@@ -61,6 +70,9 @@ impl GameBridge {
             deck_registry: Arc::new(deck_registry),
             last_decision: None,
             ai_config: IntrospectionConfig::full(),
+            current_deck1: None,
+            current_deck2: None,
+            current_seed: 42,
         }
     }
 
@@ -79,7 +91,23 @@ impl GameBridge {
         self.client = Some(client);
         self.last_decision = None;
 
+        // Store deck IDs and seed for restart capability
+        self.current_deck1 = Some(deck1_id.to_string());
+        self.current_deck2 = Some(deck2_id.to_string());
+        self.current_seed = seed;
+
         Ok(())
+    }
+
+    /// Restart the current game with a new seed.
+    /// Used for multi-game benchmark runs.
+    pub fn restart_with_seed(&mut self, new_seed: u64) -> Result<(), String> {
+        let deck1_id = self.current_deck1.clone()
+            .ok_or_else(|| "No deck1 set for restart".to_string())?;
+        let deck2_id = self.current_deck2.clone()
+            .ok_or_else(|| "No deck2 set for restart".to_string())?;
+
+        self.start_game(&deck1_id, &deck2_id, new_seed)
     }
 
     /// Check if a game is currently active.

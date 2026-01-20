@@ -81,7 +81,8 @@ impl GameModeConfig {
 }
 
 /// Run condition: returns true if it's currently a human player's turn.
-fn is_human_turn(
+/// Exported for use by other UI modules (e.g., spectator hand display).
+pub fn is_human_turn(
     bridge: Res<GameBridge>,
     game_mode: Res<GameModeConfig>,
 ) -> bool {

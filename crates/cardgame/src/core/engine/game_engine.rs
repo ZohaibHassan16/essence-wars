@@ -355,18 +355,27 @@ impl<'a> GameEngine<'a> {
     }
 
     /// Check if a player has lost due to life reaching 0.
+    /// If both players reach 0 life simultaneously, the game is a draw.
     pub fn check_life_victory(&mut self) {
-        for player_idx in 0..2 {
-            if self.state.players[player_idx].life <= 0 {
-                let loser = PlayerId(player_idx as u8);
-                let winner = loser.opponent();
-                self.state.result = Some(GameResult::Win {
-                    winner,
-                    reason: WinReason::LifeReachedZero,
-                });
-                self.state.phase = GamePhase::Ended;
-                return;
-            }
+        let p1_dead = self.state.players[0].life <= 0;
+        let p2_dead = self.state.players[1].life <= 0;
+
+        if p1_dead && p2_dead {
+            // Both players dead simultaneously = draw
+            self.state.result = Some(GameResult::Draw);
+            self.state.phase = GamePhase::Ended;
+        } else if p1_dead {
+            self.state.result = Some(GameResult::Win {
+                winner: PlayerId::PLAYER_TWO,
+                reason: WinReason::LifeReachedZero,
+            });
+            self.state.phase = GamePhase::Ended;
+        } else if p2_dead {
+            self.state.result = Some(GameResult::Win {
+                winner: PlayerId::PLAYER_ONE,
+                reason: WinReason::LifeReachedZero,
+            });
+            self.state.phase = GamePhase::Ended;
         }
     }
 

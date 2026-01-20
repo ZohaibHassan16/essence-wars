@@ -1085,6 +1085,21 @@ fn load_cards() -> String {
 - Fixed deck defaults to MVP decks
 - All 634 cardgame tests pass
 
+**Headless Mode Enhancement (2026-01-20):**
+Enhanced `--headless` mode with three use cases:
+- **Visual debugging** (default): Window with normal pacing for watching AI
+- **Fast testing** (`--fast`): Skip visual timers for quick iteration
+- **Benchmark mode** (`--fast --games N --json`): Multi-game runs with JSON stats
+
+New CLI flags: `--fast`, `--games N`, `--json`, `--debug`
+
+Files added/modified:
+- `src/game/stats.rs` (new): `HeadlessStats` resource, JSON output structs
+- `src/main.rs`: Extended CLI arguments
+- `src/game/turn_loop.rs`: Fast mode (skip delays), debug logging
+- `src/game/bridge.rs`: Deck ID storage for multi-game restart
+- `src/ui/menu.rs`: `handle_headless_game_over` system for multi-game loop
+
 ### Phase 5A-2: Core Gameplay Loop
 
 **Goal:** Playable game without polish.

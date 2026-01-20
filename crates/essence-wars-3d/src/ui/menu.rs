@@ -1,8 +1,10 @@
 //! Main menu and game over screens.
 
+use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
-use crate::game::{AppState, GameBridge};
+use crate::game::{AppState, GameBridge, HeadlessStats};
+use crate::CliArgs;
 use super::player_input::GameModeConfig;
 
 /// Plugin for menus.
@@ -11,7 +13,8 @@ pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, draw_main_menu.run_if(in_state(AppState::Menu)))
-            .add_systems(Update, draw_game_over.run_if(in_state(AppState::GameOver)));
+            .add_systems(Update, draw_game_over.run_if(in_state(AppState::GameOver)))
+            .add_systems(Update, handle_headless_game_over.run_if(in_state(AppState::GameOver)));
     }
 }
 
@@ -155,7 +158,7 @@ fn draw_main_menu(
 fn draw_game_over(
     mut contexts: EguiContexts,
     mut next_state: ResMut<NextState<AppState>>,
-    bridge: Option<Res<GameBridge>>,
+    mut bridge: Option<ResMut<GameBridge>>,
     game_mode: Res<GameModeConfig>,
 ) {
     egui::CentralPanel::default().show(contexts.ctx_mut(), |ui| {
@@ -167,8 +170,8 @@ fn draw_game_over(
             if let Some(bridge) = bridge {
                 if let Some(client) = &bridge.client {
                     if let Some(state) = client.get_state() {
-                        if let Some(cardgame::state::GameResult::Win { winner, .. }) = state.result {
-                            let winner_name = if winner == cardgame::types::PlayerId::PLAYER_ONE {
+                        if let Some(cardgame::state::GameResult::Win { winner, reason }) = &state.result {
+                            let winner_name = if *winner == cardgame::types::PlayerId::PLAYER_ONE {
                                 if game_mode.player1_human {
                                     "You Win!"
                                 } else {
@@ -184,8 +187,18 @@ fn draw_game_over(
                                 }
                             };
                             ui.label(egui::RichText::new(winner_name).size(32.0));
-                        } else if let Some(cardgame::state::GameResult::Draw) = state.result {
+
+                            // Display win reason
+                            let reason_text = match reason {
+                                cardgame::state::WinReason::LifeReachedZero => "Opponent's life reached zero",
+                                cardgame::state::WinReason::TurnLimitHigherLife => "Turn 30 reached - higher life wins",
+                                cardgame::state::WinReason::VictoryPointsReached => "Victory points threshold reached",
+                                cardgame::state::WinReason::Concession => "Opponent conceded",
+                            };
+                            ui.label(egui::RichText::new(reason_text).italics());
+                        } else if let Some(cardgame::state::GameResult::Draw) = &state.result {
                             ui.label(egui::RichText::new("Draw!").size(32.0));
+                            ui.label(egui::RichText::new("Both players reached zero life simultaneously").italics());
                         }
                         ui.label(format!("Final Turn: {}", state.current_turn));
                         ui.label(format!("P1 Life: {} | P2 Life: {}",
@@ -198,9 +211,141 @@ fn draw_game_over(
 
             ui.add_space(30.0);
 
-            if ui.button(egui::RichText::new("Return to Menu").size(20.0)).clicked() {
-                next_state.set(AppState::Menu);
-            }
+            ui.horizontal(|ui| {
+                // Play Again button - restart with new seed
+                if ui.button(egui::RichText::new("Play Again").size(20.0)).clicked() {
+                    if let Some(ref mut bridge) = bridge {
+                        let new_seed = bridge.current_seed.wrapping_add(1);
+                        match bridge.restart_with_seed(new_seed) {
+                            Ok(()) => {
+                                info!("Restarting game with seed {}", new_seed);
+                                next_state.set(AppState::Playing);
+                            }
+                            Err(e) => {
+                                error!("Failed to restart game: {}", e);
+                            }
+                        }
+                    }
+                }
+
+                ui.add_space(20.0);
+
+                if ui.button(egui::RichText::new("Return to Menu").size(20.0)).clicked() {
+                    next_state.set(AppState::Menu);
+                }
+            });
         });
     });
+}
+
+/// Handle game over in headless mode for multi-game benchmark runs.
+fn handle_headless_game_over(
+    cli_args: Option<Res<CliArgs>>,
+    mut headless_stats: Option<ResMut<HeadlessStats>>,
+    mut bridge: Option<ResMut<GameBridge>>,
+    mut next_state: ResMut<NextState<AppState>>,
+    mut exit: EventWriter<AppExit>,
+    turn_state: Res<crate::game::turn_loop::TurnState>,
+) {
+    // Only run in headless mode with stats tracking
+    let Some(args) = cli_args.as_ref() else {
+        return;
+    };
+    if !args.headless {
+        return;
+    }
+
+    let Some(ref mut stats) = headless_stats else {
+        return;
+    };
+    let Some(ref mut bridge) = bridge else {
+        return;
+    };
+
+    // Get game result
+    let Some(client) = &bridge.client else {
+        return;
+    };
+
+    let Some(state) = client.get_state() else {
+        return;
+    };
+
+    // Determine winner
+    let winner = match state.result {
+        Some(cardgame::state::GameResult::Win { winner, .. }) => Some(winner),
+        Some(cardgame::state::GameResult::Draw) => None,
+        None => return, // Game not actually over
+    };
+
+    // Record this game's result
+    let turns = state.current_turn as u32;
+    let actions = turn_state.actions_executed;
+    stats.record_game(winner, turns, actions);
+
+    // Log progress for non-JSON mode
+    if !args.json && args.games > 1 {
+        let winner_str = match winner {
+            Some(p) if p == cardgame::types::PlayerId::PLAYER_ONE => "P1",
+            Some(p) if p == cardgame::types::PlayerId::PLAYER_TWO => "P2",
+            Some(_) => "??",
+            None => "Draw",
+        };
+        eprintln!(
+            "[{}/{}] {} wins in {} turns ({} actions)",
+            stats.games_played, stats.games_total, winner_str, turns, actions
+        );
+    }
+
+    // Check if we need more games
+    if !stats.is_complete() {
+        // Start next game with incremented seed
+        let new_seed = bridge.current_seed.wrapping_add(1);
+        stats.start_game();
+
+        match bridge.restart_with_seed(new_seed) {
+            Ok(()) => {
+                next_state.set(AppState::Playing);
+            }
+            Err(e) => {
+                error!("Failed to restart game: {}", e);
+                exit.send(AppExit::Error(1.try_into().unwrap()));
+            }
+        }
+        return;
+    }
+
+    // All games complete - output results
+    if args.json {
+        let deck1 = bridge.current_deck1.as_deref().unwrap_or("unknown");
+        let deck2 = bridge.current_deck2.as_deref().unwrap_or("unknown");
+        let output = stats.to_json_output(deck1, deck2, args.seed);
+        match serde_json::to_string_pretty(&output) {
+            Ok(json) => println!("{}", json),
+            Err(e) => {
+                error!("Failed to serialize JSON: {}", e);
+                exit.send(AppExit::Error(1.try_into().unwrap()));
+                return;
+            }
+        }
+    } else {
+        // Text summary
+        let elapsed = stats.total_elapsed();
+        eprintln!();
+        eprintln!("=== Benchmark Complete ===");
+        eprintln!("Games: {}", stats.games_played);
+        eprintln!(
+            "Results: P1 {} ({:.1}%) | P2 {} ({:.1}%) | Draw {}",
+            stats.player1_wins,
+            stats.player1_wins as f64 / stats.games_played.max(1) as f64 * 100.0,
+            stats.player2_wins,
+            stats.player2_wins as f64 / stats.games_played.max(1) as f64 * 100.0,
+            stats.draws
+        );
+        eprintln!("Time: {:.2}s ({:.1} games/sec)", elapsed.as_secs_f64(), stats.games_per_second());
+        eprintln!("Avg turns: {:.1}, Avg actions: {:.1}", stats.avg_turns(), stats.avg_actions());
+    }
+
+    // Exit successfully
+    exit.send(AppExit::Success);
 }

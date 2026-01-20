@@ -56,6 +56,22 @@ pub struct CliArgs {
     /// Human player mode (player 1 is human)
     #[arg(long)]
     pub human: bool,
+
+    /// Fast mode - skip visual delays for quick testing
+    #[arg(long)]
+    pub fast: bool,
+
+    /// Number of games to play (benchmark mode)
+    #[arg(long, default_value = "1")]
+    pub games: usize,
+
+    /// Output results as JSON (for benchmarking)
+    #[arg(long)]
+    pub json: bool,
+
+    /// Debug logging - print each action like arena
+    #[arg(long)]
+    pub debug: bool,
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -67,6 +83,10 @@ impl Default for CliArgs {
             deck2: "broodmother_swarm".to_string(),
             seed: 42,
             human: false,
+            fast: false,
+            games: 1,
+            json: false,
+            debug: false,
         }
     }
 }
@@ -80,6 +100,10 @@ pub struct CliArgs {
     pub deck2: String,
     pub seed: u64,
     pub human: bool,
+    pub fast: bool,
+    pub games: usize,
+    pub json: bool,
+    pub debug: bool,
 }
 
 // WASM-specific imports
@@ -130,6 +154,14 @@ fn main() {
 
     #[cfg(target_arch = "wasm32")]
     let cli_args = CliArgs::default();
+
+    // Initialize headless stats for multi-game runs (native only)
+    #[cfg(not(target_arch = "wasm32"))]
+    let headless_stats = if cli_args.headless {
+        Some(game::HeadlessStats::new(cli_args.games))
+    } else {
+        None
+    };
 
     // Very first thing - log that main() was called (try multiple methods)
     #[cfg(target_arch = "wasm32")]
@@ -185,6 +217,12 @@ fn main() {
             ..default()
         }));
         log("[Essence Wars] Bevy plugins configured");
+    }
+
+    // Insert headless stats if in headless mode (native only)
+    #[cfg(not(target_arch = "wasm32"))]
+    if let Some(stats) = headless_stats {
+        app.insert_resource(stats);
     }
 
     app.add_plugins(EguiPlugin)

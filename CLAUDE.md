@@ -268,6 +268,47 @@ Press **'G'** to toggle Glassbox AI visualization (MCTS tree, action probabiliti
 
 See `crates/essence-wars-3d/README.md` for details.
 
+### Headless Mode
+
+The 3D client supports headless operation for testing and benchmarking:
+
+```bash
+# Visual debugging (default) - watch AI play with normal pacing
+cargo run --release -p essence-wars-3d -- --headless
+
+# Fast mode - skip visual delays for quick testing
+cargo run --release -p essence-wars-3d -- --headless --fast
+
+# Multi-game benchmark with JSON output
+cargo run --release -p essence-wars-3d -- --headless --fast --games 100 --json
+
+# Debug logging (arena-style per-action output)
+cargo run --release -p essence-wars-3d -- --headless --fast --debug
+
+# Custom decks and seed
+cargo run --release -p essence-wars-3d -- --headless --deck1 colossus_wall --deck2 broodmother_swarm --seed 42
+```
+
+| Flag | Description |
+|------|-------------|
+| `--headless` | Auto-start AI vs AI game, skip menu |
+| `--fast` | Skip visual timers, run as fast as possible |
+| `--games N` | Run N games (default: 1) |
+| `--json` | Output results as JSON (for scripting) |
+| `--debug` | Per-action logging like arena binary |
+| `--human` | Player 1 is human (interactive) |
+
+**JSON output format:**
+```json
+{
+  "version": "0.7.0",
+  "config": { "deck1": "...", "deck2": "...", "seed": 42, "games": 100 },
+  "results": { "player1_wins": 54, "player2_wins": 43, "draws": 3, ... },
+  "timing": { "total_seconds": 12.45, "avg_game_ms": 124.5, "games_per_second": 8.03 },
+  "metrics": { "avg_turns": 18.5, "avg_actions": 42.3 }
+}
+```
+
 ## Python/ML Infrastructure
 
 Published to PyPI as `essence-wars`. See `python/README.md` for full docs.

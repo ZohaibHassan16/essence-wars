@@ -5,9 +5,10 @@
 
 mod bridge;
 mod state;
-mod turn_loop;
+mod stats;
+pub mod turn_loop;
 
 pub use bridge::GameBridge;
 pub use state::{AppState, GamePlugin};
+pub use stats::HeadlessStats;
 pub use turn_loop::GameEventWrapper;
-// GameEventQueue is still used internally by turn_loop

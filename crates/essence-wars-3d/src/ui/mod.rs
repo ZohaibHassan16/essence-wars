@@ -8,7 +8,7 @@ mod player_input;
 pub use hud::HudPlugin;
 pub use hand::HandPlugin;
 pub use menu::MenuPlugin;
-pub use player_input::{GameModeConfig, PlayerInputPlugin, PlayerInputState};
+pub use player_input::{is_human_turn, GameModeConfig, PlayerInputPlugin, PlayerInputState};
 
 use bevy::prelude::*;
 
