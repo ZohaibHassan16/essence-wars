@@ -72,6 +72,7 @@ class NeuralMctsConfig:
     dirichlet_epsilon: float = 0.25
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
     use_value: bool = True  # Whether to use value function for leaf evaluation
+    rollout_policy: str = "random"  # "random", "greedy", or "neural" for rollouts
 
 
 class MCTSNode:
@@ -197,6 +198,7 @@ class NeuralMctsBot:
         device: str | None = None,
         obs_normalizer: ObsNormalizer | None = None,
         use_value: bool = True,
+        rollout_policy: str = "random",
     ) -> None:
         self.config = NeuralMctsConfig(
             num_simulations=num_simulations,
@@ -204,6 +206,7 @@ class NeuralMctsBot:
             temperature=temperature,
             device=device or ("cuda" if torch.cuda.is_available() else "cpu"),
             use_value=use_value,
+            rollout_policy=rollout_policy,
         )
         self.device = torch.device(self.config.device)
         self.network = network.to(self.device)
@@ -393,11 +396,8 @@ class NeuralMctsBot:
                         if leaf_player != 0:
                             value = -value
                     else:
-                        # Do random rollout to get actual outcome
-                        rollout_game = sim_game.fork()
-                        while not rollout_game.is_done():
-                            rollout_game.step(rollout_game.random_action())
-                        value = rollout_game.get_reward(0)
+                        # Do rollout to get actual outcome
+                        value = self._rollout(sim_game)
                 else:
                     value = 0.0
 
@@ -454,6 +454,34 @@ class NeuralMctsBot:
             policy = torch.softmax(logits, dim=-1)
 
         return policy.squeeze(0).cpu().numpy(), value.squeeze().item()
+
+    def _rollout(self, game: PyGame) -> float:
+        """
+        Do a rollout from the given game state to terminal.
+
+        Args:
+            game: Game state to rollout from (will be forked)
+
+        Returns:
+            Reward from player 0's perspective
+        """
+        rollout_game = game.fork()
+
+        while not rollout_game.is_done():
+            if self.config.rollout_policy == "greedy":
+                action = rollout_game.greedy_action()
+            elif self.config.rollout_policy == "neural":
+                # Use neural network policy for rollout
+                obs = rollout_game.observe()
+                mask = rollout_game.action_mask()
+                policy, _ = self._evaluate(obs, mask)
+                action = int(np.argmax(policy))
+            else:  # "random"
+                action = rollout_game.random_action()
+
+            rollout_game.step(action)
+
+        return rollout_game.get_reward(0)
 
 
 def evaluate_neural_mcts(

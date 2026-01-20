@@ -233,6 +233,30 @@ Before pursuing ExIt further:
 2. Generate more data (5k-10k games) to match original dataset size
 3. Consider using vanilla MCTS for data generation instead of neural-guided
 
+### Finding 6: Policy-Guided MCTS Works When Value Is Disabled (BREAKTHROUGH)
+
+After fixing the card ID normalization issue, we discovered that the value function itself is the problem:
+
+| Configuration | Win Rate vs Greedy |
+|--------------|-------------------|
+| Raw BC network | 55% |
+| BC + MCTS-50 (neural value) | 4% |
+| BC + MCTS-50 (random rollouts) | **86%** |
+
+**Key Insight**: The neural policy is excellent for guiding MCTS exploration, but the value function gives misleading signals. When we replace neural value evaluation with random rollouts to terminal states, MCTS works brilliantly (+31% improvement).
+
+**Why Value Function Fails**:
+- Training on game outcomes (±1) creates binary predictions
+- Model gives extreme values (±0.99) that saturate softmax
+- Values are inconsistent between "your turn with actions" vs "opponent's turn"
+- MCTS needs calibrated probabilistic estimates, not binary classifications
+
+**Solution Options**:
+1. Use MCTS with random rollouts (current: 86%)
+2. Use MCTS with greedy rollouts (likely even better)
+3. Train value function differently (TD learning, MCTS value targets)
+4. Distill MCTS policy back into network
+
 ---
 
 ### Finding 5: ROOT CAUSE - Unnormalized Card IDs (CRITICAL)

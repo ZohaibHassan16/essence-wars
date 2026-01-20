@@ -335,14 +335,38 @@ reward = (
 | 2026-01-20 | A | ExIt data generation | 1k games, 100k samples | 45 min, BC+MCTS-50 |
 | 2026-01-20 | A | BC-v2 (ExIt iter 1) | **51%** (was 61%) | **-10% FAILED** ❌ |
 | 2026-01-20 | A | BC-v2 + MCTS | 36% / 32% | **MCTS hurts model** |
+| 2026-01-20 | B | Card ID normalization fix | - | Fixed feature explosion (divide by 5000) |
+| 2026-01-20 | B | MCTS value function analysis | - | Value predictions miscalibrated for MCTS |
+| 2026-01-20 | B | MCTS with random rollouts | **86%** | **+31% over raw network!** 🎉 |
+| 2026-01-20 | B | MCTS with greedy rollouts | **99%** vs Greedy | **+44% over raw network!** 🚀 |
+| 2026-01-20 | B | Neural MCTS-50 vs MCTS-100 | **60%** | Neural prior helps! |
+| 2026-01-20 | B | Neural MCTS-100 vs MCTS-100 | **62%** | Equal sims, neural wins |
 
 ---
 
 ## Current Focus
 
-**Next Action**: Investigate ExIt failure or pivot to Track D (PPO Improvements)
+**Latest Update**: Greedy rollouts achieve near-perfect performance!
 
-**Rationale**: Track A ExIt iteration 1 failed dramatically. The BC-v2 model regressed from 61% to 51%, and MCTS augmentation makes it even worse (36%), indicating a broken value function. Need to determine if this is a data size issue (100k vs 900k samples) or fundamental problem with neural-guided MCTS.
+**Key Results**:
+| Configuration | vs Greedy | vs MCTS-100 |
+|---------------|-----------|-------------|
+| Raw BC network | 55% | 38% |
+| Neural MCTS-25 (random rollout) | 84% | - |
+| Neural MCTS-25 (greedy rollout) | **99%** | 48% |
+| Neural MCTS-50 (greedy rollout) | 97% | **60%** |
+| Neural MCTS-100 (greedy rollout) | - | **62%** |
+
+**Key Findings**:
+1. **Greedy rollouts >> random rollouts**: 99% vs 84% against Greedy opponent
+2. **Neural policy prior helps**: Beats vanilla MCTS at equal sims (62% vs 50%)
+3. **Sweet spot**: MCTS-25 with greedy rollouts - 99% win rate in 1.14s/game
+4. **Value function still broken**: Must use rollouts, not neural value
+
+**Remaining Options**:
+- Option 2: Train better value function (TD learning, MCTS value targets)
+- Option 3: Expert Iteration with working MCTS
+- Option 4: Policy distillation (train network to match MCTS output)
 
 ---
 
@@ -351,10 +375,10 @@ reward = (
 | Metric | Current Best | Target | Stretch |
 |--------|--------------|--------|---------|
 | Win Rate vs Greedy (raw) | 59% (PPO-Argentum) | 75% | 85% |
-| Win Rate vs Greedy (MCTS-25) | **65%** (PPO-Argentum) | 80% | 85% |
-| Win Rate vs MCTS-100 | ~50%? | 60% | 70% |
+| Win Rate vs Greedy (MCTS) | **99%** (Neural MCTS-25 greedy) | 80% ✅ | 85% ✅ |
+| Win Rate vs MCTS-100 | **62%** (Neural MCTS-100) | 60% ✅ | 70% |
 
-*Note: Original 72% measurement may have been seed-specific; 59-65% more representative*
+*Note: Greedy rollouts massively outperform random (99% vs 86%). Neural policy prior beats vanilla MCTS at equal sims (62%).*
 
 ---
 
