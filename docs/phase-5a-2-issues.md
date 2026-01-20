@@ -8,18 +8,19 @@
 
 ## Summary
 
-**Overall Phase 5A-2 Status: ~75% Complete**
+**Overall Phase 5A-2 Status: ~85% Complete**
 
 | Category | Status | Blockers |
 |----------|--------|----------|
 | Turn Progression | 90% | Lane-grouped combat |
-| AI Integration | 90% | ~~Introspection pipeline~~, bot selection UI |
-| Card Interaction | 40% | Drag-and-drop, spell targeting |
+| AI Integration | 100% | ~~Introspection pipeline~~, ~~bot selection UI~~ |
+| Card Interaction | 70% | Drag-and-drop, ~~spell targeting~~ |
 | Rendering | 50% | Support slots, visual effects |
 | Game Over | 100% | ~~Win reason display~~, ~~draw condition~~, ~~Play Again~~ |
 | Glassbox | 50% | ~~Data pipeline~~ (basic wired, full MCTS tree TBD) |
 
 **Phase 1 Quick Wins: COMPLETE** (5/5 issues resolved)
+**Phase 2 Core Features: COMPLETE** (2/2 issues resolved)
 
 ---
 
@@ -60,7 +61,17 @@
   - Currently spells just cast without target selection
 - **Fix**: Implement target selection UI for spells based on `targeting` field
 - **Effort**: 2-3 hrs
-- **Status**: [ ] Open
+- **Status**: [x] COMPLETED (2026-01-20)
+- **Implementation**:
+  - Added full targeting UI for all TargetingRule variants
+  - NoTarget: Simple cast button
+  - TargetEnemyCreature: Shows enemy creatures with name and stats
+  - TargetAllyCreature: Shows friendly creatures with name and stats
+  - TargetCreature: Shows both enemy (0-4) and ally (5-9) creatures
+  - TargetEnemyPlayer: Target enemy button with life display
+  - TargetPlayer: Both enemy and self options
+  - TargetAny: All creatures and both players
+  - TargetSlot: Empty friendly slots for summon effects
 
 ### ISSUE-004: Drag-and-Drop Not Implemented
 - **Severity**: HIGH (design mismatch)
@@ -112,7 +123,12 @@
   - Greedy bot exists in cardgame but never instantiated in 3D client
 - **Fix**: Add AI type dropdown/radio in menu, wire to `BotConfig`
 - **Effort**: 1-2 hrs
-- **Status**: [ ] Open
+- **Status**: [x] COMPLETED (2026-01-20)
+- **Implementation**:
+  - Added AI Configuration section to menu with Random/Greedy/MCTS selection
+  - In Human vs AI: shows "AI Opponent" selection
+  - In AI vs AI: shows both "Player 1 AI" and "Player 2 AI" selections
+  - Wired to `BotConfig` using `create_bot` factory function
 
 ### ISSUE-008: Combat Not Grouped by Lane
 - **Severity**: MEDIUM
@@ -232,9 +248,9 @@
 4. [x] ISSUE-014: Fix hand display overlap + spectator mode (15 min)
 5. [x] ISSUE-001: Wire introspection pipeline (30 min)
 
-### Phase 2: Core Features (2-4 hours)
-6. [ ] ISSUE-007: Bot type selection UI (1-2 hrs)
-7. [ ] ISSUE-003: Spell targeting (2-3 hrs)
+### Phase 2: Core Features (2-4 hours) ✅ COMPLETE
+6. [x] ISSUE-007: Bot type selection UI (1-2 hrs)
+7. [x] ISSUE-003: Spell targeting (2-3 hrs)
 
 ### Phase 3: Major Features (4-8 hours)
 8. [ ] ISSUE-004: Drag-and-drop interaction (4-6 hrs)
@@ -265,4 +281,4 @@
 
 ---
 
-*Last Updated: 2026-01-20 (Phase 1 Quick Wins completed)*
+*Last Updated: 2026-01-20 (Phase 1 & 2 completed)*

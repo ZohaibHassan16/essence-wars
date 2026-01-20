@@ -5,6 +5,7 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
 use cardgame::actions::Action;
+use cardgame::effects::TargetingRule;
 use cardgame::types::PlayerId;
 
 use crate::game::{AppState, GameBridge};
@@ -279,16 +280,259 @@ fn draw_slot_selection(
                     }
                 });
             } else if is_spell {
-                // For now, just play spells without targeting
-                // TODO: Add proper spell targeting
-                ui.label("Cast this spell?");
-                if ui.button("Cast").clicked() {
-                    let action = Action::PlayCard {
-                        hand_index: selected_idx as u8,
-                        slot: cardgame::types::Slot(0), // Spells don't use slot
-                    };
-                    input_state.pending_action = Some(action);
-                    input_state.selected_card = None;
+                // Get targeting rule for this spell
+                let targeting = card.spell_targeting().cloned().unwrap_or_default();
+                let opponent_idx = if current_player == PlayerId::PLAYER_ONE { 1 } else { 0 };
+                let opponent = &state.players[opponent_idx];
+
+                match &targeting {
+                    TargetingRule::NoTarget => {
+                        // No target needed - just cast
+                        ui.label("Cast this spell?");
+                        if ui.button("Cast").clicked() {
+                            let action = Action::PlayCard {
+                                hand_index: selected_idx as u8,
+                                slot: cardgame::types::Slot(0),
+                            };
+                            input_state.pending_action = Some(action);
+                            input_state.selected_card = None;
+                        }
+                    }
+
+                    TargetingRule::TargetEnemyCreature => {
+                        ui.label("Select an enemy creature:");
+                        ui.horizontal(|ui| {
+                            for slot in 0..5u8 {
+                                // Check if enemy has creature in this slot
+                                let creature = opponent.creatures.iter().find(|c| c.slot.0 == slot);
+                                if let Some(c) = creature {
+                                    let name = card_db.get(c.card_id)
+                                        .map(|cd| cd.name.as_str())
+                                        .unwrap_or("???");
+                                    if ui.button(format!("{}\n({}/{})", name, c.attack, c.current_health)).clicked() {
+                                        let action = Action::PlayCard {
+                                            hand_index: selected_idx as u8,
+                                            slot: cardgame::types::Slot(slot), // 0-4 = enemy
+                                        };
+                                        input_state.pending_action = Some(action);
+                                        input_state.selected_card = None;
+                                    }
+                                }
+                            }
+                        });
+                        if opponent.creatures.is_empty() {
+                            ui.label(egui::RichText::new("No enemy creatures to target").weak());
+                        }
+                    }
+
+                    TargetingRule::TargetAllyCreature => {
+                        ui.label("Select one of your creatures:");
+                        ui.horizontal(|ui| {
+                            for slot in 0..5u8 {
+                                let creature = player.creatures.iter().find(|c| c.slot.0 == slot);
+                                if let Some(c) = creature {
+                                    let name = card_db.get(c.card_id)
+                                        .map(|cd| cd.name.as_str())
+                                        .unwrap_or("???");
+                                    if ui.button(format!("{}\n({}/{})", name, c.attack, c.current_health)).clicked() {
+                                        let action = Action::PlayCard {
+                                            hand_index: selected_idx as u8,
+                                            slot: cardgame::types::Slot(slot), // 0-4 = ally
+                                        };
+                                        input_state.pending_action = Some(action);
+                                        input_state.selected_card = None;
+                                    }
+                                }
+                            }
+                        });
+                        if player.creatures.is_empty() {
+                            ui.label(egui::RichText::new("No friendly creatures to target").weak());
+                        }
+                    }
+
+                    TargetingRule::TargetCreature(_) => {
+                        // Can target any creature
+                        ui.label("Select a creature (enemy or friendly):");
+
+                        if !opponent.creatures.is_empty() {
+                            ui.label(egui::RichText::new("Enemy:").small());
+                            ui.horizontal(|ui| {
+                                for slot in 0..5u8 {
+                                    let creature = opponent.creatures.iter().find(|c| c.slot.0 == slot);
+                                    if let Some(c) = creature {
+                                        let name = card_db.get(c.card_id)
+                                            .map(|cd| cd.name.as_str())
+                                            .unwrap_or("???");
+                                        if ui.button(format!("{}\n({}/{})", name, c.attack, c.current_health)).clicked() {
+                                            let action = Action::PlayCard {
+                                                hand_index: selected_idx as u8,
+                                                slot: cardgame::types::Slot(slot), // 0-4 = enemy
+                                            };
+                                            input_state.pending_action = Some(action);
+                                            input_state.selected_card = None;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+
+                        if !player.creatures.is_empty() {
+                            ui.label(egui::RichText::new("Friendly:").small());
+                            ui.horizontal(|ui| {
+                                for slot in 0..5u8 {
+                                    let creature = player.creatures.iter().find(|c| c.slot.0 == slot);
+                                    if let Some(c) = creature {
+                                        let name = card_db.get(c.card_id)
+                                            .map(|cd| cd.name.as_str())
+                                            .unwrap_or("???");
+                                        if ui.button(format!("{}\n({}/{})", name, c.attack, c.current_health)).clicked() {
+                                            let action = Action::PlayCard {
+                                                hand_index: selected_idx as u8,
+                                                slot: cardgame::types::Slot(slot + 5), // 5-9 = ally
+                                            };
+                                            input_state.pending_action = Some(action);
+                                            input_state.selected_card = None;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+
+                        if opponent.creatures.is_empty() && player.creatures.is_empty() {
+                            ui.label(egui::RichText::new("No creatures to target").weak());
+                        }
+                    }
+
+                    TargetingRule::TargetEnemyPlayer => {
+                        // Target enemy player (slot doesn't matter)
+                        ui.label("Target the enemy player?");
+                        if ui.button(format!("Target Enemy (Life: {})", opponent.life)).clicked() {
+                            let action = Action::PlayCard {
+                                hand_index: selected_idx as u8,
+                                slot: cardgame::types::Slot(0),
+                            };
+                            input_state.pending_action = Some(action);
+                            input_state.selected_card = None;
+                        }
+                    }
+
+                    TargetingRule::TargetPlayer => {
+                        ui.label("Select a player:");
+                        ui.horizontal(|ui| {
+                            if ui.button(format!("Enemy (Life: {})", opponent.life)).clicked() {
+                                let action = Action::PlayCard {
+                                    hand_index: selected_idx as u8,
+                                    slot: cardgame::types::Slot(0), // 0 = enemy
+                                };
+                                input_state.pending_action = Some(action);
+                                input_state.selected_card = None;
+                            }
+                            if ui.button(format!("Self (Life: {})", player.life)).clicked() {
+                                let action = Action::PlayCard {
+                                    hand_index: selected_idx as u8,
+                                    slot: cardgame::types::Slot(1), // 1 = self
+                                };
+                                input_state.pending_action = Some(action);
+                                input_state.selected_card = None;
+                            }
+                        });
+                    }
+
+                    TargetingRule::TargetAny => {
+                        // Can target any creature or player
+                        ui.label("Select any target:");
+
+                        // Enemy creatures (slots 0-4)
+                        if !opponent.creatures.is_empty() {
+                            ui.label(egui::RichText::new("Enemy Creatures:").small());
+                            ui.horizontal(|ui| {
+                                for slot in 0..5u8 {
+                                    let creature = opponent.creatures.iter().find(|c| c.slot.0 == slot);
+                                    if let Some(c) = creature {
+                                        let name = card_db.get(c.card_id)
+                                            .map(|cd| cd.name.as_str())
+                                            .unwrap_or("???");
+                                        if ui.button(format!("{}\n({}/{})", name, c.attack, c.current_health)).clicked() {
+                                            let action = Action::PlayCard {
+                                                hand_index: selected_idx as u8,
+                                                slot: cardgame::types::Slot(slot),
+                                            };
+                                            input_state.pending_action = Some(action);
+                                            input_state.selected_card = None;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+
+                        // Ally creatures (slots 5-9)
+                        if !player.creatures.is_empty() {
+                            ui.label(egui::RichText::new("Friendly Creatures:").small());
+                            ui.horizontal(|ui| {
+                                for slot in 0..5u8 {
+                                    let creature = player.creatures.iter().find(|c| c.slot.0 == slot);
+                                    if let Some(c) = creature {
+                                        let name = card_db.get(c.card_id)
+                                            .map(|cd| cd.name.as_str())
+                                            .unwrap_or("???");
+                                        if ui.button(format!("{}\n({}/{})", name, c.attack, c.current_health)).clicked() {
+                                            let action = Action::PlayCard {
+                                                hand_index: selected_idx as u8,
+                                                slot: cardgame::types::Slot(slot + 5),
+                                            };
+                                            input_state.pending_action = Some(action);
+                                            input_state.selected_card = None;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+
+                        // Players (slots 10-11)
+                        ui.label(egui::RichText::new("Players:").small());
+                        ui.horizontal(|ui| {
+                            if ui.button(format!("Enemy (Life: {})", opponent.life)).clicked() {
+                                let action = Action::PlayCard {
+                                    hand_index: selected_idx as u8,
+                                    slot: cardgame::types::Slot(10), // enemy player
+                                };
+                                input_state.pending_action = Some(action);
+                                input_state.selected_card = None;
+                            }
+                            if ui.button(format!("Self (Life: {})", player.life)).clicked() {
+                                let action = Action::PlayCard {
+                                    hand_index: selected_idx as u8,
+                                    slot: cardgame::types::Slot(11), // self
+                                };
+                                input_state.pending_action = Some(action);
+                                input_state.selected_card = None;
+                            }
+                        });
+                    }
+
+                    TargetingRule::TargetSlot => {
+                        // Target an empty friendly slot (for summon effects)
+                        ui.label("Select an empty slot:");
+                        ui.horizontal(|ui| {
+                            for slot in 0..5u8 {
+                                let is_empty = player.creatures.iter().all(|c| c.slot.0 != slot);
+                                if is_empty {
+                                    if ui.button(format!("Slot {}", slot + 1)).clicked() {
+                                        let action = Action::PlayCard {
+                                            hand_index: selected_idx as u8,
+                                            slot: cardgame::types::Slot(slot),
+                                        };
+                                        input_state.pending_action = Some(action);
+                                        input_state.selected_card = None;
+                                    }
+                                }
+                            }
+                        });
+                        let empty_count = (0..5u8).filter(|&s| player.creatures.iter().all(|c| c.slot.0 != s)).count();
+                        if empty_count == 0 {
+                            ui.label(egui::RichText::new("No empty slots available").weak());
+                        }
+                    }
                 }
             }
 

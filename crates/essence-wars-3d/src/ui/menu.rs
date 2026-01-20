@@ -3,7 +3,9 @@
 use bevy::app::AppExit;
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContexts};
+use cardgame::bots::BotType;
 use crate::game::{AppState, GameBridge, HeadlessStats};
+use crate::game::turn_loop::BotConfig;
 use crate::CliArgs;
 use super::player_input::GameModeConfig;
 
@@ -25,6 +27,19 @@ pub struct MenuState {
     pub deck2: String,
     pub seed: String,
     pub game_mode: usize,  // 0 = Human vs AI, 1 = AI vs AI
+    pub ai_type_p1: usize, // 0 = Random, 1 = Greedy, 2 = MCTS
+    pub ai_type_p2: usize, // 0 = Random, 1 = Greedy, 2 = MCTS
+}
+
+impl MenuState {
+    /// Convert AI type index to BotType.
+    fn bot_type_from_index(index: usize) -> BotType {
+        match index {
+            0 => BotType::Random,
+            1 => BotType::Greedy,
+            _ => BotType::Mcts,
+        }
+    }
 }
 
 /// Draw the main menu.
@@ -34,13 +49,16 @@ fn draw_main_menu(
     mut next_state: ResMut<NextState<AppState>>,
     mut bridge: Option<ResMut<GameBridge>>,
     mut game_mode_config: ResMut<GameModeConfig>,
+    mut bot_config: ResMut<BotConfig>,
 ) {
     // Set defaults if empty (use MVP deck IDs from embedded_data)
     if menu_state.deck1.is_empty() {
         menu_state.deck1 = "colossus_wall".to_string(); // Iron Colossus Prime (Argentum)
+        menu_state.ai_type_p1 = 2; // Default P1 AI to MCTS
     }
     if menu_state.deck2.is_empty() {
         menu_state.deck2 = "broodmother_swarm".to_string(); // The Broodmother (Symbiote)
+        menu_state.ai_type_p2 = 2; // Default P2 AI to MCTS
     }
     if menu_state.seed.is_empty() {
         menu_state.seed = "42".to_string();
@@ -91,6 +109,50 @@ fn draw_main_menu(
                 });
             });
 
+            ui.add_space(10.0);
+
+            // AI Type Selection
+            ui.group(|ui| {
+                ui.label(egui::RichText::new("AI Configuration").strong());
+                ui.add_space(5.0);
+
+                // In Human vs AI mode, only show P2 (AI opponent) selection
+                // In AI vs AI mode, show both
+                if menu_state.game_mode == 1 {
+                    // AI vs AI - show P1 AI type
+                    ui.horizontal(|ui| {
+                        ui.label("Player 1 AI:");
+                        if ui.selectable_label(menu_state.ai_type_p1 == 0, "Random").clicked() {
+                            menu_state.ai_type_p1 = 0;
+                        }
+                        if ui.selectable_label(menu_state.ai_type_p1 == 1, "Greedy").clicked() {
+                            menu_state.ai_type_p1 = 1;
+                        }
+                        if ui.selectable_label(menu_state.ai_type_p1 == 2, "MCTS").clicked() {
+                            menu_state.ai_type_p1 = 2;
+                        }
+                    });
+                }
+
+                ui.horizontal(|ui| {
+                    let ai_label = if menu_state.game_mode == 0 { "AI Opponent:" } else { "Player 2 AI:" };
+                    ui.label(ai_label);
+                    if ui.selectable_label(menu_state.ai_type_p2 == 0, "Random").clicked() {
+                        menu_state.ai_type_p2 = 0;
+                    }
+                    if ui.selectable_label(menu_state.ai_type_p2 == 1, "Greedy").clicked() {
+                        menu_state.ai_type_p2 = 1;
+                    }
+                    if ui.selectable_label(menu_state.ai_type_p2 == 2, "MCTS").clicked() {
+                        menu_state.ai_type_p2 = 2;
+                    }
+                });
+
+                // Show hint about AI types
+                ui.add_space(5.0);
+                ui.label(egui::RichText::new("Random: Fast, weak | Greedy: Fast, medium | MCTS: Slow, strong").small().weak());
+            });
+
             ui.add_space(20.0);
 
             let button_text = if menu_state.game_mode == 0 {
@@ -110,6 +172,11 @@ fn draw_main_menu(
                         GameModeConfig::spectator()
                     };
 
+                    // Set bot config from menu selections
+                    bot_config.player1_type = MenuState::bot_type_from_index(menu_state.ai_type_p1);
+                    bot_config.player2_type = MenuState::bot_type_from_index(menu_state.ai_type_p2);
+                    bot_config.bot_seed = seed;
+
                     match bridge.start_game(&menu_state.deck1, &menu_state.deck2, seed) {
                         Ok(()) => {
                             let mode_name = if menu_state.game_mode == 0 {
@@ -117,7 +184,9 @@ fn draw_main_menu(
                             } else {
                                 "AI vs AI"
                             };
-                            info!("Game started successfully ({})", mode_name);
+                            let p1_bot = bot_config.player1_type.name();
+                            let p2_bot = bot_config.player2_type.name();
+                            info!("Game started successfully ({}) - P1: {}, P2: {}", mode_name, p1_bot, p2_bot);
                             next_state.set(AppState::Playing);
                         }
                         Err(e) => {

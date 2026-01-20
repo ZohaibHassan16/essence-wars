@@ -8,8 +8,9 @@ use std::time::Instant;
 
 use bevy::prelude::*;
 use cardgame::actions::Action;
-use cardgame::bots::{BotDecision, BotType, IntrospectionConfig, MctsBot, MctsConfig, PolicyOutput, PolicySource};
+use cardgame::bots::{BotDecision, BotType, IntrospectionConfig, MctsConfig, PolicyOutput, PolicySource, create_bot};
 use cardgame::client_api::GameEvent;
+use cardgame::types::PlayerId;
 
 use super::{AppState, GameBridge, HeadlessStats};
 use crate::ui::{GameModeConfig, PlayerInputState};
@@ -230,42 +231,60 @@ fn execute_ai_turn(
         return;
     }
 
-    // Create MCTS bot for the current player
-    // We create a fresh bot each time since MCTS doesn't benefit from persistence
-    // Use a consistent seed per player (matching arena behavior)
-    let player_seed = if current_player == cardgame::types::PlayerId::PLAYER_ONE {
+    // Get bot type for current player
+    let bot_type = if current_player == PlayerId::PLAYER_ONE {
+        &bot_config.player1_type
+    } else {
+        &bot_config.player2_type
+    };
+
+    // Get game info for logging (before bot creation to avoid borrow issues)
+    let turn = client.get_state().map(|s| s.current_turn).unwrap_or(0);
+    let game_num = headless_stats.as_ref().map(|s| s.games_played + 1).unwrap_or(1);
+
+    // Create bot for the current player and select action
+    // Scoped to release borrow of bridge.card_db before we mutate bridge
+    let player_seed = if current_player == PlayerId::PLAYER_ONE {
         bot_config.bot_seed
     } else {
         bot_config.bot_seed.wrapping_add(1)
     };
-    let mut bot = MctsBot::with_config(
-        &bridge.card_db,
-        bot_config.mcts_config.clone(),
-        player_seed,
-    );
 
-    // Select action using the bot with full engine access
-    // Time the decision for introspection
-    let decision_start = Instant::now();
-    let Some(action) = client.select_bot_action(&mut bot) else {
-        return;
-    };
-    let thinking_time_us = decision_start.elapsed().as_micros() as u64;
+    let (action, thinking_time_us) = {
+        let mut bot = create_bot(
+            &bridge.card_db,
+            bot_type,
+            None, // Use default weights
+            &bot_config.mcts_config,
+            player_seed,
+        );
 
-    // Get game info for logging
-    let turn = client.get_state().map(|s| s.current_turn).unwrap_or(0);
-    let game_num = headless_stats.as_ref().map(|s| s.games_played + 1).unwrap_or(1);
+        // Time the decision for introspection
+        let decision_start = Instant::now();
+        let Some(action) = client.select_bot_action(bot.as_mut()) else {
+            return;
+        };
+        let thinking_time_us = decision_start.elapsed().as_micros() as u64;
+        (action, thinking_time_us)
+    }; // bot is dropped here, releasing borrow of bridge.card_db
 
     // Debug logging (arena-style)
     if debug_mode {
-        let player_num = if current_player == cardgame::types::PlayerId::PLAYER_ONE { 1 } else { 2 };
-        eprintln!("[Game {}] Turn {}: P{} {:?}", game_num, turn, player_num, action);
+        let player_num = if current_player == PlayerId::PLAYER_ONE { 1 } else { 2 };
+        eprintln!("[Game {}] Turn {}: P{} ({}) {:?}", game_num, turn, player_num, bot_type.name(), action);
     } else {
         info!(
-            "Turn {}: AI ({:?}) plays {:?}",
-            turn, current_player, action
+            "Turn {}: {} ({:?}) plays {:?}",
+            turn, bot_type.name(), current_player, action
         );
     }
+
+    // Determine policy source from bot type
+    let policy_source = match bot_type {
+        BotType::Random => PolicySource::Random,
+        BotType::Greedy => PolicySource::Greedy,
+        BotType::Mcts | BotType::AgentSpecialist(_) | BotType::AgentGeneralist => PolicySource::Mcts,
+    };
 
     // Create a basic BotDecision for Glassbox visualization
     // Note: Full MCTS tree introspection requires implementing AnalyzableBot for MctsBot
@@ -277,7 +296,7 @@ fn execute_ai_turn(
             action_scores: vec![(action.clone(), 1.0)], // Placeholder - just the selected action
             value_estimate: 0.0, // Unknown without full introspection
             confidence: 1.0,
-            source: PolicySource::Mcts,
+            source: policy_source,
         }),
         mcts_snapshot: None, // Full snapshot requires AnalyzableBot implementation
         thinking_time_us,
