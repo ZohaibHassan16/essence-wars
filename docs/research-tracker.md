@@ -348,33 +348,39 @@ reward = (
 | 2026-01-21 | D | 10k MCTS-50 data generation | 836k samples | 12.6 hours |
 | 2026-01-21 | D | **Distilled (10k) vs Greedy** | **71.7%** | **+13.7% from BC!** |
 | 2026-01-21 | D | Distilled (10k) + MCTS-25 | **98%** | Still near-perfect |
+| 2026-01-21 | A | ExIt iter 1: data generation | 413k samples | 6.7 hours, distilled-10k prior |
+| 2026-01-21 | A | ExIt iter 1: training | 54% policy acc | Much better policy matching |
+| 2026-01-21 | A | ExIt iter 1 vs Greedy | 70.4% | Only +0.6% vs distilled-10k |
+| 2026-01-21 | D | Large network (512h, 6b) | 65.8% | **Worse** - overfit heavily |
 
 ---
 
 ## Current Focus
 
-**Latest Update**: Scaled distillation achieves 71.7%!
+**Latest Update**: ExIt and larger network didn't help - 71.7% appears to be near the ceiling.
 
 **Key Results**:
-| Configuration | vs Greedy | Speed | Notes |
-|---------------|-----------|-------|-------|
-| Raw BC network | 58% | 154 games/sec | Baseline |
-| Distilled (1k, MCTS-25) | 65% | 154 games/sec | +7% no search |
-| **Distilled (10k, MCTS-50)** | **71.7%** | 154 games/sec | **+13.7% from BC!** |
-| PPO-Argentum | 72% | ~150 games/sec | Previous best raw |
-| Distilled + MCTS-25 | 98% | 1 game/sec | Near-perfect |
+| Configuration | vs Greedy | Params | Notes |
+|---------------|-----------|--------|-------|
+| Raw BC network | 58% | 808k | Baseline |
+| Distilled (1k, MCTS-25) | 65% | 808k | +7% no search |
+| **Distilled (10k, MCTS-50)** | **71.7%** | 808k | **Best raw network!** |
+| ExIt iteration 1 | 70.4% | 808k | No improvement |
+| Large network (512h, 6b) | 65.8% | 3.9M | Worse - overfit |
+| PPO-Argentum | 72% | ~800k | Reference |
+| Distilled + MCTS-25 | 98% | 808k | Near-perfect |
 
 **Key Findings**:
-1. **Scaled distillation works!**: 10x data improved 65% → 71.7% (+6.7%)
-2. **Matches PPO**: Distilled network (71.7%) now matches PPO-Argentum (72%)!
-3. **155x speedup**: Raw network vs MCTS-augmented inference
-4. **Greedy rollouts >> random rollouts**: 99% vs 84% against Greedy opponent
-5. **Neural policy prior helps**: Beats vanilla MCTS at equal sims (62% vs 50%)
+1. **~72% is the ceiling for raw networks** - ExIt, larger networks, and more data all plateau here
+2. **Policy matching ≠ gameplay** - ExIt achieved 54% policy acc vs 45%, but gameplay barely improved
+3. **Network capacity isn't the bottleneck** - 5x larger network performed worse
+4. **MCTS-augmented achieves 98%** - The gap between raw (72%) and MCTS (98%) remains large
+5. **155x speedup** with raw network vs MCTS-augmented inference
 
-**Next Steps**:
-- Expert Iteration: Use distilled network as new MCTS prior, generate more data
-- Larger network: Try 512 hidden dim, 6 blocks
-- More data: 50k games could push further
+**Conclusions**:
+- The distilled network at 71.7% is likely near-optimal for this architecture
+- To push beyond 72%, we'd need fundamentally different approaches (better state representation, different architecture, etc.)
+- The current setup is good: fast raw network (72%) or slow high-quality (98% with MCTS)
 
 ---
 
