@@ -251,7 +251,8 @@ def train_epoch(
         # Forward pass
         action_logits = model(returns_to_go, states, actions, timesteps, attention_mask)
 
-        # Mask invalid actions and compute loss
+        # Compute loss without masking invalid actions (they're not in the target anyway)
+        # The model should learn which actions are valid from the data
         B, T, A = action_logits.shape
 
         # Flatten for loss computation
@@ -260,20 +261,24 @@ def train_epoch(
         mask_flat = action_masks.view(B * T, A)
         attn_flat = attention_mask.view(B * T)
 
-        # Apply action mask to logits
-        logits_flat = logits_flat.masked_fill(~mask_flat, float("-inf"))
-
         # Compute cross-entropy loss only on valid timesteps
-        loss = F.cross_entropy(logits_flat, actions_flat, reduction="none")
-        loss = (loss * attn_flat).sum() / attn_flat.sum()
+        # Use label smoothing for stability
+        loss = F.cross_entropy(logits_flat, actions_flat, reduction="none", label_smoothing=0.1)
+        valid_mask = attn_flat > 0
+        if valid_mask.sum() > 0:
+            loss = loss[valid_mask].mean()
+        else:
+            loss = loss.mean()
 
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         optimizer.step()
 
-        # Compute accuracy
+        # Compute accuracy (with action masking for fair comparison)
         with torch.no_grad():
-            pred_actions = logits_flat.argmax(dim=-1)
+            masked_logits = logits_flat.clone()
+            masked_logits[~mask_flat] = float("-inf")
+            pred_actions = masked_logits.argmax(dim=-1)
             correct = ((pred_actions == actions_flat) * attn_flat).sum().item()
             count = attn_flat.sum().item()
 
@@ -318,12 +323,18 @@ def validate(
         mask_flat = action_masks.view(B * T, A)
         attn_flat = attention_mask.view(B * T)
 
-        logits_flat = logits_flat.masked_fill(~mask_flat, float("-inf"))
-        loss = F.cross_entropy(logits_flat, actions_flat, reduction="none")
-        loss = (loss * attn_flat).sum() / attn_flat.sum()
+        # Compute loss without action masking
+        loss = F.cross_entropy(logits_flat, actions_flat, reduction="none", label_smoothing=0.1)
+        valid_mask = attn_flat > 0
+        if valid_mask.sum() > 0:
+            loss = loss[valid_mask].mean()
+        else:
+            loss = loss.mean()
 
-        # Accuracy
-        pred_actions = logits_flat.argmax(dim=-1)
+        # Accuracy with action masking
+        masked_logits = logits_flat.clone()
+        masked_logits[~mask_flat] = float("-inf")
+        pred_actions = masked_logits.argmax(dim=-1)
         correct = ((pred_actions == actions_flat) * attn_flat).sum().item()
         count = attn_flat.sum().item()
 
