@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "version": "1.0.0",
-    "last_updated": "2026-01-19T16:00:00Z",
+    "version": "1.1.0",
+    "last_updated": "2026-01-21T12:00:00Z",
     "evaluation_config": {
       "games_per_opponent": 100,
       "baselines": ["random", "greedy", "mcts50", "mcts100"],
@@ -303,34 +303,75 @@
       "is_baseline": false
     },
     {
-      "id": "local/bc-mcts-10k",
-      "name": "BC-MCTS-10k",
+      "id": "Chris-Essence-Wars/distilled-mcts50-10k",
+      "name": "Distilled-MCTS50",
       "author": "Chris-Essence-Wars",
-      "model_type": "bc",
-      "description": "Behavioral Cloning trained on 10k MCTS games. Fast to train (12 min) but doesn't improve with fine-tuning.",
-      "elo_rating": 1360,
-      "confidence_interval": 40,
-      "total_games": 200,
+      "model_type": "distilled",
+      "description": "Policy distillation from MCTS-50 on 10k games. Achieves MCTS-like quality with single forward pass inference.",
+      "elo_rating": 1430,
+      "confidence_interval": 35,
+      "total_games": 400,
       "metrics": {
-        "win_rate_vs_random": 0.96,
-        "win_rate_vs_greedy": 0.59,
-        "win_rate_vs_mcts50": null,
-        "win_rate_vs_mcts100": null
+        "win_rate_vs_random": 0.88,
+        "win_rate_vs_greedy": 0.71,
+        "win_rate_vs_mcts50": 0.88,
+        "win_rate_vs_mcts100": 0.33
       },
       "statistics": {
-        "training_epochs": 10,
-        "dataset_size": 10000
+        "training_epochs": 50,
+        "dataset_size": 10000,
+        "mcts_simulations": 50
       },
       "submission": {
-        "date": "2026-01-19T12:00:00Z",
-        "source": "local",
-        "checkpoint_path": "models/bc_mcts_10k_best.pt"
+        "date": "2026-01-21T08:00:00Z",
+        "source": "huggingface",
+        "model_url": "https://huggingface.co/Chris-Essence-Wars/distilled-mcts50-10k",
+        "checkpoint_path": "model.pt",
+        "local_path": "models/distilled_mcts50_10k.pt"
       },
       "training_config": {
         "architecture": "flat",
         "hidden_dim": 256,
+        "num_blocks": 4,
         "learning_rate": 0.001,
-        "epochs": 10,
+        "epochs": 50,
+        "dataset": "distillation-10k-mcts50"
+      },
+      "tags": ["official", "generalist", "distilled", "fast-inference"],
+      "is_baseline": false
+    },
+    {
+      "id": "Chris-Essence-Wars/bc-mcts-10k-best",
+      "name": "BC-MCTS-10k",
+      "author": "Chris-Essence-Wars",
+      "model_type": "bc",
+      "description": "Behavioral Cloning trained on 10k MCTS-100 games. Solid baseline for imitation learning.",
+      "elo_rating": 1390,
+      "confidence_interval": 35,
+      "total_games": 400,
+      "metrics": {
+        "win_rate_vs_random": 0.86,
+        "win_rate_vs_greedy": 0.66,
+        "win_rate_vs_mcts50": 0.91,
+        "win_rate_vs_mcts100": 0.46
+      },
+      "statistics": {
+        "training_epochs": 50,
+        "dataset_size": 10000
+      },
+      "submission": {
+        "date": "2026-01-19T12:00:00Z",
+        "source": "huggingface",
+        "model_url": "https://huggingface.co/Chris-Essence-Wars/bc-mcts-10k-best",
+        "checkpoint_path": "model.pt",
+        "local_path": "models/bc_mcts_10k_best.pt"
+      },
+      "training_config": {
+        "architecture": "flat",
+        "hidden_dim": 256,
+        "num_blocks": 4,
+        "learning_rate": 0.001,
+        "epochs": 50,
         "dataset": "mcts-10k-sims100"
       },
       "tags": ["official", "generalist", "bc", "imitation-learning"],

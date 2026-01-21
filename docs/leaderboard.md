@@ -1,6 +1,6 @@
 # Essence Wars Agent Leaderboard
 
-> Last updated: 2026-01-19
+> Last updated: 2026-01-21
 > Benchmark version: 1.0
 
 ## Rankings
@@ -9,10 +9,11 @@
 |------|-------|--------|------|-----|-----------|-----------|
 | 1 | [PPO-Argentum](https://huggingface.co/Chris-Essence-Wars/ppo-argentum) | Chris-Essence-Wars | PPO | 1450 | 72% | 99% |
 | 2 | [PPO-Flat](https://huggingface.co/Chris-Essence-Wars/ppo-flat) | Chris-Essence-Wars | PPO | 1440 | 71% | 99% |
-| 3 | [PPO-Embedded](https://huggingface.co/Chris-Essence-Wars/ppo-embedded) | Chris-Essence-Wars | PPO | 1400 | 65% | 98% |
-| 4 | [PPO-Symbiote](https://huggingface.co/Chris-Essence-Wars/ppo-symbiote) | Chris-Essence-Wars | PPO | 1400 | 65% | 98% |
-| 5 | [PPO-Obsidion](https://huggingface.co/Chris-Essence-Wars/ppo-obsidion) | Chris-Essence-Wars | PPO | 1380 | 62% | 97% |
-| 6 | BC-MCTS-10k | Chris-Essence-Wars | BC | 1360 | 59% | 96% |
+| 3 | [Distilled-MCTS50](https://huggingface.co/Chris-Essence-Wars/distilled-mcts50-10k) | Chris-Essence-Wars | DISTILLED | 1430 | 71% | 88% |
+| 4 | [PPO-Embedded](https://huggingface.co/Chris-Essence-Wars/ppo-embedded) | Chris-Essence-Wars | PPO | 1400 | 65% | 98% |
+| 5 | [PPO-Symbiote](https://huggingface.co/Chris-Essence-Wars/ppo-symbiote) | Chris-Essence-Wars | PPO | 1400 | 65% | 98% |
+| 6 | [BC-MCTS-10k](https://huggingface.co/Chris-Essence-Wars/bc-mcts-10k-best) | Chris-Essence-Wars | BC | 1390 | 66% | 86% |
+| 7 | [PPO-Obsidion](https://huggingface.co/Chris-Essence-Wars/ppo-obsidion) | Chris-Essence-Wars | PPO | 1380 | 62% | 97% |
 
 ## Baselines
 

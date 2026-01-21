@@ -354,6 +354,51 @@ from essence_wars import PyGame, PyParallelGames, EssenceWarsEnv
 | `train_alphazero.py` | AlphaZero self-play | ✅ (bounded buffer) |
 | `train_behavioral_cloning.py` | Imitation learning on MCTS data | ✅ (with `--streaming`) |
 | `train_card2vec.py` | Card embedding pre-training | ✅ (reservoir sampling) |
+| `generate_distillation_data.py` | MCTS policy distillation data | ✅ (batched GPU) |
+| `generate_exit_data.py` | Expert Iteration data generation | ✅ (batched GPU) |
+
+### Batched Neural MCTS (10-20x GPU Speedup)
+
+Neural MCTS supports **batched GPU inference** for dramatic speedups. Instead of evaluating one position at a time, it collects multiple leaf nodes and evaluates them in a single GPU batch.
+
+**Key parameters:**
+- `batch_size`: Number of leaves to collect before GPU inference (default: 32)
+- `virtual_loss`: Penalty to discourage re-exploring same path (default: 3.0)
+
+```bash
+# Data generation with batched MCTS (10-20x faster)
+uv run python python/scripts/generate_distillation_data.py \
+    --model models/bc_mcts_values.pt \
+    --games 1000 \
+    --sims 50 \
+    --batch-size 32
+
+# AlphaZero training uses batched search automatically
+uv run python python/scripts/train_alphazero.py \
+    --iterations 100 \
+    --mcts-batch-size 32
+```
+
+**Python API:**
+```python
+from essence_wars.agents.neural_mcts import NeuralMctsBot
+
+bot = NeuralMctsBot(network, num_simulations=100)
+
+# Sequential (baseline)
+action, policy = bot.get_action_with_game(game)
+
+# Batched (10-20x faster on GPU)
+action, policy = bot.get_action_with_game_batched(game, batch_size=32)
+```
+
+**How it works:**
+1. **Selection with virtual loss**: Traverse tree, applying virtual loss to discourage path re-exploration
+2. **Batch collection**: Collect up to `batch_size` leaf nodes
+3. **Batched GPU inference**: Evaluate all leaves in one forward pass
+4. **Expansion + Backpropagation**: Expand nodes, remove virtual loss, backup values
+
+See `docs/batched-mcts.md` for full technical details.
 
 ### Memory Safety Guidelines
 

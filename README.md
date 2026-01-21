@@ -34,7 +34,8 @@
 | **Random Game Throughput** | ~80,000 games/sec |
 | **Greedy Game Throughput** | ~17,000 games/sec |
 | **Vectorized Env SPS** | ~268,000 steps/sec |
-| **State Tensor Latency** | ~133 ns |
+| **Batched Neural MCTS** | 10-20x GPU speedup |
+| **Best Agent (PPO)** | 72% vs Greedy |
 
 ---
 
@@ -198,6 +199,48 @@ for _ in range(num_steps):
     obs, rewards, dones, masks = vec_env.step(actions)
     # Done environments auto-reset
 ```
+
+---
+
+## Trained Models & Datasets
+
+Pre-trained models and datasets are available on HuggingFace:
+
+| Model | Win Rate vs Greedy | HuggingFace |
+|-------|-------------------|-------------|
+| PPO-Argentum | **72%** | [Chris-Essence-Wars/ppo-argentum](https://huggingface.co/Chris-Essence-Wars/ppo-argentum) |
+| PPO-Flat | 71% | [Chris-Essence-Wars/ppo-flat](https://huggingface.co/Chris-Essence-Wars/ppo-flat) |
+| BC-MCTS-10k | 66% | [Chris-Essence-Wars/bc-mcts-10k-best](https://huggingface.co/Chris-Essence-Wars/bc-mcts-10k-best) |
+| Distilled-MCTS50 | 71% | [Chris-Essence-Wars/distilled-mcts50-10k](https://huggingface.co/Chris-Essence-Wars/distilled-mcts50-10k) |
+
+| Dataset | Games | Samples | HuggingFace |
+|---------|-------|---------|-------------|
+| MCTS-100k | 100,000 | ~9M | [Chris-Essence-Wars/mcts-100k-sims100](https://huggingface.co/datasets/Chris-Essence-Wars/mcts-100k-sims100) |
+| MCTS-10k | 10,000 | ~900k | [Chris-Essence-Wars/mcts-10k-sims100](https://huggingface.co/datasets/Chris-Essence-Wars/mcts-10k-sims100) |
+
+---
+
+## Neural MCTS (Batched GPU Inference)
+
+Neural MCTS with **batched GPU inference** achieves 10-20x speedup over sequential evaluation:
+
+```python
+from essence_wars.agents.neural_mcts import NeuralMctsBot
+
+bot = NeuralMctsBot(network, num_simulations=100, device="cuda")
+
+# Batched inference (10-20x faster)
+action, policy = bot.get_action_with_game_batched(game, batch_size=32)
+```
+
+```bash
+# Generate distillation data with batched MCTS
+uv run python python/scripts/generate_distillation_data.py \
+    --model models/bc_mcts_values.pt \
+    --games 1000 --sims 50 --batch-size 32
+```
+
+See [docs/batched-mcts.md](docs/batched-mcts.md) for details.
 
 ---
 

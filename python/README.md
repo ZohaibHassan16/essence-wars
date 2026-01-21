@@ -93,7 +93,8 @@ print(f"Elo rating: {results['elo']:.0f}")
 |-------|----------|-------------|
 | PPO-Argentum | 72% | [ppo-argentum](https://huggingface.co/Chris-Essence-Wars/ppo-argentum) |
 | PPO-Flat | 71% | [ppo-flat](https://huggingface.co/Chris-Essence-Wars/ppo-flat) |
-| PPO-Embedded | 65% | [ppo-embedded](https://huggingface.co/Chris-Essence-Wars/ppo-embedded) |
+| Distilled-MCTS50 | 71% | [distilled-mcts50-10k](https://huggingface.co/Chris-Essence-Wars/distilled-mcts50-10k) |
+| BC-MCTS-10k | 66% | [bc-mcts-10k-best](https://huggingface.co/Chris-Essence-Wars/bc-mcts-10k-best) |
 
 ---
 
@@ -198,6 +199,30 @@ obs, masks = vec_env.reset(seed=42)
 for _ in range(1000):
     actions = your_policy(obs, masks)
     obs, rewards, dones, masks = vec_env.step(actions)
+```
+
+---
+
+## Batched Neural MCTS (10-20x Speedup)
+
+Neural MCTS with batched GPU inference for fast data generation:
+
+```python
+from essence_wars.agents.neural_mcts import NeuralMctsBot, load_bc_network
+
+# Load a trained network
+network = load_bc_network("models/bc_mcts_10k_best.pt", device="cuda")
+bot = NeuralMctsBot(network, num_simulations=100, device="cuda")
+
+# Batched inference (10-20x faster than sequential)
+action, policy = bot.get_action_with_game_batched(game, batch_size=32)
+```
+
+```bash
+# Generate distillation data with batched MCTS
+python -m essence_wars.scripts.generate_distillation_data \
+    --model models/bc_mcts_values.pt \
+    --games 1000 --sims 50 --batch-size 32
 ```
 
 ---
