@@ -192,6 +192,15 @@ module = [
     "huggingface_hub.*",
     "pettingzoo",
     "pettingzoo.*",
+    # Image processing
+    "diffusers",
+    "diffusers.*",
+    "accelerate",
+    "accelerate.*",
+    "transformers",
+    "transformers.*",
+    "PIL",
+    "PIL.*",
     # CLI & display
     "rich",
     "rich.*",
@@ -241,6 +250,9 @@ train = [
     "tensorboard>=2.14.0",
     "wandb>=0.16.0",
     "tqdm>=4.66.0",
+    "diffusers>=0.27.0",  # For Marigold depth estimation
+    "accelerate>=0.27.0",  # Required by diffusers
+    "transformers>=4.38.0",  # Required by Marigold
 ]
 
 # Analysis tools: data processing, plotting, dashboards
