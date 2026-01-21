@@ -43,6 +43,8 @@ class AlphaZeroConfig:
     c_puct: float = 1.5  # Exploration constant
     dirichlet_alpha: float = 0.3  # Noise for root exploration
     dirichlet_epsilon: float = 0.25  # Noise weight
+    mcts_batch_size: int = 32  # Batch size for GPU inference during MCTS
+    mcts_virtual_loss: float = 3.0  # Virtual loss for batched MCTS
 
     # Training
     num_iterations: int = 100  # Training iterations
@@ -193,6 +195,16 @@ class MCTSNode:
         for i, action in enumerate(actions):
             child = self.children[action]
             child.prior = (1 - epsilon) * child.prior + epsilon * noise[i]
+
+    def apply_virtual_loss(self, virtual_loss: float = 3.0) -> None:
+        """Apply virtual loss to discourage other threads from selecting same path."""
+        self.visit_count += 1
+        self.value_sum -= virtual_loss
+
+    def remove_virtual_loss(self, virtual_loss: float = 3.0) -> None:
+        """Remove virtual loss after evaluation is complete."""
+        self.visit_count -= 1
+        self.value_sum += virtual_loss
 
 
 class RunningMeanStd:
@@ -389,6 +401,160 @@ class NeuralMCTS:
                 probs[action] = child.visit_count / total_visits
 
         return probs
+
+    def _evaluate_batch(
+        self,
+        obs_batch: NDArray[np.float32],
+        mask_batch: NDArray[np.float32],
+    ) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
+        """
+        Evaluate a batch of positions with neural network.
+
+        Args:
+            obs_batch: Observations array (batch_size, 326)
+            mask_batch: Action masks (batch_size, 256)
+
+        Returns:
+            (policies, values) tuple - policies (batch_size, 256), values (batch_size,)
+        """
+        # Normalize observations if enabled
+        if self.obs_normalizer is not None:
+            obs_batch = np.stack([
+                self.obs_normalizer.normalize(obs).astype(np.float32)
+                for obs in obs_batch
+            ])
+
+        obs_t = torch.tensor(obs_batch, dtype=torch.float32, device=self.device)
+        mask_t = torch.tensor(mask_batch > 0, dtype=torch.bool, device=self.device)
+
+        self.network.eval()
+        with torch.no_grad():
+            policies, values = self.network.evaluate(obs_t, mask_t)
+
+        return policies.cpu().numpy(), values.cpu().numpy().flatten()
+
+    def search_batched(
+        self,
+        game: PyGame,
+        batch_size: int = 32,
+        add_noise: bool = True,
+        virtual_loss: float = 3.0,
+    ) -> NDArray[np.float32]:
+        """
+        Run batched MCTS search for GPU efficiency.
+
+        Collects multiple leaf nodes before doing a single batched GPU inference,
+        using virtual loss to encourage exploration of different paths.
+
+        Args:
+            game: Current game state (will be forked, not modified)
+            batch_size: Number of leaves to collect before GPU inference
+            add_noise: Whether to add Dirichlet noise at root
+            virtual_loss: Virtual loss to apply during selection
+
+        Returns:
+            Action probabilities based on visit counts (256,)
+        """
+        # Create root node
+        root = MCTSNode()
+
+        # Get initial evaluation
+        obs = game.observe()
+        mask = game.action_mask()
+        legal_actions = np.where(mask > 0)[0].tolist()
+
+        # Evaluate root position
+        policy, _ = self._evaluate(obs, mask)
+        root.expand(legal_actions, policy)
+
+        # Add exploration noise at root
+        if add_noise and len(legal_actions) > 1:
+            root.add_exploration_noise(
+                self.config.dirichlet_alpha,
+                self.config.dirichlet_epsilon,
+            )
+
+        # Run simulations in batches
+        remaining_sims = self.config.num_simulations
+        while remaining_sims > 0:
+            # Collect leaves for this batch
+            current_batch = min(batch_size, remaining_sims)
+            leaves_to_evaluate = []
+
+            for _ in range(current_batch):
+                # Fork game for simulation
+                sim_game = game.fork()
+                node = root
+                search_path = [node]
+
+                # Selection with virtual loss
+                while node.is_expanded and not sim_game.is_done():
+                    action, node = node.select_child(self.config.c_puct)
+                    node.apply_virtual_loss(virtual_loss)
+                    sim_game.step(action)
+                    search_path.append(node)
+
+                # Check if terminal
+                if sim_game.is_done():
+                    # Terminal: use actual game result, remove virtual loss and backup
+                    value = sim_game.get_reward(0)
+                    for path_node in reversed(search_path[1:]):
+                        path_node.remove_virtual_loss(virtual_loss)
+                        path_node.visit_count += 1
+                        path_node.value_sum += value
+                        value = -value
+                    root.visit_count += 1
+                else:
+                    # Non-terminal: collect for batch evaluation
+                    leaf_obs = sim_game.observe()
+                    leaf_mask = sim_game.action_mask()
+                    leaf_legal = np.where(leaf_mask > 0)[0].tolist()
+
+                    if leaf_legal:
+                        leaves_to_evaluate.append({
+                            "obs": leaf_obs,
+                            "mask": leaf_mask,
+                            "legal_actions": leaf_legal,
+                            "node": node,
+                            "search_path": search_path,
+                        })
+                    else:
+                        # No legal actions: backup with 0 value
+                        value = 0.0
+                        for path_node in reversed(search_path[1:]):
+                            path_node.remove_virtual_loss(virtual_loss)
+                            path_node.visit_count += 1
+                            path_node.value_sum += value
+                            value = -value
+                        root.visit_count += 1
+
+            # Batch evaluate all collected leaves
+            if leaves_to_evaluate:
+                obs_batch = np.stack([leaf["obs"] for leaf in leaves_to_evaluate])
+                mask_batch = np.stack([leaf["mask"] for leaf in leaves_to_evaluate])
+
+                policies, values = self._evaluate_batch(obs_batch, mask_batch)
+
+                # Expand and backup each leaf
+                for i, leaf in enumerate(leaves_to_evaluate):
+                    node = leaf["node"]
+                    search_path = leaf["search_path"]
+
+                    # Expand leaf
+                    node.expand(leaf["legal_actions"], policies[i])
+
+                    # Remove virtual loss and backup
+                    value = values[i]
+                    for path_node in reversed(search_path[1:]):
+                        path_node.remove_virtual_loss(virtual_loss)
+                        path_node.visit_count += 1
+                        path_node.value_sum += value
+                        value = -value
+                    root.visit_count += 1
+
+            remaining_sims -= current_batch
+
+        return self._get_action_probs(root)
 
 
 @dataclass
@@ -760,8 +926,13 @@ class AlphaZeroTrainer:
             if self.obs_normalizer is not None:
                 self.obs_normalizer.update(obs)
 
-            # MCTS search
-            action_probs = self.mcts.search(game, add_noise=True)
+            # MCTS search (batched for GPU efficiency)
+            action_probs = self.mcts.search_batched(
+                game,
+                batch_size=self.config.mcts_batch_size,
+                add_noise=True,
+                virtual_loss=self.config.mcts_virtual_loss,
+            )
 
             # Store training data
             observations.append(obs)

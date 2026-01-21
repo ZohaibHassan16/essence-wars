@@ -341,32 +341,40 @@ reward = (
 | 2026-01-20 | B | MCTS with greedy rollouts | **99%** vs Greedy | **+44% over raw network!** 🚀 |
 | 2026-01-20 | B | Neural MCTS-50 vs MCTS-100 | **60%** | Neural prior helps! |
 | 2026-01-20 | B | Neural MCTS-100 vs MCTS-100 | **62%** | Equal sims, neural wins |
+| 2026-01-20 | D | Policy distillation data | 1k games, 85k samples | MCTS-25 self-play, 39 min |
+| 2026-01-20 | D | Distilled network training | 44% policy acc | 30 epochs, best at epoch 8 |
+| 2026-01-20 | D | **Distilled vs Greedy** | **65%** (was 58%) | **+7% without search!** ✅ |
+| 2026-01-20 | D | Distilled + MCTS-25 | **98%** | Same as BC + MCTS |
+| 2026-01-21 | D | 10k MCTS-50 data generation | 836k samples | 12.6 hours |
+| 2026-01-21 | D | **Distilled (10k) vs Greedy** | **71.7%** | **+13.7% from BC!** |
+| 2026-01-21 | D | Distilled (10k) + MCTS-25 | **98%** | Still near-perfect |
 
 ---
 
 ## Current Focus
 
-**Latest Update**: Greedy rollouts achieve near-perfect performance!
+**Latest Update**: Scaled distillation achieves 71.7%!
 
 **Key Results**:
-| Configuration | vs Greedy | vs MCTS-100 |
-|---------------|-----------|-------------|
-| Raw BC network | 55% | 38% |
-| Neural MCTS-25 (random rollout) | 84% | - |
-| Neural MCTS-25 (greedy rollout) | **99%** | 48% |
-| Neural MCTS-50 (greedy rollout) | 97% | **60%** |
-| Neural MCTS-100 (greedy rollout) | - | **62%** |
+| Configuration | vs Greedy | Speed | Notes |
+|---------------|-----------|-------|-------|
+| Raw BC network | 58% | 154 games/sec | Baseline |
+| Distilled (1k, MCTS-25) | 65% | 154 games/sec | +7% no search |
+| **Distilled (10k, MCTS-50)** | **71.7%** | 154 games/sec | **+13.7% from BC!** |
+| PPO-Argentum | 72% | ~150 games/sec | Previous best raw |
+| Distilled + MCTS-25 | 98% | 1 game/sec | Near-perfect |
 
 **Key Findings**:
-1. **Greedy rollouts >> random rollouts**: 99% vs 84% against Greedy opponent
-2. **Neural policy prior helps**: Beats vanilla MCTS at equal sims (62% vs 50%)
-3. **Sweet spot**: MCTS-25 with greedy rollouts - 99% win rate in 1.14s/game
-4. **Value function still broken**: Must use rollouts, not neural value
+1. **Scaled distillation works!**: 10x data improved 65% → 71.7% (+6.7%)
+2. **Matches PPO**: Distilled network (71.7%) now matches PPO-Argentum (72%)!
+3. **155x speedup**: Raw network vs MCTS-augmented inference
+4. **Greedy rollouts >> random rollouts**: 99% vs 84% against Greedy opponent
+5. **Neural policy prior helps**: Beats vanilla MCTS at equal sims (62% vs 50%)
 
-**Remaining Options**:
-- Option 2: Train better value function (TD learning, MCTS value targets)
-- Option 3: Expert Iteration with working MCTS
-- Option 4: Policy distillation (train network to match MCTS output)
+**Next Steps**:
+- Expert Iteration: Use distilled network as new MCTS prior, generate more data
+- Larger network: Try 512 hidden dim, 6 blocks
+- More data: 50k games could push further
 
 ---
 
@@ -374,11 +382,11 @@ reward = (
 
 | Metric | Current Best | Target | Stretch |
 |--------|--------------|--------|---------|
-| Win Rate vs Greedy (raw) | 59% (PPO-Argentum) | 75% | 85% |
+| Win Rate vs Greedy (raw) | **71.7%** (Distilled 10k) | 75% | 85% |
 | Win Rate vs Greedy (MCTS) | **99%** (Neural MCTS-25 greedy) | 80% ✅ | 85% ✅ |
 | Win Rate vs MCTS-100 | **62%** (Neural MCTS-100) | 60% ✅ | 70% |
 
-*Note: Greedy rollouts massively outperform random (99% vs 86%). Neural policy prior beats vanilla MCTS at equal sims (62%).*
+*Note: Distillation improved raw network from 58% → 71.7%. Now matches PPO-Argentum (72%)! MCTS-augmented achieves 98%. 155x speedup with raw network.*
 
 ---
 
@@ -386,8 +394,8 @@ reward = (
 
 ### Existing Assets
 
-- **Models**: PPO-Argentum (72%), PPO-Flat (71%), BC (59%)
-- **Datasets**: MCTS-10k (900k samples), MCTS-100k (9M samples)
+- **Models**: Distilled-10k (71.7%), PPO-Argentum (72%), PPO-Flat (71%), Distilled-1k (65%), BC (59%)
+- **Datasets**: Distillation-10k (836k samples), MCTS-10k (900k samples), MCTS-100k (9M samples), Distillation-1k (85k samples)
 - **Infrastructure**: TensorBoard, benchmark suite, HuggingFace integration
 
 ### Key Files
@@ -395,9 +403,11 @@ reward = (
 | File | Purpose |
 |------|---------|
 | `python/essence_wars/agents/ppo.py` | PPO implementation |
-| `python/essence_wars/agents/alphazero.py` | MCTS + neural network |
+| `python/essence_wars/agents/neural_mcts.py` | Neural MCTS (Python) |
 | `python/scripts/train_ppo.py` | PPO training script |
 | `python/scripts/train_behavioral_cloning.py` | BC training script |
+| `python/scripts/generate_distillation_data.py` | MCTS self-play data generation |
+| `python/scripts/train_distilled_policy.py` | Policy distillation training |
 | `crates/cardgame/src/bots/mcts.rs` | Rust MCTS implementation |
 
 ### References

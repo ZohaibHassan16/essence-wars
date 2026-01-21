@@ -5,11 +5,14 @@ This script plays games using Neural MCTS (with greedy rollouts) and records
 the MCTS policies as training targets. The resulting data can be used to
 train a network that plays like MCTS without needing search at inference.
 
+Uses batched GPU inference for ~10-20x speedup over sequential evaluation.
+
 Usage:
     uv run python python/scripts/generate_distillation_data.py \
         --model models/bc_mcts_values.pt \
         --games 1000 \
         --sims 25 \
+        --batch-size 32 \
         --output data/datasets/distillation_1k.jsonl.gz
 """
 
@@ -75,6 +78,12 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=4,
         help="Number of residual blocks in model",
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=32,
+        help="Batch size for GPU inference (higher = faster, uses more memory)",
     )
     return parser.parse_args()
 
@@ -144,8 +153,10 @@ def main() -> None:
                 state = game.observe()
                 mask = game.action_mask()
 
-                # Get MCTS action and policy
-                action, mcts_policy = bot.get_action_with_game(game)
+                # Get MCTS action and policy (batched for GPU efficiency)
+                action, mcts_policy = bot.get_action_with_game_batched(
+                    game, batch_size=args.batch_size
+                )
 
                 # Record move
                 game_moves.append({

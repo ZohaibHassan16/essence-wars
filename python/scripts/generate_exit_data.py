@@ -6,6 +6,8 @@ This script generates games using neural-guided MCTS, where a trained
 neural network provides the policy prior and value estimation for MCTS.
 The resulting games should be higher quality than vanilla MCTS games.
 
+Uses batched GPU inference for ~10-20x speedup over sequential evaluation.
+
 Usage:
     # Generate 1000 games using BC model with 50 sims
     uv run python python/scripts/generate_exit_data.py \
@@ -13,6 +15,7 @@ Usage:
         --model-type bc \
         --games 1000 \
         --sims 50 \
+        --batch-size 32 \
         --output data/datasets/exit_iter1.jsonl.gz
 
     # Generate using PPO model
@@ -55,6 +58,7 @@ def generate_exit_games(
     output_path: str,
     device: str = "auto",
     seed: int = 42,
+    batch_size: int = 32,
 ) -> dict:
     """
     Generate ExIt training data using neural-guided MCTS.
@@ -67,6 +71,7 @@ def generate_exit_games(
         output_path: Output file path (.jsonl.gz)
         device: Device to use
         seed: Random seed
+        batch_size: Batch size for GPU inference (higher = faster)
 
     Returns:
         Statistics dict
@@ -139,8 +144,10 @@ def generate_exit_games(
                 obs = game.observe()
                 mask = game.action_mask()
 
-                # Get action and policy from neural MCTS
-                action, policy = bot.get_action_with_game(game)
+                # Get action and policy from neural MCTS (batched for GPU efficiency)
+                action, policy = bot.get_action_with_game_batched(
+                    game, batch_size=batch_size
+                )
 
                 # Record move
                 moves.append({
@@ -272,6 +279,12 @@ def main():
         default=42,
         help="Random seed",
     )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=32,
+        help="Batch size for GPU inference (higher = faster, uses more memory)",
+    )
 
     args = parser.parse_args()
 
@@ -300,6 +313,7 @@ def main():
         output_path=args.output,
         device=args.device,
         seed=args.seed,
+        batch_size=args.batch_size,
     )
 
     # Print summary

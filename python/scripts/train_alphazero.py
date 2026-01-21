@@ -84,6 +84,12 @@ def main():
         default=1.5,
         help="MCTS exploration constant",
     )
+    parser.add_argument(
+        "--mcts-batch-size",
+        type=int,
+        default=32,
+        help="Batch size for GPU inference during MCTS (higher = faster)",
+    )
 
     # Network parameters
     parser.add_argument(
@@ -226,6 +232,7 @@ def main():
         batch_size=args.batch_size,
         num_simulations=args.sims,
         c_puct=args.c_puct,
+        mcts_batch_size=args.mcts_batch_size,
         hidden_dim=args.hidden_dim,
         num_blocks=args.num_blocks,
         learning_rate=args.lr,
@@ -263,6 +270,7 @@ def main():
     print(f"  Iterations:      {config.num_iterations:,}")
     print(f"  Games/iteration: {config.games_per_iteration}")
     print(f"  MCTS sims/move:  {config.num_simulations}")
+    print(f"  MCTS batch size: {config.mcts_batch_size}")
     print(f"  Batch size:      {config.batch_size}")
     print(f"  Learning rate:   {config.learning_rate}")
     print(f"  Hidden dim:      {config.hidden_dim}")
