@@ -1,0 +1,34 @@
+name = "alphabeta_generalist"
+version = 1
+
+[default.greedy]
+own_life = 1.5810985565185547
+enemy_life_damage = 1.9648175239562988
+own_creature_attack = 1.0869898796081543
+own_creature_health = 0.7578222155570984
+enemy_creature_attack = -0.6122717261314392
+enemy_creature_health = -0.8838141560554504
+creature_count = 3.2313778400421143
+board_advantage = 1.6561516523361206
+cards_in_hand = 0.02184310555458069
+action_points = 0.03328270837664604
+keyword_guard = 2.9470293521881104
+keyword_lethal = 4.298524856567383
+keyword_lifesteal = 3.0013294219970703
+keyword_rush = 1.7615031003952026
+keyword_ranged = 1.8694753646850586
+keyword_piercing = 1.277019739151001
+keyword_shield = 4.0153889656066895
+keyword_quick = 1.0382733345031738
+keyword_ephemeral = -1.9465192556381226
+keyword_regenerate = 2.8100388050079346
+keyword_stealth = 3.01332950592041
+keyword_charge = 2.022581100463867
+keyword_frenzy = 2.9745736122131348
+keyword_volatile = 2.8901190757751465
+keyword_fortify = 3.395663022994995
+keyword_ward = 3.134112596511841
+win_bonus = 999.7509155273438
+lose_penalty = -999.8175048828125
+
+[deck_specific]

@@ -112,8 +112,6 @@ pub struct Evaluator<'a> {
     config: EvaluatorConfig,
     default_deck: Vec<CardId>,
     eval_count: u64,
-    /// Alpha-Beta depth (cached from config)
-    ab_depth: u32,
 }
 
 impl<'a> Evaluator<'a> {
@@ -137,18 +135,11 @@ impl<'a> Evaluator<'a> {
             CardId(4001), CardId(4001), // Berserker (3/2 Charge)
         ];
 
-        // Extract Alpha-Beta depth from config
-        let ab_depth = match &config.candidate_type {
-            CandidateType::AlphaBeta { depth } => *depth,
-            CandidateType::Greedy => 6, // default, not used
-        };
-
         Self {
             card_db,
             config,
             default_deck,
             eval_count: 0,
-            ab_depth,
         }
     }
 
