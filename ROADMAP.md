@@ -42,41 +42,6 @@
 
 ---
 
-## Phase 3: ML Infrastructure ✅
-
-*Make Essence Wars accessible to ML researchers.*
-
-- [x] Create PyO3 Python bindings
-- [x] Implement Gymnasium environment interface
-- [x] Publish `essence-wars` package to PyPI (`pip install essence-wars`)
-- [x] Train first proof-of-concept Generalist PPO agent 
-- [x] Validate Gym interface with standard RL libraries (Stable-Baselines3, CleanRL)
-- [x] Write researcher quickstart guide
-- [x] Design JRPG integration architecture (`docs/jrpg-architecture.md`)
-- [x] Define clean API layer for external game clients
-- [x] Build minimal Bevy 3D integration prototype (validates JRPG tech stack)
-- [x] Design analytics API for Glassbox Mode (decision trees, replay system)
-
----
-
-## Phase 4: Research Platform 🔄
-
-*Build the agent ecosystem and benchmarking infrastructure.*
-
-- [x] Implement AlphaZero agent
-- [x] Create Agent Roster (baseline agents: MCTS, PPO, AlphaZero)
-- [x] Build Elo leaderboard system for agent rankings
-- [x] Host trained models on Huggingface
-- [x] Create benchmark suite for reproducible comparisons
-- [x] Publish dataset of self-play games
-- [x] Write documentation for agent submission
-- [x] Add Learned Card Embeddings `observation_mode="flat"` vs `observation_mode="embedded"`  
-  - Research contribution: Compare both in a paper!
-- [x] Review and Improve Tutorial Notebooks 📓, add one or two using the new Agent Roster
-- [ ] Write Paper 1: "Essence Wars: A High-Performance Card Game Engine for RL Research (see `/home/chris/ai-cardgame/research-agenda.md` for reference)
-
----
-
 ## Phase 5A: Web Playable Game
 
 *Deploy interactive web experience on Huggingface Spaces.*
@@ -102,7 +67,6 @@
 - [ ] Add basic lore and faction identities
 - [ ] Commission or create card artwork (priority: core set)
 - [ ] Add flavor text to all cards
-- [ ] Set up community feedback system
 - [ ] Collect human play data for offline RL research
 
 ---
@@ -132,7 +96,6 @@
 - [ ] Create side quests and optional battles
 - [ ] Add achievements and completion tracking
 - [ ] Design boss encounters with unique mechanics
-- [ ] Launch essence-wars.ai dedicated website (if distinct from Huggingface)
 
 ---
 
@@ -147,23 +110,3 @@
 - [ ] Multi-agent research (team play, drafting, cooperative battles)
 - [ ] First expansion set (post-New Horizons Edition)
 - [ ] Research on narrative-aware agents (JRPG context influences strategy)
-- [ ] Community-created campaigns and modding support
-
----
-
-## Principles
-
-1. **Sequential focus**: Complete one phase before moving to the next
-2. **Research-first**: Every feature should serve the ML/AI research mission
-3. **Open source**: No monetization, community-driven development
-4. **Reproducibility**: All experiments versioned and documented
-5. **Accessibility**: Python-first for researchers, Rust for performance
-
----
-
-## Current Status
-
-**Phase**: 4 (Research Platform)
-**Version**: 0.7.0
-**Cards**: 140 core set
-**Next milestone**: Complete agent ecosystem

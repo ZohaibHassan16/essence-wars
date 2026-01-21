@@ -12,5 +12,5 @@ mod evaluator;
 mod experiment;
 
 pub use cmaes::{CmaEs, CmaEsConfig};
-pub use evaluator::{Evaluator, EvaluatorConfig, FitnessResult, TuningMode};
+pub use evaluator::{CandidateType, Evaluator, EvaluatorConfig, FitnessResult, TuningMode};
 pub use experiment::{deploy_weights, ExperimentConfig, ExperimentDir};

@@ -10,10 +10,23 @@ use std::time::{Duration, Instant};
 
 use rayon::prelude::*;
 
-use crate::bots::{Bot, GreedyBot, GreedyWeights, MctsBot, MctsConfig, RandomBot};
+use crate::bots::{AlphaBetaBot, AlphaBetaConfig, Bot, GreedyBot, GreedyWeights, MctsBot, MctsConfig, RandomBot};
 use crate::cards::CardDatabase;
 use crate::engine::GameEngine;
 use crate::types::{CardId, PlayerId};
+
+/// Type of bot to use as the candidate during tuning.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub enum CandidateType {
+    /// Use GreedyBot (single-ply lookahead) as the candidate
+    #[default]
+    Greedy,
+    /// Use AlphaBetaBot (multi-ply lookahead) as the candidate
+    AlphaBeta {
+        /// Search depth for Alpha-Beta
+        depth: u32,
+    },
+}
 
 /// Tuning mode for weight optimization.
 #[derive(Clone, Debug)]
@@ -36,6 +49,13 @@ pub enum TuningMode {
         /// Opponent's deck
         opponent_deck: Vec<CardId>,
     },
+    /// Optimize weights for Alpha-Beta bot against MCTS across matchups
+    AlphaBetaVsMcts {
+        /// List of (deck1, deck2) matchups to evaluate
+        matchups: Vec<(Vec<CardId>, Vec<CardId>)>,
+        /// Alpha-Beta search depth
+        ab_depth: u32,
+    },
 }
 
 /// Configuration for the evaluator.
@@ -45,6 +65,8 @@ pub struct EvaluatorConfig {
     pub games_per_eval: usize,
     /// Tuning mode
     pub mode: TuningMode,
+    /// Type of bot to use as the candidate
+    pub candidate_type: CandidateType,
     /// Base random seed
     pub seed: u64,
     /// Maximum actions per game (prevents infinite games)
@@ -60,6 +82,7 @@ impl Default for EvaluatorConfig {
         Self {
             games_per_eval: 50,
             mode: TuningMode::VsRandom,
+            candidate_type: CandidateType::default(),
             seed: 42,
             max_actions: 500,
             parallel: true,
@@ -89,6 +112,8 @@ pub struct Evaluator<'a> {
     config: EvaluatorConfig,
     default_deck: Vec<CardId>,
     eval_count: u64,
+    /// Alpha-Beta depth (cached from config)
+    ab_depth: u32,
 }
 
 impl<'a> Evaluator<'a> {
@@ -112,11 +137,18 @@ impl<'a> Evaluator<'a> {
             CardId(4001), CardId(4001), // Berserker (3/2 Charge)
         ];
 
+        // Extract Alpha-Beta depth from config
+        let ab_depth = match &config.candidate_type {
+            CandidateType::AlphaBeta { depth } => *depth,
+            CandidateType::Greedy => 6, // default, not used
+        };
+
         Self {
             card_db,
             config,
             default_deck,
             eval_count: 0,
+            ab_depth,
         }
     }
 
@@ -162,6 +194,9 @@ impl<'a> Evaluator<'a> {
             }
             TuningMode::Specialist { deck, opponent_deck } => {
                 self.evaluate_specialist(&greedy_weights, deck, opponent_deck)
+            }
+            TuningMode::AlphaBetaVsMcts { matchups, ab_depth } => {
+                self.evaluate_alphabeta_vs_mcts(&greedy_weights, matchups, *ab_depth)
             }
         };
 
@@ -913,6 +948,129 @@ impl<'a> Evaluator<'a> {
 
             let action = if current_player == PlayerId::PLAYER_ONE {
                 candidate_bot.select_action_with_engine(&engine)
+            } else {
+                mcts_bot.select_action_with_engine(&engine)
+            };
+
+            if engine.apply_action(action).is_err() {
+                break;
+            }
+            action_count += 1;
+        }
+
+        let won = engine.winner() == Some(PlayerId::PLAYER_ONE);
+        (won, engine.turn_number() as u32)
+    }
+
+    // ============================================================================
+    // Alpha-Beta vs MCTS evaluation methods
+    // ============================================================================
+
+    /// Evaluate Alpha-Beta with candidate weights against MCTS across matchups.
+    fn evaluate_alphabeta_vs_mcts(
+        &self,
+        weights: &GreedyWeights,
+        matchups: &[(Vec<CardId>, Vec<CardId>)],
+        ab_depth: u32,
+    ) -> (f64, f64, usize, f64) {
+        let games_per_matchup = (self.config.games_per_eval / matchups.len()).max(1);
+        let card_db = self.card_db;
+        let max_actions = self.config.max_actions;
+        let base_seed = self.config.seed.wrapping_add(self.eval_count * 100000);
+        let mcts_sims = self.config.mcts_sims;
+
+        let mut total_wins = 0;
+        let mut total_games = 0;
+        let mut total_turns = 0u32;
+
+        if self.config.parallel {
+            // Process all matchups in parallel
+            let results: Vec<_> = matchups.par_iter().enumerate().map(|(matchup_idx, (deck1, deck2))| {
+                let matchup_seed = base_seed.wrapping_add((matchup_idx * 10000) as u64);
+
+                // Run games for this matchup
+                let game_results: Vec<(bool, u32)> = (0..games_per_matchup).into_par_iter().map(|i| {
+                    let seed = matchup_seed.wrapping_add(i as u64);
+                    Self::run_alphabeta_vs_mcts_static(
+                        card_db, weights, deck1, deck2, seed, max_actions, ab_depth, mcts_sims
+                    )
+                }).collect();
+
+                game_results
+            }).collect();
+
+            // Aggregate results
+            for game_results in results {
+                total_wins += game_results.iter().filter(|(won, _)| *won).count();
+                total_turns += game_results.iter().map(|(_, t)| t).sum::<u32>();
+                total_games += game_results.len();
+            }
+        } else {
+            // Sequential evaluation
+            for (matchup_idx, (deck1, deck2)) in matchups.iter().enumerate() {
+                let matchup_seed = base_seed.wrapping_add((matchup_idx * 10000) as u64);
+
+                for i in 0..games_per_matchup {
+                    let seed = matchup_seed.wrapping_add(i as u64);
+                    let (won, turns) = Self::run_alphabeta_vs_mcts_static(
+                        card_db, weights, deck1, deck2, seed, max_actions, ab_depth, mcts_sims
+                    );
+                    if won { total_wins += 1; }
+                    total_turns += turns;
+                    total_games += 1;
+                }
+            }
+        }
+
+        let win_rate = total_wins as f64 / total_games as f64;
+        let avg_turns = total_turns as f64 / total_games as f64;
+        // Fitness is simply win rate * 100 for Alpha-Beta tuning
+        let fitness = win_rate * 100.0;
+
+        (fitness, win_rate, total_games, avg_turns)
+    }
+
+    /// Run a single game: Alpha-Beta (candidate) vs MCTS (opponent).
+    fn run_alphabeta_vs_mcts_static(
+        card_db: &CardDatabase,
+        weights: &GreedyWeights,
+        deck1: &[CardId],
+        deck2: &[CardId],
+        seed: u64,
+        max_actions: usize,
+        ab_depth: u32,
+        mcts_sims: u32,
+    ) -> (bool, u32) {
+        // Create Alpha-Beta bot with candidate weights
+        let mut bot_weights = crate::bots::BotWeights::new("tuning_candidate");
+        bot_weights.default.greedy = weights.clone();
+        let mut ab_bot = AlphaBetaBot::with_config_and_weights(
+            card_db,
+            AlphaBetaConfig::with_depth(ab_depth),
+            &bot_weights,
+            seed,
+        );
+
+        // Create MCTS bot as opponent
+        let mcts_config = MctsConfig {
+            simulations: mcts_sims,
+            exploration: 1.414,
+            max_rollout_depth: 50,
+            parallel_trees: 1,
+            leaf_rollouts: 1,
+        };
+        let mut mcts_bot = MctsBot::with_config(card_db, mcts_config, seed.wrapping_add(1000));
+
+        // Create and start game
+        let mut engine = GameEngine::new(card_db);
+        engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
+
+        let mut action_count = 0;
+        while !engine.is_game_over() && action_count < max_actions {
+            let current_player = engine.current_player();
+
+            let action = if current_player == PlayerId::PLAYER_ONE {
+                ab_bot.select_action_with_engine(&engine)
             } else {
                 mcts_bot.select_action_with_engine(&engine)
             };

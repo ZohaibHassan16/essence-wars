@@ -37,8 +37,13 @@ struct Args {
     /// - generalist: Train across all deck matchups (vs Random/Greedy/MCTS)
     /// - specialist: Train for specific deck matchup (requires --deck and --opponent)
     /// - faction-specialist: Train for a faction (requires --faction)
+    /// - alphabeta: Train weights for Alpha-Beta bot vs MCTS (uses --ab-depth)
     #[arg(long, default_value = "generalist")]
     mode: String,
+
+    /// Alpha-Beta search depth for alphabeta mode
+    #[arg(long, default_value = "6")]
+    ab_depth: u32,
 
     /// Faction for faction-specialist mode: argentum, symbiote, obsidion
     #[arg(long, requires_if("faction-specialist", "mode"))]
@@ -237,8 +242,22 @@ fn main() {
             println!("  Total games per evaluation: {}", args.games);
             TuningMode::Generalist { matchups }
         }
+        "alphabeta" => {
+            // Use all deck combinations for Alpha-Beta tuning
+            let matchups = create_generalist_matchups(&deck_registry, &card_db);
+            if matchups.is_empty() {
+                eprintln!("No valid matchups found for alphabeta mode");
+                process::exit(1);
+            }
+            println!("Alpha-Beta mode:");
+            println!("  {} deck matchups", matchups.len());
+            println!("  Alpha-Beta depth: {}", args.ab_depth);
+            println!("  Testing vs MCTS-{}", args.mcts_sims);
+            println!("  Total games per evaluation: {}", args.games);
+            TuningMode::AlphaBetaVsMcts { matchups, ab_depth: args.ab_depth }
+        }
         _ => {
-            eprintln!("Unknown mode: {}. Available modes: generalist, specialist, faction-specialist", args.mode);
+            eprintln!("Unknown mode: {}. Available modes: generalist, specialist, faction-specialist, alphabeta", args.mode);
             process::exit(1);
         }
     };
@@ -247,6 +266,7 @@ fn main() {
     let eval_config = EvaluatorConfig {
         games_per_eval: args.games,
         mode: tuning_mode,
+        candidate_type: cardgame::tuning::CandidateType::default(),
         seed: args.seed,
         max_actions: 500,
         parallel: args.parallel,
