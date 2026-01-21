@@ -58,6 +58,7 @@ fn run_single_game_parallel(
         &config.bot1_type,
         config.weights1.as_ref(),
         &config.mcts_config,
+        &config.alphabeta_config,
         seeds.bot1,
     );
     let mut bot2 = create_bot(
@@ -65,6 +66,7 @@ fn run_single_game_parallel(
         &config.bot2_type,
         config.weights2.as_ref(),
         &config.mcts_config,
+        &config.alphabeta_config,
         seeds.bot2,
     );
 
@@ -187,6 +189,7 @@ fn run_single_game_sequential(
         &config.bot1_type,
         config.weights1.as_ref(),
         &config.mcts_config,
+        &config.alphabeta_config,
         seeds.bot1,
     );
     let mut bot2 = create_bot(
@@ -194,6 +197,7 @@ fn run_single_game_sequential(
         &config.bot2_type,
         config.weights2.as_ref(),
         &config.mcts_config,
+        &config.alphabeta_config,
         seeds.bot2,
     );
 

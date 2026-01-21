@@ -2,7 +2,7 @@
 //!
 //! Provides configuration types for running matches between bots.
 
-use crate::bots::{BotType, BotWeights, MctsConfig};
+use crate::bots::{AlphaBetaConfig, BotType, BotWeights, MctsConfig};
 use crate::core::state::GameMode;
 use crate::types::CardId;
 
@@ -27,6 +27,8 @@ pub struct MatchConfig {
     pub seed: u64,
     /// MCTS configuration
     pub mcts_config: MctsConfig,
+    /// Alpha-Beta configuration
+    pub alphabeta_config: AlphaBetaConfig,
     /// Whether to show progress during execution
     pub show_progress: bool,
     /// Game mode (Attrition or EssenceDuel)
@@ -53,6 +55,7 @@ impl MatchConfig {
             games,
             seed,
             mcts_config: MctsConfig::default(),
+            alphabeta_config: AlphaBetaConfig::default(),
             show_progress: false,
             game_mode: GameMode::default(),
         }
@@ -79,6 +82,12 @@ impl MatchConfig {
     /// Set MCTS configuration.
     pub fn with_mcts_config(mut self, config: MctsConfig) -> Self {
         self.mcts_config = config;
+        self
+    }
+
+    /// Set Alpha-Beta configuration.
+    pub fn with_alphabeta_config(mut self, config: AlphaBetaConfig) -> Self {
+        self.alphabeta_config = config;
         self
     }
 

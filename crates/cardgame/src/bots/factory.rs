@@ -125,8 +125,9 @@ impl BotType {
 /// # Arguments
 /// * `card_db` - Card database for greedy/mcts evaluation
 /// * `bot_type` - The type of bot to create
-/// * `weights` - Optional custom weights (used by Greedy and MCTS)
+/// * `weights` - Optional custom weights (used by Greedy, MCTS, and Alpha-Beta)
 /// * `mcts_config` - Configuration for MCTS bots
+/// * `alphabeta_config` - Configuration for Alpha-Beta bots
 /// * `seed` - Random seed for this bot
 ///
 /// # Returns
@@ -136,6 +137,7 @@ pub fn create_bot<'a>(
     bot_type: &BotType,
     weights: Option<&BotWeights>,
     mcts_config: &MctsConfig,
+    alphabeta_config: &AlphaBetaConfig,
     seed: u64,
 ) -> Box<dyn Bot + 'a> {
     match bot_type {
@@ -147,11 +149,11 @@ pub fn create_bot<'a>(
         BotType::AlphaBeta => match weights {
             Some(w) => Box::new(AlphaBetaBot::with_config_and_weights(
                 card_db,
-                AlphaBetaConfig::default(),
+                alphabeta_config.clone(),
                 w,
                 seed,
             )),
-            None => Box::new(AlphaBetaBot::new(card_db, seed)),
+            None => Box::new(AlphaBetaBot::with_config(card_db, alphabeta_config.clone(), seed)),
         },
         BotType::Mcts | BotType::AgentSpecialist(_) | BotType::AgentGeneralist => match weights {
             Some(w) => Box::new(MctsBot::with_config_and_weights(

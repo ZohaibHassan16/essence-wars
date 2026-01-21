@@ -215,11 +215,13 @@ impl<'a> DiagnosticRunner<'a> {
 
     /// Run a single diagnostic game with full data collection.
     fn run_diagnostic_game(&self, config: &DiagnosticConfig, seeds: GameSeeds) -> GameDiagnostics {
+        let alphabeta_config = crate::bots::AlphaBetaConfig::default();
         let mut bot1 = create_bot(
             self.card_db,
             &config.bot1_type,
             None,
             &config.mcts_config,
+            &alphabeta_config,
             seeds.bot1,
         );
         let mut bot2 = create_bot(
@@ -227,6 +229,7 @@ impl<'a> DiagnosticRunner<'a> {
             &config.bot2_type,
             None,
             &config.mcts_config,
+            &alphabeta_config,
             seeds.bot2,
         );
 

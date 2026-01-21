@@ -19,7 +19,7 @@ use cardgame::arena::{
     load_deck, run_match_parallel, run_match_sequential, validate_faction_deck_binding,
     ActionLogger, MatchConfig, SequentialConfig,
 };
-use cardgame::bots::{BotType, MctsConfig};
+use cardgame::bots::{AlphaBetaConfig, BotType, MctsConfig};
 use cardgame::cards::CardDatabase;
 use cardgame::core::state::GameMode;
 use cardgame::decks::DeckRegistry;
@@ -109,6 +109,10 @@ struct Args {
     /// Number of parallel rollouts per MCTS leaf (1 = sequential)
     #[arg(long, default_value = "1")]
     mcts_rollouts: u32,
+
+    /// Alpha-Beta search depth (plies)
+    #[arg(long, default_value = "6")]
+    ab_depth: u32,
 
     /// Enable invariant checking after every action (forces sequential mode, slower)
     #[arg(long)]
@@ -354,12 +358,20 @@ fn main() {
         leaf_rollouts: args.mcts_rollouts,
     };
 
+    // Create Alpha-Beta config
+    let alphabeta_config = AlphaBetaConfig::with_depth(args.ab_depth);
+
     // Print MCTS config if using MCTS
     if bot1_type.uses_mcts() || bot2_type.uses_mcts() {
         println!(
             "MCTS: {} sims x {} trees x {} rollouts/leaf",
             mcts_config.simulations, mcts_config.parallel_trees, mcts_config.leaf_rollouts
         );
+    }
+
+    // Print Alpha-Beta config if using Alpha-Beta
+    if bot1_type == BotType::AlphaBeta || bot2_type == BotType::AlphaBeta {
+        println!("Alpha-Beta: depth {}", alphabeta_config.max_depth);
     }
 
     // Parse game mode
@@ -381,6 +393,7 @@ fn main() {
         .with_weights1(weights1)
         .with_weights2(weights2)
         .with_mcts_config(mcts_config)
+        .with_alphabeta_config(alphabeta_config)
         .with_progress(args.progress)
         .with_game_mode(game_mode);
 

@@ -284,11 +284,13 @@ impl<'a> ValidationExecutor<'a> {
         seeds: GameSeeds,
     ) -> (Option<PlayerId>, u32, GameDiagnosticData) {
         // Create MCTS bots using the factory
+        let alphabeta_config = crate::bots::AlphaBetaConfig::default();
         let mut bot1 = create_bot(
             self.card_db,
             &BotType::Mcts,
             weights1,
             &self.mcts_config,
+            &alphabeta_config,
             seeds.bot1,
         );
         let mut bot2 = create_bot(
@@ -296,6 +298,7 @@ impl<'a> ValidationExecutor<'a> {
             &BotType::Mcts,
             weights2,
             &self.mcts_config,
+            &alphabeta_config,
             seeds.bot2,
         );
 
