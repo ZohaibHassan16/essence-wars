@@ -7,6 +7,7 @@ mod creatures;
 mod crystal_nodes;
 mod lighting;
 pub mod meshes;
+pub mod parallax_material;
 mod supports;
 
 pub use board::BoardPlugin;
@@ -15,6 +16,7 @@ pub use combat::CombatPlugin;
 pub use creatures::{Creature3D, CreaturePlugin};
 pub use crystal_nodes::CrystalNodePlugin;
 pub use lighting::LightingPlugin;
+pub use parallax_material::{CardTextureCache, ParallaxCardMaterial, ParallaxMaterialPlugin};
 pub use supports::{Support3D, SupportPlugin};
 
 use bevy::prelude::*;
@@ -30,6 +32,7 @@ impl Plugin for RenderingPlugin {
             .add_plugins(CreaturePlugin)
             .add_plugins(CrystalNodePlugin)
             .add_plugins(LightingPlugin)
+            .add_plugins(ParallaxMaterialPlugin)
             .add_plugins(SupportPlugin);
     }
 }

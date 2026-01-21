@@ -8,7 +8,7 @@ use std::time::Instant;
 
 use bevy::prelude::*;
 use cardgame::actions::Action;
-use cardgame::bots::{BotDecision, BotType, IntrospectionConfig, MctsConfig, PolicyOutput, PolicySource, create_bot};
+use cardgame::bots::{AlphaBetaConfig, BotDecision, BotType, IntrospectionConfig, MctsConfig, PolicyOutput, PolicySource, create_bot};
 use cardgame::client_api::GameEvent;
 use cardgame::types::PlayerId;
 
@@ -88,6 +88,8 @@ pub struct BotConfig {
     pub player2_type: BotType,
     /// MCTS configuration (shared)
     pub mcts_config: MctsConfig,
+    /// Alpha-beta configuration (shared)
+    pub alphabeta_config: AlphaBetaConfig,
     /// Introspection configuration
     pub introspection_config: IntrospectionConfig,
     /// Random seed for bot decisions
@@ -106,6 +108,7 @@ impl Default for BotConfig {
                 parallel_trees: 1,  // Single-threaded for WASM compatibility
                 leaf_rollouts: 1,
             },
+            alphabeta_config: AlphaBetaConfig::default(),
             introspection_config: IntrospectionConfig::full(),
             bot_seed: 42,
         }
@@ -266,6 +269,7 @@ fn execute_ai_turn(
             bot_type,
             None, // Use default weights
             &bot_config.mcts_config,
+            &bot_config.alphabeta_config,
             player_seed,
         );
 
@@ -292,7 +296,7 @@ fn execute_ai_turn(
     // Determine policy source from bot type
     let policy_source = match bot_type {
         BotType::Random => PolicySource::Random,
-        BotType::Greedy => PolicySource::Greedy,
+        BotType::Greedy | BotType::AlphaBeta => PolicySource::Greedy,
         BotType::Mcts | BotType::AgentSpecialist(_) | BotType::AgentGeneralist => PolicySource::Mcts,
     };
 

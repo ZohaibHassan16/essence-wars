@@ -208,6 +208,207 @@ pub fn create_detailed_gem_mesh(width: f32, height: f32, bevel: f32) -> Mesh {
     mesh
 }
 
+/// Create a gem mesh with a flat front face for displaying card art.
+///
+/// This creates a crystal-like shape with a prominent front face that has proper
+/// UV mapping (0-1 range) for the card texture. The parallax effect will work
+/// on this front face.
+///
+/// # Parameters
+/// - `width`: Width of the front face (X axis)
+/// - `height`: Height of the front face (Y axis)
+/// - `depth`: Depth of the gem from front to back (Z axis)
+/// - `bevel`: Bevel amount for the crystal edges (0.0-0.5)
+pub fn create_card_gem_mesh(width: f32, height: f32, depth: f32, bevel: f32) -> Mesh {
+    let half_w = width / 2.0;
+    let half_h = height / 2.0;
+    let front_z = depth / 2.0;
+    let back_z = -depth / 2.0;
+
+    // Bevel offsets
+    let bevel_offset_w = half_w * bevel;
+    let bevel_offset_h = half_h * bevel;
+    let bevel_depth = depth * bevel * 0.5;
+
+    let mut positions: Vec<[f32; 3]> = Vec::new();
+    let mut normals: Vec<[f32; 3]> = Vec::new();
+    let mut uvs: Vec<[f32; 2]> = Vec::new();
+    let mut indices: Vec<u32> = Vec::new();
+
+    // ========== FRONT FACE (main card display area) ==========
+    // Front face corners (slightly inset from full size for bevel)
+    let front_inner_corners = [
+        Vec3::new(-half_w + bevel_offset_w, -half_h + bevel_offset_h, front_z - bevel_depth),  // bottom-left
+        Vec3::new(half_w - bevel_offset_w, -half_h + bevel_offset_h, front_z - bevel_depth),   // bottom-right
+        Vec3::new(half_w - bevel_offset_w, half_h - bevel_offset_h, front_z - bevel_depth),    // top-right
+        Vec3::new(-half_w + bevel_offset_w, half_h - bevel_offset_h, front_z - bevel_depth),   // top-left
+    ];
+
+    // Front edge vertices (on the very front plane)
+    let front_edge = [
+        Vec3::new(-half_w, -half_h, front_z),  // bottom-left
+        Vec3::new(half_w, -half_h, front_z),   // bottom-right
+        Vec3::new(half_w, half_h, front_z),    // top-right
+        Vec3::new(-half_w, half_h, front_z),   // top-left
+    ];
+
+    let back_point = Vec3::new(0.0, 0.0, back_z);
+
+    // Main front quad with proper UV mapping (0-1 range)
+    add_quad_to_mesh(
+        front_inner_corners[0], front_inner_corners[1],
+        front_inner_corners[2], front_inner_corners[3],
+        [0.0, 1.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0],
+        &mut positions, &mut normals, &mut uvs, &mut indices,
+    );
+
+    // Small edge UV values (bevels and sides don't display card art)
+    let edge_uv = [[0.0, 0.5], [0.5, 0.5], [0.5, 0.0], [0.0, 0.0]];
+
+    // ========== FRONT BEVEL EDGES ==========
+    // Bottom bevel
+    add_quad_to_mesh(
+        front_edge[0], front_edge[1], front_inner_corners[1], front_inner_corners[0],
+        edge_uv[0], edge_uv[1], edge_uv[2], edge_uv[3],
+        &mut positions, &mut normals, &mut uvs, &mut indices,
+    );
+
+    // Right bevel
+    add_quad_to_mesh(
+        front_edge[1], front_edge[2], front_inner_corners[2], front_inner_corners[1],
+        edge_uv[0], edge_uv[1], edge_uv[2], edge_uv[3],
+        &mut positions, &mut normals, &mut uvs, &mut indices,
+    );
+
+    // Top bevel
+    add_quad_to_mesh(
+        front_edge[2], front_edge[3], front_inner_corners[3], front_inner_corners[2],
+        edge_uv[0], edge_uv[1], edge_uv[2], edge_uv[3],
+        &mut positions, &mut normals, &mut uvs, &mut indices,
+    );
+
+    // Left bevel
+    add_quad_to_mesh(
+        front_edge[3], front_edge[0], front_inner_corners[0], front_inner_corners[3],
+        edge_uv[0], edge_uv[1], edge_uv[2], edge_uv[3],
+        &mut positions, &mut normals, &mut uvs, &mut indices,
+    );
+
+    // ========== SIDE FACES ==========
+    let tri_uv = [[0.0, 0.5], [0.5, 0.0], [1.0, 0.5]];
+
+    // Bottom side
+    add_triangle_to_mesh(
+        front_edge[0], back_point, front_edge[1],
+        tri_uv[0], tri_uv[1], tri_uv[2],
+        &mut positions, &mut normals, &mut uvs, &mut indices,
+    );
+
+    // Right side
+    add_triangle_to_mesh(
+        front_edge[1], back_point, front_edge[2],
+        tri_uv[0], tri_uv[1], tri_uv[2],
+        &mut positions, &mut normals, &mut uvs, &mut indices,
+    );
+
+    // Top side
+    add_triangle_to_mesh(
+        front_edge[2], back_point, front_edge[3],
+        tri_uv[0], tri_uv[1], tri_uv[2],
+        &mut positions, &mut normals, &mut uvs, &mut indices,
+    );
+
+    // Left side
+    add_triangle_to_mesh(
+        front_edge[3], back_point, front_edge[0],
+        tri_uv[0], tri_uv[1], tri_uv[2],
+        &mut positions, &mut normals, &mut uvs, &mut indices,
+    );
+
+    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList, default());
+    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
+    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
+    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+    mesh.insert_indices(Indices::U32(indices));
+
+    mesh
+}
+
+/// Helper to add a quad (two triangles) to mesh buffers.
+#[allow(clippy::too_many_arguments)]
+fn add_quad_to_mesh(
+    v0: Vec3, v1: Vec3, v2: Vec3, v3: Vec3,
+    uv0: [f32; 2], uv1: [f32; 2], uv2: [f32; 2], uv3: [f32; 2],
+    positions: &mut Vec<[f32; 3]>,
+    normals: &mut Vec<[f32; 3]>,
+    uvs: &mut Vec<[f32; 2]>,
+    indices: &mut Vec<u32>,
+) {
+    let edge1 = v1 - v0;
+    let edge2 = v3 - v0;
+    let normal = edge1.cross(edge2).normalize();
+    let n = [normal.x, normal.y, normal.z];
+
+    let base_idx = positions.len() as u32;
+
+    // First triangle (v0, v1, v2)
+    positions.push([v0.x, v0.y, v0.z]);
+    positions.push([v1.x, v1.y, v1.z]);
+    positions.push([v2.x, v2.y, v2.z]);
+    normals.push(n);
+    normals.push(n);
+    normals.push(n);
+    uvs.push(uv0);
+    uvs.push(uv1);
+    uvs.push(uv2);
+    indices.push(base_idx);
+    indices.push(base_idx + 1);
+    indices.push(base_idx + 2);
+
+    // Second triangle (v0, v2, v3)
+    positions.push([v0.x, v0.y, v0.z]);
+    positions.push([v2.x, v2.y, v2.z]);
+    positions.push([v3.x, v3.y, v3.z]);
+    normals.push(n);
+    normals.push(n);
+    normals.push(n);
+    uvs.push(uv0);
+    uvs.push(uv2);
+    uvs.push(uv3);
+    indices.push(base_idx + 3);
+    indices.push(base_idx + 4);
+    indices.push(base_idx + 5);
+}
+
+/// Helper to add a triangle to mesh buffers.
+fn add_triangle_to_mesh(
+    v0: Vec3, v1: Vec3, v2: Vec3,
+    uv0: [f32; 2], uv1: [f32; 2], uv2: [f32; 2],
+    positions: &mut Vec<[f32; 3]>,
+    normals: &mut Vec<[f32; 3]>,
+    uvs: &mut Vec<[f32; 2]>,
+    indices: &mut Vec<u32>,
+) {
+    let edge1 = v1 - v0;
+    let edge2 = v2 - v0;
+    let normal = edge1.cross(edge2).normalize();
+    let n = [normal.x, normal.y, normal.z];
+
+    let base_idx = positions.len() as u32;
+    positions.push([v0.x, v0.y, v0.z]);
+    positions.push([v1.x, v1.y, v1.z]);
+    positions.push([v2.x, v2.y, v2.z]);
+    normals.push(n);
+    normals.push(n);
+    normals.push(n);
+    uvs.push(uv0);
+    uvs.push(uv1);
+    uvs.push(uv2);
+    indices.push(base_idx);
+    indices.push(base_idx + 1);
+    indices.push(base_idx + 2);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -224,5 +425,12 @@ mod tests {
         let mesh = create_detailed_gem_mesh(1.0, 1.5, 0.3);
         // Should have more faces than simple gem
         assert!(mesh.attribute(Mesh::ATTRIBUTE_POSITION).is_some());
+    }
+
+    #[test]
+    fn test_card_gem_mesh_creation() {
+        let mesh = create_card_gem_mesh(0.8, 1.0, 0.4, 0.1);
+        assert!(mesh.attribute(Mesh::ATTRIBUTE_POSITION).is_some());
+        assert!(mesh.attribute(Mesh::ATTRIBUTE_UV_0).is_some());
     }
 }
