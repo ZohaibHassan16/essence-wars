@@ -532,6 +532,155 @@ class VectorizedEssenceWars:
         return self._episode_lengths.copy()
 
 
+class VectorizedEssenceWarsWithShaping(VectorizedEssenceWars):
+    """
+    Vectorized environment with dense reward shaping.
+
+    Adds intermediate rewards based on:
+    - Life differential changes
+    - Board presence (creature count)
+    - Damage dealt to opponent
+
+    The shaped reward is: terminal_reward + shaping_scale * intermediate_reward
+
+    Tensor indices (from tensor.rs):
+    - Index 6: Player 0 life (normalized by 20)
+    - Index 81: Player 1 life (normalized by 20)
+    - Creature slots: P0 starts at 21, P1 starts at 96
+      - Each slot is 10 floats, first float is "occupied" (1.0 or 0.0)
+      - 5 creature slots per player
+
+    Args:
+        num_envs: Number of parallel environments
+        deck1: Deck name for player 1
+        deck2: Deck name for player 2
+        game_mode: "attrition" or "essence_duel"
+        shaping_scale: Multiplier for shaped rewards (default: 0.01)
+        life_weight: Weight for life differential reward (default: 1.0)
+        board_weight: Weight for board control reward (default: 0.5)
+    """
+
+    # Tensor indices for reward computation
+    P0_LIFE_IDX = 6
+    P1_LIFE_IDX = 81
+    P0_CREATURE_START = 21
+    P1_CREATURE_START = 96
+    CREATURE_SLOT_SIZE = 10
+    NUM_CREATURE_SLOTS = 5
+
+    def __init__(
+        self,
+        num_envs: int = 64,
+        deck1: str = "artificer_tokens",
+        deck2: str = "broodmother_swarm",
+        game_mode: str = "attrition",
+        shaping_scale: float = 0.01,
+        life_weight: float = 1.0,
+        board_weight: float = 0.5,
+    ) -> None:
+        super().__init__(num_envs, deck1, deck2, game_mode)
+
+        self.shaping_scale = shaping_scale
+        self.life_weight = life_weight
+        self.board_weight = board_weight
+
+        # Track previous state for computing deltas
+        self._prev_observations: np.ndarray | None = None
+
+    def _count_creatures(self, obs: np.ndarray, player: int) -> np.ndarray:
+        """Count number of creatures on board for given player across all envs."""
+        if player == 0:
+            start = self.P0_CREATURE_START
+        else:
+            start = self.P1_CREATURE_START
+
+        # Sum the "occupied" flag (first float in each creature slot)
+        counts = np.zeros(self.num_envs, dtype=np.float32)
+        for slot in range(self.NUM_CREATURE_SLOTS):
+            idx = start + slot * self.CREATURE_SLOT_SIZE
+            counts += obs[:, idx]  # occupied flag is 0.0 or 1.0
+
+        return counts
+
+    def _compute_shaped_reward(
+        self,
+        prev_obs: np.ndarray,
+        curr_obs: np.ndarray,
+    ) -> np.ndarray:
+        """
+        Compute shaped intermediate reward based on state changes.
+
+        Returns reward from Player 0's perspective.
+        """
+        # Life differential change
+        # Higher is better for P0 when P0 life goes up or P1 life goes down
+        prev_life_diff = prev_obs[:, self.P0_LIFE_IDX] - prev_obs[:, self.P1_LIFE_IDX]
+        curr_life_diff = curr_obs[:, self.P0_LIFE_IDX] - curr_obs[:, self.P1_LIFE_IDX]
+        life_reward = (curr_life_diff - prev_life_diff) * self.life_weight
+
+        # Board control change
+        # Higher is better when P0 gains creatures or P1 loses creatures
+        prev_board_diff = (
+            self._count_creatures(prev_obs, 0) - self._count_creatures(prev_obs, 1)
+        )
+        curr_board_diff = (
+            self._count_creatures(curr_obs, 0) - self._count_creatures(curr_obs, 1)
+        )
+        board_reward = (curr_board_diff - prev_board_diff) * self.board_weight
+
+        return life_reward + board_reward
+
+    def reset(
+        self,
+        *,
+        seed: int | None = None,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Reset all environments and initialize state tracking."""
+        observations, action_masks = super().reset(seed=seed)
+        self._prev_observations = observations.copy()
+        return observations, action_masks
+
+    def step(
+        self,
+        actions: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Step all environments with shaped rewards.
+
+        Returns:
+            observations: Array of shape (num_envs, 326)
+            rewards: Shaped rewards = terminal + scale * intermediate
+            dones: Boolean array of shape (num_envs,)
+            action_masks: Array of shape (num_envs, 256)
+        """
+        # Get current observation before step (for done envs that will reset)
+        if self._prev_observations is None:
+            self._prev_observations = self._games.observe_batch()
+
+        # Execute step (this may auto-reset done envs)
+        observations, terminal_rewards, dones, action_masks = super().step(actions)
+
+        # Compute shaped reward from state change
+        # Note: For environments that are done, we use the final observation
+        # before reset. For ongoing games, we compare prev to current.
+        shaped_rewards = self._compute_shaped_reward(
+            self._prev_observations, observations
+        )
+
+        # Combine terminal and shaped rewards
+        # Terminal reward dominates (+1/-1), shaped adds small intermediate signal
+        rewards = terminal_rewards + self.shaping_scale * shaped_rewards
+
+        # For done environments, don't add shaping (terminal is enough)
+        # Reset environments have new observations, so shaping would be wrong
+        rewards = np.where(dones, terminal_rewards, rewards)
+
+        # Update previous observations for next step
+        self._prev_observations = observations.copy()
+
+        return observations, rewards, dones, action_masks
+
+
 def make_env(
     deck1: str = "artificer_tokens",
     deck2: str = "broodmother_swarm",

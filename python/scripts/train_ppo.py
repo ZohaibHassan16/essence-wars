@@ -201,6 +201,31 @@ def parse_args():
         help="Load checkpoint from path",
     )
 
+    # Reward shaping
+    parser.add_argument(
+        "--reward-shaping",
+        action="store_true",
+        help="Enable dense reward shaping (life differential + board control)",
+    )
+    parser.add_argument(
+        "--shaping-scale",
+        type=float,
+        default=0.01,
+        help="Scale factor for shaped rewards (default: 0.01)",
+    )
+    parser.add_argument(
+        "--life-weight",
+        type=float,
+        default=1.0,
+        help="Weight for life differential in shaped rewards (default: 1.0)",
+    )
+    parser.add_argument(
+        "--board-weight",
+        type=float,
+        default=0.5,
+        help="Weight for board control in shaped rewards (default: 0.5)",
+    )
+
     # Other
     parser.add_argument(
         "--seed",
@@ -249,6 +274,11 @@ def main():
         print(f"  Player deck:   {args.player_deck}")
     else:
         print(f"  Player:        generalist (all decks)")
+    if args.reward_shaping:
+        print(f"  Reward shaping: ENABLED")
+        print(f"    Scale:       {args.shaping_scale}")
+        print(f"    Life weight: {args.life_weight}")
+        print(f"    Board weight:{args.board_weight}")
     print("=" * 60)
 
     # Setup save path with faction/mode info
@@ -259,6 +289,8 @@ def main():
         if args.player_faction:
             mode_suffix = f"_{args.player_faction}"
         mode_suffix += f"_{args.observation_mode}"
+        if args.reward_shaping:
+            mode_suffix += "_shaped"
         save_path = Path(f"experiments/ppo/{timestamp}{mode_suffix}")
     else:
         save_path = Path(args.save_path)
@@ -302,6 +334,10 @@ def main():
         device=device,
         save_best=True,
         early_stopping_patience=args.early_stopping_patience,
+        use_reward_shaping=args.reward_shaping,
+        shaping_scale=args.shaping_scale,
+        life_weight=args.life_weight,
+        board_weight=args.board_weight,
     )
 
     # Create trainer

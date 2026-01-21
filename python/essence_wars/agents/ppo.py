@@ -23,7 +23,11 @@ import torch.optim as optim
 
 from essence_wars.agents.networks import EssenceWarsNetwork
 from essence_wars.agents.embeddings import create_network
-from essence_wars.env import EssenceWarsEnv, VectorizedEssenceWars
+from essence_wars.env import (
+    EssenceWarsEnv,
+    VectorizedEssenceWars,
+    VectorizedEssenceWarsWithShaping,
+)
 
 
 class RunningMeanStd:
@@ -132,6 +136,12 @@ class PPOConfig:
 
     # Observation normalization
     normalize_obs: bool = True  # Use running mean/std normalization
+
+    # Reward shaping (dense intermediate rewards)
+    use_reward_shaping: bool = False  # Enable dense reward shaping
+    shaping_scale: float = 0.01  # Scale factor for shaped rewards
+    life_weight: float = 1.0  # Weight for life differential reward
+    board_weight: float = 0.5  # Weight for board control reward
 
     # Opponent strategy (for single-agent training)
     opponent_type: str = "greedy"  # "greedy", "random", or "mixed"
@@ -399,11 +409,22 @@ class PPOTrainer:
     def _create_envs(self) -> VectorizedEssenceWars:
         """Create vectorized environments with current deck configuration."""
         deck1, deck2 = self._get_current_decks()
-        return VectorizedEssenceWars(
-            num_envs=self.config.num_envs,
-            deck1=deck1,
-            deck2=deck2,
-        )
+
+        if self.config.use_reward_shaping:
+            return VectorizedEssenceWarsWithShaping(
+                num_envs=self.config.num_envs,
+                deck1=deck1,
+                deck2=deck2,
+                shaping_scale=self.config.shaping_scale,
+                life_weight=self.config.life_weight,
+                board_weight=self.config.board_weight,
+            )
+        else:
+            return VectorizedEssenceWars(
+                num_envs=self.config.num_envs,
+                deck1=deck1,
+                deck2=deck2,
+            )
 
     def _maybe_cycle_decks(self) -> None:
         """Cycle to next deck pair if interval has elapsed (faction training only)."""

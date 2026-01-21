@@ -15,8 +15,10 @@ After extensive AlphaZero experimentation, we concluded that self-play from scra
 | Method | Win Rate vs Greedy | Compute | Status |
 |--------|-------------------|---------|--------|
 | PPO-Argentum | **72%** | 30 min | ✅ Best model |
+| Policy Distillation (10k) | **71.7%** | 13 hours data + 5 min train | ✅ Near-best |
 | PPO-Flat | 71% | 30 min | ✅ |
 | BC (MCTS-10k) | 59% | 12 min | ✅ |
+| Decision Transformer | 42.8% | 13 min | ❌ Failed |
 | AlphaZero (all variants) | 0-2% | 14+ hours | ❌ Failed |
 
 **New Goal**: Push beyond 72% using compute-efficient methods.
@@ -322,6 +324,50 @@ reward = (
 
 ---
 
+### Track E: Decision Transformer
+
+**Status**: ❌ Failed
+**Priority**: ⭐ Abandoned
+**Estimated Effort**: Low
+**Result**: 42.8% vs Greedy - worse than behavioral cloning
+
+#### Concept
+
+Treat RL as sequence modeling:
+- Predict actions conditioned on desired return
+- Train on offline data with standard supervised learning
+- At inference, condition on winning (return=+1)
+
+```
+Input: (return_1, state_1, action_1, return_2, state_2, action_2, ...)
+                                       ↓
+                             Causal Transformer
+                                       ↓
+                            Predict next action
+```
+
+#### Results
+
+| Configuration | vs Greedy | Notes |
+|---------------|-----------|-------|
+| DT (target=+1.0) | 42.8% | Aim to win |
+| DT (target=-1.0) | 31.5% | Aim to lose (conditioning works) |
+| DT vs Random | 83.5% | Reasonable baseline |
+
+#### Why It Failed
+
+1. **Sparse Rewards**: With only terminal +1/-1 rewards, return-to-go is constant throughout trajectory
+2. **Action Conditioning Hurts**: In games, positions are largely independent - best move depends on state, not action history
+3. **Data Inefficiency**: Same 10k games give 71.7% with distillation, only 42.8% with DT
+
+#### Conclusion
+
+Decision Transformer is not suitable for Essence Wars. The sparse reward structure and position-independent nature of game moves don't match DT's assumptions. Stick with policy distillation (71.7%).
+
+See `papers/decision-transformer.md` for full documentation.
+
+---
+
 ## Experiment Log
 
 | Date | Track | Experiment | Result | Notes |
@@ -352,12 +398,19 @@ reward = (
 | 2026-01-21 | A | ExIt iter 1: training | 54% policy acc | Much better policy matching |
 | 2026-01-21 | A | ExIt iter 1 vs Greedy | 70.4% | Only +0.6% vs distilled-10k |
 | 2026-01-21 | D | Large network (512h, 6b) | 65.8% | **Worse** - overfit heavily |
+| 2026-01-21 | E | Decision Transformer training | 43.5% val acc | 914k params, 13min |
+| 2026-01-21 | E | DT vs Greedy (R=+1) | **42.8%** | **Below BC (59%)** ❌ |
+| 2026-01-21 | E | DT vs Greedy (R=-1) | 31.5% | Conditioning works |
+| 2026-01-21 | E | DT vs Random | 83.5% | Reasonable baseline |
+| 2026-01-21 | D | Reward shaping (scale=0.01) | Collapsed to 0% | Scale too high |
+| 2026-01-21 | D | Reward shaping (scale=0.001) | Peak **71%** | +9% over baseline, then collapsed |
+| 2026-01-21 | D | PPO baseline (fixed deck) | Peak 62% | Also collapsed to 12.5% |
 
 ---
 
 ## Current Focus
 
-**Latest Update**: ExIt and larger network didn't help - 71.7% appears to be near the ceiling.
+**Latest Update**: Reward shaping shows promise - achieved 71% peak vs 62% baseline, but both collapsed.
 
 **Key Results**:
 | Configuration | vs Greedy | Params | Notes |
@@ -365,22 +418,27 @@ reward = (
 | Raw BC network | 58% | 808k | Baseline |
 | Distilled (1k, MCTS-25) | 65% | 808k | +7% no search |
 | **Distilled (10k, MCTS-50)** | **71.7%** | 808k | **Best raw network!** |
+| PPO + Reward Shaping | **71% peak** | ~800k | Best saved, then collapsed |
 | ExIt iteration 1 | 70.4% | 808k | No improvement |
 | Large network (512h, 6b) | 65.8% | 3.9M | Worse - overfit |
-| PPO-Argentum | 72% | ~800k | Reference |
+| PPO baseline (no shaping) | 62% peak | ~800k | Also collapsed |
+| Decision Transformer | 42.8% | 914k | Worse than BC |
 | Distilled + MCTS-25 | 98% | 808k | Near-perfect |
 
 **Key Findings**:
-1. **~72% is the ceiling for raw networks** - ExIt, larger networks, and more data all plateau here
-2. **Policy matching ≠ gameplay** - ExIt achieved 54% policy acc vs 45%, but gameplay barely improved
+1. **~72% is the ceiling for raw networks** - ExIt, larger networks, DT, and more data all plateau here
+2. **Reward shaping helps reach higher peaks** - 71% vs 62% baseline (+9%), but doesn't prevent collapse
+3. **Policy matching ≠ gameplay** - ExIt achieved 54% policy acc vs 45%, but gameplay barely improved
 3. **Network capacity isn't the bottleneck** - 5x larger network performed worse
 4. **MCTS-augmented achieves 98%** - The gap between raw (72%) and MCTS (98%) remains large
 5. **155x speedup** with raw network vs MCTS-augmented inference
+6. **Decision Transformer doesn't suit sparse rewards** - Return conditioning ineffective with only terminal rewards
 
 **Conclusions**:
 - The distilled network at 71.7% is likely near-optimal for this architecture
 - To push beyond 72%, we'd need fundamentally different approaches (better state representation, different architecture, etc.)
 - The current setup is good: fast raw network (72%) or slow high-quality (98% with MCTS)
+- Transformer approaches (Decision Transformer) don't help - game positions are largely independent
 
 ---
 

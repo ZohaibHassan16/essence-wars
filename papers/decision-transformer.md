@@ -157,7 +157,71 @@ def get_action(model, state, action_mask, history, target_return=1.0):
 | Date | Experiment | Result | Notes |
 |------|------------|--------|-------|
 | 2026-01-21 | Paper created | - | Starting implementation |
-| | | | |
+| 2026-01-21 | Model implemented | 914k params | d_model=128, n_layers=4, K=20 |
+| 2026-01-21 | Training on 10k MCTS data | 43.5% val acc | 50 epochs, 13min, best at epoch 45 |
+| 2026-01-21 | Eval vs Greedy (R=+1) | **42.8%** | Below behavioral cloning (59%) |
+| 2026-01-21 | Eval vs Greedy (R=-1) | 31.5% | Conditioning works (worse with lose target) |
+| 2026-01-21 | Eval vs Random | 83.5% | Reasonable baseline |
+
+---
+
+## Results
+
+### First Experiment: Baseline Decision Transformer
+
+**Configuration:**
+- d_model: 128
+- n_layers: 4
+- n_heads: 4
+- context_length: 20
+- Parameters: 914,432
+
+**Training:**
+- Dataset: 10k MCTS-50 games (20k trajectories, 836k steps)
+- Best validation accuracy: 43.5%
+- Best validation loss: 2.45
+- Training time: 13.2 minutes
+
+**Evaluation vs Greedy (500 games):**
+| Target Return | Win Rate |
+|---------------|----------|
+| +1.0 (aim to win) | 42.8% |
+| -1.0 (aim to lose) | 31.5% |
+
+**Evaluation vs Random (200 games):**
+| Target Return | Win Rate |
+|---------------|----------|
+| +1.0 (aim to win) | 83.5% |
+
+### Comparison to Other Approaches
+
+| Approach | vs Greedy | Notes |
+|----------|-----------|-------|
+| PPO | 72% | Best raw network |
+| Policy Distillation | 71.7% | From MCTS-50 |
+| ExIt Iteration 1 | 70.4% | Marginal improvement |
+| Behavioral Cloning | 59% | Basic imitation |
+| **Decision Transformer** | **42.8%** | Underperforms |
+| Random | ~5% | Baseline |
+
+### Analysis: Why Did DT Underperform?
+
+1. **Sparse Rewards Problem**: With only terminal rewards (+1/-1), the return-to-go is constant throughout each trajectory. The model learns "winning player actions" vs "losing player actions" but can't learn intermediate progress signals.
+
+2. **No State-Value Learning**: Unlike distillation which learns policy π(a|s), DT learns π(a|s,R,history). The history conditioning adds complexity without benefit for this game.
+
+3. **Context Window Limitation**: K=20 sees ~1/4 of average game. Winning patterns may require longer-range dependencies.
+
+4. **Action Conditioning Hurts**: DT predicts actions conditioned on past actions. In chess/card games, positions are largely independent - the best move depends on current state, not action history.
+
+5. **Data Efficiency**: The same 10k games that give 71.7% with distillation only give 42.8% with DT.
+
+### Potential Improvements
+
+1. **Use MCTS values as intermediate returns**: Instead of constant +1/-1, use MCTS value estimates at each step
+2. **Remove action conditioning**: Predict action from (return, state) only
+3. **Longer context**: Try K=50 or full game
+4. **Different architecture**: Consider state-only transformer without action/return interleaving
 
 ---
 
