@@ -7,6 +7,7 @@
 mod random;
 mod greedy;
 mod mcts;
+mod alphabeta;
 pub mod weights;
 pub mod factory;
 pub mod introspection;
@@ -14,6 +15,7 @@ pub mod introspection;
 pub use random::RandomBot;
 pub use greedy::GreedyBot;
 pub use mcts::{MctsBot, MctsConfig, MctsNode};
+pub use alphabeta::{AlphaBetaBot, AlphaBetaConfig, SearchStats};
 pub use weights::{BotWeights, GreedyWeights, WeightSet};
 pub use factory::{BotType, BotTypeParseError, create_bot, resolve_weights, resolve_weights_verbose, WeightResolutionError};
 pub use introspection::{

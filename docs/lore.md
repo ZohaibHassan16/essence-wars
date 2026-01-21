@@ -174,6 +174,82 @@ The world is stagnant; the Circle brings evolution. They believe Essence is the 
 * **Beasts:** Genetically modified monsters (Chimeras).
 * **Rush:** Feral speed and adrenaline injectors.
 
+---
+
+#### The People of the Circles
+
+The Symbiote Circles are not a horde of mindless beasts—they are a sophisticated civilization where the line between "person" and "creature" has been deliberately erased. Every humanoid member of the Circles has undergone **The Communion**, a ritual bonding that integrates them into the collective biological network.
+
+To outsiders, this appears horrifying. To the Circles, it is the natural next step of evolution. They do not see their mutations as deformities—they see themselves as *improved*. The baseline human body is considered an unfinished draft, waiting to be perfected through symbiosis.
+
+**Society Structure:**
+
+The Circles operate through a caste system based on specialization rather than birth. One's role determines one's modifications, and one's modifications determine one's role. Advancement means deeper integration with the collective—more grafts, more symbiotes, more communion.
+
+At the lowest level are the **Initiated**, who bear only minor modifications: bioluminescent tattoos that pulse with emotion, a symbiotic companion no larger than a rat, perhaps a single chitin plate grafted to the shoulder. At the highest levels are the **Fully Expressed**, whose original humanoid form is barely recognizable beneath layers of living armor, multiple symbiotic entities, and organs that were never meant for human bodies.
+
+**The Humanoid Castes:**
+
+| Caste | Role | Modifications |
+|-------|------|---------------|
+| **Bio-Weaver** | Genetic engineer | Living fiber robes that respond to thought, symbiotic tools bonded to fingers, third eye for microscopic vision |
+| **Spore-Sower** | Healer/Medic | Mycelium robes, fungal growths along the spine, small mushroom familiars that harvest healing spores |
+| **Hive Shepherd** | Beast commander | Chitin armor bonded directly to skin, pheromone glands in the throat, compound eye implants |
+| **Gene-Sculptor** | Elite scientist | Elegant bio-suits with deliberate asymmetric mutations, extra limbs, organs visible through translucent skin |
+| **Circle Warrior** | Soldier | Living weapons fused to arms, bio-grafted armor plates, adrenaline-sac grafts for combat |
+| **Swarm Caller** | Commander | Hive nodes grafted to shoulders and skull, neural links to swarm creatures, bioluminescent command markings |
+| **Evolution Priest** | Religious figure | Ritualistic bio-implants, sacred mutations marking divine favor, living scripture tattooed in genetic code |
+| **Grove Keeper** | Druid/Warden | Plant-creature communion, bark-like skin grafts, root tendrils in place of feet |
+
+**Relationship with Beasts:**
+
+The creatures of the Circles are not pets, mounts, or tools—they are *extensions* of the collective. A Hive Shepherd does not "command" her beetle swarm; she *is* the swarm, perceiving through a thousand compound eyes while her humanoid body directs the whole. When a Circle Warrior bonds with a living blade-creature, the weapon can feel pain, hunger, and loyalty.
+
+This philosophy extends to the largest war-beasts. The "Siege Beetle" that the Argentum Combine fears is not a mindless animal—it contains a Gene-Sculptor who has merged with it completely, their consciousness distributed throughout its massive form. They remember being humanoid. They simply no longer see the appeal.
+
+*"You ask if our beasts are intelligent. You ask the wrong question. Ask instead: are your 'individuals' still capable of being anything greater than alone?"* — Evolution Priest Tyrak
+
+---
+
+#### Visual Identity of Symbiote Humanoids
+
+The members of the Circles are immediately recognizable, even to those who have never seen one in person. Their aesthetic is organic, asymmetric, and alive.
+
+**Clothing and Armor:**
+
+* **Living Fiber:** Garments are grown, not woven. Robes of living plant fiber respond to the wearer's needs—tightening for protection, loosening for mobility, changing color to match emotional state.
+* **Chitin Plates:** Armor is not worn; it is bonded. Plates of insectoid chitin fuse directly to skin, growing alongside the wearer. Higher-ranked members have full carapaces.
+* **Bio-Grafts:** Weapons are living creatures bonded to the body. A Circle Warrior's "sword" might be a hardened limb-creature, its blade-edge constantly regenerating, its hilt fused to the warrior's forearm.
+
+**Physical Modifications:**
+
+* **Bioluminescent Markings:** Green and purple patterns glow beneath the skin, pulsing with heartbeat, flaring with emotion. These are not tattoos—they are symbiotic organisms.
+* **Eyes:** Modified eyes are common. Some have compound facets for enhanced perception. Others have third eyes on the forehead for microscopic work. Many have glowing irises in shades of green or amber.
+* **Hair:** Traditional hair is rare in the Circles. Most members have living tendrils, vine-like growths, or moss that serves the same aesthetic purpose while being biologically useful.
+* **Limbs:** Extra limbs are not uncommon among higher castes. A Gene-Sculptor might have four arms—two humanoid, two chitinous. A Grove Keeper might have root-tendrils instead of legs.
+
+*"The Combine welds metal to metal and calls it progress. We grow bone to bone and call it communion."* — Bio-Weaver Seline
+
+---
+
+#### Life in the Living Cities
+
+The cities of the Symbiote Circles are grown, not built. Massive Spire Trees form the central structures, their branches becoming walkways, their hollows becoming homes. Buildings are coral-like growths that expand to accommodate new residents. Streets are root networks that guide travelers and transport nutrients.
+
+**Daily Life:**
+
+A typical day for a Circle citizen begins with **Tending**—a morning ritual where each member tends to their symbiotes and contributes to their local growth-node. This might mean feeding a weapon-creature, pruning a section of living wall, or simply spending time in communion with the neighborhood's shared consciousness.
+
+Work is specialized by caste but collaborative by nature. Bio-Weavers design new creatures in grown laboratories. Spore-Sowers maintain the health of both citizens and structures. Hive Shepherds patrol the borders with their bonded swarms. Everyone contributes to the whole.
+
+**Children and Growth:**
+
+Children in the Circles are born unmodified—The Communion cannot be forced, only chosen. At the age of fifteen, each young person chooses their path and receives their first modification. Some choose minimal integration. Others embrace full transformation from the start.
+
+Parents do not see children who choose different paths as lost—the collective remains connected regardless of individual form.
+
+---
+
 **Card Flavor Mapping:**
 
 * **`04 Toxic Spider` (Lethal):** A "Needle-Fang Drone."
@@ -181,11 +257,25 @@ The world is stagnant; the Circle brings evolution. They believe Essence is the 
 
 
 * **`11 Centaur Charger` (Rush):** Not a mythical centaur, but a soldier whose legs have been surgically replaced with cyber-organic predatory limbs.
-* *Flavor:* "Whatever he was before the grafting, he’s much faster now."
+* *Flavor:* "Whatever he was before the grafting, he's much faster now."
 
 
 * **`10 Medic Apprentice` (Heal):** A "Spore-Sower." Instead of bandages, they apply a glowing moss that knits flesh together.
 * *Flavor:* "Hold still. The roots need a moment to take hold."
+
+**Additional Humanoid Card Flavor:**
+
+* **Bio-Weaver Adept:** A scientist in flowing green robes that ripple with independent life, tools extending from their fingertips.
+* *Flavor:* "Every creature begins as a question. I simply provide the answer."
+
+* **Hive Shepherd:** A warrior whose chitin armor has become indistinguishable from their skin, insects crawling across their form with purpose.
+* *Flavor:* "The swarm does not follow me. The swarm and I are the same sentence."
+
+* **Evolution Priest:** A robed figure whose sacred mutations glow with inner light, ritual scars forming patterns of genetic code.
+* *Flavor:* "Mutation is not chaos. It is the universe whispering what you could become."
+
+* **Swarm Caller:** A commander with hive-nodes grafted to their skull, bioluminescent markings flaring as swarms respond to unspoken commands.
+* *Flavor:* "I speak with a thousand voices. Do you still wish to negotiate?"
 
 ---
 

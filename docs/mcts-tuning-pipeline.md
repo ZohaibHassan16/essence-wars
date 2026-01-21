@@ -1,4 +1,4 @@
-# Tuning Pipeline Reference
+# MCTS Tuning Pipeline Reference
 
 **Complete guide to training and using optimized bot weights for Essence Wars**
 

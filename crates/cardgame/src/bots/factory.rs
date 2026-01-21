@@ -9,7 +9,7 @@ use crate::cards::CardDatabase;
 use crate::decks::Faction;
 
 use super::weights::BotWeights;
-use super::{Bot, GreedyBot, MctsBot, MctsConfig, RandomBot};
+use super::{AlphaBetaBot, AlphaBetaConfig, Bot, GreedyBot, MctsBot, MctsConfig, RandomBot};
 
 /// Bot types that can participate in matches.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -20,6 +20,8 @@ pub enum BotType {
     Greedy,
     /// Monte Carlo Tree Search
     Mcts,
+    /// Alpha-Beta Pruning (minimax search)
+    AlphaBeta,
     /// Agent specialist for a faction (uses MCTS with specialist weights)
     AgentSpecialist(Faction),
     /// Agent generalist (uses MCTS with generalist weights)
@@ -46,6 +48,7 @@ impl std::str::FromStr for BotType {
             "random" => Ok(BotType::Random),
             "greedy" => Ok(BotType::Greedy),
             "mcts" => Ok(BotType::Mcts),
+            "alphabeta" | "alpha-beta" | "ab" => Ok(BotType::AlphaBeta),
             "agent-argentum" => Ok(BotType::AgentSpecialist(Faction::Argentum)),
             "agent-symbiote" => Ok(BotType::AgentSpecialist(Faction::Symbiote)),
             "agent-obsidion" => Ok(BotType::AgentSpecialist(Faction::Obsidion)),
@@ -63,6 +66,7 @@ impl BotType {
             BotType::Random => "RandomBot",
             BotType::Greedy => "GreedyBot",
             BotType::Mcts => "MctsBot",
+            BotType::AlphaBeta => "AlphaBetaBot",
             BotType::AgentSpecialist(Faction::Argentum) => "Agent-Argentum",
             BotType::AgentSpecialist(Faction::Symbiote) => "Agent-Symbiote",
             BotType::AgentSpecialist(Faction::Obsidion) => "Agent-Obsidion",
@@ -107,6 +111,7 @@ impl BotType {
             "random",
             "greedy",
             "mcts",
+            "alphabeta",
             "agent-argentum",
             "agent-symbiote",
             "agent-obsidion",
@@ -138,6 +143,15 @@ pub fn create_bot<'a>(
         BotType::Greedy => match weights {
             Some(w) => Box::new(GreedyBot::from_bot_weights(card_db, w, None, seed)),
             None => Box::new(GreedyBot::new(card_db, seed)),
+        },
+        BotType::AlphaBeta => match weights {
+            Some(w) => Box::new(AlphaBetaBot::with_config_and_weights(
+                card_db,
+                AlphaBetaConfig::default(),
+                w,
+                seed,
+            )),
+            None => Box::new(AlphaBetaBot::new(card_db, seed)),
         },
         BotType::Mcts | BotType::AgentSpecialist(_) | BotType::AgentGeneralist => match weights {
             Some(w) => Box::new(MctsBot::with_config_and_weights(
@@ -273,6 +287,9 @@ mod tests {
         assert_eq!("RANDOM".parse::<BotType>().unwrap(), BotType::Random);
         assert_eq!("greedy".parse::<BotType>().unwrap(), BotType::Greedy);
         assert_eq!("mcts".parse::<BotType>().unwrap(), BotType::Mcts);
+        assert_eq!("alphabeta".parse::<BotType>().unwrap(), BotType::AlphaBeta);
+        assert_eq!("alpha-beta".parse::<BotType>().unwrap(), BotType::AlphaBeta);
+        assert_eq!("ab".parse::<BotType>().unwrap(), BotType::AlphaBeta);
         assert_eq!(
             "agent-argentum".parse::<BotType>().unwrap(),
             BotType::AgentSpecialist(Faction::Argentum)
@@ -297,6 +314,7 @@ mod tests {
         assert_eq!(BotType::Random.name(), "RandomBot");
         assert_eq!(BotType::Greedy.name(), "GreedyBot");
         assert_eq!(BotType::Mcts.name(), "MctsBot");
+        assert_eq!(BotType::AlphaBeta.name(), "AlphaBetaBot");
         assert_eq!(
             BotType::AgentSpecialist(Faction::Argentum).name(),
             "Agent-Argentum"
@@ -308,6 +326,7 @@ mod tests {
     fn test_bot_type_uses_mcts() {
         assert!(!BotType::Random.uses_mcts());
         assert!(!BotType::Greedy.uses_mcts());
+        assert!(!BotType::AlphaBeta.uses_mcts());
         assert!(BotType::Mcts.uses_mcts());
         assert!(BotType::AgentSpecialist(Faction::Argentum).uses_mcts());
         assert!(BotType::AgentGeneralist.uses_mcts());
@@ -318,6 +337,7 @@ mod tests {
         assert_eq!(BotType::Random.agent_weights_path(), None);
         assert_eq!(BotType::Greedy.agent_weights_path(), None);
         assert_eq!(BotType::Mcts.agent_weights_path(), None);
+        assert_eq!(BotType::AlphaBeta.agent_weights_path(), None);
         assert_eq!(
             BotType::AgentSpecialist(Faction::Argentum).agent_weights_path(),
             Some(PathBuf::from("data/weights/specialists/argentum.toml"))
