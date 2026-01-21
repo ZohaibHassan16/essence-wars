@@ -321,36 +321,36 @@ crates/essence-wars-3d/assets/
 ## 6. Implementation Phases
 
 ### Phase 4.1: Prompt Generation (~2 hours)
-- [ ] Task Agent generates prompts.json for all 70 cards
-- [ ] Review and refine prompts
-- [ ] Create prompt template documentation
+- [x] Task Agent generates prompts.json for all 70 cards
+- [x] Review and refine prompts
+- [x] Create prompt template documentation
 
 ### Phase 4.2: Batch Generation Script (~4 hours)
-- [ ] Create `generate_card_art.py` script
-- [ ] Integrate with stable-diffusion.cpp CLI
-- [ ] Add progress tracking and resume capability
-- [ ] Test with 3-5 sample cards
+- [x] Create `generate_card_art.py` script
+- [x] Integrate with stable-diffusion.cpp CLI
+- [x] Add progress tracking and resume capability
+- [x] Test with 3-5 sample cards
 
 ### Phase 4.3: Draft Generation (~4 hours GPU time)
-- [ ] Run Schnell on all 70 cards
-- [ ] Review drafts, note issues
-- [ ] Iterate on problematic prompts
-- [ ] Select best variants for finals
+- [x] Run Schnell on all 70 cards
+- [x] Review drafts, note issues
+- [x] Iterate on problematic prompts
+- [x] Select best variants for finals
 
 ### Phase 4.4: Final Generation (~3 hours GPU time)
-- [ ] Run Dev on approved drafts
-- [ ] Final quality review
-- [ ] Manual touch-ups if needed
+- [x] Run Dev on approved drafts
+- [x] Final quality review
+- [x] Manual touch-ups if needed
 
 ### Phase 4.5: Depth Map Generation (~1 hour)
-- [ ] Create `generate_depth_maps.py` script
-- [ ] Run Marigold on final images
-- [ ] Quality check depth maps
+- [x] Create `generate_depth_maps.py` script
+- [x] Run Marigold on final images
+- [x] Quality check depth maps
 
 ### Phase 4.6: Commander 3D Models (~2 hours)
-- [ ] Upload 3 commander images to Meshy.ai
-- [ ] Configure and generate 3D models
-- [ ] Export GLB files
+- [x] Upload 3 commander images to Meshy.ai
+- [x] Configure and generate 3D models
+- [x] Export GLB files
 - [ ] Test idle animations
 
 ### Phase 4.7: Bevy Parallax Shader (~8 hours)

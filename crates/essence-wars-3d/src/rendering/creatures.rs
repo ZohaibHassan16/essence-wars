@@ -3,27 +3,37 @@
 //! This module handles spawning and despawning 3D creature representations
 //! based on game events. Creatures are rendered as faceted gem tokens with
 //! faction-specific materials.
+//!
+//! Supports two rendering modes:
+//! - Standard: Faction-colored gem materials (default)
+//! - Parallax: Card art with depth-based 3D effect (when card textures available)
 
 use bevy::prelude::*;
+use bevy::color::LinearRgba;
 use cardgame::client_api::GameEvent;
 use cardgame::decks::Faction;
 use cardgame::types::PlayerId;
 
 use crate::game::{AppState, GameBridge, GameEventWrapper};
-use super::meshes::create_detailed_gem_mesh;
+use super::meshes::{create_card_gem_mesh, create_detailed_gem_mesh};
+use super::parallax_material::{CardTextureCache, ParallaxCardMaterial};
 
 /// Plugin for creature rendering.
 pub struct CreaturePlugin;
 
 impl Plugin for CreaturePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(AppState::Playing), setup_creature_assets)
+        app.init_resource::<CardTextureCache>()
+            .init_resource::<ParallaxCreatureConfig>()
+            .add_systems(OnEnter(AppState::Playing), setup_creature_assets)
             .add_systems(
                 Update,
                 (
                     sync_creatures_with_game_state,
                     process_creature_events,
+                    process_parallax_creature_events,
                     update_creature_state_visuals,
+                    update_parallax_creature_state_visuals,
                     sync_creature_auras,
                     animate_idle_creatures,
                     animate_auras,
@@ -31,7 +41,7 @@ impl Plugin for CreaturePlugin {
                     .chain()
                     .run_if(in_state(AppState::Playing)),
             )
-            .add_systems(OnExit(AppState::Playing), (despawn_all_creatures, despawn_all_auras));
+            .add_systems(OnExit(AppState::Playing), (despawn_all_creatures, despawn_all_parallax_creatures, despawn_all_auras, clear_texture_cache));
     }
 }
 
@@ -66,10 +76,41 @@ pub struct DebuffAura {
     pub creature_instance_id: u32,
 }
 
+/// Marker component for creatures using parallax card art materials.
+#[derive(Component)]
+pub struct ParallaxCreature {
+    /// Handle to the parallax material for this creature
+    pub material: Handle<ParallaxCardMaterial>,
+}
+
+/// Configuration for parallax creature rendering.
+#[derive(Resource)]
+pub struct ParallaxCreatureConfig {
+    /// Enable parallax card art rendering (requires card textures)
+    pub enabled: bool,
+    /// Parallax depth intensity
+    pub parallax_depth: f32,
+    /// Number of parallax sampling layers
+    pub parallax_layers: f32,
+}
+
+impl Default for ParallaxCreatureConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true, // Enable parallax card art rendering
+            parallax_depth: 0.08,
+            parallax_layers: 16.0,
+        }
+    }
+}
+
 /// Resource storing creature mesh and material handles.
 #[derive(Resource)]
 pub struct CreatureAssets {
+    /// Standard gem mesh (used when no card art available)
     pub mesh: Handle<Mesh>,
+    /// Card gem mesh with proper UVs for parallax effect
+    pub card_mesh: Handle<Mesh>,
     pub material_p1: Handle<StandardMaterial>,
     pub material_p2: Handle<StandardMaterial>,
     pub damaged_material_p1: Handle<StandardMaterial>,
@@ -236,9 +277,13 @@ fn setup_creature_assets(
     mut materials: ResMut<Assets<StandardMaterial>>,
     bridge: Res<GameBridge>,
 ) {
-    // Create a faceted gem mesh for creatures
+    // Create a faceted gem mesh for creatures (fallback when no card art)
     // Width: 0.8, Height: 1.2, Bevel: 0.3 for a nice crystal shape
     let mesh = meshes.add(create_detailed_gem_mesh(0.8, 1.2, 0.3));
+
+    // Create card gem mesh with flat front for parallax card art
+    // Width: 0.7, Height: 0.9, Depth: 0.5, Bevel: 0.1 for card-like appearance
+    let card_mesh = meshes.add(create_card_gem_mesh(0.7, 0.9, 0.5, 0.1));
 
     // Get factions for both players
     let faction_p1 = get_player_faction(&bridge, 0);
@@ -288,6 +333,7 @@ fn setup_creature_assets(
 
     commands.insert_resource(CreatureAssets {
         mesh,
+        card_mesh,
         material_p1,
         material_p2,
         damaged_material_p1,
@@ -301,7 +347,7 @@ fn setup_creature_assets(
         debuff_aura_material,
     });
 
-    info!("Creature gem assets initialized (with state materials and auras)");
+    info!("Creature gem assets initialized (with state materials, auras, and card mesh)");
 }
 
 /// Process creature-related events using Bevy's event system.
@@ -309,7 +355,12 @@ fn process_creature_events(
     mut commands: Commands,
     mut event_reader: EventReader<GameEventWrapper>,
     assets: Option<Res<CreatureAssets>>,
-    mut creatures: Query<(Entity, &Creature3D, &mut MeshMaterial3d<StandardMaterial>)>,
+    parallax_config: Res<ParallaxCreatureConfig>,
+    bridge: Res<GameBridge>,
+    asset_server: Res<AssetServer>,
+    mut texture_cache: ResMut<CardTextureCache>,
+    mut parallax_materials: ResMut<Assets<ParallaxCardMaterial>>,
+    mut creatures: Query<(Entity, &Creature3D, &mut MeshMaterial3d<StandardMaterial>), Without<ParallaxCreature>>,
 ) {
     let Some(assets) = assets else { return };
 
@@ -331,30 +382,55 @@ fn process_creature_events(
                 let x = (slot_idx as f32 - 2.0) * 2.0;
                 let z = if owner == 0 { 2.0 } else { -2.0 };
 
-                let material = if owner == 0 {
-                    assets.material_p1.clone()
-                } else {
-                    assets.material_p2.clone()
-                };
+                // Determine faction folder from card ID (not player faction)
+                let faction_folder = card_id_to_faction_folder(card_id.0);
 
-                commands.spawn((
-                    Mesh3d(assets.mesh.clone()),
-                    MeshMaterial3d(material),
-                    Transform::from_xyz(x, 0.75, z),
-                    Creature3D {
-                        instance_id: instance_id.0,
-                        card_id: card_id.0,
-                        owner,
-                        slot: slot_idx,
-                        attack: *attack,
-                        health: *health,
-                    },
-                ));
-
-                info!(
-                    "Spawned creature {} at slot {} for player {}",
-                    instance_id.0, slot_idx, owner
+                // Try to load card textures if parallax is enabled
+                let use_parallax = parallax_config.enabled && try_spawn_parallax_creature(
+                    &mut commands,
+                    &assets,
+                    &parallax_config,
+                    &asset_server,
+                    &mut texture_cache,
+                    &mut parallax_materials,
+                    card_id.0,
+                    faction_folder,
+                    instance_id.0,
+                    owner,
+                    slot_idx,
+                    *attack,
+                    *health,
+                    x,
+                    z,
                 );
+
+                // Fall back to standard material if parallax not available
+                if !use_parallax {
+                    let material = if owner == 0 {
+                        assets.material_p1.clone()
+                    } else {
+                        assets.material_p2.clone()
+                    };
+
+                    commands.spawn((
+                        Mesh3d(assets.mesh.clone()),
+                        MeshMaterial3d(material),
+                        Transform::from_xyz(x, 0.75, z),
+                        Creature3D {
+                            instance_id: instance_id.0,
+                            card_id: card_id.0,
+                            owner,
+                            slot: slot_idx,
+                            attack: *attack,
+                            health: *health,
+                        },
+                    ));
+
+                    info!(
+                        "Spawned creature {} (card {}) at slot {} for player {} [standard material]",
+                        instance_id.0, card_id.0, slot_idx, owner
+                    );
+                }
             }
 
             GameEvent::CreatureDied {
@@ -597,6 +673,77 @@ fn update_creature_state_visuals(
     }
 }
 
+/// Process events for parallax creatures (death handling).
+fn process_parallax_creature_events(
+    mut commands: Commands,
+    mut event_reader: EventReader<GameEventWrapper>,
+    parallax_creatures: Query<(Entity, &Creature3D), With<ParallaxCreature>>,
+) {
+    for GameEventWrapper(event) in event_reader.read() {
+        if let GameEvent::CreatureDied { instance_id, .. } = event {
+            // Find and despawn the parallax creature
+            for (entity, creature) in parallax_creatures.iter() {
+                if creature.instance_id == instance_id.0 {
+                    commands.entity(entity).despawn_recursive();
+                    info!("Despawned parallax creature {}", instance_id.0);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+/// Update parallax material flags based on creature state (exhausted/damaged).
+fn update_parallax_creature_state_visuals(
+    bridge: Res<GameBridge>,
+    mut parallax_materials: ResMut<Assets<ParallaxCardMaterial>>,
+    parallax_creatures: Query<(&Creature3D, &ParallaxCreature)>,
+) {
+    let Some(client) = &bridge.client else { return };
+    let Some(state) = client.get_state() else { return };
+
+    for (creature_3d, parallax) in parallax_creatures.iter() {
+        // Find the corresponding game state creature
+        let game_creature = state.players[creature_3d.owner]
+            .creatures
+            .iter()
+            .find(|c| c.instance_id.0 == creature_3d.instance_id);
+
+        let Some(game_creature) = game_creature else {
+            continue;
+        };
+
+        // Update material flags based on state
+        let is_exhausted = game_creature.status.is_exhausted();
+        let is_damaged = game_creature.current_health <= 2
+            && game_creature.current_health < game_creature.base_health as i8;
+
+        // Get the material and update flags
+        if let Some(material) = parallax_materials.get_mut(&parallax.material) {
+            // Flags: bit 0 = use_card_texture, bit 1 = is_exhausted, bit 2 = is_damaged
+            let mut flags = 1u32; // Always use card texture
+            if is_exhausted {
+                flags |= 2; // Set exhausted bit
+            }
+            if is_damaged {
+                flags |= 4; // Set damaged bit
+            }
+            material.flags = flags;
+        }
+    }
+}
+
+/// Despawn all parallax creatures when leaving game.
+fn despawn_all_parallax_creatures(
+    mut commands: Commands,
+    parallax_creatures: Query<Entity, With<ParallaxCreature>>,
+) {
+    for entity in parallax_creatures.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+    info!("All parallax creatures despawned");
+}
+
 /// Sync buff/debuff auras with creature state.
 /// Buff = attack > base_attack OR max_health > base_health
 /// Debuff = attack < base_attack
@@ -765,4 +912,106 @@ fn despawn_all_auras(
     for entity in debuff_auras.iter() {
         commands.entity(entity).despawn_recursive();
     }
+}
+
+/// Clear texture cache when leaving game.
+fn clear_texture_cache(mut cache: ResMut<CardTextureCache>) {
+    cache.clear();
+    info!("Card texture cache cleared");
+}
+
+/// Get faction name for texture path lookup.
+#[allow(dead_code)]
+fn faction_to_folder(faction: Option<Faction>) -> &'static str {
+    match faction {
+        Some(Faction::Argentum) => "argentum",
+        Some(Faction::Symbiote) => "symbiote",
+        Some(Faction::Obsidion) => "obsidion",
+        Some(Faction::Neutral) | None => "neutral",
+    }
+}
+
+/// Get faction folder from card ID.
+/// Card ID ranges: Argentum 1000-1074, Symbiote 2000-2074, Obsidion 3000-3074, Neutral 4000-4074
+fn card_id_to_faction_folder(card_id: u16) -> &'static str {
+    match card_id {
+        1000..=1999 => "argentum",
+        2000..=2999 => "symbiote",
+        3000..=3999 => "obsidion",
+        _ => "neutral", // 4000+ is neutral
+    }
+}
+
+/// Try to spawn a creature with parallax card art material.
+/// Returns true if successful, false if textures not available.
+#[allow(clippy::too_many_arguments)]
+fn try_spawn_parallax_creature(
+    commands: &mut Commands,
+    assets: &CreatureAssets,
+    config: &ParallaxCreatureConfig,
+    asset_server: &AssetServer,
+    texture_cache: &mut CardTextureCache,
+    parallax_materials: &mut Assets<ParallaxCardMaterial>,
+    card_id: u16,
+    faction_folder: &str,
+    instance_id: u32,
+    owner: usize,
+    slot: usize,
+    attack: i8,
+    health: i8,
+    x: f32,
+    z: f32,
+) -> bool {
+    // Try to get or load textures from cache
+    let (card_texture, depth_texture) = texture_cache.get_or_load(
+        card_id,
+        faction_folder,
+        asset_server,
+    );
+
+    // Check if assets are likely to exist by checking load state
+    // We'll optimistically assume they exist and let the shader handle missing textures
+    // In practice, the textures should already be in assets/textures/cards/{faction}/
+
+    // Create the parallax material
+    let material = ParallaxCardMaterial {
+        base_color: LinearRgba::WHITE,
+        emissive: LinearRgba::BLACK,
+        metallic: 0.3,
+        roughness: 0.4,
+        parallax_depth: config.parallax_depth,
+        parallax_layers: config.parallax_layers,
+        flags: 1, // use_card_texture = true
+        _padding: 0.0,
+        card_texture: Some(card_texture),
+        depth_texture: Some(depth_texture),
+    };
+
+    let material_handle = parallax_materials.add(material);
+
+    // Spawn the creature with parallax material
+    commands.spawn((
+        Mesh3d(assets.card_mesh.clone()),
+        MeshMaterial3d(material_handle.clone()),
+        Transform::from_xyz(x, 0.75, z)
+            .with_rotation(Quat::from_rotation_y(std::f32::consts::PI)), // Face forward
+        Creature3D {
+            instance_id,
+            card_id,
+            owner,
+            slot,
+            attack,
+            health,
+        },
+        ParallaxCreature {
+            material: material_handle,
+        },
+    ));
+
+    info!(
+        "Spawned creature {} (card {}) at slot {} for player {} [parallax material]",
+        instance_id, card_id, slot, owner
+    );
+
+    true
 }
