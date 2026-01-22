@@ -19,6 +19,14 @@ pub struct SpectatorConfig {
     pub player2_bot_type: String,
     /// Optional fixed seed for reproducibility
     pub seed: Option<u64>,
+    /// Number of MCTS simulations per move (default: 100 for fast playback)
+    /// Higher values = stronger play but slower computation
+    #[serde(default = "default_mcts_simulations")]
+    pub mcts_simulations: u32,
+}
+
+fn default_mcts_simulations() -> u32 {
+    100 // Fast default for debug builds
 }
 
 /// A single action in the spectator match with full context
@@ -208,6 +216,7 @@ mod tests {
             player2_deck_id: "broodmother_swarm".to_string(),
             player2_bot_type: "random".to_string(),
             seed: Some(12345), // Fixed seed for reproducibility
+            mcts_simulations: 100,
         };
 
         let result = computer.compute_match(config);
@@ -266,6 +275,7 @@ mod tests {
             player2_deck_id: "alpha_frenzy".to_string(),
             player2_bot_type: "greedy".to_string(),
             seed: Some(54321),
+            mcts_simulations: 100,
         };
 
         let result = computer.compute_match(config);

@@ -481,8 +481,11 @@ impl GameManager {
         // Storage for actions
         let mut actions: Vec<SpectatorAction> = Vec::new();
 
-        // Bot configurations
-        let mcts_config = MctsConfig::default();
+        // Bot configurations - use configured simulations for MCTS
+        let mcts_config = MctsConfig {
+            simulations: config.mcts_simulations,
+            ..MctsConfig::default()
+        };
         let alphabeta_config = AlphaBetaConfig::default();
 
         // Play game to completion
@@ -952,8 +955,11 @@ impl SpectatorComputer {
         // Storage for actions
         let mut actions: Vec<SpectatorAction> = Vec::new();
 
-        // Bot configurations
-        let mcts_config = MctsConfig::default();
+        // Bot configurations - use configured simulations for MCTS
+        let mcts_config = MctsConfig {
+            simulations: config.mcts_simulations,
+            ..MctsConfig::default()
+        };
         let alphabeta_config = AlphaBetaConfig::default();
 
         // Play game to completion

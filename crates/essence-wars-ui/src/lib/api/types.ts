@@ -136,6 +136,8 @@ export interface SpectatorConfig {
   player2DeckId: string;
   player2BotType: string;
   seed?: number;
+  /** Number of MCTS simulations per move (default: 100 for fast playback) */
+  mctsSimulations?: number;
 }
 
 /** A single action in the spectator match with full context */
