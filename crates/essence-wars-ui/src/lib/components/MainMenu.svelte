@@ -1,5 +1,14 @@
 <script lang="ts">
   import { gameStore } from "$lib/stores/gameState.svelte";
+  import { spectatorStore } from "$lib/stores/spectatorState.svelte";
+
+  let isLoadingSpectator = $state(false);
+
+  async function startSpectatorMode() {
+    isLoadingSpectator = true;
+    await spectatorStore.loadDecksAndBots();
+    isLoadingSpectator = false;
+  }
 </script>
 
 <div class="min-h-screen flex flex-col items-center justify-center p-8">
@@ -12,7 +21,7 @@
         class="w-64 px-8 py-4 bg-ui-action text-white rounded-lg font-bold text-lg
                hover:bg-ui-action/80 transition-all hover:scale-105"
         onclick={() => gameStore.loadDecksAndBots()}
-        disabled={gameStore.isLoading}
+        disabled={gameStore.isLoading || isLoadingSpectator}
       >
         {#if gameStore.isLoading}
           Loading...
@@ -22,11 +31,16 @@
       </button>
 
       <button
-        class="w-64 px-8 py-4 bg-ui-panel text-ui-text-dim rounded-lg font-bold text-lg
-               border border-gray-600 cursor-not-allowed opacity-50"
-        disabled
+        class="w-64 px-8 py-4 bg-ui-panel text-ui-text rounded-lg font-bold text-lg
+               border border-gray-600 hover:border-ui-action hover:text-ui-action transition-all hover:scale-105"
+        onclick={startSpectatorMode}
+        disabled={gameStore.isLoading || isLoadingSpectator}
       >
-        AI vs AI (Coming Soon)
+        {#if isLoadingSpectator}
+          Loading...
+        {:else}
+          Watch AI vs AI
+        {/if}
       </button>
     </div>
 

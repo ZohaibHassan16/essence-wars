@@ -124,3 +124,63 @@ export interface AlternativeAction {
   score: number;
   scoreDelta: number;
 }
+
+// ============================================================================
+// Spectator Mode Types
+// ============================================================================
+
+/** Configuration for starting a spectator match */
+export interface SpectatorConfig {
+  player1DeckId: string;
+  player1BotType: string;
+  player2DeckId: string;
+  player2BotType: string;
+  seed?: number;
+}
+
+/** A single action in the spectator match with full context */
+export interface SpectatorAction {
+  turn: number;
+  player: 1 | 2;
+  action: ActionInfo;
+  stateAfter: GameStateDto;
+  events: GameEventDto[];
+  thinking: MctsThinkingDto | null;
+  thinkingTimeMs: number;
+}
+
+/** MCTS thinking data for visualization */
+export interface MctsThinkingDto {
+  totalSimulations: number;
+  topMoves: MctsMoveDto[];
+  selectedWinRate: number;
+}
+
+/** A candidate move considered by MCTS */
+export interface MctsMoveDto {
+  action: ActionInfo;
+  visits: number;
+  winRate: number;
+}
+
+/** Complete pre-computed spectator match */
+export interface SpectatorMatch {
+  id: string;
+  config: SpectatorConfig;
+  initialState: GameStateDto;
+  actions: SpectatorAction[];
+  result: SpectatorResult;
+  totalTurns: number;
+  player1DeckName: string;
+  player2DeckName: string;
+  player1BotName: string;
+  player2BotName: string;
+}
+
+/** Result of a completed spectator match */
+export interface SpectatorResult {
+  winner: 1 | 2 | null;
+  reason: string;
+  player1FinalLife: number;
+  player2FinalLife: number;
+}

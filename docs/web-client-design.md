@@ -717,7 +717,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 
 ## 8. Development Phases
 
-### Phase 1: Foundation (Week 1-2)
+### Phase 1: Foundation
 - [x] Initialize Tauri 2.0 project in `crates/essence-wars-ui/`
 - [x] Set up Svelte + Vite + Tailwind
 - [x] Integrate `cardgame` crate as dependency
@@ -725,7 +725,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] Create minimal board layout (slots, placeholders)
 - [x] Test game creation and state retrieval
 
-### Phase 2: Core Gameplay (Week 3-4)
+### Phase 2: Core Gameplay
 - [x] Implement full IPC command set
 - [x] Card component with basic styling
 - [x] Hand display with card selection
@@ -735,14 +735,13 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] End turn flow
 - [x] Basic turn indicator and life display
 
-### Phase 3: AI Integration (Week 5)
+### Phase 3: AI Integration
 - [x] AI move execution
 - [x] AI hint system with reasoning
 - [x] Turn flow (human → AI → human)
 - [x] Game over detection and display
 
-### Phase 4: Visual Polish (Week 6-7)
-- [ ] Card frame designs (all 4 factions)
+### Phase 4: Visual Polish
 - [x] GSAP animation integration
 - [x] Card play animations
 - [x] Combat animations (attack lunge, damage shake)
@@ -751,35 +750,41 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] Spawn animations
 - [x] Turn transition overlay
 
-### Phase 5: Art Asset Sprint (Week 8-9)
-- [ ] Generate remaining card art via FLUX
-- [ ] Create board backgrounds
-- [ ] Design keyword icons
-- [ ] UI element graphics
-- [ ] Card back design
+### Phase 5: AI vs AI Mode
+- [x] Spectator match setup screen
+- [x] Speed slider implementation
+- [x] Step-through controls
+- [x] AI thinking visualization panel
+- [x] Pause/resume functionality
 
-### Phase 6: Audio Implementation (Week 10)
-- [ ] Howler.js integration
-- [ ] Source/create sound effects
-- [ ] Music system with dynamic layers
-- [ ] Faction ambient sounds
-- [ ] Volume controls
-
-### Phase 7: AI vs AI Mode (Week 11)
-- [ ] Spectator match setup screen
-- [ ] Speed slider implementation
-- [ ] Step-through controls
-- [ ] AI thinking visualization panel
-- [ ] Pause/resume functionality
-
-### Phase 8: Replay System (Week 12)
+### Phase 6: Replay System 
 - [ ] Action recording during gameplay
 - [ ] Save replay to file
 - [ ] Replay browser/list
 - [ ] Replay playback with controls
 - [ ] State reconstruction from actions
 
-### Phase 9: Polish & Testing (Week 13-14)
+### Phase 6.5: Claude Code MCP Server
+- [ ] Design and Architect MCP Server enabling Claude Code to play the Game
+- [ ] Implement and Test
+- [ ] Add Screenshot feature
+- [ ] Debug and Playtest thoroughly
+
+### Phase 7: Art Asset Sprint 
+- [ ] Create board backgrounds via FLUX
+- [ ] Design keyword icons
+- [ ] UI element graphics (for all Menus and Screens)
+- [ ] Card back design
+- [ ] Card frame designs (all 4 factions)
+
+### Phase 8: Audio Implementation
+- [ ] Howler.js integration
+- [ ] Source/create sound effects
+- [ ] Music system with dynamic layers
+- [ ] Faction ambient sounds
+- [ ] Volume controls
+
+### Phase 9: Polish & Testing
 - [ ] Settings screen
 - [ ] Keyboard shortcuts
 - [ ] Window resize handling
@@ -787,12 +792,13 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [ ] Performance optimization
 - [ ] Bug fixing
 
-### Phase 10: Release Prep (Week 15)
+### Phase 10: Release Prep
 - [ ] Build for Windows
 - [ ] Build for Linux
 - [ ] Installer/package creation
 - [ ] Final testing on both platforms
 - [ ] Documentation
+- [ ] Disuss Hosting Providers (Github, itch.io, Google Drive, ...)
 
 ---
 
@@ -800,13 +806,13 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 
 ### 9.1 Card Art Status
 
-| Faction | Total Cards | Art Complete | Remaining |
-|---------|-------------|--------------|-----------|
-| Argentum | 75 | 22 | 53 |
-| Symbiote | 75 | 15 | 60 |
-| Obsidion | 75 | 19 | 56 |
-| Neutral | 75 | 13 | 62 |
-| **Total** | **300** | **69** | **231** |
+| Faction | Total Cards |
+|---------|-------------|
+| Argentum | 75 |
+| Symbiote | 75 |
+| Obsidion | 75 |
+| Neutral | 75 |
+| **Total** | **300** |
 
 ### 9.2 Art Generation Pipeline
 
@@ -831,21 +837,16 @@ See `docs/flux-guide.md` for full command templates.
 
 ---
 
-## 10. Open Questions / Future Considerations
+## 10. Future Considerations
 
 ### Deferred Features (v2.0+)
 - Deck builder UI
-- Online multiplayer (peer-to-peer or server)
 - Tournament mode
-- Achievements/statistics tracking
 - Card collection/unlock system
-- Custom AI training interface
 
 ### Technical Considerations
-- Card art caching strategy (load all vs lazy load)
-- Animation performance on lower-end machines
+- Card art caching strategy (lazy load)
 - Replay file compression for long games
-- Accessibility (colorblind modes, screen reader support)
 
 ---
 

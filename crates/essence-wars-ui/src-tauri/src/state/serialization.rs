@@ -314,6 +314,28 @@ impl CreatureDto {
             art_path,
         }
     }
+
+    /// Create a DTO for a token creature (CardId 0)
+    /// Tokens don't have card database entries, so we use the creature's stats directly
+    pub fn from_token(creature: &Creature, current_turn: u16) -> Self {
+        let keywords = keywords_to_strings(&creature.keywords);
+
+        Self {
+            instance_id: creature.instance_id.0,
+            card_id: 0,
+            name: "Token".to_string(),
+            slot: creature.slot.0,
+            faction: "neutral".to_string(),
+            attack: creature.attack,
+            base_attack: creature.base_attack,
+            health: creature.current_health,
+            max_health: creature.max_health,
+            keywords,
+            can_attack: creature.can_attack(current_turn),
+            is_exhausted: creature.status.is_exhausted(),
+            art_path: None, // Tokens don't have art
+        }
+    }
 }
 
 impl SupportDto {

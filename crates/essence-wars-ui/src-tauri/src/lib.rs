@@ -30,6 +30,8 @@ pub fn run() {
             undo_action,
             can_undo,
             end_game,
+            // Spectator mode
+            compute_spectator_match,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

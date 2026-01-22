@@ -10,6 +10,8 @@ import type {
   GameStateUpdate,
   GameResultDto,
   AiHintResponse,
+  SpectatorConfig,
+  SpectatorMatch,
 } from "./types";
 
 export async function listDecks(): Promise<DeckInfo[]> {
@@ -57,4 +59,15 @@ export async function undoAction(gameId: string): Promise<GameStateDto> {
 
 export async function canUndo(gameId: string): Promise<boolean> {
   return await invoke<boolean>("can_undo", { gameId });
+}
+
+// ============================================================================
+// Spectator Mode API
+// ============================================================================
+
+/** Compute a complete AI vs AI match for spectator playback */
+export async function computeSpectatorMatch(
+  config: SpectatorConfig
+): Promise<SpectatorMatch> {
+  return await invoke<SpectatorMatch>("compute_spectator_match", { config });
 }
