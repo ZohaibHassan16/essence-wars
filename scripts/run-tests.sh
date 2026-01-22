@@ -16,6 +16,11 @@ TIER=${1:-""}
 echo "=== Essence Wars Test Runner ==="
 echo ""
 
+# Validate decks before running tests
+echo "Validating deck definitions..."
+./scripts/validate-decks.sh --strict
+echo ""
+
 # Always run standard tests first
 echo "Running standard tests..."
 cargo nextest run --status-level=fail
