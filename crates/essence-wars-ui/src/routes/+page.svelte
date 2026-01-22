@@ -2,6 +2,7 @@
   import { gameStore } from "$lib/stores/gameState.svelte";
   import { spectatorStore } from "$lib/stores/spectatorState.svelte";
   import { replayStore } from "$lib/stores/replayState.svelte";
+  import { mcpSyncStore } from "$lib/stores/mcpSyncState.svelte";
   import * as api from "$lib/api/game";
   import MainMenu from "$lib/components/MainMenu.svelte";
   import SetupScreen from "$lib/components/SetupScreen.svelte";
@@ -12,6 +13,7 @@
   import SpectatorPlayback from "$lib/components/SpectatorPlayback.svelte";
   import ReplayBrowser from "$lib/components/ReplayBrowser.svelte";
   import ReplayPlayback from "$lib/components/ReplayPlayback.svelte";
+  import McpSyncView from "$lib/components/McpSyncView.svelte";
 
   // Helper functions to build props for GameOverScreen
 
@@ -102,8 +104,11 @@
   }
 </script>
 
-<!-- Replay mode takes top precedence when active -->
-{#if replayStore.phase === "browser" || replayStore.phase === "loading"}
+<!-- MCP Sync mode takes top precedence when active -->
+{#if mcpSyncStore.phase === "watching" || mcpSyncStore.phase === "disconnected"}
+  <McpSyncView />
+<!-- Replay mode when active -->
+{:else if replayStore.phase === "browser" || replayStore.phase === "loading"}
   <ReplayBrowser />
 {:else if replayStore.phase === "watching" || replayStore.phase === "finished"}
   <ReplayPlayback />

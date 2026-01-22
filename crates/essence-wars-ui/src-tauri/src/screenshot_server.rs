@@ -44,6 +44,7 @@ pub struct GameStateSyncRequest {
 
 /// Response from sync state endpoint.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SyncResponse {
     pub status: String,
     pub synced_at: u64,
@@ -260,15 +261,6 @@ async fn get_synced_state(
 ) -> impl IntoResponse {
     match state.get_synced_state() {
         Some(cached) => {
-            #[derive(Serialize)]
-            #[serde(rename_all = "camelCase")]
-            struct SyncedStateResponse {
-                state: GameStateDto,
-                events: Vec<GameEventDto>,
-                timestamp: u64,
-                age_ms: u64,
-            }
-
             let age_ms = cached.synced_at.elapsed().as_millis() as u64;
 
             Json(serde_json::json!({

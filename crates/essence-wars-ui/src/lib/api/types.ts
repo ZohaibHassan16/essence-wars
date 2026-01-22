@@ -193,6 +193,17 @@ export interface SpectatorResult {
 // Replay Mode Types
 // ============================================================================
 
+// ============================================================================
+// MCP Sync Mode Types
+// ============================================================================
+
+/** Response from get_mcp_synced_state command */
+export interface McpSyncedState {
+  state: GameStateDto;
+  ageMs: number;
+  timestamp: number;
+}
+
 /** Information about a saved replay for the browser UI */
 export interface ReplayInfo {
   /** Full path to the replay file */

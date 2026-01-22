@@ -2,6 +2,7 @@
   import { gameStore } from "$lib/stores/gameState.svelte";
   import { spectatorStore } from "$lib/stores/spectatorState.svelte";
   import { replayStore } from "$lib/stores/replayState.svelte";
+  import { mcpSyncStore } from "$lib/stores/mcpSyncState.svelte";
 
   let isLoadingSpectator = $state(false);
   let isLoadingReplays = $state(false);
@@ -16,6 +17,10 @@
     isLoadingReplays = true;
     await replayStore.loadReplayList();
     isLoadingReplays = false;
+  }
+
+  function startMcpSync() {
+    mcpSyncStore.startWatching();
   }
 </script>
 
@@ -62,6 +67,17 @@
         {:else}
           Watch Replays
         {/if}
+      </button>
+
+      <div class="h-px w-48 bg-gray-700 my-2"></div>
+
+      <button
+        class="w-64 px-8 py-4 bg-ui-panel text-ui-text rounded-lg font-bold text-lg
+               border border-mana/50 hover:border-mana hover:text-mana transition-all hover:scale-105"
+        onclick={startMcpSync}
+        disabled={gameStore.isLoading || isLoadingSpectator || isLoadingReplays}
+      >
+        MCP Sync View
       </button>
     </div>
 

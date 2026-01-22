@@ -75,6 +75,10 @@ pub fn run() {
             list_replays,
             load_replay,
             delete_replay,
+            // MCP sync mode
+            get_mcp_synced_state,
+            has_mcp_synced_state,
+            clear_mcp_synced_state,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

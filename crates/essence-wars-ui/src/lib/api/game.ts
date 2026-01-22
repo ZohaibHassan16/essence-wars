@@ -13,6 +13,7 @@ import type {
   SpectatorConfig,
   SpectatorMatch,
   ReplayInfo,
+  McpSyncedState,
 } from "./types";
 
 export async function listDecks(): Promise<DeckInfo[]> {
@@ -106,4 +107,23 @@ export async function loadReplay(path: string): Promise<SpectatorMatch> {
 /** Delete a replay file */
 export async function deleteReplay(path: string): Promise<void> {
   return await invoke<void>("delete_replay", { path });
+}
+
+// ============================================================================
+// MCP Sync Mode API
+// ============================================================================
+
+/** Get the current MCP-synced game state, if any */
+export async function getMcpSyncedState(): Promise<McpSyncedState | null> {
+  return await invoke<McpSyncedState | null>("get_mcp_synced_state");
+}
+
+/** Check if there is an MCP-synced game state available */
+export async function hasMcpSyncedState(): Promise<boolean> {
+  return await invoke<boolean>("has_mcp_synced_state");
+}
+
+/** Clear the MCP-synced game state */
+export async function clearMcpSyncedState(): Promise<void> {
+  return await invoke<void>("clear_mcp_synced_state");
 }

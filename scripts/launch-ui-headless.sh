@@ -19,7 +19,8 @@ set -e
 
 # Configuration
 DISPLAY_NUM="${DISPLAY_NUM:-99}"
-DISPLAY=":${DISPLAY_NUM}"
+export DISPLAY=":${DISPLAY_NUM}"  # Export immediately to override any inherited DISPLAY
+unset WAYLAND_DISPLAY  # Ensure we don't use Wayland
 XVFB_ARGS="-screen 0 1024x768x24"
 UI_DIR="crates/essence-wars-ui"
 PORT=9999
@@ -122,8 +123,7 @@ if ! kill -0 "$XVFB_PID" 2>/dev/null; then
 fi
 echo "Xvfb running (PID $XVFB_PID)"
 
-# Export display for all subsequent commands
-export DISPLAY
+# DISPLAY already exported at top of script
 
 # Start window manager if available
 if [ -n "$WM_CMD" ]; then
