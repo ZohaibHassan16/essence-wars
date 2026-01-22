@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { CreatureDto, CardDto } from "$lib/api/types";
   import CardPreview from "./CardPreview.svelte";
+  import { animationRegistry } from "$lib/animations/actions";
+  import { onMount, onDestroy } from "svelte";
 
   let {
     creature = null,
@@ -21,6 +23,20 @@
   } = $props();
 
   let isHovered = $state(false);
+  let slotElement: HTMLButtonElement;
+
+  // Animation ID for this slot
+  const animationId = $derived(`creature-${isPlayerSide ? "player" : "opponent"}-${slot}`);
+
+  // Register/unregister with animation system
+  $effect(() => {
+    if (slotElement) {
+      animationRegistry.set(animationId, slotElement);
+      return () => {
+        animationRegistry.delete(animationId);
+      };
+    }
+  });
 
   function getFactionBorder(faction: string): string {
     switch (faction) {
@@ -62,6 +78,7 @@
 
 <div class="relative">
   <button
+    bind:this={slotElement}
     class="w-28 h-36 rounded-xl border-2 transition-all duration-150 flex flex-col items-center justify-between p-2
            no-select relative overflow-hidden
            {creature ? getFactionBorder(creature.faction) + ' ' + getFactionBg(creature.faction) : 'border-gray-600 border-dashed bg-ui-bg/30'}

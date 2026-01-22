@@ -5,9 +5,26 @@
   import HandCard from "./HandCard.svelte";
   import ActionLog from "./ActionLog.svelte";
   import HintPanel from "./HintPanel.svelte";
+  import TurnTransition from "./TurnTransition.svelte";
 
-  const state = $derived(gameStore.gameState);
+  const gameState = $derived(gameStore.gameState);
   const isPlayerTurn = $derived(gameStore.isPlayerTurn);
+
+  // Track turn changes for transition animation
+  let lastActivePlayer: number | null = $state(null);
+  let showTurnTransition = $state(false);
+
+  $effect(() => {
+    const currentPlayer = gameState?.activePlayer;
+    if (currentPlayer !== undefined && lastActivePlayer !== null && currentPlayer !== lastActivePlayer) {
+      // Turn changed, show transition
+      showTurnTransition = true;
+      setTimeout(() => {
+        showTurnTransition = false;
+      }, 1500);
+    }
+    lastActivePlayer = currentPlayer ?? null;
+  });
 
   function handlePlayerSlotClick(slot: number) {
     if (!isPlayerTurn) return;
@@ -17,7 +34,7 @@
       gameStore.applyAction(action.index);
     } else if (gameStore.selectedCardIndex === null) {
       // Select creature for attack
-      const creature = state?.player.creatures[slot];
+      const creature = gameState?.player.creatures[slot];
       if (creature?.canAttack) {
         gameStore.selectCreature(slot);
       }
@@ -70,6 +87,13 @@
   );
 </script>
 
+<!-- Turn transition overlay -->
+<TurnTransition
+  isYourTurn={isPlayerTurn}
+  turnNumber={gameState?.turn ?? 1}
+  visible={showTurnTransition}
+/>
+
 <div class="w-full h-full flex bg-ui-bg">
   <!-- Main game area -->
   <div class="flex-1 flex flex-col">
@@ -82,31 +106,31 @@
         </div>
         <div class="flex items-center gap-3">
           <div class="flex items-center gap-1 px-2 py-1 rounded bg-damage/20">
-            <span class="text-damage font-bold">{state?.opponent.life ?? 0}</span>
+            <span class="text-damage font-bold">{gameState?.opponent.life ?? 0}</span>
             <span class="text-damage/60 text-xs">HP</span>
           </div>
           <div class="flex items-center gap-1 px-2 py-1 rounded bg-mana/20">
-            <span class="text-mana font-bold">{state?.opponent.essence ?? 0}</span>
-            <span class="text-mana/60 text-xs">/ {state?.opponent.maxEssence ?? 0}</span>
+            <span class="text-mana font-bold">{gameState?.opponent.essence ?? 0}</span>
+            <span class="text-mana/60 text-xs">/ {gameState?.opponent.maxEssence ?? 0}</span>
           </div>
           <div class="flex items-center gap-1 px-2 py-1 rounded bg-gold/20">
-            <span class="text-gold font-bold">{state?.opponent.actionPoints ?? 0}</span>
+            <span class="text-gold font-bold">{gameState?.opponent.actionPoints ?? 0}</span>
             <span class="text-gold/60 text-xs">AP</span>
           </div>
         </div>
       </div>
       <div class="flex items-center gap-3 text-sm text-ui-text-dim">
-        <span>Deck: {state?.opponent.deckCount ?? 0}</span>
-        <span>Hand: {state?.opponent.hand.length ?? 0}</span>
+        <span>Deck: {gameState?.opponent.deckCount ?? 0}</span>
+        <span>Hand: {gameState?.opponent.hand.length ?? 0}</span>
       </div>
     </div>
 
     <!-- Opponent hand (hidden cards) -->
     <div class="h-16 flex items-center justify-center gap-1.5 bg-gray-900/30 px-4">
-      {#each state?.opponent.hand ?? [] as card, i}
+      {#each gameState?.opponent.hand ?? [] as card, i}
         <HandCard {card} index={i} />
       {/each}
-      {#if (state?.opponent.hand.length ?? 0) === 0}
+      {#if (gameState?.opponent.hand.length ?? 0) === 0}
         <span class="text-ui-text-dim text-sm">Empty hand</span>
       {/if}
     </div>
@@ -117,14 +141,14 @@
       <div class="flex items-center justify-center gap-4">
         <!-- Opponent supports -->
         <div class="flex flex-col gap-2">
-          {#each state?.opponent.supports ?? [null, null] as support, i}
+          {#each gameState?.opponent.supports ?? [null, null] as support, i}
             <SupportSlot {support} slot={i} />
           {/each}
         </div>
 
         <!-- Opponent creatures -->
         <div class="flex gap-2">
-          {#each state?.opponent.creatures ?? [null, null, null, null, null] as creature, i}
+          {#each gameState?.opponent.creatures ?? [null, null, null, null, null] as creature, i}
             <CreatureSlot
               {creature}
               slot={i}
@@ -141,7 +165,7 @@
         <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
         <div class="px-6 py-2 rounded-full border border-gray-600 bg-ui-panel/80 flex items-center gap-3">
           <span class="text-ui-text-dim text-sm">Turn</span>
-          <span class="text-ui-text font-bold text-lg">{state?.turn ?? 0}</span>
+          <span class="text-ui-text font-bold text-lg">{gameState?.turn ?? 0}</span>
           <div class="w-px h-4 bg-gray-600"></div>
           <span class="text-sm font-semibold {isPlayerTurn ? 'text-health' : 'text-ui-action'}">
             {isPlayerTurn ? "Your Turn" : "Opponent's Turn"}
@@ -154,7 +178,7 @@
       <div class="flex items-center justify-center gap-4">
         <!-- Player supports -->
         <div class="flex flex-col gap-2">
-          {#each state?.player.supports ?? [null, null] as support, i}
+          {#each gameState?.player.supports ?? [null, null] as support, i}
             <SupportSlot
               {support}
               slot={i}
@@ -166,7 +190,7 @@
 
         <!-- Player creatures -->
         <div class="flex gap-2">
-          {#each state?.player.creatures ?? [null, null, null, null, null] as creature, i}
+          {#each gameState?.player.creatures ?? [null, null, null, null, null] as creature, i}
             <CreatureSlot
               {creature}
               slot={i}
@@ -182,7 +206,7 @@
 
     <!-- Player hand -->
     <div class="h-36 flex items-center justify-center gap-1.5 bg-gray-900/30 px-4 py-2">
-      {#each state?.player.hand ?? [] as card, i}
+      {#each gameState?.player.hand ?? [] as card, i}
         <HandCard
           {card}
           index={i}
@@ -191,7 +215,7 @@
           onClick={() => handleCardClick(i)}
         />
       {/each}
-      {#if (state?.player.hand.length ?? 0) === 0}
+      {#if (gameState?.player.hand.length ?? 0) === 0}
         <span class="text-ui-text-dim text-sm">Empty hand</span>
       {/if}
     </div>
@@ -205,20 +229,20 @@
         </div>
         <div class="flex items-center gap-3">
           <div class="flex items-center gap-1 px-2 py-1 rounded bg-health/20">
-            <span class="text-health font-bold">{state?.player.life ?? 0}</span>
+            <span class="text-health font-bold">{gameState?.player.life ?? 0}</span>
             <span class="text-health/60 text-xs">HP</span>
           </div>
           <div class="flex items-center gap-1 px-2 py-1 rounded bg-mana/20">
-            <span class="text-mana font-bold">{state?.player.essence ?? 0}</span>
-            <span class="text-mana/60 text-xs">/ {state?.player.maxEssence ?? 0}</span>
+            <span class="text-mana font-bold">{gameState?.player.essence ?? 0}</span>
+            <span class="text-mana/60 text-xs">/ {gameState?.player.maxEssence ?? 0}</span>
           </div>
           <div class="flex items-center gap-1 px-2 py-1 rounded bg-gold/20">
-            <span class="text-gold font-bold">{state?.player.actionPoints ?? 0}</span>
+            <span class="text-gold font-bold">{gameState?.player.actionPoints ?? 0}</span>
             <span class="text-gold/60 text-xs">AP</span>
           </div>
         </div>
         <div class="text-sm text-ui-text-dim">
-          Deck: {state?.player.deckCount ?? 0}
+          Deck: {gameState?.player.deckCount ?? 0}
         </div>
       </div>
       <div class="flex items-center gap-3">

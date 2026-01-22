@@ -743,11 +743,13 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 
 ### Phase 4: Visual Polish (Week 6-7)
 - [ ] Card frame designs (all 4 factions)
-- [ ] GSAP animation integration
-- [ ] Card play animations
-- [ ] Combat animations
-- [ ] Damage/heal effects
-- [ ] Death animations
+- [x] GSAP animation integration
+- [x] Card play animations
+- [x] Combat animations (attack lunge, damage shake)
+- [x] Damage/heal effects (floating numbers)
+- [x] Death animations
+- [x] Spawn animations
+- [x] Turn transition overlay
 
 ### Phase 5: Art Asset Sprint (Week 8-9)
 - [ ] Generate remaining card art via FLUX

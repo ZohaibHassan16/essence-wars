@@ -2,6 +2,7 @@
 
 import type { GameStateDto, ActionInfo, DeckInfo, BotInfo, GameEventDto, AiHintResponse } from "$lib/api/types";
 import * as api from "$lib/api/game";
+import { triggerDamage, triggerHeal, triggerDeath, triggerSpawn, triggerAttack } from "$lib/animations/actions";
 
 // Game state type for our reactive store
 export type GamePhase = "menu" | "setup" | "playing" | "gameOver";
@@ -132,6 +133,9 @@ class GameStore {
         this.eventHistory = [...this.eventHistory, ...update.events];
       }
 
+      // Process animations for this action
+      await this.processEventsForAnimations(update.events, update.lastAction);
+
       if (update.state.isGameOver) {
         this.phase = "gameOver";
       } else {
@@ -178,8 +182,11 @@ class GameStore {
           this.eventHistory = [...this.eventHistory, ...update.events];
         }
 
+        // Process animations for AI actions
+        await this.processEventsForAnimationsAi(update.events, update.lastAction);
+
         // Small delay between AI actions for visibility
-        await new Promise(r => setTimeout(r, 400));
+        await new Promise(r => setTimeout(r, 300));
       } catch (e) {
         console.error("AI turn error:", e);
         break;
@@ -316,6 +323,95 @@ class GameStore {
       return await api.canUndo(this.gameId);
     } catch {
       return false;
+    }
+  }
+
+  /**
+   * Process game events and trigger animations
+   */
+  async processEventsForAnimations(events: GameEventDto[], lastAction?: ActionInfo): Promise<void> {
+    for (const event of events) {
+      const data = event.data as Record<string, unknown>;
+
+      switch (event.eventType) {
+        case "creature_spawned": {
+          const player = data.player as number;
+          const slot = data.slot as number;
+          const elementId = `creature-${player === 1 ? "player" : "opponent"}-${slot}`;
+          // Small delay to let the DOM update
+          await new Promise(r => setTimeout(r, 50));
+          await triggerSpawn(elementId);
+          break;
+        }
+
+        case "creature_died": {
+          const player = data.player as number;
+          const slot = data.slot as number;
+          const elementId = `creature-${player === 1 ? "player" : "opponent"}-${slot}`;
+          await triggerDeath(elementId);
+          break;
+        }
+
+        case "life_changed": {
+          const player = data.player as number;
+          const oldLife = data.old as number;
+          const newLife = data.new as number;
+          const diff = newLife - oldLife;
+
+          // For now, we don't have a player avatar element to animate
+          // This could be enhanced later
+          break;
+        }
+      }
+    }
+
+    // Handle attack animations based on last action (player attacking)
+    if (lastAction?.actionType === "attack" && lastAction.sourceSlot !== undefined && lastAction.targetSlot !== undefined) {
+      const attackerId = `creature-player-${lastAction.sourceSlot}`;
+      const defenderId = `creature-opponent-${lastAction.targetSlot}`;
+
+      await triggerAttack(attackerId, defenderId, () => {
+        triggerDamage(defenderId, 1);
+      });
+    }
+  }
+
+  /**
+   * Process game events for AI actions (swapped sides)
+   */
+  async processEventsForAnimationsAi(events: GameEventDto[], lastAction?: ActionInfo): Promise<void> {
+    for (const event of events) {
+      const data = event.data as Record<string, unknown>;
+
+      switch (event.eventType) {
+        case "creature_spawned": {
+          const player = data.player as number;
+          const slot = data.slot as number;
+          // AI is player 2, so their creatures are on "opponent" side visually
+          const elementId = `creature-${player === 2 ? "opponent" : "player"}-${slot}`;
+          await new Promise(r => setTimeout(r, 50));
+          await triggerSpawn(elementId);
+          break;
+        }
+
+        case "creature_died": {
+          const player = data.player as number;
+          const slot = data.slot as number;
+          const elementId = `creature-${player === 2 ? "opponent" : "player"}-${slot}`;
+          await triggerDeath(elementId);
+          break;
+        }
+      }
+    }
+
+    // Handle attack animations for AI (opponent attacking player)
+    if (lastAction?.actionType === "attack" && lastAction.sourceSlot !== undefined && lastAction.targetSlot !== undefined) {
+      const attackerId = `creature-opponent-${lastAction.sourceSlot}`;
+      const defenderId = `creature-player-${lastAction.targetSlot}`;
+
+      await triggerAttack(attackerId, defenderId, () => {
+        triggerDamage(defenderId, 1);
+      });
     }
   }
 
