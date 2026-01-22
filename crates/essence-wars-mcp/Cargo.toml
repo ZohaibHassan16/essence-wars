@@ -38,7 +38,7 @@ thiserror.workspace = true
 anyhow.workspace = true
 
 # HTTP client for screenshot capture
-ureq = "3"
+ureq = { version = "3", features = ["json"] }
 
 # Base64 encoding for screenshot data
 base64 = "0.22"

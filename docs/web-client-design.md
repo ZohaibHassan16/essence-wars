@@ -765,10 +765,10 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] State reconstruction from actions
 
 ### Phase 6.5: Claude Code MCP Server
-- [ ] Design and Architect MCP Server enabling Claude Code to play the Game
-- [ ] Implement and Test
-- [ ] Add Screenshot feature
-- [ ] Debug and Playtest thoroughly
+- [x] Design and Architect MCP Server enabling Claude Code to play the Game
+- [x] Implement and Test
+- [x] Add Screenshot feature
+- [x] Debug and Playtest thoroughly
 
 ### Phase 7: Art Asset Sprint 
 - [ ] Create board backgrounds via FLUX

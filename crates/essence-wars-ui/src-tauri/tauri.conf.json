@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "essence-wars-ui",
+        "title": "Essence Wars",
         "width": 800,
         "height": 600
       }

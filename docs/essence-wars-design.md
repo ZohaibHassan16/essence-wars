@@ -1314,9 +1314,8 @@ If both players would win at the same time (e.g., both reduced to 0 life in the 
 
 # 16. CARD DATABASE
 
-The New Horizons Edition contains **300 cards** organized by faction. For the complete card database with all stats, effects, and abilities, see:
+The New Horizons Edition contains **300 cards** organized by faction. 
 
-**📖 [cards-new-horizons.md](cards-new-horizons.md)** — Complete Card Reference
 
 ## 16.1 Card Organization
 

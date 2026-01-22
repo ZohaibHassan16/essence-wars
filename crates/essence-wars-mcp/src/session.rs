@@ -11,6 +11,8 @@ use rand::Rng;
 
 /// A game session representing an active game.
 pub struct GameSession {
+    /// Unique identifier for this game session
+    pub game_id: String,
     /// The game client wrapping the engine
     pub client: GameClient,
     /// The player's ID (always Player 1 from human perspective)
@@ -137,8 +139,12 @@ impl SessionManager {
         // Start game (player is always Player 1)
         client.start_game(deck1_cards, deck2_cards, game_seed);
 
+        // Generate unique game ID
+        let game_id = uuid::Uuid::new_v4().to_string();
+
         // Create session
         let session = GameSession {
+            game_id,
             client,
             player_id: PlayerId::PLAYER_ONE,
             opponent_bot_type: bot_type,

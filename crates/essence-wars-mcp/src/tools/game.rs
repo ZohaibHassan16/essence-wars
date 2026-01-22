@@ -2,6 +2,7 @@
 
 use crate::ascii;
 use crate::session::SessionManager;
+use crate::tools::ui_sync::try_push_state_to_ui;
 use cardgame::core::state::GameResult;
 use cardgame::{Action, Target};
 
@@ -17,6 +18,14 @@ pub fn start_game(
         Ok(()) => {
             let session = manager.active_session().unwrap();
             let state = session.client.get_state().unwrap();
+
+            // Sync state to Tauri UI
+            try_push_state_to_ui(
+                &session.client,
+                manager.card_db(),
+                session.player_id,
+                &session.game_id,
+            );
 
             let mut output = String::new();
             output.push_str("# Game Started!\n\n");
@@ -187,6 +196,9 @@ pub fn play_action(manager: &mut SessionManager, action_index: u8) -> String {
         return format!("Error applying action: {}", e);
     }
 
+    // Sync state to UI after action
+    sync_state_to_ui(manager);
+
     let mut output = String::new();
     output.push_str(&format!(
         "**You played**: {}\n\n",
@@ -272,6 +284,18 @@ pub fn end_game(manager: &mut SessionManager) -> String {
 
 // Helper functions
 
+/// Sync the current game state to the Tauri UI (non-fatal on failure).
+fn sync_state_to_ui(manager: &SessionManager) {
+    if let Some(session) = manager.active_session() {
+        try_push_state_to_ui(
+            &session.client,
+            manager.card_db(),
+            session.player_id,
+            &session.game_id,
+        );
+    }
+}
+
 fn run_ai_and_show_state(manager: &mut SessionManager) -> String {
     let mut output = String::new();
 
@@ -289,6 +313,9 @@ fn run_ai_and_show_state(manager: &mut SessionManager) -> String {
             output.push_str(&format!("Error during AI turn: {}\n\n", e));
         }
     }
+
+    // Sync state to UI after AI turn
+    sync_state_to_ui(manager);
 
     // Show updated state
     let session = manager.active_session().unwrap();

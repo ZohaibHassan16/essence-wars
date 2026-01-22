@@ -15,6 +15,7 @@ use crate::tools::{
     discovery::{list_bots, list_decks},
     game::{end_game, legal_actions, play_action, show_hand, show_state, start_game},
     screenshot::take_screenshot,
+    ui_sync::{get_ui_elements, sync_to_ui},
 };
 
 /// JSON-RPC request structure
@@ -282,6 +283,25 @@ impl McpServer {
                     "required": []
                 }),
             },
+            // UI sync tools
+            ToolDefinition {
+                name: "sync_ui_state".to_string(),
+                description: "Manually sync the current MCP game state to the Tauri UI. Use this before taking a screenshot to ensure the UI reflects the MCP game state.".to_string(),
+                input_schema: json!({
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }),
+            },
+            ToolDefinition {
+                name: "get_ui_elements".to_string(),
+                description: "Get a list of UI elements in the game board (hand cards, creature slots, support slots, buttons). Useful for understanding what's visible in screenshots.".to_string(),
+                input_schema: json!({
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }),
+            },
         ];
 
         Ok(json!({ "tools": tools }))
@@ -377,6 +397,19 @@ impl McpServer {
                 end_game(&mut manager)
             }
             "take_screenshot" => take_screenshot(),
+            "sync_ui_state" => {
+                let manager = self.session_manager.read();
+                match manager.active_session() {
+                    Some(session) => sync_to_ui(
+                        &session.client,
+                        manager.card_db(),
+                        session.player_id,
+                        &session.game_id,
+                    ),
+                    None => "No active game. Start a game first to sync state.".to_string(),
+                }
+            }
+            "get_ui_elements" => get_ui_elements(),
             _ => {
                 return Err(JsonRpcError {
                     code: -32602,
