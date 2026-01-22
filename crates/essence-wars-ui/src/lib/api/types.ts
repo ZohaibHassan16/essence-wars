@@ -111,3 +111,16 @@ export interface GameResultDto {
   playerFinalLife: number;
   opponentFinalLife: number;
 }
+
+export interface AiHintResponse {
+  recommendedAction: ActionInfo;
+  score: number;
+  alternatives: AlternativeAction[];
+  thinkingTimeMs: number;
+}
+
+export interface AlternativeAction {
+  action: ActionInfo;
+  score: number;
+  scoreDelta: number;
+}

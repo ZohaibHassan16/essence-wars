@@ -3,6 +3,8 @@
   import CreatureSlot from "./CreatureSlot.svelte";
   import SupportSlot from "./SupportSlot.svelte";
   import HandCard from "./HandCard.svelte";
+  import ActionLog from "./ActionLog.svelte";
+  import HintPanel from "./HintPanel.svelte";
 
   const state = $derived(gameStore.gameState);
   const isPlayerTurn = $derived(gameStore.isPlayerTurn);
@@ -47,139 +49,232 @@
       a => a.actionType === "attack" && a.sourceSlot === slot
     );
   }
+
+  // Check if an opponent slot is a valid attack target
+  function isValidAttackTarget(slot: number): boolean {
+    if (gameStore.selectedCreatureSlot === null) return false;
+    return gameStore.highlightedSlots.includes(slot);
+  }
+
+  // Convert LoggedAction to ActionInfo for the log
+  const actionsForLog = $derived(
+    gameStore.actionHistory.map(a => ({
+      index: a.index,
+      actionType: a.actionType,
+      description: `[P${a.player}] ${a.description}`,
+      sourceSlot: a.sourceSlot,
+      targetSlot: a.targetSlot,
+      handIndex: a.handIndex,
+      cardId: a.cardId,
+    }))
+  );
 </script>
 
-<div class="w-full h-full flex flex-col bg-ui-bg">
-  <!-- Top bar: Opponent info -->
-  <div class="h-16 bg-ui-panel flex items-center justify-between px-6 border-b border-gray-700">
-    <div class="flex items-center gap-4">
-      <div class="text-ui-text font-semibold">Opponent</div>
-      <div class="flex gap-2 text-sm">
-        <span class="text-health">{state?.opponent.life ?? 0} HP</span>
-        <span class="text-mana">{state?.opponent.essence ?? 0}/{state?.opponent.maxEssence ?? 0} Essence</span>
-        <span class="text-gold">{state?.opponent.actionPoints ?? 0} AP</span>
+<div class="w-full h-full flex bg-ui-bg">
+  <!-- Main game area -->
+  <div class="flex-1 flex flex-col">
+    <!-- Top bar: Opponent info -->
+    <div class="h-14 bg-ui-panel flex items-center justify-between px-6 border-b border-gray-700">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 rounded-full {!isPlayerTurn ? 'bg-ui-action animate-pulse' : 'bg-gray-600'}"></div>
+          <span class="text-ui-text font-semibold">Opponent</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1 px-2 py-1 rounded bg-damage/20">
+            <span class="text-damage font-bold">{state?.opponent.life ?? 0}</span>
+            <span class="text-damage/60 text-xs">HP</span>
+          </div>
+          <div class="flex items-center gap-1 px-2 py-1 rounded bg-mana/20">
+            <span class="text-mana font-bold">{state?.opponent.essence ?? 0}</span>
+            <span class="text-mana/60 text-xs">/ {state?.opponent.maxEssence ?? 0}</span>
+          </div>
+          <div class="flex items-center gap-1 px-2 py-1 rounded bg-gold/20">
+            <span class="text-gold font-bold">{state?.opponent.actionPoints ?? 0}</span>
+            <span class="text-gold/60 text-xs">AP</span>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="flex items-center gap-4">
-      <div class="text-sm text-ui-text-dim">
-        Deck: {state?.opponent.deckCount ?? 0} | Hand: {state?.opponent.hand.length ?? 0}
-      </div>
-    </div>
-  </div>
-
-  <!-- Opponent hand (hidden cards) -->
-  <div class="h-20 flex items-center justify-center gap-2 bg-ui-bg/50">
-    {#each state?.opponent.hand ?? [] as card, i}
-      <HandCard {card} index={i} />
-    {/each}
-  </div>
-
-  <!-- Main board area -->
-  <div class="flex-1 flex flex-col justify-center gap-8 px-8">
-    <!-- Opponent's board -->
-    <div class="flex items-center justify-center gap-6">
-      <!-- Opponent supports -->
-      <div class="flex flex-col gap-2">
-        {#each state?.opponent.supports ?? [null, null] as support, i}
-          <SupportSlot {support} slot={i} />
-        {/each}
-      </div>
-
-      <!-- Opponent creatures -->
-      <div class="flex gap-3">
-        {#each state?.opponent.creatures ?? [null, null, null, null, null] as creature, i}
-          <CreatureSlot
-            {creature}
-            slot={i}
-            isPlayerSide={false}
-            isHighlighted={gameStore.highlightedSlots.includes(i) && gameStore.selectedCreatureSlot !== null}
-            onClick={() => handleOpponentSlotClick(i)}
-          />
-        {/each}
+      <div class="flex items-center gap-3 text-sm text-ui-text-dim">
+        <span>Deck: {state?.opponent.deckCount ?? 0}</span>
+        <span>Hand: {state?.opponent.hand.length ?? 0}</span>
       </div>
     </div>
 
-    <!-- Center divider with turn info -->
-    <div class="flex items-center justify-center gap-4">
-      <div class="h-px flex-1 bg-gray-700"></div>
-      <div class="px-4 py-2 rounded bg-ui-panel text-sm">
-        Turn {state?.turn ?? 0} - {isPlayerTurn ? "Your Turn" : "Opponent's Turn"}
-      </div>
-      <div class="h-px flex-1 bg-gray-700"></div>
-    </div>
-
-    <!-- Player's board -->
-    <div class="flex items-center justify-center gap-6">
-      <!-- Player supports -->
-      <div class="flex flex-col gap-2">
-        {#each state?.player.supports ?? [null, null] as support, i}
-          <SupportSlot
-            {support}
-            slot={i}
-            isHighlighted={gameStore.highlightedSlots.includes(i) && gameStore.selectedCardIndex !== null}
-            onClick={() => handlePlayerSlotClick(i)}
-          />
-        {/each}
-      </div>
-
-      <!-- Player creatures -->
-      <div class="flex gap-3">
-        {#each state?.player.creatures ?? [null, null, null, null, null] as creature, i}
-          <CreatureSlot
-            {creature}
-            slot={i}
-            isPlayerSide={true}
-            isHighlighted={gameStore.highlightedSlots.includes(i)}
-            isSelected={gameStore.selectedCreatureSlot === i}
-            onClick={() => handlePlayerSlotClick(i)}
-          />
-        {/each}
-      </div>
-    </div>
-  </div>
-
-  <!-- Player hand -->
-  <div class="h-36 flex items-center justify-center gap-2 bg-ui-bg/50 px-4">
-    {#each state?.player.hand ?? [] as card, i}
-      <HandCard
-        {card}
-        index={i}
-        isSelected={gameStore.selectedCardIndex === i}
-        isPlayable={isCardPlayable(i)}
-        onClick={() => handleCardClick(i)}
-      />
-    {/each}
-  </div>
-
-  <!-- Bottom bar: Player info -->
-  <div class="h-16 bg-ui-panel flex items-center justify-between px-6 border-t border-gray-700">
-    <div class="flex items-center gap-4">
-      <div class="text-ui-text font-semibold">You</div>
-      <div class="flex gap-2 text-sm">
-        <span class="text-health">{state?.player.life ?? 0} HP</span>
-        <span class="text-mana">{state?.player.essence ?? 0}/{state?.player.maxEssence ?? 0} Essence</span>
-        <span class="text-gold">{state?.player.actionPoints ?? 0} AP</span>
-      </div>
-    </div>
-    <div class="flex items-center gap-4">
-      <div class="text-sm text-ui-text-dim">
-        Deck: {state?.player.deckCount ?? 0}
-      </div>
-      {#if isPlayerTurn}
-        <button
-          class="px-4 py-2 bg-ui-action text-white rounded font-semibold hover:bg-ui-action/80 transition-colors"
-          onclick={() => gameStore.endTurn()}
-          disabled={gameStore.isLoading}
-        >
-          End Turn
-        </button>
+    <!-- Opponent hand (hidden cards) -->
+    <div class="h-16 flex items-center justify-center gap-1.5 bg-gray-900/30 px-4">
+      {#each state?.opponent.hand ?? [] as card, i}
+        <HandCard {card} index={i} />
+      {/each}
+      {#if (state?.opponent.hand.length ?? 0) === 0}
+        <span class="text-ui-text-dim text-sm">Empty hand</span>
       {/if}
-      <button
-        class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500 transition-colors"
-        onclick={() => gameStore.quitGame()}
-      >
-        Quit
-      </button>
+    </div>
+
+    <!-- Main board area -->
+    <div class="flex-1 flex flex-col justify-center gap-6 px-6 py-4">
+      <!-- Opponent's board -->
+      <div class="flex items-center justify-center gap-4">
+        <!-- Opponent supports -->
+        <div class="flex flex-col gap-2">
+          {#each state?.opponent.supports ?? [null, null] as support, i}
+            <SupportSlot {support} slot={i} />
+          {/each}
+        </div>
+
+        <!-- Opponent creatures -->
+        <div class="flex gap-2">
+          {#each state?.opponent.creatures ?? [null, null, null, null, null] as creature, i}
+            <CreatureSlot
+              {creature}
+              slot={i}
+              isPlayerSide={false}
+              isValidTarget={isValidAttackTarget(i)}
+              onClick={() => handleOpponentSlotClick(i)}
+            />
+          {/each}
+        </div>
+      </div>
+
+      <!-- Center divider with turn info -->
+      <div class="flex items-center justify-center gap-4">
+        <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
+        <div class="px-6 py-2 rounded-full border border-gray-600 bg-ui-panel/80 flex items-center gap-3">
+          <span class="text-ui-text-dim text-sm">Turn</span>
+          <span class="text-ui-text font-bold text-lg">{state?.turn ?? 0}</span>
+          <div class="w-px h-4 bg-gray-600"></div>
+          <span class="text-sm font-semibold {isPlayerTurn ? 'text-health' : 'text-ui-action'}">
+            {isPlayerTurn ? "Your Turn" : "Opponent's Turn"}
+          </span>
+        </div>
+        <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
+      </div>
+
+      <!-- Player's board -->
+      <div class="flex items-center justify-center gap-4">
+        <!-- Player supports -->
+        <div class="flex flex-col gap-2">
+          {#each state?.player.supports ?? [null, null] as support, i}
+            <SupportSlot
+              {support}
+              slot={i}
+              isHighlighted={gameStore.highlightedSlots.includes(i) && gameStore.selectedCardIndex !== null}
+              onClick={() => handlePlayerSlotClick(i)}
+            />
+          {/each}
+        </div>
+
+        <!-- Player creatures -->
+        <div class="flex gap-2">
+          {#each state?.player.creatures ?? [null, null, null, null, null] as creature, i}
+            <CreatureSlot
+              {creature}
+              slot={i}
+              isPlayerSide={true}
+              isHighlighted={gameStore.highlightedSlots.includes(i) && gameStore.selectedCardIndex !== null}
+              isSelected={gameStore.selectedCreatureSlot === i}
+              onClick={() => handlePlayerSlotClick(i)}
+            />
+          {/each}
+        </div>
+      </div>
+    </div>
+
+    <!-- Player hand -->
+    <div class="h-36 flex items-center justify-center gap-1.5 bg-gray-900/30 px-4 py-2">
+      {#each state?.player.hand ?? [] as card, i}
+        <HandCard
+          {card}
+          index={i}
+          isSelected={gameStore.selectedCardIndex === i}
+          isPlayable={isCardPlayable(i)}
+          onClick={() => handleCardClick(i)}
+        />
+      {/each}
+      {#if (state?.player.hand.length ?? 0) === 0}
+        <span class="text-ui-text-dim text-sm">Empty hand</span>
+      {/if}
+    </div>
+
+    <!-- Bottom bar: Player info -->
+    <div class="h-14 bg-ui-panel flex items-center justify-between px-6 border-t border-gray-700">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 rounded-full {isPlayerTurn ? 'bg-health animate-pulse' : 'bg-gray-600'}"></div>
+          <span class="text-ui-text font-semibold">You</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-1 px-2 py-1 rounded bg-health/20">
+            <span class="text-health font-bold">{state?.player.life ?? 0}</span>
+            <span class="text-health/60 text-xs">HP</span>
+          </div>
+          <div class="flex items-center gap-1 px-2 py-1 rounded bg-mana/20">
+            <span class="text-mana font-bold">{state?.player.essence ?? 0}</span>
+            <span class="text-mana/60 text-xs">/ {state?.player.maxEssence ?? 0}</span>
+          </div>
+          <div class="flex items-center gap-1 px-2 py-1 rounded bg-gold/20">
+            <span class="text-gold font-bold">{state?.player.actionPoints ?? 0}</span>
+            <span class="text-gold/60 text-xs">AP</span>
+          </div>
+        </div>
+        <div class="text-sm text-ui-text-dim">
+          Deck: {state?.player.deckCount ?? 0}
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        {#if isPlayerTurn}
+          <button
+            class="px-4 py-2 bg-amber-700 text-white rounded-lg font-semibold
+                   hover:bg-amber-600 active:scale-95 transition-all
+                   disabled:opacity-50 disabled:cursor-not-allowed"
+            onclick={() => gameStore.undoAction()}
+            disabled={gameStore.isLoading || gameStore.actionHistory.length === 0}
+            title="Undo last action (dev mode)"
+          >
+            Undo
+          </button>
+          <button
+            class="px-5 py-2 bg-ui-action text-white rounded-lg font-semibold
+                   hover:bg-ui-action/80 active:scale-95 transition-all
+                   disabled:opacity-50 disabled:cursor-not-allowed"
+            onclick={() => gameStore.endTurn()}
+            disabled={gameStore.isLoading}
+          >
+            End Turn
+          </button>
+        {:else}
+          <div class="px-5 py-2 bg-gray-700 text-ui-text-dim rounded-lg font-semibold flex items-center gap-2">
+            <div class="w-4 h-4 border-2 border-ui-text-dim border-t-transparent rounded-full animate-spin"></div>
+            AI Thinking...
+          </div>
+        {/if}
+        <button
+          class="px-4 py-2 bg-gray-700 text-ui-text rounded-lg hover:bg-gray-600 transition-colors"
+          onclick={() => gameStore.quitGame()}
+        >
+          Quit
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right sidebar: Hint Panel + Action Log -->
+  <div class="w-64 border-l border-gray-700 bg-ui-panel/50 flex flex-col">
+    <!-- AI Hint Panel (only when player's turn) -->
+    {#if isPlayerTurn}
+      <div class="p-3 border-b border-gray-700">
+        <HintPanel
+          hint={gameStore.currentHint}
+          isLoading={gameStore.isHintLoading}
+          onRequestHint={() => gameStore.requestHint()}
+          onApplyHint={(action) => gameStore.applyHint(action)}
+        />
+      </div>
+    {/if}
+
+    <!-- Action Log -->
+    <div class="flex-1 p-3 overflow-hidden">
+      <ActionLog actions={actionsForLog} />
     </div>
   </div>
 </div>

@@ -171,6 +171,25 @@ pub struct GameResultDto {
     pub opponent_final_life: i16,
 }
 
+/// AI hint response with recommended action and alternatives
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AiHintResponse {
+    pub recommended_action: ActionInfo,
+    pub score: f32,
+    pub alternatives: Vec<AlternativeAction>,
+    pub thinking_time_ms: u64,
+}
+
+/// An alternative action with explanation
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AlternativeAction {
+    pub action: ActionInfo,
+    pub score: f32,
+    pub score_delta: f32,
+}
+
 // Conversion implementations
 
 /// Derive faction from card ID (based on ID ranges in CLAUDE.md)

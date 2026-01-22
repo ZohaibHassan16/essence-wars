@@ -1,10 +1,17 @@
 // Game state store using Svelte 5 runes
 
-import type { GameStateDto, ActionInfo, DeckInfo, BotInfo } from "$lib/api/types";
+import type { GameStateDto, ActionInfo, DeckInfo, BotInfo, GameEventDto, AiHintResponse } from "$lib/api/types";
 import * as api from "$lib/api/game";
 
 // Game state type for our reactive store
 export type GamePhase = "menu" | "setup" | "playing" | "gameOver";
+
+// Action with metadata for the log
+export interface LoggedAction extends ActionInfo {
+  player: 1 | 2;
+  turn: number;
+  timestamp: number;
+}
 
 class GameStore {
   // Core state
@@ -22,6 +29,14 @@ class GameStore {
   selectedCardIndex = $state<number | null>(null);
   selectedCreatureSlot = $state<number | null>(null);
   highlightedSlots = $state<number[]>([]);
+
+  // Action history
+  actionHistory = $state<LoggedAction[]>([]);
+  eventHistory = $state<GameEventDto[]>([]);
+
+  // AI Hint state
+  currentHint = $state<AiHintResponse | null>(null);
+  isHintLoading = $state(false);
 
   // Computed
   get isPlayerTurn() {
@@ -68,7 +83,14 @@ class GameStore {
       });
       this.gameState = state;
       this.phase = "playing";
+      this.actionHistory = [];
+      this.eventHistory = [];
       await this.refreshLegalActions();
+
+      // If AI goes first, do their turn
+      if (!playerGoesFirst && state.activePlayer === 2) {
+        await this.doAiTurn();
+      }
     } catch (e) {
       this.error = e instanceof Error ? e.message : String(e);
     } finally {
@@ -85,13 +107,30 @@ class GameStore {
     }
   }
 
-  async applyAction(actionIndex: number) {
+  async applyAction(actionIndex: number, isPlayerAction: boolean = true) {
     if (!this.gameId) return;
     this.isLoading = true;
     try {
+      const prevState = this.gameState;
       const update = await api.applyAction(this.gameId, actionIndex);
       this.gameState = update.state;
       this.clearSelection();
+
+      // Log the action
+      if (update.lastAction) {
+        const loggedAction: LoggedAction = {
+          ...update.lastAction,
+          player: isPlayerAction ? 1 : 2,
+          turn: prevState?.turn ?? 1,
+          timestamp: Date.now(),
+        };
+        this.actionHistory = [...this.actionHistory, loggedAction];
+      }
+
+      // Log events
+      if (update.events.length > 0) {
+        this.eventHistory = [...this.eventHistory, ...update.events];
+      }
 
       if (update.state.isGameOver) {
         this.phase = "gameOver";
@@ -99,7 +138,7 @@ class GameStore {
         await this.refreshLegalActions();
 
         // If it's now opponent's turn, get AI move
-        if (update.state.activePlayer === 2) {
+        if (update.state.activePlayer === 2 && isPlayerAction) {
           await this.doAiTurn();
         }
       }
@@ -117,11 +156,30 @@ class GameStore {
     while (this.gameState && this.gameState.activePlayer === 2 && !this.gameState.isGameOver) {
       try {
         const aiAction = await api.getAiMove(this.gameId);
+
+        // Apply action and log as AI action
+        const prevState = this.gameState;
         const update = await api.applyAction(this.gameId, aiAction.index);
         this.gameState = update.state;
 
+        // Log the AI action
+        if (update.lastAction) {
+          const loggedAction: LoggedAction = {
+            ...update.lastAction,
+            player: 2,
+            turn: prevState?.turn ?? 1,
+            timestamp: Date.now(),
+          };
+          this.actionHistory = [...this.actionHistory, loggedAction];
+        }
+
+        // Log events
+        if (update.events.length > 0) {
+          this.eventHistory = [...this.eventHistory, ...update.events];
+        }
+
         // Small delay between AI actions for visibility
-        await new Promise(r => setTimeout(r, 300));
+        await new Promise(r => setTimeout(r, 400));
       } catch (e) {
         console.error("AI turn error:", e);
         break;
@@ -208,6 +266,56 @@ class GameStore {
     const endTurnAction = this.legalActions.find(a => a.actionType === "end_turn");
     if (endTurnAction) {
       await this.applyAction(endTurnAction.index);
+    }
+  }
+
+  async requestHint() {
+    if (!this.gameId || !this.isPlayerTurn) return;
+    this.isHintLoading = true;
+    try {
+      this.currentHint = await api.getAiHint(this.gameId);
+    } catch (e) {
+      console.error("Failed to get AI hint:", e);
+      this.currentHint = null;
+    } finally {
+      this.isHintLoading = false;
+    }
+  }
+
+  async applyHint(action: ActionInfo) {
+    this.currentHint = null;
+    await this.applyAction(action.index);
+  }
+
+  clearHint() {
+    this.currentHint = null;
+  }
+
+  async undoAction() {
+    if (!this.gameId) return;
+    this.isLoading = true;
+    try {
+      const newState = await api.undoAction(this.gameId);
+      this.gameState = newState;
+      this.currentHint = null;
+      // Remove the last action from local history too
+      if (this.actionHistory.length > 0) {
+        this.actionHistory = this.actionHistory.slice(0, -1);
+      }
+      await this.refreshLegalActions();
+    } catch (e) {
+      this.error = e instanceof Error ? e.message : String(e);
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  async checkCanUndo(): Promise<boolean> {
+    if (!this.gameId) return false;
+    try {
+      return await api.canUndo(this.gameId);
+    } catch {
+      return false;
     }
   }
 

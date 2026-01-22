@@ -1,8 +1,9 @@
 //! Game manager for tracking active games.
 
-use cardgame::bots::{create_bot, AlphaBetaConfig, BotType, MctsConfig};
+use cardgame::bots::{create_bot, AlphaBetaConfig, BotType, GreedyBot, MctsConfig};
 use cardgame::client_api::GameClient;
 use cardgame::{CardDatabase, DeckRegistry, PlayerId};
+use std::time::Instant;
 use parking_lot::RwLock;
 use rand::Rng;
 use std::collections::HashMap;
@@ -20,7 +21,14 @@ pub struct GameSession {
     pub opponent_bot_type: BotType,
     /// Seed for bot randomization
     pub bot_seed: u64,
+    /// History of action infos for display
     pub action_history: Vec<ActionInfo>,
+    /// History of action indices for replay-based undo
+    pub action_indices: Vec<u8>,
+    /// Original config for replaying the game
+    pub original_config: GameConfig,
+    /// Game seed used when starting
+    pub game_seed: u64,
 }
 
 // GameSession is Send because all its fields are Send
@@ -157,6 +165,9 @@ impl GameManager {
             opponent_bot_type: bot_type,
             bot_seed,
             action_history: Vec::new(),
+            action_indices: Vec::new(),
+            original_config: config,
+            game_seed,
         };
 
         // Store session
@@ -204,6 +215,9 @@ impl GameManager {
             .apply_action_by_index(action_index)
             .map_err(|e| e.to_string())?;
 
+        // Store action index for replay-based undo
+        session.action_indices.push(action_index);
+
         let action = cardgame::Action::from_index(action_index)
             .ok_or_else(|| format!("Invalid action index: {}", action_index))?;
 
@@ -247,6 +261,115 @@ impl GameManager {
 
         let action_index = action.to_index();
         Ok(action_to_info(&action, action_index))
+    }
+
+    /// Get AI hint with recommended action and alternatives
+    pub fn get_ai_hint(&self, game_id: &str) -> Result<AiHintResponse, String> {
+        let start = Instant::now();
+        let games = self.games.read();
+        let session = games
+            .get(game_id)
+            .ok_or_else(|| format!("Game not found: {}", game_id))?;
+
+        // Get legal actions
+        let legal_actions = session.client.get_legal_actions();
+        if legal_actions.is_empty() {
+            return Err("No legal actions available".to_string());
+        }
+
+        // Use GreedyBot to get a recommendation
+        let mut greedy_bot = GreedyBot::new(&self.card_db, 42);
+
+        // Get the AI's recommendation using the client's built-in hint system
+        let best_action = session
+            .client
+            .get_ai_hint(&mut greedy_bot)
+            .ok_or_else(|| "Failed to get AI hint".to_string())?;
+
+        let thinking_time_ms = start.elapsed().as_millis() as u64;
+        let recommended = action_to_info(&best_action, best_action.to_index());
+
+        // For alternatives, just show other legal actions (without detailed scoring for now)
+        let alternatives: Vec<AlternativeAction> = legal_actions
+            .iter()
+            .filter(|&&a| a != best_action)
+            .take(4)
+            .map(|action| {
+                AlternativeAction {
+                    action: action_to_info(action, action.to_index()),
+                    score: 0.0,
+                    score_delta: 0.0,
+                }
+            })
+            .collect();
+
+        Ok(AiHintResponse {
+            recommended_action: recommended,
+            score: 0.0,  // Would need engine access for actual score
+            alternatives,
+            thinking_time_ms,
+        })
+    }
+
+    /// Undo the last action (dev mode feature)
+    /// This replays the game from the beginning without the last action.
+    pub fn undo_action(&self, game_id: &str) -> Result<GameStateDto, String> {
+        let mut games = self.games.write();
+        let session = games
+            .get_mut(game_id)
+            .ok_or_else(|| format!("Game not found: {}", game_id))?;
+
+        // Check if there are actions to undo
+        if session.action_indices.is_empty() {
+            return Err("No actions to undo".to_string());
+        }
+
+        // Get decks
+        let player_deck = self
+            .deck_registry
+            .get(&session.original_config.player_deck_id)
+            .ok_or_else(|| "Player deck not found".to_string())?;
+        let opponent_deck = self
+            .deck_registry
+            .get(&session.original_config.opponent_deck_id)
+            .ok_or_else(|| "Opponent deck not found".to_string())?;
+
+        // Convert deck cards
+        let deck1_cards = player_deck.to_card_ids();
+        let deck2_cards = opponent_deck.to_card_ids();
+        let player_first = session.original_config.player_goes_first.unwrap_or(true);
+
+        // Create new client and start game with same seed
+        let mut new_client = GameClient::new(self.card_db.clone());
+        if player_first {
+            new_client.start_game(deck1_cards, deck2_cards, session.game_seed);
+        } else {
+            new_client.start_game(deck2_cards, deck1_cards, session.game_seed);
+        }
+
+        // Remove the last action
+        session.action_indices.pop();
+        session.action_history.pop();
+
+        // Replay all actions except the last one
+        for &action_index in &session.action_indices {
+            let _ = new_client.apply_action_by_index(action_index);
+        }
+
+        // Replace the client with the replayed state
+        session.client = new_client;
+
+        Ok(self.client_to_dto(&session.client, game_id, session.player_id))
+    }
+
+    /// Check if undo is available
+    pub fn can_undo(&self, game_id: &str) -> Result<bool, String> {
+        let games = self.games.read();
+        let session = games
+            .get(game_id)
+            .ok_or_else(|| format!("Game not found: {}", game_id))?;
+
+        Ok(!session.action_indices.is_empty())
     }
 
     /// End the game and clean up

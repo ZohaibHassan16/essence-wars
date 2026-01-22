@@ -9,6 +9,7 @@ import type {
   ActionInfo,
   GameStateUpdate,
   GameResultDto,
+  AiHintResponse,
 } from "./types";
 
 export async function listDecks(): Promise<DeckInfo[]> {
@@ -44,4 +45,16 @@ export async function getAiMove(gameId: string): Promise<ActionInfo> {
 
 export async function endGame(gameId: string): Promise<GameResultDto> {
   return await invoke<GameResultDto>("end_game", { gameId });
+}
+
+export async function getAiHint(gameId: string): Promise<AiHintResponse> {
+  return await invoke<AiHintResponse>("get_ai_hint", { gameId });
+}
+
+export async function undoAction(gameId: string): Promise<GameStateDto> {
+  return await invoke<GameStateDto>("undo_action", { gameId });
+}
+
+export async function canUndo(gameId: string): Promise<boolean> {
+  return await invoke<boolean>("can_undo", { gameId });
 }

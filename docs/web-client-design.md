@@ -718,12 +718,12 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 ## 8. Development Phases
 
 ### Phase 1: Foundation (Week 1-2)
-- [ ] Initialize Tauri 2.0 project in `crates/essence-wars-ui/`
-- [ ] Set up Svelte + Vite + Tailwind
-- [ ] Integrate `cardgame` crate as dependency
-- [ ] Implement basic IPC: `list_decks`, `new_game`, `get_game_state`
-- [ ] Create minimal board layout (slots, placeholders)
-- [ ] Test game creation and state retrieval
+- [x] Initialize Tauri 2.0 project in `crates/essence-wars-ui/`
+- [x] Set up Svelte + Vite + Tailwind
+- [x] Integrate `cardgame` crate as dependency
+- [x] Implement basic IPC: `list_decks`, `new_game`, `get_game_state`
+- [x] Create minimal board layout (slots, placeholders)
+- [x] Test game creation and state retrieval
 
 ### Phase 2: Core Gameplay (Week 3-4)
 - [ ] Implement full IPC command set

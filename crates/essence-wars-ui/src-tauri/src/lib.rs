@@ -26,6 +26,9 @@ pub fn run() {
             get_legal_actions,
             apply_action,
             get_ai_move,
+            get_ai_hint,
+            undo_action,
+            can_undo,
             end_game,
         ])
         .run(tauri::generate_context!())
