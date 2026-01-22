@@ -281,9 +281,9 @@ Version in **root `Cargo.toml`** `[workspace.package]`.
 2. `crates/cardgame/src/version.rs`: Update test
 3. Run tests
 
-## MCP Server & UI Playtesting
+## MCP Server
 
-The MCP (Model Context Protocol) server enables Claude Code to play Essence Wars games interactively with visual feedback via screenshots.
+The MCP (Model Context Protocol) server enables Claude Code to play Essence Wars games interactively.
 
 ### Architecture
 
@@ -294,45 +294,9 @@ Claude Code (MCP Client)
     ▼
 essence-wars-mcp (MCP Server)
     │
-    │ HTTP sync → POST /sync_state
+    │ HTTP sync → POST /sync_state (optional)
     ▼
 essence-wars-ui (Tauri App)
-    │
-    │ Screenshot capture
-    ▼
-Claude Code receives PNG
-```
-
-### Starting the UI for Playtesting
-
-**Option A: Headless (for autonomous testing)**
-```bash
-# From project root - starts Xvfb + Tauri app
-./scripts/launch-ui-headless.sh
-
-# With rebuild
-./scripts/launch-ui-headless.sh --build
-```
-
-**Option B: Normal (with visible window)**
-```bash
-./scripts/launch-ui.sh
-```
-
-### Testing Endpoints
-
-```bash
-# Health check
-curl http://127.0.0.1:9999/health
-
-# List UI elements
-curl http://127.0.0.1:9999/elements
-
-# Get synced state (after MCP pushes)
-curl http://127.0.0.1:9999/synced_state
-
-# Capture screenshot
-curl http://127.0.0.1:9999/screenshot -o test.png
 ```
 
 ### MCP Tools
@@ -348,21 +312,30 @@ curl http://127.0.0.1:9999/screenshot -o test.png
 | `play_action` | Execute action by index |
 | `ai_hint` | Get MCTS analysis and recommended move |
 | `end_game` | End current game session |
-| `take_screenshot` | Capture UI screenshot (PNG) |
-| `sync_ui_state` | Manually sync MCP state to Tauri UI |
-| `get_ui_elements` | List UI elements for reference |
+| `sync_ui_state` | Manually sync MCP state to Tauri UI (if UI is running) |
 
-### Typical Playtesting Session
+### Typical Session
 
-1. Start the Tauri UI (headless or visible)
-2. Verify with `curl http://127.0.0.1:9999/health`
-3. Use MCP tools to play:
+1. Use MCP tools to play:
    - `list_decks` → choose decks
-   - `start_game` → begins game (auto-syncs to UI)
+   - `start_game` → begins game
    - `show_hand` / `legal_actions` → see options
-   - `play_action` → make moves (auto-syncs to UI)
-   - `take_screenshot` → verify UI reflects game state
-4. `end_game` when done
+   - `play_action` → make moves
+2. `end_game` when done
+
+### UI Sync (Optional)
+
+If the Tauri UI app is running, you can sync game state to it:
+- Use `sync_ui_state` to push current game state to the UI
+- The UI will auto-switch to display the synced game state
+
+```bash
+# Start the UI
+./scripts/launch-ui.sh
+
+# Health check
+curl http://127.0.0.1:9999/health
+```
 
 ### Key Files
 
@@ -370,5 +343,4 @@ curl http://127.0.0.1:9999/screenshot -o test.png
 |------|---------|
 | `crates/essence-wars-mcp/` | MCP server crate |
 | `crates/essence-wars-ui/` | Tauri desktop app |
-| `scripts/launch-ui-headless.sh` | Headless Xvfb launcher |
 | `.mcp.json` | Claude Code MCP configuration |

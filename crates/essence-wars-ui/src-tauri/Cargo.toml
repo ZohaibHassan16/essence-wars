@@ -28,12 +28,8 @@ cardgame.workspace = true
 # Async
 tokio = { version = "1", features = ["sync", "rt-multi-thread", "net"] }
 
-# HTTP server for screenshot capture
+# HTTP server for MCP sync
 axum = "0.8"
-
-# Screenshot capture
-xcap = "0.3"
-image = "0.25"
 
 # Error handling
 anyhow = "1.0"

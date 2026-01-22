@@ -1,7 +1,7 @@
 //! UI synchronization for pushing game state to Tauri.
 //!
 //! This module handles serializing MCP game state and pushing it to the
-//! Tauri UI via HTTP, enabling screenshots to reflect the MCP game state.
+//! Tauri UI via HTTP, enabling the UI to display the current MCP game state.
 
 use cardgame::client_api::GameClient;
 use cardgame::{CardDatabase, CardType, Creature, Keywords, PlayerId, Support};
@@ -181,67 +181,6 @@ pub fn try_push_state_to_ui(
     }
 }
 
-/// URL for UI elements endpoint.
-const ELEMENTS_URL: &str = "http://127.0.0.1:9999/elements";
-
-/// UI element description (matches Tauri's UIElement).
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UIElement {
-    pub id: String,
-    pub element_type: String,
-    pub index: Option<usize>,
-    pub side: Option<String>,
-    pub description: String,
-    pub region: String,
-}
-
-/// Get list of UI elements from Tauri server.
-pub fn get_ui_elements() -> String {
-    match fetch_ui_elements() {
-        Ok(elements) => {
-            let mut output = String::new();
-            output.push_str("# UI Elements\n\n");
-            output.push_str("| ID | Type | Index | Side | Region | Description |\n");
-            output.push_str("|-----|------|-------|------|--------|-------------|\n");
-
-            for elem in &elements {
-                output.push_str(&format!(
-                    "| {} | {} | {} | {} | {} | {} |\n",
-                    elem.id,
-                    elem.element_type,
-                    elem.index.map(|i| i.to_string()).unwrap_or_else(|| "-".to_string()),
-                    elem.side.as_deref().unwrap_or("-"),
-                    elem.region,
-                    elem.description,
-                ));
-            }
-
-            output.push_str(&format!("\n**Total**: {} elements\n", elements.len()));
-            output
-        }
-        Err(e) => format!("# Error\n\nFailed to get UI elements: {}\n\nMake sure the Tauri UI app is running.", e),
-    }
-}
-
-/// Fetch UI elements from Tauri HTTP server.
-fn fetch_ui_elements() -> Result<Vec<UIElement>, String> {
-    let response = ureq::get(ELEMENTS_URL)
-        .call()
-        .map_err(|e| format!("Failed to connect to UI: {}", e))?;
-
-    if response.status() != 200 {
-        return Err(format!("UI returned status: {}", response.status()));
-    }
-
-    let elements: Vec<UIElement> = response
-        .into_body()
-        .read_json()
-        .map_err(|e| format!("Failed to parse UI elements: {}", e))?;
-
-    Ok(elements)
-}
-
 /// Manually sync current game state to UI.
 ///
 /// Returns a status message indicating success or failure.
@@ -258,7 +197,7 @@ pub fn sync_to_ui(
                  State synced to Tauri UI.\n\n\
                  - **Status**: {}\n\
                  - **Timestamp**: {}\n\n\
-                 The screenshot should now reflect the current MCP game state.",
+                 The Tauri UI should now display the current MCP game state.",
                 response.status,
                 response.synced_at
             )

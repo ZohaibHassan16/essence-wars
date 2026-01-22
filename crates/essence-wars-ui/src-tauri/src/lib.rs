@@ -12,7 +12,6 @@ use commands::*;
 use screenshot_server::ScreenshotState;
 use state::{GameManager, ReplayManager};
 use std::sync::Arc;
-use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -47,14 +46,6 @@ pub fn run() {
         .manage(game_manager)
         .manage(replay_manager)
         .manage(screenshot_state)
-        .setup(|app| {
-            // Register the main window title with screenshot state
-            // The window title is "Essence Wars" as configured in tauri.conf.json
-            let state: tauri::State<'_, Arc<ScreenshotState>> = app.state();
-            state.set_window_title("Essence Wars".to_string());
-            eprintln!("Screenshot server: registered window 'Essence Wars'");
-            Ok(())
-        })
         .invoke_handler(tauri::generate_handler![
             list_decks,
             list_bots,

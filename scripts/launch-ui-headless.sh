@@ -2,9 +2,11 @@
 # Launch Essence Wars UI headlessly using Xvfb
 #
 # This script starts the Tauri app in a virtual X server, allowing:
-# - Screenshots to be captured without a visible window
-# - Claude Code to playtest games autonomously
 # - Running on servers without a display
+# - Testing MCP state sync to the UI
+#
+# Note: This is primarily useful for testing the UI app itself.
+# For MCP gameplay, the MCP server works without the UI running.
 #
 # Usage:
 #   ./scripts/launch-ui-headless.sh          # Start headless UI
@@ -107,7 +109,7 @@ sleep 1
 
 echo -e "${BLUE}Starting Essence Wars UI (headless)${NC}"
 echo -e "Display: ${DISPLAY}"
-echo -e "Screenshot port: ${PORT}"
+echo -e "Sync port: ${PORT}"
 echo ""
 
 # Start Xvfb
@@ -177,8 +179,8 @@ echo -e "${GREEN}Starting Essence Wars UI...${NC}"
 APP_PID=$!
 echo "App starting (PID $APP_PID)"
 
-# Wait for screenshot server to be ready
-echo -e "${BLUE}Waiting for screenshot server on port ${PORT}...${NC}"
+# Wait for sync server to be ready
+echo -e "${BLUE}Waiting for sync server on port ${PORT}...${NC}"
 READY=0
 for i in {1..30}; do
     if curl -s "http://127.0.0.1:${PORT}/health" >/dev/null 2>&1; then
@@ -191,7 +193,7 @@ done
 echo ""
 
 if [ $READY -eq 0 ]; then
-    echo -e "${RED}Screenshot server failed to start${NC}"
+    echo -e "${RED}Sync server failed to start${NC}"
     exit 1
 fi
 
@@ -200,11 +202,8 @@ echo -e "${GREEN}=== Essence Wars UI is running headlessly ===${NC}"
 echo ""
 echo "Endpoints:"
 echo "  - Health:     http://127.0.0.1:${PORT}/health"
-echo "  - Screenshot: http://127.0.0.1:${PORT}/screenshot"
 echo "  - Sync State: http://127.0.0.1:${PORT}/sync_state (POST)"
 echo "  - Get State:  http://127.0.0.1:${PORT}/synced_state (GET)"
-echo ""
-echo "Test screenshot: curl http://127.0.0.1:${PORT}/screenshot -o test.png"
 echo ""
 echo -e "${YELLOW}Press Ctrl+C to stop${NC}"
 echo ""

@@ -767,7 +767,6 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 ### Phase 6.5: Claude Code MCP Server
 - [x] Design and Architect MCP Server enabling Claude Code to play the Game
 - [x] Implement and Test
-- [x] Add Screenshot feature
 - [x] Debug and Playtest thoroughly
 
 ### Phase 7: Art Asset Sprint 
