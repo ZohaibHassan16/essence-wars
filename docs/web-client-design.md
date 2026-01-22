@@ -726,20 +726,20 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] Test game creation and state retrieval
 
 ### Phase 2: Core Gameplay (Week 3-4)
-- [ ] Implement full IPC command set
-- [ ] Card component with basic styling
-- [ ] Hand display with card selection
-- [ ] Legal action highlighting
-- [ ] Play card to slot interaction
-- [ ] Attack creature interaction
-- [ ] End turn flow
-- [ ] Basic turn indicator and life display
+- [x] Implement full IPC command set
+- [x] Card component with basic styling
+- [x] Hand display with card selection
+- [x] Legal action highlighting
+- [x] Play card to slot interaction
+- [x] Attack creature interaction
+- [x] End turn flow
+- [x] Basic turn indicator and life display
 
 ### Phase 3: AI Integration (Week 5)
-- [ ] AI move execution
-- [ ] AI hint system with reasoning
-- [ ] Turn flow (human → AI → human)
-- [ ] Game over detection and display
+- [x] AI move execution
+- [x] AI hint system with reasoning
+- [x] Turn flow (human → AI → human)
+- [x] Game over detection and display
 
 ### Phase 4: Visual Polish (Week 6-7)
 - [ ] Card frame designs (all 4 factions)
