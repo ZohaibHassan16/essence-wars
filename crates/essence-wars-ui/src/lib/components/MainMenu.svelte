@@ -1,13 +1,21 @@
 <script lang="ts">
   import { gameStore } from "$lib/stores/gameState.svelte";
   import { spectatorStore } from "$lib/stores/spectatorState.svelte";
+  import { replayStore } from "$lib/stores/replayState.svelte";
 
   let isLoadingSpectator = $state(false);
+  let isLoadingReplays = $state(false);
 
   async function startSpectatorMode() {
     isLoadingSpectator = true;
     await spectatorStore.loadDecksAndBots();
     isLoadingSpectator = false;
+  }
+
+  async function openReplayBrowser() {
+    isLoadingReplays = true;
+    await replayStore.loadReplayList();
+    isLoadingReplays = false;
   }
 </script>
 
@@ -34,12 +42,25 @@
         class="w-64 px-8 py-4 bg-ui-panel text-ui-text rounded-lg font-bold text-lg
                border border-gray-600 hover:border-ui-action hover:text-ui-action transition-all hover:scale-105"
         onclick={startSpectatorMode}
-        disabled={gameStore.isLoading || isLoadingSpectator}
+        disabled={gameStore.isLoading || isLoadingSpectator || isLoadingReplays}
       >
         {#if isLoadingSpectator}
           Loading...
         {:else}
           Watch AI vs AI
+        {/if}
+      </button>
+
+      <button
+        class="w-64 px-8 py-4 bg-ui-panel text-ui-text rounded-lg font-bold text-lg
+               border border-gray-600 hover:border-ui-action hover:text-ui-action transition-all hover:scale-105"
+        onclick={openReplayBrowser}
+        disabled={gameStore.isLoading || isLoadingSpectator || isLoadingReplays}
+      >
+        {#if isLoadingReplays}
+          Loading...
+        {:else}
+          Watch Replays
         {/if}
       </button>
     </div>

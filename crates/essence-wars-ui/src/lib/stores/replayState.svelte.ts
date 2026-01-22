@@ -1,13 +1,10 @@
-// Spectator state store using Svelte 5 runes
+// Replay state store using Svelte 5 runes
 
 import type {
   SpectatorMatch,
   SpectatorAction,
-  SpectatorConfig,
   GameStateDto,
-  DeckInfo,
-  BotInfo,
-  GameEventDto,
+  ReplayInfo,
 } from "$lib/api/types";
 import * as api from "$lib/api/game";
 import {
@@ -18,18 +15,18 @@ import {
   triggerAttack,
 } from "$lib/animations/actions";
 
-export type SpectatorPhase = "setup" | "computing" | "watching" | "finished" | "gameOver";
+export type ReplayPhase = "idle" | "browser" | "loading" | "watching" | "finished" | "gameOver";
 
-class SpectatorStore {
+class ReplayStore {
   // Phase management
-  phase = $state<SpectatorPhase>("setup");
+  phase = $state<ReplayPhase>("idle");
 
-  // Setup data (shared with gameStore, loaded once)
-  decks = $state<DeckInfo[]>([]);
-  bots = $state<BotInfo[]>([]);
+  // Replay list (for browser)
+  replays = $state<ReplayInfo[]>([]);
 
-  // Match data (after computation)
+  // Current replay data
   match = $state<SpectatorMatch | null>(null);
+  currentReplayPath = $state<string | null>(null);
 
   // Playback state
   currentActionIndex = $state<number>(-1); // -1 = initial state
@@ -37,11 +34,8 @@ class SpectatorStore {
   playbackSpeed = $state<number>(1.0); // 0.25, 0.5, 1, 2, 4
   private playbackTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  // "Watch Live" mode - hides timeline and result until end
-  watchLive = $state<boolean>(false);
-
   // Loading/error
-  isComputing = $state<boolean>(false);
+  isLoading = $state<boolean>(false);
   error = $state<string | null>(null);
 
   // ============================================================================
@@ -76,20 +70,6 @@ class SpectatorStore {
     return this.currentActionIndex >= this.totalActions - 1;
   }
 
-  /** Whether timeline should be visible */
-  get canShowTimeline(): boolean {
-    // In watch live mode, only show timeline after reaching the end
-    if (this.watchLive && this.phase !== "finished") return false;
-    return true;
-  }
-
-  /** Whether result should be visible */
-  get canShowResult(): boolean {
-    // In watch live mode, only show result after reaching the end
-    if (this.watchLive && this.phase !== "finished") return false;
-    return true;
-  }
-
   /** Current turn number */
   get currentTurn(): number {
     if (!this.match) return 0;
@@ -98,35 +78,36 @@ class SpectatorStore {
   }
 
   // ============================================================================
-  // Actions
+  // Browser Actions
   // ============================================================================
 
-  /** Load decks and bots for setup screen */
-  async loadDecksAndBots() {
+  /** Load list of saved replays and show browser */
+  async loadReplayList() {
+    this.phase = "browser";
+    this.isLoading = true;
     this.error = null;
+
     try {
-      const [decks, bots] = await Promise.all([
-        api.listDecks(),
-        api.listBots(),
-      ]);
-      this.decks = decks;
-      this.bots = bots;
-      this.phase = "setup";
+      const replays = await api.listReplays();
+      this.replays = replays;
     } catch (e) {
       this.error = e instanceof Error ? e.message : String(e);
+    } finally {
+      this.isLoading = false;
     }
   }
 
-  /** Start computing a new spectator match */
-  async startMatch(config: SpectatorConfig) {
-    this.phase = "computing";
-    this.isComputing = true;
+  /** Load and start playing a replay */
+  async loadReplay(path: string) {
+    this.phase = "loading";
+    this.isLoading = true;
     this.error = null;
     this.match = null;
     this.currentActionIndex = -1;
+    this.currentReplayPath = path;
 
     try {
-      const match = await api.computeSpectatorMatch(config);
+      const match = await api.loadReplay(path);
       this.match = match;
       this.currentActionIndex = -1;
       this.phase = "watching";
@@ -135,9 +116,20 @@ class SpectatorStore {
       this.play();
     } catch (e) {
       this.error = e instanceof Error ? e.message : String(e);
-      this.phase = "setup";
+      this.phase = "browser";
     } finally {
-      this.isComputing = false;
+      this.isLoading = false;
+    }
+  }
+
+  /** Delete a replay file */
+  async deleteReplay(path: string) {
+    try {
+      await api.deleteReplay(path);
+      // Refresh the list
+      this.replays = this.replays.filter((r) => r.path !== path);
+    } catch (e) {
+      this.error = e instanceof Error ? e.message : String(e);
     }
   }
 
@@ -253,30 +245,27 @@ class SpectatorStore {
     this.playbackSpeed = speed;
   }
 
-  /** Set watch live mode */
-  setWatchLive(enabled: boolean) {
-    this.watchLive = enabled;
+  /** Go back to replay browser */
+  backToBrowser() {
+    this.pause();
+    this.phase = "browser";
+    this.match = null;
+    this.currentActionIndex = -1;
+    this.isPlaying = false;
+    this.error = null;
+    this.currentReplayPath = null;
   }
 
-  /** Reset to setup screen */
+  /** Reset to idle state (go back to main menu) */
   reset() {
     this.pause();
-    this.phase = "setup";
+    this.phase = "idle";
     this.match = null;
+    this.replays = [];
     this.currentActionIndex = -1;
     this.isPlaying = false;
     this.error = null;
-    this.watchLive = false;
-  }
-
-  /** Go back to main menu */
-  backToMenu() {
-    this.pause();
-    this.phase = "setup";
-    this.match = null;
-    this.currentActionIndex = -1;
-    this.isPlaying = false;
-    this.error = null;
+    this.currentReplayPath = null;
   }
 
   /** Show the game over screen with full results */
@@ -303,7 +292,7 @@ class SpectatorStore {
         case "creature_spawned": {
           const player = data.player as number;
           const slot = data.slot as number;
-          // In spectator mode, player 1 is "player" side, player 2 is "opponent" side
+          // In replay mode, player 1 is "player" side, player 2 is "opponent" side
           const elementId = `creature-${player === 1 ? "player" : "opponent"}-${slot}`;
           await new Promise((r) => setTimeout(r, 50));
           await triggerSpawn(elementId);
@@ -345,4 +334,4 @@ class SpectatorStore {
   }
 }
 
-export const spectatorStore = new SpectatorStore();
+export const replayStore = new ReplayStore();

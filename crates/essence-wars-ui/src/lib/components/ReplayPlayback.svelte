@@ -1,42 +1,18 @@
 <script lang="ts">
-  import { spectatorStore } from "$lib/stores/spectatorState.svelte";
-  import * as api from "$lib/api/game";
+  import { replayStore } from "$lib/stores/replayState.svelte";
   import CreatureSlot from "./CreatureSlot.svelte";
   import SupportSlot from "./SupportSlot.svelte";
   import HandCard from "./HandCard.svelte";
   import ActionLog from "./ActionLog.svelte";
-  import AiThinkingPanel from "./AiThinkingPanel.svelte";
-  import SpectatorControls from "./SpectatorControls.svelte";
+  import ReplayControls from "./ReplayControls.svelte";
 
-  const gameState = $derived(spectatorStore.currentState);
-  const match = $derived(spectatorStore.match);
+  const gameState = $derived(replayStore.currentState);
+  const match = $derived(replayStore.match);
   const isP1Turn = $derived(gameState?.activePlayer === 1);
 
-  // Save replay state
-  let isSaving = $state(false);
-  let saveSuccess = $state(false);
-  let saveError = $state<string | null>(null);
-
-  async function handleSaveReplay() {
-    if (!match) return;
-
-    isSaving = true;
-    saveError = null;
-    saveSuccess = false;
-
-    try {
-      await api.saveSpectatorReplay(match);
-      saveSuccess = true;
-    } catch (e) {
-      saveError = e instanceof Error ? e.message : String(e);
-    } finally {
-      isSaving = false;
-    }
-  }
-
-  // Convert spectator actions to ActionInfo format for the log
+  // Convert replay actions to ActionInfo format for the log
   const actionsForLog = $derived(
-    spectatorStore.match?.actions.slice(0, spectatorStore.currentActionIndex + 1).map(a => ({
+    replayStore.match?.actions.slice(0, replayStore.currentActionIndex + 1).map(a => ({
       index: a.action.index,
       actionType: a.action.actionType,
       description: `[P${a.player}] ${a.action.description}`,
@@ -56,10 +32,13 @@
       <div class="flex items-center gap-4">
         <button
           class="text-ui-text-dim hover:text-ui-text transition-colors text-sm"
-          onclick={() => spectatorStore.backToMenu()}
+          onclick={() => replayStore.backToBrowser()}
         >
           &larr; Back
         </button>
+        <span class="px-2 py-0.5 bg-ui-action/20 text-ui-action rounded text-xs font-semibold">
+          REPLAY
+        </span>
         <div class="text-ui-text font-semibold text-sm">
           {match?.player1DeckName ?? "Player 1"} vs {match?.player2DeckName ?? "Player 2"}
         </div>
@@ -75,6 +54,7 @@
         <div class="flex items-center gap-2">
           <div class="w-3 h-3 rounded-full {!isP1Turn ? 'bg-damage animate-pulse' : 'bg-gray-600'}"></div>
           <span class="text-ui-text font-semibold">P2 - {match?.player2DeckName ?? "Player 2"}</span>
+          <span class="text-xs text-ui-text-dim">({match?.player2BotName})</span>
         </div>
         <div class="flex items-center gap-3">
           <div class="flex items-center gap-1 px-2 py-1 rounded bg-damage/20">
@@ -97,7 +77,7 @@
       </div>
     </div>
 
-    <!-- Player 2 hand (visible in spectator mode) -->
+    <!-- Player 2 hand (visible in replay mode) -->
     <div class="h-32 flex items-center justify-center gap-1.5 bg-gray-900/30 px-4 py-2">
       {#each gameState?.opponent.hand ?? [] as card, i}
         <HandCard {card} index={i} isPlayable={false} />
@@ -170,7 +150,7 @@
       </div>
     </div>
 
-    <!-- Player 1 hand (visible in spectator mode) -->
+    <!-- Player 1 hand (visible in replay mode) -->
     <div class="h-32 flex items-center justify-center gap-1.5 bg-gray-900/30 px-4 py-2">
       {#each gameState?.player.hand ?? [] as card, i}
         <HandCard {card} index={i} isPlayable={false} />
@@ -186,6 +166,7 @@
         <div class="flex items-center gap-2">
           <div class="w-3 h-3 rounded-full {isP1Turn ? 'bg-health animate-pulse' : 'bg-gray-600'}"></div>
           <span class="text-ui-text font-semibold">P1 - {match?.player1DeckName ?? "Player 1"}</span>
+          <span class="text-xs text-ui-text-dim">({match?.player1BotName})</span>
         </div>
         <div class="flex items-center gap-3">
           <div class="flex items-center gap-1 px-2 py-1 rounded bg-health/20">
@@ -206,7 +187,7 @@
         </div>
       </div>
       <!-- Result badge and buttons when game is finished -->
-      {#if spectatorStore.phase === "finished" && spectatorStore.canShowResult}
+      {#if replayStore.phase === "finished"}
         <div class="flex items-center gap-3">
           {#if match?.result.winner === 1}
             <span class="px-3 py-1 bg-health/20 text-health rounded-full text-sm font-semibold">
@@ -226,54 +207,25 @@
           <button
             class="px-3 py-1 bg-ui-action/20 text-ui-action rounded text-sm font-semibold
                    border border-ui-action/50 hover:bg-ui-action hover:text-white transition-all"
-            onclick={() => spectatorStore.showGameOver()}
+            onclick={() => replayStore.showGameOver()}
           >
             View Summary
           </button>
-
-          <!-- Save Replay button -->
-          <div class="flex items-center gap-2">
-            {#if saveSuccess}
-              <span class="text-health text-xs">Saved!</span>
-            {:else if saveError}
-              <span class="text-damage text-xs" title={saveError}>Error</span>
-            {/if}
-            <button
-              class="px-3 py-1 bg-ui-bg text-ui-text-dim rounded text-sm font-semibold
-                     border border-gray-600 hover:border-ui-action hover:text-ui-action transition-all
-                     disabled:opacity-50 disabled:cursor-not-allowed"
-              onclick={handleSaveReplay}
-              disabled={isSaving || saveSuccess}
-            >
-              {#if isSaving}
-                Saving...
-              {:else if saveSuccess}
-                Saved
-              {:else}
-                Save Replay
-              {/if}
-            </button>
-          </div>
         </div>
       {/if}
     </div>
 
     <!-- Playback controls -->
     <div class="border-t border-gray-700">
-      <SpectatorControls />
+      <ReplayControls />
     </div>
   </div>
 
-  <!-- Right sidebar: AI Thinking + Action Log -->
+  <!-- Right sidebar: Action Log only (no AI thinking panel for replays) -->
   <div class="w-72 border-l border-gray-700 bg-ui-panel/50 flex flex-col">
-    <!-- AI Thinking Panel -->
-    <div class="p-3 border-b border-gray-700">
-      <AiThinkingPanel />
-    </div>
-
     <!-- Action Log -->
     <div class="flex-1 p-3 overflow-hidden">
-      <ActionLog actions={actionsForLog} maxItems={15} />
+      <ActionLog actions={actionsForLog} maxItems={20} />
     </div>
   </div>
 </div>

@@ -32,3 +32,5 @@ tokio = { version = "1", features = ["sync"] }
 uuid = { version = "1.0", features = ["v4", "serde"] }
 parking_lot = "0.12"
 rand = "0.8"
+dirs = "5.0"
+chrono = { version = "0.4", default-features = false, features = ["std", "clock"] }

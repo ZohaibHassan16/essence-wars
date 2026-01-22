@@ -12,6 +12,7 @@ import type {
   AiHintResponse,
   SpectatorConfig,
   SpectatorMatch,
+  ReplayInfo,
 } from "./types";
 
 export async function listDecks(): Promise<DeckInfo[]> {
@@ -70,4 +71,39 @@ export async function computeSpectatorMatch(
   config: SpectatorConfig
 ): Promise<SpectatorMatch> {
   return await invoke<SpectatorMatch>("compute_spectator_match", { config });
+}
+
+// ============================================================================
+// Replay Mode API
+// ============================================================================
+
+/** Save a replay from a completed game session */
+export async function saveReplay(
+  gameId: string,
+  name?: string
+): Promise<string> {
+  return await invoke<string>("save_replay", { gameId, name });
+}
+
+/** Save a spectator match (AI vs AI) as a replay */
+export async function saveSpectatorReplay(
+  spectatorMatch: SpectatorMatch,
+  name?: string
+): Promise<string> {
+  return await invoke<string>("save_spectator_replay", { spectatorMatch, name });
+}
+
+/** List all saved replays */
+export async function listReplays(): Promise<ReplayInfo[]> {
+  return await invoke<ReplayInfo[]>("list_replays");
+}
+
+/** Load a replay file for playback */
+export async function loadReplay(path: string): Promise<SpectatorMatch> {
+  return await invoke<SpectatorMatch>("load_replay", { path });
+}
+
+/** Delete a replay file */
+export async function deleteReplay(path: string): Promise<void> {
+  return await invoke<void>("delete_replay", { path });
 }

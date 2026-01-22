@@ -8,16 +8,24 @@ mod state;
 pub mod ai;
 
 use commands::*;
-use state::GameManager;
+use state::{GameManager, ReplayManager};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Initialize game manager
     let game_manager = GameManager::new().expect("Failed to initialize game manager");
 
+    // Initialize replay manager (uses same card_db and deck_registry)
+    let replay_manager = ReplayManager::new(
+        game_manager.card_db(),
+        game_manager.deck_registry(),
+    )
+    .expect("Failed to initialize replay manager");
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .manage(game_manager)
+        .manage(replay_manager)
         .invoke_handler(tauri::generate_handler![
             list_decks,
             list_bots,
@@ -32,6 +40,12 @@ pub fn run() {
             end_game,
             // Spectator mode
             compute_spectator_match,
+            // Replay mode
+            save_replay,
+            save_spectator_replay,
+            list_replays,
+            load_replay,
+            delete_replay,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

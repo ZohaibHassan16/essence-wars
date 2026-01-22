@@ -188,3 +188,33 @@ export interface SpectatorResult {
   player1FinalLife: number;
   player2FinalLife: number;
 }
+
+// ============================================================================
+// Replay Mode Types
+// ============================================================================
+
+/** Information about a saved replay for the browser UI */
+export interface ReplayInfo {
+  /** Full path to the replay file */
+  path: string;
+  /** Just the filename */
+  filename: string;
+  /** Unix timestamp when replay was saved */
+  timestamp: number;
+  /** Human-readable date string */
+  dateString: string;
+  /** Player 1 deck display name */
+  player1DeckName: string;
+  /** Player 2 deck display name */
+  player2DeckName: string;
+  /** Player 1 type (e.g., "Human", "MCTS Bot") */
+  player1Type: string;
+  /** Player 2 type (e.g., "Human", "MCTS Bot") */
+  player2Type: string;
+  /** Winner (1 or 2, or null for draw) */
+  winner: 1 | 2 | null;
+  /** Total turns in the game */
+  totalTurns: number;
+  /** Total number of actions */
+  totalActions: number;
+}

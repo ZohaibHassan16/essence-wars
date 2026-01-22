@@ -76,6 +76,11 @@ impl GameManager {
         self.deck_registry.clone()
     }
 
+    /// Get read access to games (for replay saving)
+    pub fn games_read(&self) -> parking_lot::RwLockReadGuard<'_, HashMap<String, GameSession>> {
+        self.games.read()
+    }
+
     /// List all available decks
     pub fn list_decks(&self) -> Vec<DeckInfo> {
         self.deck_registry
