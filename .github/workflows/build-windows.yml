@@ -62,21 +62,27 @@ jobs:
         working-directory: crates/essence-wars-ui
         run: pnpm run build
 
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli --version "^2.0.0"
+
       - name: Build Tauri app (Windows)
-        working-directory: crates/essence-wars-ui/src-tauri
-        run: cargo build --release
+        working-directory: crates/essence-wars-ui
+        run: cargo tauri build
 
       - name: Upload Windows executable
         uses: actions/upload-artifact@v4
         with:
           name: essence-wars-windows-x64
-          path: target/release/essence-wars-ui.exe
+          path: |
+            crates/essence-wars-ui/src-tauri/target/release/essence-wars-ui.exe
+            crates/essence-wars-ui/src-tauri/target/release/bundle/msi/*.msi
           retention-days: 30
 
       - name: Create release (on tags)
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: target/release/essence-wars-ui.exe
+          files: |
+            crates/essence-wars-ui/src-tauri/target/release/bundle/msi/*.msi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -775,13 +775,15 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [ ] UI element graphics (for all Menus and Screens)
 - [ ] Card back design
 - [ ] Card frame designs (all 4 factions)
+- [ ] Load Card Artwork in game
 
 ### Phase 8: Audio Implementation
 - [ ] Howler.js integration
-- [ ] Source/create sound effects
 - [ ] Music system with dynamic layers
-- [ ] Faction ambient sounds
 - [ ] Volume controls
+- [ ] Create sound effects and Music via `AudioCraft`
+- [ ] Create Faction ambient sounds
+
 
 ### Phase 9: Polish & Testing
 - [ ] Settings screen
