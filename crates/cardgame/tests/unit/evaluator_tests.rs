@@ -2,7 +2,7 @@
 
 use cardgame::bots::GreedyWeights;
 use cardgame::cards::CardDatabase;
-use cardgame::tuning::{Evaluator, EvaluatorConfig, TuningMode};
+use cardgame::tuning::{CandidateType, Evaluator, EvaluatorConfig, TuningMode};
 
 #[test]
 fn test_evaluate_vs_random() {
@@ -12,6 +12,7 @@ fn test_evaluate_vs_random() {
     let config = EvaluatorConfig {
         games_per_eval: 10,
         mode: TuningMode::VsRandom,
+        candidate_type: CandidateType::Greedy,
         seed: 42,
         max_actions: 500,
         parallel: false, // Sequential for test stability
@@ -37,6 +38,7 @@ fn test_evaluate_vs_greedy() {
     let config = EvaluatorConfig {
         games_per_eval: 10,
         mode: TuningMode::VsGreedy,
+        candidate_type: CandidateType::Greedy,
         seed: 42,
         max_actions: 500,
         parallel: false,
@@ -63,6 +65,7 @@ fn test_bad_weights_lose() {
     let config = EvaluatorConfig {
         games_per_eval: 10,
         mode: TuningMode::VsGreedy,
+        candidate_type: CandidateType::Greedy,
         seed: 42,
         max_actions: 500,
         parallel: false,
