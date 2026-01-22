@@ -15,6 +15,7 @@
     onPlayAgain?: () => void;
     onMainMenu: () => void;
     onSaveReplay?: () => Promise<void>;
+    onReviewMatch?: () => void;
     replaySaved?: boolean;
   }
 
@@ -28,6 +29,7 @@
     onPlayAgain,
     onMainMenu,
     onSaveReplay,
+    onReviewMatch,
     replaySaved = false,
   }: Props = $props();
 
@@ -211,31 +213,45 @@
         </button>
       </div>
 
-      <!-- Save Replay button -->
-      {#if onSaveReplay}
-        <div class="flex flex-col items-center gap-2">
-          {#if saveSuccess}
-            <div class="text-health text-sm font-semibold">Replay saved!</div>
-          {:else if saveError}
-            <div class="text-damage text-sm">{saveError}</div>
-          {/if}
+      <!-- Secondary actions row -->
+      <div class="flex gap-4 justify-center">
+        <!-- Save Replay button -->
+        {#if onSaveReplay}
+          <div class="flex flex-col items-center gap-1">
+            <button
+              class="px-6 py-2 bg-ui-panel text-ui-text rounded-lg font-semibold text-sm
+                     border border-gray-600 hover:border-ui-action hover:text-ui-action transition-all
+                     disabled:opacity-50 disabled:cursor-not-allowed"
+              onclick={handleSaveReplay}
+              disabled={isSaving || saveSuccess}
+            >
+              {#if isSaving}
+                Saving...
+              {:else if saveSuccess}
+                Saved
+              {:else}
+                Save Replay
+              {/if}
+            </button>
+            {#if saveSuccess}
+              <div class="text-health text-xs">Replay saved!</div>
+            {:else if saveError}
+              <div class="text-damage text-xs">{saveError}</div>
+            {/if}
+          </div>
+        {/if}
+
+        <!-- Review Match button (for spectator/replay modes) -->
+        {#if onReviewMatch}
           <button
             class="px-6 py-2 bg-ui-panel text-ui-text rounded-lg font-semibold text-sm
-                   border border-gray-600 hover:border-ui-action hover:text-ui-action transition-all
-                   disabled:opacity-50 disabled:cursor-not-allowed"
-            onclick={handleSaveReplay}
-            disabled={isSaving || saveSuccess}
+                   border border-gray-600 hover:border-ui-action hover:text-ui-action transition-all"
+            onclick={onReviewMatch}
           >
-            {#if isSaving}
-              Saving...
-            {:else if saveSuccess}
-              Saved
-            {:else}
-              Save Replay
-            {/if}
+            Review Match
           </button>
-        </div>
-      {/if}
+        {/if}
+      </div>
     </div>
   </div>
 </div>

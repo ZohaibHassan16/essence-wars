@@ -70,6 +70,7 @@
       onSaveReplay: match ? async () => {
         await api.saveSpectatorReplay(match);
       } : undefined,
+      onReviewMatch: () => spectatorStore.backToWatching(),
     };
   }
 
@@ -95,6 +96,7 @@
         replayStore.backToBrowser();
       },
       onMainMenu: () => replayStore.reset(),
+      onReviewMatch: () => replayStore.backToWatching(),
       // No save replay for replays - they're already saved
     };
   }

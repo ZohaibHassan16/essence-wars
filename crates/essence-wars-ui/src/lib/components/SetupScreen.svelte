@@ -25,6 +25,10 @@
     );
   }
 
+  function goBack() {
+    gameStore.phase = "menu";
+  }
+
   // Group decks by faction
   const decksByFaction = $derived(() => {
     const grouped: Record<string, typeof gameStore.decks> = {};
@@ -144,8 +148,16 @@
       </div>
     </div>
 
-    <!-- Start Button -->
-    <div class="mt-8 flex justify-center">
+    <!-- Action Buttons -->
+    <div class="mt-8 flex justify-between items-center">
+      <button
+        class="px-6 py-3 bg-ui-bg text-ui-text-dim rounded-lg font-semibold
+               border border-gray-600 hover:border-gray-500 hover:text-ui-text transition-colors"
+        onclick={goBack}
+      >
+        Back
+      </button>
+
       <button
         class="px-8 py-4 bg-ui-action text-white rounded-lg font-bold text-lg
                hover:bg-ui-action/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

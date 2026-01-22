@@ -70,8 +70,9 @@
   }
 
   function goBack() {
-    spectatorStore.phase = "setup";
-    // Reset to menu by setting phase - the parent will handle navigation
+    // Clear decks to exit spectator mode and return to main menu
+    spectatorStore.decks = [];
+    spectatorStore.bots = [];
     spectatorStore.reset();
   }
 

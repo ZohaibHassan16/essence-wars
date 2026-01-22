@@ -148,7 +148,7 @@ class SpectatorStore {
   /** Start/resume playback */
   play() {
     if (this.isAtEnd) {
-      this.phase = "finished";
+      this.phase = "gameOver";
       return;
     }
     this.isPlaying = true;
@@ -169,7 +169,7 @@ class SpectatorStore {
     if (!this.isPlaying || this.isAtEnd) {
       this.isPlaying = false;
       if (this.isAtEnd) {
-        this.phase = "finished";
+        this.phase = "gameOver";
       }
       return;
     }
@@ -196,9 +196,9 @@ class SpectatorStore {
       await this.processAnimations(action);
     }
 
-    // Check if we reached the end
+    // Check if we reached the end - go to game over screen
     if (this.isAtEnd) {
-      this.phase = "finished";
+      this.phase = "gameOver";
     }
   }
 
@@ -214,8 +214,8 @@ class SpectatorStore {
     if (this.isAtStart) return;
     this.pause();
     this.currentActionIndex--;
-    // Reset phase if we stepped back from finished
-    if (this.phase === "finished") {
+    // Reset phase if we stepped back from game over
+    if (this.phase === "finished" || this.phase === "gameOver") {
       this.phase = "watching";
     }
   }
@@ -224,7 +224,7 @@ class SpectatorStore {
   jumpToStart() {
     this.pause();
     this.currentActionIndex = -1;
-    if (this.phase === "finished") {
+    if (this.phase === "finished" || this.phase === "gameOver") {
       this.phase = "watching";
     }
   }
@@ -233,7 +233,7 @@ class SpectatorStore {
   jumpToEnd() {
     this.pause();
     this.currentActionIndex = this.totalActions - 1;
-    this.phase = "finished";
+    this.phase = "gameOver";
   }
 
   /** Jump to a specific action index */
@@ -242,8 +242,8 @@ class SpectatorStore {
     this.pause();
     this.currentActionIndex = index;
     if (index >= this.totalActions - 1) {
-      this.phase = "finished";
-    } else if (this.phase === "finished") {
+      this.phase = "gameOver";
+    } else if (this.phase === "finished" || this.phase === "gameOver") {
       this.phase = "watching";
     }
   }
@@ -287,7 +287,7 @@ class SpectatorStore {
 
   /** Go back to watching from game over screen */
   backToWatching() {
-    this.phase = "finished";
+    this.phase = "watching";
   }
 
   // ============================================================================
