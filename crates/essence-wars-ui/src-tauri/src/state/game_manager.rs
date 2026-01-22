@@ -340,9 +340,14 @@ impl GameManager {
         let player_hand: Vec<CardDto> = player_state
             .hand
             .iter()
-            .map(|card_inst| {
-                let card = self.card_db.get(card_inst.card_id).unwrap();
-                CardDto::from_card_def(card)
+            .filter_map(|card_inst| {
+                match self.card_db.get(card_inst.card_id) {
+                    Some(card) => Some(CardDto::from_card_def(card)),
+                    None => {
+                        eprintln!("Warning: Card ID {} not found in database", card_inst.card_id.0);
+                        None
+                    }
+                }
             })
             .collect();
 
@@ -419,9 +424,15 @@ impl GameManager {
     ) -> Vec<Option<CreatureDto>> {
         let mut slots: Vec<Option<CreatureDto>> = vec![None; 5];
         for creature in creatures.creatures.iter() {
-            let card = self.card_db.get(creature.card_id).unwrap();
-            let dto = CreatureDto::from_creature(creature, card, current_turn);
-            slots[creature.slot.0 as usize] = Some(dto);
+            match self.card_db.get(creature.card_id) {
+                Some(card) => {
+                    let dto = CreatureDto::from_creature(creature, card, current_turn);
+                    slots[creature.slot.0 as usize] = Some(dto);
+                }
+                None => {
+                    eprintln!("Warning: Creature card ID {} not found in database", creature.card_id.0);
+                }
+            }
         }
         slots
     }
@@ -433,9 +444,15 @@ impl GameManager {
     ) -> Vec<Option<SupportDto>> {
         let mut slots: Vec<Option<SupportDto>> = vec![None; 2];
         for support in player_state.supports.iter() {
-            let card = self.card_db.get(support.card_id).unwrap();
-            let dto = SupportDto::from_support(support, card);
-            slots[support.slot.0 as usize] = Some(dto);
+            match self.card_db.get(support.card_id) {
+                Some(card) => {
+                    let dto = SupportDto::from_support(support, card);
+                    slots[support.slot.0 as usize] = Some(dto);
+                }
+                None => {
+                    eprintln!("Warning: Support card ID {} not found in database", support.card_id.0);
+                }
+            }
         }
         slots
     }

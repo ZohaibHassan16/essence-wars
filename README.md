@@ -1,6 +1,6 @@
 # Essence Wars
 
-A deterministic, perfect-information card game engine designed for AI research (reinforcement learning, MCTS).
+A deterministic, perfect-information card game engine.
 
 ## Quick Start
 
