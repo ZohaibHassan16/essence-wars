@@ -758,11 +758,11 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] Pause/resume functionality
 
 ### Phase 6: Replay System 
-- [ ] Action recording during gameplay
-- [ ] Save replay to file
-- [ ] Replay browser/list
-- [ ] Replay playback with controls
-- [ ] State reconstruction from actions
+- [x] Action recording during gameplay
+- [x] Save replay to file
+- [x] Replay browser/list
+- [x] Replay playback with controls
+- [x] State reconstruction from actions
 
 ### Phase 6.5: Claude Code MCP Server
 - [ ] Design and Architect MCP Server enabling Claude Code to play the Game
@@ -813,6 +813,8 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 | Obsidion | 75 |
 | Neutral | 75 |
 | **Total** | **300** |
+
+All `New Horizons` Card Artwork is ready to use in `/home/chris/ai-cardgame/crates/essence-wars-ui/assets/cards/core_set/`.
 
 ### 9.2 Art Generation Pipeline
 

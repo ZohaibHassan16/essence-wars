@@ -1,0 +1,936 @@
+# Free-Walkers (Neutral) - Card Art Prompts
+# Mercenaries & Guilds (IDs 4000-4074)
+
+faction: neutral
+set: core_set
+
+cards:
+  # === CREATURES - Mercenaries ===
+  - id: 4000
+    name: "Bounty Hunter"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A rugged female mercenary sniper in tactical wasteland gear, mix of brass
+      goggles and leather straps over practical armor, holding a long-barreled rifle
+      with confident combat-ready pose, wanted posters visible in belt pouches,
+      athletic form, taking aim from a ruined building with desert wasteland
+      stretching behind, works for the highest bidder, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "frazetta:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4003
+    name: "Hired Blade"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A professional female mercenary in practical leather armor, well-maintained
+      sword in confident grip, athletic build with pragmatic stance, neither flashy
+      nor cheap just reliable, trade road dust on her boots, ready for any job that
+      pays, neutral wasteland town background, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "frazetta:0.6"
+    negative: "blurry, low quality"
+
+  # === CREATURES - Warriors ===
+  - id: 4001
+    name: "Berserker"
+    card_type: creature
+    tags: [Warrior]
+    prompt: >
+      A wild male berserker in minimal armor charging into battle with reckless
+      abandon, dual axes raised high with powerful muscular build, battle scars
+      covering his body, foam at the mouth with battle rage, wasteland warrior who
+      fights for any who pay, desert battlefield background, primal fury in his
+      eyes, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.7"
+    negative: "blurry, low quality"
+
+  # === CREATURES - Giants ===
+  - id: 4005
+    name: "Siege Giant"
+    card_type: creature
+    tags: [Giant]
+    prompt: >
+      A massive scarred male giant wearing patchwork armor salvaged from all three
+      factions, brass pauldron from Argentum on one shoulder, chitin chest plate
+      from Symbiote, and dark leather straps from Obsidion, wielding a ship's anchor
+      as a weapon, crushing all in his path with brutal strength, neutral zone
+      battlefield background, towering intimidating presence, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "frazetta:0.7"
+    negative: "blurry, low quality"
+
+  # === CREATURES - Guardians ===
+  - id: 4032
+    name: "Caravan Guard"
+    card_type: creature
+    tags: [Guardian]
+    prompt: >
+      A rugged female mercenary guard in practical patchwork armor of mixed faction
+      origins, athletic build with confident combat-ready pose, sturdy shield and
+      spear in hand, protective ward amulet glowing faintly around her neck, desert
+      trade road background with covered wagons, wasteland dust in the air, 90s
+      Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.6"
+    negative: "blurry, low quality"
+
+  # === CREATURES - Soldiers ===
+  - id: 4034
+    name: "Crossbow Militia"
+    card_type: creature
+    tags: [Soldier]
+    prompt: >
+      A rugged male ranged fighter in simple leather armor, aiming a well-maintained
+      crossbow with steady hands, quiver of bolts on hip, determined weathered
+      expression, standing on wooden ramparts of a frontier town, practical wasteland
+      scavenger aesthetic, dust and grit in the air, 90s Magic the Gathering card
+      art, painted fantasy illustration
+    lora: "frazetta:0.6"
+    negative: "blurry, low quality"
+
+  # === CREATURES - Beasts ===
+  - id: 4033
+    name: "Pack Mule"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A sturdy pack animal laden with supplies and trade goods, worn leather saddle
+      bags bulging with useful equipment, patient reliable expression in its eyes,
+      dusty trade road with caravan in background, warm sunset lighting, simple but
+      essential to any expedition, wasteland frontier aesthetic, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.6"
+    negative: "blurry, low quality"
+
+  # === SPELLS ===
+  - id: 4024
+    name: "Raise Militia"
+    card_type: spell
+    prompt: >
+      Common folk rising to arms, grabbing makeshift weapons and simple shields, a
+      ragtag militia forming in a dusty town square, determined faces of farmers
+      and merchants ready to fight, rustic wasteland town background with wooden
+      buildings, golden sunset lighting, gritty frontier aesthetic, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4045
+    name: "Second Wind"
+    card_type: spell
+    prompt: >
+      A wounded warrior gasping as healing energy and renewed vigor flows into them,
+      second breath of life visible as golden mist swirling around their form,
+      battlefield exhaustion transforming to renewed strength, magical essence being
+      drawn from the aether, warm golden lighting against dark battlefield, 90s
+      Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4046
+    name: "Weaken"
+    card_type: spell
+    prompt: >
+      Dark energy sapping the strength from an enemy creature, the target slumping
+      as their muscles fail and will fades, debilitating shadows wrapping around
+      them like tendrils, cruel but effective mercenary magic, dark wasteland
+      background, ominous purple and black energy, 90s Magic the Gathering card
+      art, painted fantasy illustration
+    lora: "frazetta:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4010
+    name: "Hired Help"
+    card_type: spell
+    prompt: >
+      Mercenary reinforcements arriving bringing supplies and weapons, gold changing
+      hands as sellswords join the fight, mixed faction equipment visible on the
+      new recruits, caravan camp in dusty wasteland with tents and wagons, warm
+      firelight contrasting with desert dusk, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "frazetta:0.6"
+    negative: "blurry, low quality"
+
+  # === SUPPORTS ===
+  - id: 4051
+    name: "Scout Post"
+    card_type: support
+    prompt: >
+      A wooden watchtower on the frontier, equipped with spotting scopes and signal
+      flags, a vigilant scout keeping watch over the wasteland from the platform,
+      maps and intelligence reports pinned to weathered walls, providing crucial
+      information each turn, sunset lighting over desert landscape, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4012
+    name: "Supply Depot"
+    card_type: support
+    prompt: >
+      A fortified supply depot in the wasteland, stacked with crates and barrels of
+      provisions, mercenaries guarding valuable supplies, healing equipment visible
+      alongside weapons and ammunition, a crucial waystation on the trade roads,
+      wooden and stone construction in frontier style, warm lantern lighting, 90s
+      Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.6"
+    negative: "blurry, low quality"
+
+# === ADDITIONAL CREATURES - Mercenaries ===
+
+  - id: 4002
+    name: "Wasteland Scout"
+    card_type: creature
+    tags: [Scout]
+    prompt: >
+      A weathered female scout in dusty leather gear with brass binoculars, ranged
+      crossbow on her back, scanning the wasteland from a rocky outcrop, athletic
+      build suited for long desert treks, practical pouches and water canteen on
+      belt, alert watchful expression, wasteland vista with distant settlements,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4004
+    name: "War Veteran"
+    card_type: creature
+    tags: [Soldier]
+    prompt: >
+      A scarred male veteran warrior in battered but well-maintained armor from
+      many campaigns, powerful Charge into battle stance, sword raised high with
+      years of experience in every movement, weathered face telling stories of
+      countless battles, wasteland battlefield with fallen flags, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.6, classical-painting:0.4"
+    negative: "blurry, low quality"
+
+  - id: 4006
+    name: "Sharpshooter"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A skilled female sniper in practical wasteland gear with modified long-range
+      rifle, Ranged precision visible in her steady aim, one eye closed sighting
+      distant target, athletic form in prone firing position on rocky ridge,
+      spent brass casings scattered around, dusty desert canyon background, 90s
+      Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4007
+    name: "Reckless Charger"
+    card_type: creature
+    tags: [Warrior]
+    prompt: >
+      A wild male warrior on a reckless Charge with no regard for his own safety,
+      Rush into battle with axe raised high, minimal armor but maximum aggression,
+      battle cry frozen on his face, dust cloud behind his sprint, scarred muscular
+      body, wasteland arena with cheering spectators, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "frazetta:0.7, classical-painting:0.3"
+    negative: "blurry, low quality"
+
+  - id: 4008
+    name: "Scrap Golem"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A massive construct assembled from salvaged parts of all three factions,
+      brass gears from Argentum, chitin plates from Symbiote, dark metal from
+      Obsidion, lumbering forward with mismatched but functional limbs, glowing
+      power core cobbled from multiple sources, wasteland junkyard background
+      with more scrap piles, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4009
+    name: "The Warbringer"
+    card_type: creature
+    tags: [Giant]
+    prompt: >
+      A legendary titan of war standing three stories tall, wielding a massive
+      anchor-mace with Charge and Piercing destruction, armor cobbled from the
+      defeated armies of all factions, terrifying scarred face beneath a horned
+      helm, entire battlefields fleeing before his advance, apocalyptic wasteland
+      background, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.7, classical-painting:0.3"
+    negative: "blurry, low quality"
+
+  - id: 4017
+    name: "Opportunist"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A cunning male mercenary striking at a weakened enemy, taking advantage of
+      the wounded, daggers aimed at vulnerable spots, calculating predatory smile,
+      practical dark leather armor suited for ambush, wasteland skirmish with
+      wounded fighters, opportunistic strike in progress, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4019
+    name: "Scavenger"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A resourceful female scavenger collecting useful items from a battlefield,
+      drawing cards of value from the fallen, practical outfit with many pouches
+      and bags, calculating expression as she assesses worth, drawing knowledge
+      from ally deaths, wasteland battlefield with bodies, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4026
+    name: "Token Master"
+    card_type: creature
+    tags: [Mage]
+    prompt: >
+      A male summoner mage creating a warrior token from swirling magical energy,
+      robes of neutral browns with arcane sigils, focused concentration as a Rush
+      warrior materializes beside him, hands glowing with summoning power, wasteland
+      ritual circle with the token taking form, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4029
+    name: "Wandering Recruit"
+    card_type: creature
+    tags: [Soldier]
+    prompt: >
+      A young male recruit just starting his mercenary career, simple leather armor
+      and basic sword, eager but inexperienced expression, dusty from traveling
+      the trade roads seeking employment, humble but determined, wasteland crossroads
+      with signposts to different faction territories, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4030
+    name: "Scout Runner"
+    card_type: creature
+    tags: [Scout]
+    prompt: >
+      A fleet-footed female scout built for speed and reconnaissance, light leather
+      armor allowing quick movement, running across wasteland terrain with urgent
+      message, athletic form in mid-sprint, dust kicked up behind her, desert trail
+      with distant encampment, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4031
+    name: "Eager Sellsword"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A young male sellsword with Rush enthusiasm for his first real fight, sword
+      drawn and charging forward, excitement overriding caution, simple but serviceable
+      equipment, youthful energy in every movement, wasteland mercenary camp with
+      veterans watching, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.6, classical-painting:0.4"
+    negative: "blurry, low quality"
+
+  - id: 4036
+    name: "Contract Killer"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A cold professional female assassin with Lethal precision, simple black
+      clothes for blending into any environment, poison-coated blade guaranteed
+      to kill, emotionless calculating expression, contract scroll visible in
+      belt pouch, wasteland town at night with target visible in window, 90s
+      Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4038
+    name: "Traveling Merchant"
+    card_type: creature
+    tags: [Merchant]
+    prompt: >
+      A shrewd male merchant with pack animals laden with trade goods, drawing
+      cards of profit from every transaction, colorful but practical traveling
+      clothes, calculating smile of a successful trader, coin purse prominently
+      displayed, dusty trade road with caravan in background, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4039
+    name: "Battle Hardened Veteran"
+    card_type: creature
+    tags: [Soldier]
+    prompt: >
+      An old male warrior with decades of experience, drawing wisdom card upon
+      death, scarred face and missing eye showing years of combat, teaching
+      younger warriors even in his final moments, well-worn armor that's seen
+      countless battles, wasteland training ground, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4041
+    name: "Wandering Champion"
+    card_type: creature
+    tags: [Warrior]
+    prompt: >
+      A legendary female warrior traveling the wastes seeking worthy opponents,
+      Charge into combat with masterwork weapons, impressive armor won from
+      defeated champions, confident powerful stance, trophies from past victories
+      hanging from belt, wasteland arena background, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "frazetta:0.6, classical-painting:0.4"
+    negative: "blurry, low quality"
+
+  - id: 4043
+    name: "Colossus of War"
+    card_type: creature
+    tags: [Giant]
+    prompt: >
+      A massive giant acting as Guard for whoever pays best, towering over the
+      battlefield with thick armor and enormous shield, neutral colors showing
+      allegiance to gold not faction, intimidating but professional expression,
+      wasteland battlefield with smaller warriors fighting below, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.6, classical-painting:0.4"
+    negative: "blurry, low quality"
+
+  - id: 4054
+    name: "Hired Scout"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A young female scout offering her services to any who pay, simple practical
+      outfit for desert travel, basic equipment but keen observational skills,
+      hand shielding eyes as she scans the horizon, wasteland outpost seeking
+      employment, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4055
+    name: "Traveling Merchant"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A savvy female merchant drawing cards of profit with each transaction,
+      small pack of trade goods on her back, shrewd calculating expression,
+      coin changing hands as deal is struck, dusty market stall in wasteland
+      trading post, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4056
+    name: "Veteran Sellsword"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      An experienced male mercenary with years of service behind him, practical
+      well-maintained equipment, calm professional demeanor, sword ready but not
+      drawn waiting for the contract, wasteland mercenary guild hall, 90s Magic
+      the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4057
+    name: "Wandering Healer"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A traveling female healer offering healing services for coin, simple robes
+      with medical supplies, gentle hands applying healing energy to wounded
+      warrior, compassionate but professional expression, wasteland medical tent
+      with other patients, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4058
+    name: "Caravan Guard"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A sturdy male guard protecting merchant caravans, Guard stance with shield
+      and spear ready, practical patchwork armor from various sources, vigilant
+      expression watching for threats, dusty trade road with wagons behind him,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4059
+    name: "Frontier Ranger"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A rugged female ranger with Ranged precision, bow drawn and aimed at distant
+      target, practical frontier clothing suited for wasteland survival, keen
+      hunter's eyes, desert canyon with prey animal visible, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4060
+    name: "Bounty Hunter"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A professional male bounty hunter with Rush to catch fleeing targets, wanted
+      posters in belt pouch, well-equipped for tracking and capture, cold efficient
+      expression, running down a fleeing criminal in wasteland town, 90s Magic
+      the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.6, classical-painting:0.4"
+    negative: "blurry, low quality"
+
+  - id: 4061
+    name: "Arena Champion"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A famous female arena fighter in gladiator's armor, arms raised in victory
+      pose, scars showing her survival in countless matches, confident powerful
+      build, roaring wasteland crowd visible in arena background, championship
+      trophies gleaming, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "frazetta:0.6, classical-painting:0.4"
+    negative: "blurry, low quality"
+
+  - id: 4062
+    name: "Guild Enforcer"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A large intimidating male enforcer who collects debts and ensures contracts,
+      heavy armor and brutal mace, scarred face showing violent history, menacing
+      stance outside debtor's door, wasteland merchant quarter, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.6, classical-painting:0.4"
+    negative: "blurry, low quality"
+
+  - id: 4063
+    name: "War Elephant"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A massive armored war elephant with Charge momentum, plated in salvaged
+      faction armor, howdah on back with ranged fighters, tusks fitted with brass
+      caps for extra damage, thundering across wasteland battlefield, dust clouds
+      from massive footsteps, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "frazetta:0.6, classical-painting:0.4"
+    negative: "blurry, low quality"
+
+  - id: 4064
+    name: "Siege Engineer"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A skilled female engineer with Ranged and Piercing artillery expertise,
+      operating a portable ballista, calculating trajectory with brass instruments,
+      practical armor with engineering tools, wasteland siege with fortifications
+      being targeted, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4065
+    name: "Legendary Mercenary"
+    card_type: creature
+    tags: [Mercenary]
+    prompt: >
+      A legendary male mercenary captain known across all factions, expensive
+      masterwork equipment showing his elite status, confident commanding presence,
+      elite mercenary company behind him, wasteland fortress he's conquered, 90s
+      Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.6, classical-painting:0.4"
+    negative: "blurry, low quality"
+
+# === CREATURES - Guardians/Mages ===
+
+  - id: 4020
+    name: "Warded Sentinel"
+    card_type: creature
+    tags: [Guardian]
+    prompt: >
+      A stoic guardian protected by Ward magic, magical barrier shimmering around
+      their form, patient defensive stance, runic protections carved into their
+      armor, first magical attack will be absorbed, wasteland temple entrance,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4021
+    name: "Mystic Guardian"
+    card_type: creature
+    tags: [Guardian]
+    prompt: >
+      A powerful female guardian combining Ward and Guard abilities, magical
+      shield glowing with protective runes, standing between allies and danger,
+      robes and armor blended together, arcane protections visible, wasteland
+      sanctuary entrance, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4022
+    name: "Shield Mage"
+    card_type: creature
+    tags: [Mage]
+    prompt: >
+      A male mage specializing in protective Ward magic, hands extended granting
+      Ward to an ally, magical shields forming around nearby creatures, simple
+      robes with protective runes, concentrated expression, wasteland camp with
+      protected warriors, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4023
+    name: "Arcane Protector"
+    card_type: creature
+    tags: [Guardian]
+    prompt: >
+      A heavily armored guardian with both Ward and Shield protection, multiple
+      layers of magical and physical defense, imposing defensive stance, runic
+      armor glowing with protective magic, wasteland fortress wall, 90s Magic
+      the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4035
+    name: "Wandering Mystic"
+    card_type: creature
+    tags: [Mage]
+    prompt: >
+      A nomadic female mystic with Regenerate healing powers, simple traveling
+      robes, healing staff glowing with restoration magic, serene expression,
+      wounds visibly closing on her form, wasteland oasis camp, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4037
+    name: "Warded Scout"
+    card_type: creature
+    tags: [Scout]
+    prompt: >
+      A skilled female scout with both Ward protection and Ranged attacks, magical
+      barrier shimmering as she takes aim, practical armor with runic protections,
+      crossbow ready for precision shots, wasteland ridge overlooking enemy camp,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4040
+    name: "Runebound Guardian"
+    card_type: creature
+    tags: [Guardian]
+    prompt: >
+      A massive male guardian covered in protective runes granting Ward, ancient
+      armor inscribed with magical protections, patient defensive stance, runes
+      glowing with absorbed magical energy, wasteland ancient ruin he protects,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4042
+    name: "Elder Mystic"
+    card_type: creature
+    tags: [Mage]
+    prompt: >
+      An ancient female mystic granting Ward to all ally creatures, powerful
+      protective magic radiating outward, aged wise face with glowing eyes,
+      elaborate robes covered in ward runes, magical barriers forming around
+      nearby warriors, wasteland sacred site, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+# === SPELLS ===
+
+  - id: 4011
+    name: "Precision Shot"
+    card_type: spell
+    prompt: >
+      A ranged projectile striking with deadly accuracy, crossbow bolt or arrow
+      hitting vital target, the shooter visible in the distance taking careful
+      aim, damage impact on the victim, dusty wasteland with perfect shooting
+      conditions, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4015
+    name: "Temporal Shift"
+    card_type: spell
+    prompt: >
+      An enemy creature being bounced through temporal magic, the target fading
+      and shifting through time, arcane hourglasses and clock imagery, mage
+      channeling the bounce spell, victim dissolving into temporal energy,
+      wasteland with time distortion effects, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4016
+    name: "Triage"
+    card_type: spell
+    prompt: >
+      A healer providing emergency healing to wounded creatures, bandages and
+      healing magic applied simultaneously, priority given to the most wounded,
+      medical supplies spread around, battlefield medical station, warm golden
+      healing light, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4018
+    name: "Silencing Shot"
+    card_type: spell
+    prompt: >
+      A specialized projectile that silences magical abilities, the bolt striking
+      a mage and disrupting their casting, silence effect visible as magical
+      energy fizzling, the shooter expertly targeting enemy casters, wasteland
+      skirmish with magic being neutralized, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4025
+    name: "Conjure Guardian"
+    card_type: spell
+    prompt: >
+      A mage summoning a protective guardian token from magical energy, the Guard
+      creature materializing from swirling arcane light, shield and armor forming
+      from nothing, summoning circle on the ground, wasteland camp being protected,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4027
+    name: "Polymorph"
+    card_type: spell
+    prompt: >
+      An enemy creature being transformed into a harmless sheep, the victim's form
+      shifting and shrinking, wool replacing armor, powerful magic forcing the
+      change, mage channeling transformation with amused expression, wasteland
+      with confused sheep where warrior stood, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4028
+    name: "Mirror Image"
+    card_type: spell
+    prompt: >
+      A perfect magical copy being created of an ally creature, the duplicate
+      stepping out of a shimmering mirror effect, original and copy standing
+      together identical, arcane mirror shattering as the copy becomes real,
+      wasteland camp with doubled warriors, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4044
+    name: "Quick Strike"
+    card_type: spell
+    prompt: >
+      A fast decisive strike dealing quick damage, blade or projectile moving
+      faster than the eye can follow, victim recoiling from the sudden attack,
+      attacker already pulling back from the swift strike, wasteland duel moment
+      captured, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4047
+    name: "War Cry"
+    card_type: spell
+    prompt: >
+      A commander's war cry buffing all ally creatures, warriors gaining strength
+      and courage from the rallying shout, sound waves visible as the cry echoes,
+      entire army being empowered simultaneously, wasteland battlefield with
+      morale rising, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.6, classical-painting:0.4"
+    negative: "blurry, low quality"
+
+  - id: 4048
+    name: "Recruitment Drive"
+    card_type: spell
+    prompt: >
+      Mercenaries being recruited with offers of gold and glory, card draw
+      represented by new warriors joining, recruiter displaying payment and
+      contracts, eager sellswords signing up, wasteland mercenary guild hall,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4049
+    name: "Arcane Barrier"
+    card_type: spell
+    prompt: >
+      A protective Ward being granted to an ally creature, magical barrier forming
+      around the target, first spell will be absorbed by the barrier, mage
+      channeling the protection, grateful warrior receiving the ward, wasteland
+      battlefield, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4050
+    name: "Mercenary Ambush"
+    card_type: spell
+    prompt: >
+      A coordinated mercenary ambush hitting the enemy, primary target taking heavy
+      damage while splash damages others, sellswords emerging from cover to attack,
+      chaos of the surprise assault, wasteland canyon perfect for ambush, 90s
+      Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.6, classical-painting:0.4"
+    negative: "blurry, low quality"
+
+  - id: 4066
+    name: "Emergency Supplies"
+    card_type: spell
+    prompt: >
+      A supply crate being opened revealing useful resources, card draw from
+      the emergency provisions, desperate hands reaching for supplies, battlefield
+      resupply moment, crate filled with food medicine and ammunition, wasteland
+      camp, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4067
+    name: "Quick Patch"
+    card_type: spell
+    prompt: >
+      Emergency battlefield healing being applied quickly, bandages and healing
+      salve applied to wounds, medic working fast to save a warrior, golden
+      healing energy seeping into injuries, wasteland medical tent, 90s Magic
+      the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4068
+    name: "Combat Training"
+    card_type: spell
+    prompt: >
+      A warrior receiving combat training becoming stronger, drill instructor
+      improving a soldier's skills, practice weapons clashing as technique
+      improves, buff visible as muscle and skill increase, wasteland training
+      ground, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4069
+    name: "Sabotage"
+    card_type: spell
+    prompt: >
+      A saboteur dealing damage through trickery and explosives, small explosion
+      hitting an enemy creature, hooded figure fleeing after planting the device,
+      damage from underhanded tactics, wasteland enemy camp being sabotaged, 90s
+      Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4070
+    name: "Hired Muscle"
+    card_type: spell
+    prompt: >
+      Mercenary thugs being summoned for coin, hired muscle token appearing,
+      intimidating sellswords arriving for payment, gold coins changing hands,
+      simple but effective fighters joining the cause, wasteland hiring hall,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+  - id: 4071
+    name: "Strategic Retreat"
+    card_type: spell
+    prompt: >
+      An ally creature being bounced back safely while drawing knowledge, tactical
+      withdrawal providing card advantage, warrior fading back to safety, strategic
+      repositioning in progress, wasteland battlefield with retreat in action,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "blurry, low quality"
+
+# === SUPPORTS ===
+
+  - id: 4013
+    name: "Mercenary Camp"
+    card_type: support
+    prompt: >
+      A fortified mercenary encampment granting attack bonuses, tents and training
+      areas visible, sellswords practicing combat techniques, weapons and armor
+      on racks, dusty wasteland location with defensive palisade, warm campfire
+      lighting, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4014
+    name: "Artillery Platform"
+    card_type: support
+    prompt: >
+      A raised artillery platform dealing damage each turn, ballista or catapult
+      mounted on wooden structure, crew loading and firing at enemies, strategic
+      high ground position, wasteland battlefield with targets in range, 90s
+      Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4052
+    name: "Training Grounds"
+    card_type: support
+    prompt: >
+      A training facility granting health bonuses to all creatures, warriors
+      drilling and improving their toughness, training dummies and obstacle
+      courses, drill instructors overseeing exercises, wasteland military camp,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4053
+    name: "Sanctuary"
+    card_type: support
+    prompt: >
+      A holy sanctuary providing healing each turn, ancient temple converted to
+      healing station, wounded warriors being tended within, peaceful healing
+      energy radiating outward, wasteland oasis with the sanctuary at its heart,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4072
+    name: "Supply Cache"
+    card_type: support
+    prompt: >
+      A hidden supply cache providing card draw each turn, covered storage area
+      with valuable supplies, warriors retrieving useful items, maps provisions
+      and equipment stacked inside, wasteland hideout with concealed entrance,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4073
+    name: "Mercenary Camp"
+    card_type: support
+    prompt: >
+      An active mercenary camp spawning tokens each turn, new recruits emerging
+      from tents to join the fight, training and recruitment in constant operation,
+      gold and contracts visible, bustling wasteland camp producing endless fighters,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+  - id: 4074
+    name: "War Banner"
+    card_type: support
+    prompt: >
+      A rallying war banner granting attack bonuses, proud standard flying above
+      the battlefield, warriors drawing courage and strength from its presence,
+      faction-neutral colors showing mercenary allegiance, wasteland battlefield
+      with the banner as focal point, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "blurry, low quality"
+
+# === ALL NEUTRAL PROMPTS COMPLETE ===

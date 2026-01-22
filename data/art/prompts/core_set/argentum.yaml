@@ -1,0 +1,1034 @@
+# Argentum Combine - Card Art Prompts
+# Order & Industry faction (IDs 1000-1074)
+
+faction: argentum
+set: core_set
+
+cards:
+  # === COMMANDERS ===
+  - id: 1057
+    name: "Iron Colossus Prime"
+    card_type: creature
+    is_commander: true
+    tags: [Commander, Construct]
+    prompt: >
+      A massive Art Deco clockwork golem standing guard in a white marble city,
+      towering scale. The golem is made of heavy brushed silver steel with ornate
+      brass trim and geometric engravings. It has a glowing furnace grate in its
+      chest emitting steam. Stoic pose, hands resting on a massive shield. Shafts
+      of divine sunlight illuminating the armor, dramatic shadows. 90s Magic the
+      Gathering card art, oil painting texture, visible brushstrokes, fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  # === CREATURES - Soldiers ===
+  - id: 1027
+    name: "Shield Wall Captain"
+    card_type: creature
+    tags: [Soldier]
+    prompt: >
+      A powerful female military commander in gleaming white and gold Art Deco armor,
+      polished brass accents and geometric filigree on her breastplate, confident pose
+      with hand on sword hilt atop a fortified brass rampart, revealing armor design
+      showing strength and authority, her tower shield bearing the Argentum sun-gear
+      insignia, steam rising from the industrial battlefield below, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1035
+    name: "Hardened Vanguard"
+    card_type: creature
+    tags: [Soldier]
+    prompt: >
+      A rugged male soldier in layered brass plate armor with geometric reinforcement
+      patterns, battle-tested with scratches but never pierced, strong jaw visible
+      beneath open-faced helm, defensive stance with massive shield raised, mechanical
+      joints hissing with steam pressure, industrial furnace glow behind casting
+      dramatic shadows, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1031
+    name: "Stalwart Defender"
+    card_type: creature
+    tags: [Soldier]
+    prompt: >
+      An attractive female soldier in white steel armor with gold trim, powerful
+      athletic build, holding a massive reinforced shield that covers most of her
+      body, protective stance with feet planted firmly on brass floor tiles, confident
+      determined expression, steam machinery humming in the background, 90s Magic
+      the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1037
+    name: "Bulwark Commander"
+    card_type: creature
+    tags: [Soldier]
+    prompt: >
+      A commanding male officer in ornate brass armor with Art Deco flourishes, broad
+      shoulders and weathered face showing years of battle experience, standing on a
+      command platform overlooking ranks of defenders, one gauntleted hand on sword
+      hilt pointing to reinforce positions, golden cape flowing behind, steam-powered
+      machinery visible in fortified walls, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1042
+    name: "Steel Templar"
+    card_type: creature
+    tags: [Soldier]
+    prompt: >
+      A powerful female holy warrior in ceremonial white and gold plate armor with
+      geometric sacred patterns, athletic form visible through form-fitting armor
+      design, holding a blessed steel blade and tower shield emblazoned with the
+      Argentum sun-gear symbol, confident commanding pose, standing in a shaft of
+      light in an industrial cathedral, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1044
+    name: "Bastion Lord"
+    card_type: creature
+    tags: [Soldier]
+    prompt: >
+      A noble male lord in masterwork brass armor adorned with geometric filigree,
+      strong aristocratic features and commanding presence, standing atop the highest
+      tower of an Argentum fortress surveying the defenses, massive two-handed shield
+      planted before him like a monument, golden light emanating from the armor's
+      power core, white marble background, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1001
+    name: "Steam Knight"
+    card_type: creature
+    tags: [Soldier]
+    prompt: >
+      A powerful male knight in steam-powered exosuit armor of polished brass and
+      white steel, muscular build visible through articulated plates, wielding a
+      massive piercing lance connected to pressurized steam chambers, charging
+      forward with determination, steam venting from suit joints, industrial
+      battlefield with gears and cogs in background, 90s Magic the Gathering card
+      art, painted fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1006
+    name: "Shield Bearer"
+    card_type: creature
+    tags: [Soldier]
+    prompt: >
+      A disciplined female soldier in white steel armor, athletic form with confident
+      stance, holding a massive tower shield that projects a golden barrier of light,
+      standing in formation with other shield bearers creating an impenetrable wall
+      of energy and steel, determination in her eyes, industrial fortress background,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1023
+    name: "Field Medic"
+    card_type: creature
+    tags: [Soldier]
+    prompt: >
+      A beautiful female field medic kneeling on a battlefield, wearing white
+      enameled plate armor with gold trim and clerical robes. She is healing a
+      wounded soldier with glowing golden liquid essence from an ornate glass vial.
+      No modern technology. Background of smoke and brass automatons. 90s Magic the
+      Gathering card art, fantasy illustration, emotional expression, soft god rays
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1043
+    name: "Unyielding Champion"
+    card_type: creature
+    tags: [Soldier]
+    prompt: >
+      A decorated female champion in gold-trimmed white armor, powerful athletic
+      build bearing scars of countless battles, armor dented but never pierced,
+      standing firm against an onslaught with enemies broken at her feet, determined
+      confident expression visible through open visor, dramatic battlefield lighting,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  # === CREATURES - Engineers ===
+  - id: 1009
+    name: "Grand Constructor"
+    card_type: creature
+    tags: [Engineer]
+    prompt: >
+      An attractive female engineer with brass goggles pushed up on her forehead,
+      white corset with gold filigree and mechanical arm augments, surrounded by
+      floating holographic blueprints and brass construction drones, confident
+      intelligent expression, one hand directing the building of a massive construct,
+      elegant pose in an Art Deco steampunk workshop, 90s Magic the Gathering card
+      art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1003
+    name: "Factory Foreman"
+    card_type: creature
+    tags: [Engineer]
+    prompt: >
+      A burly Factory Foreman in a steampunk foundry, wearing a heavy leather apron
+      over a rolled-up white linen shirt. He has intricate brass welding goggles on
+      his forehead and a thick beard. He is holding a massive, ornate iron wrench
+      with gold filigree. Background of steam pipes and clockwork gears. 90s Magic
+      the Gathering card art, oil painting style, gritty texture, dramatic lighting
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1046
+    name: "Assembly Overseer"
+    card_type: creature
+    tags: [Engineer]
+    prompt: >
+      A cute, petite female overseer with a determined expression, wearing a pristine
+      white trench coat with gold buttons. She has four brass mechanical arms extending
+      from a backpack spider-style. Her real human hands are wearing white gloves and
+      holding a clipboard. She is directing small robot workers. Art Deco factory
+      background. 90s Magic the Gathering card art, character portrait, highly
+      detailed face, painted style
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1015
+    name: "Forge Master"
+    card_type: creature
+    tags: [Engineer]
+    prompt: >
+      A muscular male smith standing before a massive forge with white-hot flames,
+      brass prosthetic arm holding glowing metal, hammer raised high with powerful
+      stance, sparks flying as constructs are born in the flames, intense heat
+      distortion visible, sweat glistening on scarred torso, determination in his
+      weathered face, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  # === CREATURES - Constructs ===
+  - id: 1038
+    name: "Fortress Wall"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A massive mobile fortress-construct of interlocking brass plates and reinforced
+      steel, multiple shield projectors creating overlapping barriers of golden light,
+      steam pistons powering its slow but unstoppable advance, geometric patterns
+      covering every surface glowing with protective wards, Art Deco industrial
+      design, dramatic lighting from energy shields, 90s Magic the Gathering card
+      art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1069
+    name: "Clockwork Dragon"
+    card_type: creature
+    tags: [Construct, Dragon]
+    prompt: >
+      A magnificent mechanical dragon of brass and steel, wings spread wide as it
+      dives to attack, gears and pistons visible through gaps in its armored hide,
+      steam billowing from its nostrils, eyes blazing with furnace light, piercing
+      claws extended for the strike, Art Deco geometric patterns on wing membranes,
+      dramatic sky background, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  # === SPELLS ===
+  - id: 1053
+    name: "Expose Weakness"
+    card_type: spell
+    prompt: >
+      A brilliant flash of Argentum scanning light revealing hidden enemies in shadow,
+      geometric patterns of detection energy spreading outward in concentric rings,
+      stealthed creatures caught in the revealing beam with their outlines now visible,
+      brass scanner device in foreground crackling with power, industrial factory
+      setting, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1072
+    name: "Armor Plating"
+    card_type: spell
+    prompt: >
+      Sheets of reinforced brass armor magically attaching to a warrior, forming
+      protective layers with golden light welding the plates together, geometric
+      runes glowing as the enchantment takes hold, the soldier standing stronger
+      now encased in additional steel, factory sparks flying around them, dramatic
+      industrial lighting, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1010
+    name: "Reinforce"
+    card_type: spell
+    prompt: >
+      Golden energy flowing from brass conduits into a warrior's armor, reinforcing
+      and strengthening the steel, geometric patterns of power inscribing themselves
+      on the metal surface, the soldier glowing with enhanced durability, industrial
+      forge background with pipes and steam, dramatic lighting from the magical
+      reinforcement, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1025
+    name: "Execute"
+    card_type: spell
+    prompt: >
+      A cold, armored executioner firing a massive, bulky steampunk musket at
+      point-blank range. The weapon is made of brass and wood, emitting a blast
+      of blue magical energy. The executioner wears a full helm with a T-visor.
+      Dynamic action pose, smoke, debris. 90s Magic the Gathering card art, dark
+      fantasy illustration, gritty, painted texture
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1045
+    name: "Fortify Protocol"
+    card_type: spell
+    prompt: >
+      Brass armor plates locking together with mechanical precision, forming
+      impenetrable defensive configuration, steam hissing as systems engage,
+      geometric fortification runes glowing on the enhanced armor in golden light,
+      factory control room visible with levers and displays, dramatic industrial
+      lighting, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1052
+    name: "Lockdown Protocol"
+    card_type: spell
+    prompt: >
+      Brass restraint beams locking down an enemy creature, silencing their abilities,
+      geometric prison bars of golden light forming around the target, steam venting
+      as the containment protocol activates, industrial control systems in foreground
+      with glowing displays, dark dramatic lighting contrasting with golden energy,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+# === BATCH 1A: CONSTRUCTS - Mechanical Guardians ===
+
+  - id: 1000
+    name: "Brass Sentinel"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A humanoid automaton of polished brass standing at attention, Art Deco geometric
+      engravings covering its chassis, a glowing orange furnace core visible through
+      its chest grate, stoic faceless helm with a single rotating sensor light, one
+      arm ending in a reinforced shield-plate, the other in a clockwork blade, steam
+      venting from shoulder joints, white marble plaza background with other sentinels
+      in formation, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1002
+    name: "Cogwork Defender"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A squat defensive automaton made of interlocking brass gears and steel plates,
+      its body designed as a mobile shield wall with overlapping geometric armor panels,
+      multiple small arms holding reinforcement tools, a single glowing blue eye in
+      its domed head scanning for threats, steam pistons in its legs keeping it firmly
+      planted, industrial foundry background with sparks and molten metal, 90s Magic
+      the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1004
+    name: "Iron Colossus"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A towering mechanical giant of dark iron and burnished brass, standing three
+      stories tall among the spires of an Argentum city, Art Deco patterns etched
+      across its massive frame, twin furnace cores blazing in its chest like burning
+      eyes, enormous shield-arms capable of blocking entire streets, steam billowing
+      from exhaust stacks on its back, citizens below for scale, dramatic sunset
+      lighting, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1007
+    name: "Clockwork Medic"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A delicate brass automaton designed for battlefield medicine, multiple jointed
+      arms ending in precision surgical tools, glass vials of glowing golden healing
+      essence mounted on its back in a brass rack, gentle blue sensor lights in its
+      rounded head, one arm extended dispensing healing mist over a wounded soldier,
+      kneeling pose showing care and precision, battlefield medical tent background,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1008
+    name: "Siege Engine"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A massive four-legged walking fortress of brass and iron, bristling with steam
+      cannons and reinforced battering implements, heavy geometric armor plating
+      protecting its industrial core, a command turret on top with brass observation
+      domes, crushing rubble beneath its treaded feet, smoke and fire trailing behind
+      as it advances on enemy fortifications, dramatic battlefield lighting with
+      explosions, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1016
+    name: "Steam Cannon"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A stationary turret construct of heavy brass plating and reinforced steel,
+      a massive pressure cannon barrel dominating its frame, geometric targeting
+      arrays and brass sensor dishes tracking enemies, steam pressure gauges glowing
+      red with building power, defensive shield plates deployed around its base,
+      mounted on a rotating platform in a fortress wall, industrial lighting with
+      muzzle flash, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1017
+    name: "Artillery Tower"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A tall spire-like construct bristling with multiple rotating cannon barrels,
+      Art Deco geometric patterns decorating its armored housing, a central brass
+      core pulsing with amber energy, automatic loading mechanisms cycling ammunition,
+      spent shell casings raining down, clouds of steam and smoke surrounding its
+      firing platform, positioned atop a white marble fortress wall, golden sunset
+      behind, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1020
+    name: "Ironclad Bulwark"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      An immense defensive construct designed as a living wall, made of layered iron
+      plates and brass reinforcement struts, its entire front surface one massive
+      shield covered in geometric protective runes, small viewing slits glowing with
+      blue sensor light, steam venting from cooling systems as it absorbs impacts,
+      completely blocking a fortress gateway, enemy weapons bouncing harmlessly off,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1021
+    name: "Bronze Gatekeeper"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A ceremonial guard automaton of gleaming bronze with gold filigree accents,
+      standing at attention before massive brass doors, Art Deco sunburst patterns
+      on its chest plate, a halberd-like weapon crackling with electrical energy,
+      stern faceless helm with geometric eye-slits, polished to mirror finish,
+      white marble archway framing the scene, dramatic torchlight reflections,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1022
+    name: "Armored Sentinel"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      An elite guard construct in ornate brass and white steel armor, geometric
+      patterns inlaid with gold, a projected energy shield shimmering from its
+      left arm, precision blade extended from its right, multiple sensor arrays
+      in its crested helm scanning all directions, standing in a defensive crouch
+      ready to intercept, golden light emanating from shield projector, Argentum
+      throne room background, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1036
+    name: "Armored Titan"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A hulking assault construct of reinforced steel with brass joint housings,
+      every surface covered in thick ablative armor plates, geometric fortification
+      runes glowing amber across its frame, massive fists designed for crushing
+      through walls, a furnace core blazing white-hot in its chest, shrugging off
+      enemy fire as it advances implacably, smoke and debris swirling around it,
+      industrial battlefield, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1041
+    name: "Fortified Sentinel"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A compact defensive automaton with extra-thick brass armor plating, geometric
+      reinforcement patterns covering every surface, a small but intensely bright
+      furnace core in its chest, defensive stance with arms configured as shields,
+      damage-reduction runes glowing gold on its armor, standing firm as attacks
+      spark harmlessly against its plating, fortress courtyard background with
+      other constructs, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1047
+    name: "Factory Heart"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A central industrial core construct, a massive brass cylinder covered in pipes
+      conduits and geometric power distribution arrays, multiple mechanical arms
+      assembling smaller constructs from components, a blindingly bright essence
+      furnace at its center powering the entire facility, gears and conveyor belts
+      surrounding it in constant motion, small brass cogs being birthed from its
+      assembly ports, factory interior, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1050
+    name: "Interceptor"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A sleek fast-response automaton built for speed and interception, streamlined
+      brass chassis with Art Deco racing stripes, powerful steam-boosted leg pistons
+      mid-sprint, arms ending in capture claws designed to stop rushing enemies,
+      sensor dome head tracking multiple targets, motion blur suggesting incredible
+      speed, catching a charging enemy creature, industrial corridor background,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1051
+    name: "Spotlight Tower"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A tall surveillance construct with a massive rotating searchlight head, brass
+      framework supporting banks of detection equipment, brilliant white beams cutting
+      through darkness to reveal hidden enemies, geometric lens arrays focusing the
+      light, smaller sensor dishes tracking movement, standing on a fortress watchtower
+      platform, night scene with the spotlight illuminating shadowy figures below,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1060
+    name: "Cog Assembler"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A small industrious automaton the size of a large dog, multiple brass arms
+      ending in precision tools, assembling tiny brass cog components from raw
+      materials, a compact furnace core glowing in its cylindrical body, geometric
+      patterns on its dome head, surrounded by piles of completed parts and half-
+      assembled constructs, busy workshop background with larger machines, warm
+      amber lighting, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1061
+    name: "Forge Overseer"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A supervisor construct with an elevated head platform for better visibility,
+      brass body with multiple monitoring appendages and communication arrays,
+      geometric command sigils glowing on its chassis as it directs other machines,
+      one arm pointing to coordinate assembly lines, data readouts visible on
+      chest-mounted displays, standing on a raised platform overlooking a busy
+      factory floor, industrial lighting, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1063
+    name: "Bulwark Sentinel"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A standard-issue defensive automaton of the Argentum military, brass and steel
+      construction with geometric army insignia, tower shield integrated into its
+      left arm, short stabbing blade in its right, faceless helm with a single blue
+      sensor strip, standing in formation with identical units, disciplined defensive
+      posture, fortress parade ground background, uniform golden lighting, 90s Magic
+      the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1064
+    name: "Iron Bastion"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A fortress-grade defensive construct of black iron and brass trim, so heavily
+      armored it can barely move, geometric fortification runes blazing across every
+      surface, multiple layered shields deployed in overlapping defensive formation,
+      a small but intense white furnace core, completely blocking a corridor as
+      enemies futilely attack, damage sparking harmlessly off its impenetrable
+      armor, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1068
+    name: "Battering Ram"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A massive siege construct built for breaking through defenses, its entire front
+      a reinforced brass ram-head with geometric impact patterns, powerful steam
+      pistons driving it forward with unstoppable momentum, heavy treads crushing
+      rubble beneath, exhaust stacks billowing black smoke, enemy walls crumbling
+      before its charge, dust and debris flying, dramatic impact lighting, 90s Magic
+      the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+# === BATCH 1B: COMMANDERS + SOLDIERS ===
+
+  - id: 1005
+    name: "Pressure Trooper"
+    card_type: creature
+    tags: [Soldier]
+    prompt: >
+      A female shock trooper in streamlined white armor with brass trim, athletic
+      powerful build, wielding a massive steam-powered lance connected to pressure
+      tanks on her back, aggressive forward charge pose with the lance piercing
+      through enemy shields, steam jetting from vents as the weapon fires, confident
+      determined expression, industrial battlefield with debris, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1032
+    name: "Siege Breaker"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A massive assault construct designed for breaching fortifications, heavy brass
+      and iron plating with Art Deco geometric reinforcement patterns, one arm ending
+      in a devastating pile-driver mechanism, the other a piercing drill, actively
+      smashing through a stone wall with debris exploding outward, furnace core
+      blazing with the effort, steam and smoke billowing, dramatic siege warfare
+      lighting, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1056
+    name: "The High Artificer"
+    card_type: creature
+    is_commander: true
+    tags: [Commander, Construct]
+    prompt: >
+      A brilliant female artificer in ornate white and gold robes with brass mechanical
+      augmentations, attractive confident face with intelligent eyes behind brass
+      goggles pushed up on her forehead, multiple mechanical arms extending from a
+      brass backpack assembling tiny constructs mid-air, surrounded by floating
+      blueprints and tool drones, standing in a grand Art Deco workshop with forges
+      and assembly lines, warm golden lighting, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1058
+    name: "Siege Marshal Vex"
+    card_type: creature
+    is_commander: true
+    tags: [Commander, Soldier]
+    prompt: >
+      A battle-hardened male military commander in heavy brass siege armor with
+      piercing weaponry integrated into his gauntlets, strong weathered face with
+      a commanding scowl and battle scars, standing atop a conquered enemy wall
+      directing his forces forward, his armor venting steam as its power systems
+      engage, war banners of the Argentum Combine flying behind him, smoke and
+      fire from the battlefield below, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1059
+    name: "The Grand Architect"
+    card_type: creature
+    is_commander: true
+    tags: [Commander, Construct]
+    prompt: >
+      An elegant female architect in flowing white robes with gold geometric patterns,
+      beautiful composed face showing serene confidence, brass mechanical limbs
+      extending gracefully as she directs the construction of a massive defensive
+      wall, holographic blueprints floating around her in Art Deco frames, standing
+      on a white marble observation platform overlooking an entire fortress being
+      built, divine light streaming from above, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1067
+    name: "Siege Cannon"
+    card_type: creature
+    tags: [Construct]
+    prompt: >
+      A mobile artillery construct with a massive brass cannon barrel mounted on a
+      tracked chassis, geometric targeting arrays and brass sensor dishes locking
+      onto a distant target, the cannon barrel glowing white-hot as it fires a
+      devastating shot, shell casings ejecting and smoke trailing, manned by a
+      small crew of engineers making adjustments, battlefield background with
+      enemy fortifications crumbling, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality"
+
+# === BATCH 1C: SPELLS ===
+
+  - id: 1011
+    name: "Emergency Repairs"
+    card_type: spell
+    prompt: >
+      Engineers frantically working on a damaged construct in the heat of battle,
+      sparks flying as they weld brass plates back into place, golden healing
+      essence being poured into cracked mechanisms, the construct's furnace core
+      flickering back to full brightness, tools and spare parts scattered around,
+      smoke and chaos of battle in the background, urgent dramatic lighting, 90s
+      Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1012
+    name: "Construct Protocol"
+    card_type: spell
+    prompt: >
+      A brass automaton receiving activation commands as geometric runes light up
+      across its chassis, defensive protocols engaging as a golden energy shield
+      forms around it, the construct shifting into a protective stance with arms
+      raised in a guard position, data streams and command sigils flowing through
+      the air into its systems, industrial control room background, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1024
+    name: "Barricade"
+    card_type: spell
+    prompt: >
+      Massive brass plates magically rising from the ground to form an impenetrable
+      barrier, a warrior taking cover behind the forming wall as enemy attacks spark
+      harmlessly against it, geometric reinforcement runes glowing gold as the spell
+      solidifies the defenses, steam hissing from the joints where plates lock together,
+      chaotic battlefield becoming calm behind the barricade, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1026
+    name: "Purge the Weak"
+    card_type: spell
+    prompt: >
+      A devastating wave of superheated steam erupting from industrial vents, smaller
+      enemy creatures being thrown back and overwhelmed by the scalding blast, brass
+      pipes and pressure valves releasing the deadly purge, larger creatures standing
+      firm while the weak are scattered, factory interior with the pressure wave
+      visible as a wall of white vapor, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1028
+    name: "Rally the Guards"
+    card_type: spell
+    prompt: >
+      A commander raising her sword as golden light flows from the blade to empower
+      nearby guard constructs and soldiers, their shields glowing brighter and armor
+      strengthening, geometric enhancement runes spreading across the defensive line,
+      the guards standing taller and more resolute as the rally cry echoes, fortress
+      wall background with enemies approaching, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1029
+    name: "Temporal Displacement"
+    card_type: spell
+    prompt: >
+      An enemy creature caught in a swirling vortex of brass clockwork and temporal
+      energy, its form becoming translucent as it's forced back through time, gears
+      and clock hands spinning wildly around the displacement field, the creature
+      reaching out desperately as it fades, geometric temporal runes forming a
+      perfect circle around the effect, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1030
+    name: "Mass Recall"
+    card_type: spell
+    prompt: >
+      Multiple smaller creatures being swept up in a massive temporal wave, a grand
+      brass mechanism in the center generating concentric rings of displacement
+      energy, the affected creatures becoming ghostly and fading as they're bounced
+      back to their origin points, larger creatures standing firm in the storm,
+      Art Deco temple background with the spell emanating from a central device,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1033
+    name: "Judgment Strike"
+    card_type: spell
+    prompt: >
+      A beam of righteous golden energy striking down from the heavens, channeled
+      through a brass conduit held by a female templar, the target creature being
+      blasted by the divine judgment, if the enemy falls the energy reflects back
+      to heal the caster's allies, dramatic holy light contrasting with dark
+      battlefield shadows, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1034
+    name: "Culling Blade"
+    card_type: spell
+    prompt: >
+      An executioner's blade of gleaming brass and white steel descending on a
+      weakened enemy, geometric precision runes guiding the strike to the target's
+      vital points, if the target falls a scroll of intelligence unfurls showing
+      enemy secrets, cold efficient lighting with steam rising from the blade,
+      fortress execution chamber background, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1039
+    name: "Transmutation Ray"
+    card_type: spell
+    prompt: >
+      A powerful alchemical beam shooting from a brass focusing device, striking an
+      enemy creature and transforming it into a harmless brass cog, the creature's
+      form dissolving into metallic particles that reform as a simple mechanical
+      component, an engineer operating the transmutation device with focused
+      concentration, laboratory background with other transformed cogs on shelves,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1040
+    name: "Assembly Protocol"
+    card_type: spell
+    prompt: >
+      A construct being perfectly duplicated by an industrial copying mechanism,
+      brass scanning beams analyzing every component while assembly arms build an
+      exact replica beside the original, both constructs standing in identical poses
+      as the duplication completes, sparks and steam from the rapid manufacturing
+      process, Art Deco factory interior with conveyor systems, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1049
+    name: "Mass Production"
+    card_type: spell
+    prompt: >
+      An assembly line producing multiple brass cog constructs simultaneously,
+      mechanical arms placing components with perfect synchronization, two identical
+      small automatons rolling off the production line ready for deployment, factory
+      overseer checking quality in the background, industrial lighting with sparks
+      and steam from the manufacturing process, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1065
+    name: "Reinforced Chassis"
+    card_type: spell
+    prompt: >
+      Heavy brass armor plates being magically applied to a warrior's frame, the
+      metal flowing and locking into place with golden welding light, the warrior
+      transforming into a walking fortress with a tower shield forming on their
+      arm, geometric reinforcement runes burning into the new armor, forge
+      background with the enchantment in progress, 90s Magic the Gathering card
+      art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1066
+    name: "Shield Formation"
+    card_type: spell
+    prompt: >
+      Multiple soldiers and constructs simultaneously raising shields in perfect
+      formation, a wave of golden energy passing over them granting the Guard
+      ability, their shields locking together to form an impenetrable wall of
+      brass and steel, commander's voice echoing as the formation solidifies,
+      enemy forces facing the newly formed defensive line, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1070
+    name: "Precision Strike"
+    card_type: spell
+    prompt: >
+      A single devastating shot from a brass sniper mechanism striking an enemy
+      with surgical accuracy, the projectile leaving a trail of steam and golden
+      light, the target recoiling from the precise impact, targeting reticles and
+      geometric calculation runes visible in the air, distant fortress wall with
+      the shooter barely visible, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1073
+    name: "Fortified Position"
+    card_type: spell
+    prompt: >
+      Multiple creatures receiving Fortify enchantments as geometric protective
+      runes inscribe themselves on their armor, the runes glowing amber as damage
+      reduction takes effect, warriors and constructs standing firmer as the magic
+      hardens their defenses, battlefield position transforming into an unassailable
+      strongpoint, golden defensive energy radiating outward, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1074
+    name: "Breaching Charge"
+    card_type: spell
+    prompt: >
+      A powerful explosive device detonating against an enemy guard's shield, the
+      blast specifically designed to overcome defensive positions, the guard creature
+      being thrown back as its protection fails, brass shrapnel and golden fire
+      erupting from the point of impact, siege engineers watching the successful
+      breach from cover, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic, soft, natural, blurry, low quality"
+
+# === BATCH 1D: SUPPORTS ===
+
+  - id: 1013
+    name: "Assembly Line"
+    card_type: support
+    prompt: >
+      A grand automated factory production line stretching into the distance, brass
+      mechanical arms assembling components with perfect rhythm, conveyor belts
+      carrying parts between stations, small constructs being repaired and maintained
+      as they pass through, golden essence tanks feeding healing energy into damaged
+      units, Art Deco industrial architecture with geometric ceiling patterns, 90s
+      Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1014
+    name: "Fortification"
+    card_type: support
+    prompt: >
+      A section of massive brass and white marble defensive wall with Art Deco
+      geometric battlements, soldiers patrolling the reinforced ramparts, guard
+      constructs standing sentinel in alcoves, golden energy shields shimmering
+      between towers, the wall radiating an aura of impregnability, enemy forces
+      visible in the distance unable to approach, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1018
+    name: "Reinforced Walls"
+    card_type: support
+    prompt: >
+      Massive brass reinforcement plates being bolted onto existing fortifications,
+      multiple layers of armor creating an impenetrable barrier, steam-powered
+      cranes lifting heavy sections into place, geometric strengthening runes
+      glowing as each layer is added, engineers supervising the enhancement of
+      defenses, the wall growing visibly thicker and stronger, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1019
+    name: "Shield Generator"
+    card_type: support
+    prompt: >
+      A towering brass device projecting overlapping energy shields across a
+      defensive position, geometric crystal arrays focusing golden protective
+      energy, the shields shimmering with each impact they absorb, control panels
+      and power conduits feeding the generator, technicians monitoring output
+      levels, friendly forces protected beneath the dome of light, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1048
+    name: "Forge of Creation"
+    card_type: support
+    prompt: >
+      A sacred master forge with white-hot flames and molten brass flowing through
+      Art Deco channels, massive anvils where constructs are given form, a newly
+      completed brass sentinel guardian stepping off the creation platform, ancient
+      geometric runes covering the forge walls channeling creative essence, divine
+      light mixing with forge fire, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1054
+    name: "Repair Station"
+    card_type: support
+    prompt: >
+      A battlefield maintenance depot with damaged constructs being restored, brass
+      scaffolding and repair gantries surrounding a construct under maintenance,
+      engineers welding and replacing damaged components, golden healing essence
+      being infused into damaged systems, spare parts organized on racks, warm
+      workshop lighting contrasting with the dark battlefield beyond, 90s Magic
+      the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1055
+    name: "Dampening Field"
+    card_type: support
+    prompt: >
+      A defensive installation projecting a golden dampening field that reduces all
+      incoming damage, geometric emitters arranged in a precise pattern creating
+      overlapping protective zones, attacks visibly weakening as they pass through
+      the field, creatures within standing more confidently as the Fortify effect
+      takes hold, Art Deco control tower in the center, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1062
+    name: "War Factory"
+    card_type: support
+    prompt: >
+      A massive military production facility producing combat drones on an industrial
+      scale, assembly arms working at furious speed, battle drones rolling off the
+      line ready for immediate deployment, smoke stacks billowing and furnaces
+      blazing, conveyor systems carrying weapons and armor to equipping stations,
+      the scale of production emphasizing Argentum's industrial might, 90s Magic
+      the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+  - id: 1071
+    name: "Defensive Matrix"
+    card_type: support
+    prompt: >
+      A grid of brass defensive emitters creating an interconnected protective
+      network, geometric patterns of golden energy linking each node, friendly
+      creatures within the matrix visibly more resilient, control station in the
+      center monitoring the field integrity, Art Deco tower design for each emitter,
+      the matrix humming with protective power, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic, soft, natural, blurry, low quality"
+
+# === ALL ARGENTUM PROMPTS COMPLETE ===

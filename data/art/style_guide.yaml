@@ -1,0 +1,83 @@
+# Essence Wars Card Art Style Guide
+# Shared art direction for all card sets
+
+version: "1.0"
+
+# Image dimensions (portrait card format)
+dimensions:
+  width: 704
+  height: 896
+
+# Base art style applied to all cards
+base_style: "90s Magic the Gathering card art, painted fantasy illustration"
+
+# Default negative prompt (can be overridden per card)
+default_negative: "blurry, low quality, anime, cartoon, 3d render, photograph"
+
+# LoRA configurations
+loras:
+  classical-painting:
+    file: "classical-painting.safetensors"
+    description: "Refined, classical MTG painted look"
+    default_strength: 0.7
+  frazetta:
+    file: "frazetta.safetensors"
+    description: "Dynamic, muscular, action-oriented"
+    default_strength: 0.6
+  rutkowski:
+    file: "rutkowski.safetensors"
+    description: "Detailed fantasy environments"
+    default_strength: 0.7
+
+# Faction-specific aesthetics
+factions:
+  argentum:
+    theme: "Order & Industry - Art Deco steampunk"
+    palette: "White, gold, brass, polished steel"
+    elements:
+      - "Art Deco geometric patterns"
+      - "Steam-powered machinery"
+      - "White marble architecture"
+      - "Brass and gold filigree"
+    default_lora: "classical-painting:0.7"
+    default_negative: "organic, soft, natural, blurry, low quality"
+
+  symbiote:
+    theme: "Growth & Adaptation - Biopunk organic"
+    palette: "Deep green, purple bioluminescence, bone white"
+    elements:
+      - "Living bio-armor and chitin"
+      - "Bioluminescent markings"
+      - "Organic jungle architecture"
+      - "Symbiotic creatures and grafts"
+    default_lora: "classical-painting:0.6"
+    default_negative: "mechanical, industrial, blurry, low quality"
+
+  obsidion:
+    theme: "Knowledge & Ambition - Gothic Victorian"
+    palette: "Crimson, black, neon blue essence"
+    elements:
+      - "Gothic Victorian architecture"
+      - "Glowing essence tubes"
+      - "Blood magic and vampiric aesthetics"
+      - "Dark spires and cathedrals"
+    default_lora: "classical-painting:0.5, frazetta:0.4"
+    default_negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  neutral:
+    theme: "Mercenaries & Guilds - Wasteland frontier"
+    palette: "Earth tones, rust, mixed faction elements"
+    elements:
+      - "Patchwork armor from multiple factions"
+      - "Desert and wasteland environments"
+      - "Practical mercenary gear"
+      - "Trade roads and frontier towns"
+    default_lora: "frazetta:0.6"
+    default_negative: "blurry, low quality"
+
+# Generation settings (for FLUX models)
+generation:
+  model: "flux-dev-q8.gguf"
+  cfg_scale: 1.0
+  sampling_method: "euler"
+  steps: 20

@@ -1,0 +1,988 @@
+# Obsidion Syndicate - Card Art Prompts
+# Knowledge & Ambition faction (IDs 3000-3074)
+
+faction: obsidion
+set: core_set
+
+cards:
+  # === COMMANDERS ===
+  - id: 3055
+    name: "The Blood Sovereign"
+    card_type: creature
+    is_commander: true
+    tags: [Commander, Noble]
+    prompt: >
+      An alluring vampire queen in elegant crimson velvet dress with gothic corset,
+      pale aristocratic features with eyes burning crimson power, glowing blue essence
+      tubes connected to ornate gauntlets on her wrists, blood magic swirling around
+      raised hands granting Lifesteal to all servants, standing in a grand gothic
+      throne room with stained glass depicting blood rituals, full body visible with
+      regal commanding posture, confident seductive expression, dramatic lighting
+      from essence tubes and blood magic, 90s Magic the Gathering card art, gothic
+      fantasy painting
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  # === CREATURES - Cultists ===
+  - id: 3002
+    name: "Blood Acolyte"
+    card_type: creature
+    tags: [Cultist]
+    prompt: >
+      A pale female cultist in dark robes with crimson trim revealing her slender form,
+      essence tubes connected to her veins glowing neon blue, quick and deadly with
+      draining blade in hand, confident predatory expression, gothic laboratory
+      background with bubbling vials and arcane equipment, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3017
+    name: "Blood Seeker"
+    card_type: creature
+    tags: [Cultist]
+    prompt: >
+      A dark aristocratic male hunter of blood essence in black leather and crimson
+      sash, angular handsome features with pale skin, glowing vials of collected blood
+      hanging from his belt, predatory stance seeking the next victim, dark alley in
+      gothic city with gas lamps casting long shadows, 90s Magic the Gathering card
+      art, painted fantasy illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3006
+    name: "Ritual Master"
+    card_type: creature
+    tags: [Cultist]
+    prompt: >
+      A sinister male master of dark rituals in elaborate ceremonial robes, gaunt
+      features with glowing eyes, drawing blood circles on the floor that pulse with
+      crimson and blue power, both damaging enemies and healing allies through
+      forbidden arts, candlelit ritual chamber with arcane symbols covering the walls,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3047
+    name: "Blood Cultist"
+    card_type: creature
+    tags: [Cultist]
+    prompt: >
+      A devoted male cultist of the blood arts in dark ceremonial robes with crimson
+      trim, sacrificial dagger dripping with essence, draining life with each strike
+      to fuel the Syndicate's power, fanatical devotion in his pale features, candlelit
+      shrine to dark powers with blood offerings, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3059
+    name: "Blood Acolyte"
+    card_type: creature
+    tags: [Cultist]
+    prompt: >
+      A junior female member of the blood cult eager to prove herself through the
+      draining arts, simple dark robes with crimson accents revealing her youthful
+      form, channeling life-stealing magic through crude but effective means,
+      determined ambitious expression, crypt training ground with other initiates,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  # === CREATURES - Mages ===
+  - id: 3004
+    name: "Hemomancer"
+    card_type: creature
+    tags: [Mage]
+    prompt: >
+      An alluring female blood mage in elegant dark Victorian attire with gothic
+      corset, glowing crimson veins visible beneath pale porcelain skin, manipulating
+      tendrils of blood essence with graceful hands, confident seductive expression,
+      gothic spire visible through the arched window, draining life to fuel her power,
+      90s Magic the Gathering card art, gothic fantasy painting
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3058
+    name: "Void Archon"
+    card_type: creature
+    tags: [Commander, Mage]
+    prompt: >
+      A powerful female mage who has mastered time magic granting Quick to all allies,
+      robes of black and neon blue with elegant revealing cut, glowing monocle
+      displaying temporal calculations, hands crackling with time-acceleration energy
+      in blue arcs, confident commanding expression, gothic tower laboratory with
+      arcane instruments, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  # === CREATURES - Assassins ===
+  - id: 3019
+    name: "Nightstalker"
+    card_type: creature
+    tags: [Assassin]
+    prompt: >
+      A deadly female assassin emerging from shadows, half-invisible in the darkness
+      with only her alluring silhouette visible, draining blade glowing with stolen
+      life force in her hand, regenerating from wounds in real time with crimson
+      energy, silent and lethal, gothic rooftops at night with moonlight, 90s Magic
+      the Gathering card art, dark fantasy illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3001
+    name: "Shadow Blade"
+    card_type: creature
+    tags: [Assassin]
+    prompt: >
+      A deadly male assassin wreathed in living shadows, poisoned blade gleaming with
+      lethal venom, partially invisible emerging from darkness to strike, one cut
+      kills, angular handsome features barely visible, gothic city rooftop at midnight
+      with moonlight breaking through clouds, 90s Magic the Gathering card art, dark
+      fantasy illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3016
+    name: "Shade Lurker"
+    card_type: creature
+    tags: [Assassin]
+    prompt: >
+      A creature of living shadow lurking in the darkness, barely visible except for
+      glowing crimson eyes, waiting to strike from stealth with patient deadly intent,
+      dark alley with only moonlight penetrating the gloom, patient and unseen,
+      tendrils of shadow extending from its form, 90s Magic the Gathering card art,
+      dark fantasy illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  # === CREATURES - Undead ===
+  - id: 3020
+    name: "Soul Reaver"
+    card_type: creature
+    tags: [Undead]
+    prompt: >
+      An ancient male undead warrior sustained by stolen life essence, tattered noble
+      finery over his desiccated but still powerful form, glowing crimson essence
+      animating hollow eyes, quick despite ancient age and regenerating through
+      lifesteal, elegant despite decay, crypt entrance background with gothic
+      architecture, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3007
+    name: "The Eternal One"
+    card_type: creature
+    tags: [Undead]
+    prompt: >
+      An ancient male vampire lord of immense power in elaborate black and crimson
+      formal wear, centuries of stolen life radiating from his imposing form, wounds
+      healing instantly as life force continuously drains from all around, ruling
+      from a throne of bone and velvet, aristocratic cruel features, gothic grandeur,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  # === CREATURES - Spirits ===
+  - id: 3003
+    name: "Void Walker"
+    card_type: creature
+    tags: [Spirit]
+    prompt: >
+      A spectral being of shadow and void energy, partially translucent form racing
+      across the battlefield with supernatural speed, knowing their existence is
+      temporary, ephemeral mist trailing behind, dark ethereal realm visible through
+      their ghostly form, neon blue energy crackling around them, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3015
+    name: "Phantom Striker"
+    card_type: creature
+    tags: [Spirit]
+    prompt: >
+      A spectral female warrior that strikes before enemies can react, translucent
+      form wielding ethereal blades, moving with supernatural Quick speed, ghostly
+      after-images trailing behind her graceful form, haunted corridor background
+      with gothic arches, neon blue spirit energy, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3000
+    name: "Soul Fragment"
+    card_type: creature
+    tags: [Spirit]
+    prompt: >
+      A fragment of captured soul briefly given form, wispy ethereal being of crimson
+      and neon blue energy, ephemeral and fading but dangerous while it lasts, soul
+      prison visible in background releasing these fragments, dark gothic dungeon
+      with chains and arcane containment devices, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  # === SPELLS ===
+  - id: 3010
+    name: "Shadow Strike"
+    card_type: spell
+    prompt: >
+      Dark energy lancing from shadows to strike an enemy, tendrils of void power
+      draining life while dealing damage, the caster healing as the target falls,
+      gothic architecture with shadows coming alive, neon blue and crimson energy
+      intertwining, dramatic magical impact, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3008
+    name: "Soul Drain"
+    card_type: spell
+    prompt: >
+      Crimson energy ripping the soul from a victim, the essence flowing to the caster
+      in streams of light, ghostly form visible leaving the target's body, pure
+      vampiric magic of the Syndicate, dark ritual circle glowing below with arcane
+      symbols, gothic chamber background, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3025
+    name: "Life Tap"
+    card_type: spell
+    prompt: >
+      Crimson tendrils of energy tapping into a victim's life force, damage dealt
+      while the caster is healed simultaneously, quick and efficient blood magic,
+      neon blue runes guiding the stolen essence through the air, dark gothic chamber
+      with arcane apparatus, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+# === ADDITIONAL COMMANDERS ===
+
+  - id: 3056
+    name: "Shadow Emperor Kael"
+    card_type: creature
+    is_commander: true
+    tags: [Commander, Assassin]
+    prompt: >
+      A regal male assassin-emperor in ornate black armor with crimson trim, pale
+      aristocratic features with eyes that pierce through shadows, emerging from
+      darkness with twin daggers that drip with void energy, his form partially
+      dissolved into shadow ready to vanish after his kill, crown of black iron
+      and crimson gems, gothic throne room with shadows bending toward him, 90s
+      Magic the Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3057
+    name: "The Shadow Weaver"
+    card_type: creature
+    is_commander: true
+    tags: [Commander, Shapeshifter]
+    prompt: >
+      A mysterious female figure whose form constantly shifts between solid and
+      shadow, elegant dark robes flowing into living darkness, summoning shadow
+      clones that emerge from her extended hands, beautiful pale face visible
+      one moment then dissolving into darkness the next, gothic cathedral with
+      shadows that move independently, 90s Magic the Gathering card art, dark
+      fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+# === CREATURES - Assassins ===
+
+  - id: 3005
+    name: "Silent Assassin"
+    card_type: creature
+    tags: [Assassin]
+    prompt: >
+      A deadly female assassin in form-fitting black leather with elegant silver
+      buckles, moving with supernatural speed from stealth, poisoned blade already
+      striking before the victim knows she's there, beautiful cold features visible
+      beneath a half-mask, Quick and Stealth combined in lethal grace, gothic
+      rooftop at midnight with moonlight, 90s Magic the Gathering card art, dark
+      fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3018
+    name: "Spectral Assassin"
+    card_type: creature
+    tags: [Spirit, Assassin]
+    prompt: >
+      A ghostly assassin that exists only briefly to kill, translucent form rushing
+      with Quick speed before fading away, ethereal daggers of neon blue energy,
+      ephemeral existence visible in the fading edges of its form, spectral after-
+      images trailing behind the strike, haunted corridor with gothic architecture,
+      90s Magic the Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3022
+    name: "Twilight Executioner"
+    card_type: creature
+    tags: [Assassin]
+    prompt: >
+      A massive male executioner in black ceremonial armor, Quick despite his size
+      with a lethal greataxe that kills in one blow, cold professional expression
+      beneath an executioner's hood, standing in a gothic execution chamber with
+      blood-stained floor, neon blue runes on his blade ensuring death, legendary
+      presence commanding fear, 90s Magic the Gathering card art, dark fantasy
+      illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3037
+    name: "Reaper's Due"
+    card_type: creature
+    tags: [Assassin]
+    prompt: >
+      A female reaper in flowing black robes wielding a scythe of crimson energy,
+      Quick and draining life with each strike, healing massively when she claims
+      a kill, beautiful pale face with crimson eyes visible beneath her hood,
+      souls of previous victims swirling around her blade, gothic graveyard with
+      mausoleums, 90s Magic the Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3039
+    name: "Void Executioner"
+    card_type: creature
+    tags: [Assassin]
+    prompt: >
+      A towering male executioner wreathed in void energy, Quick despite his bulk
+      with the power to instantly destroy weakened foes, black armor with neon
+      blue void-runes, massive blade crackling with destroying power, cold
+      professional gaze from beneath a featureless helm, gothic execution platform
+      with previous victims, 90s Magic the Gathering card art, dark fantasy
+      illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3042
+    name: "Mirror Assassin"
+    card_type: creature
+    tags: [Assassin]
+    prompt: >
+      A female assassin who duplicates herself upon killing, emerging from stealth
+      with a mirror-blade that creates a copy of her with each successful strike,
+      two versions of her visible mid-combat, one attacking while the other forms
+      from shadow, elegant dark attire with reflective surfaces, gothic hall of
+      mirrors, 90s Magic the Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3051
+    name: "Crimson Harvester"
+    card_type: creature
+    tags: [Assassin]
+    prompt: >
+      A Quick female assassin who harvests life force with each strike, crimson
+      energy flowing from her victims to heal her, elegant dark armor with blood-
+      red accents, twin draining daggers connected to her by threads of stolen
+      essence, predatory grace visible in her confident stance, gothic cathedral
+      with crimson stained glass, 90s Magic the Gathering card art, dark fantasy
+      illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3052
+    name: "Shadow Stalker"
+    card_type: creature
+    tags: [Assassin]
+    prompt: >
+      A male assassin combining Stealth and Quick for devastating ambushes, half-
+      visible form racing through shadows, twin blades leaving trails of darkness,
+      angular handsome features glimpsed in moonlight before vanishing, patient
+      predator waiting for the perfect strike, gothic alleyway with gas lamps
+      casting long shadows, 90s Magic the Gathering card art, dark fantasy
+      illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3063
+    name: "Shadow Stalker"
+    card_type: creature
+    tags: [Assassin]
+    prompt: >
+      A lithe female assassin emerging from shadows with deadly intent, simple
+      black attire revealing her athletic form, single blade dripping with poison,
+      Stealth visible as shadows cling to her form, cold calculating expression
+      as she selects her target, dark rooftop overlooking gothic city, 90s Magic
+      the Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3064
+    name: "Nightblade"
+    card_type: creature
+    tags: [Assassin]
+    prompt: >
+      A deadly male assassin with Lethal precision emerging from Stealth, ornate
+      black blade guaranteed to kill with a single cut, elegant dark nobleman's
+      attire with assassin's tools concealed within, angular handsome features
+      with cold killer's eyes, striking from shadows at an unsuspecting victim,
+      gothic ballroom with nobles unaware of the danger, 90s Magic the Gathering
+      card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+# === CREATURES - Spirits/Shades ===
+
+  - id: 3021
+    name: "Void Devourer"
+    card_type: creature
+    tags: [Spirit]
+    prompt: >
+      A massive spirit of pure void energy consuming all in its path, formless
+      darkness with glowing neon blue eyes, devouring an enemy creature as it
+      arrives on the battlefield, reality warping around its hungry form, victims
+      dissolving into nothingness, gothic void-temple with reality tears, 90s
+      Magic the Gathering card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3024
+    name: "Shadowmeld"
+    card_type: creature
+    tags: [Spirit]
+    prompt: >
+      A spirit that is both Stealthy and Ephemeral, a living shadow that strikes
+      hard then fades away, translucent dark form with glowing crimson core,
+      existing only long enough to kill before dissipating, emerging from a pool
+      of darkness on the floor, gothic dungeon with shadows that move wrong, 90s
+      Magic the Gathering card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3041
+    name: "Doppelganger"
+    card_type: creature
+    tags: [Shade]
+    prompt: >
+      A shapeshifting creature of living shadow copying an ally perfectly, two
+      identical figures standing together as the copy completes, the original
+      and doppelganger indistinguishable, dark misty form solidifying into a
+      perfect duplicate, gothic mirror room with multiple reflections, 90s Magic
+      the Gathering card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3043
+    name: "Echo of the Void"
+    card_type: creature
+    tags: [Shade]
+    prompt: >
+      A legendary shade of immense power, Quick and draining life while creating
+      copies of allies, swirling void energy forming multiple shadow duplicates,
+      elegant female form of living darkness with neon blue eyes, reality-warping
+      presence that echoes across the battlefield, gothic void-cathedral with
+      impossible geometry, 90s Magic the Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3068
+    name: "Shapeshifter Adept"
+    card_type: creature
+    tags: [Shapeshifter]
+    prompt: >
+      A skilled shapeshifter mid-transformation copying an ally creature, body
+      flowing between forms like liquid shadow, one half showing original dark
+      robed form the other becoming the duplicate, concentrated expression as
+      the magic completes, gothic laboratory with mirrors and arcane equipment,
+      90s Magic the Gathering card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3070
+    name: "Swift Shade"
+    card_type: creature
+    tags: [Shade]
+    prompt: >
+      A small but Quick shade racing across the battlefield, wispy form of
+      concentrated shadow with glowing eyes, moving faster than the eye can
+      follow, after-images trailing its rapid movement, ephemeral but deadly,
+      gothic corridor with the shade blurring past, 90s Magic the Gathering
+      card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+# === CREATURES - Cultists ===
+
+  - id: 3023
+    name: "Blood Ritualist"
+    card_type: creature
+    tags: [Cultist]
+    prompt: >
+      A female blood ritualist healing allies through dark sacrifice, crimson
+      circles of power drawn on the floor, channeling stolen life force to mend
+      wounds, elegant dark robes with crimson ritual symbols, focused expression
+      as healing energy flows from her raised hands, candlelit ritual chamber
+      with blood offerings, 90s Magic the Gathering card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3038
+    name: "Soul Collector"
+    card_type: creature
+    tags: [Cultist]
+    prompt: >
+      A male cultist who collects souls as payment for kills, glowing soul-gems
+      hanging from his belt filling with each victim, Lifesteal draining essence
+      while gaining knowledge through card draw, dark robes with soul-catching
+      apparatus, satisfied expression as another soul joins his collection, gothic
+      crypt with imprisoned spirits, 90s Magic the Gathering card art, dark fantasy
+      illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3046
+    name: "Void Corruptor"
+    card_type: creature
+    tags: [Cultist]
+    prompt: >
+      A male cultist who transforms enemies into harmless void spawn, hands
+      crackling with corruption energy as a victim dissolves and reforms as a
+      lesser creature, sadistic smile as another enemy is reduced to nothing,
+      dark ceremonial robes with void symbols, gothic laboratory with transformed
+      creatures in cages, 90s Magic the Gathering card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+# === CREATURES - Nobles/Vampires ===
+
+  - id: 3048
+    name: "Sanguine Lord"
+    card_type: creature
+    tags: [Noble]
+    prompt: >
+      A powerful male vampire lord granting Lifesteal to all allies, elegant
+      crimson and black formal wear with golden trim, aristocratic handsome
+      features with burning red eyes, blood magic swirling around raised hands
+      blessing his servants, surrounded by grateful lesser vampires, gothic
+      ballroom with crimson drapes, 90s Magic the Gathering card art, dark
+      fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3060
+    name: "Vampiric Knight"
+    card_type: creature
+    tags: [Noble]
+    prompt: >
+      A noble male vampire warrior in black plate armor with crimson accents,
+      Lifesteal sustaining him through eternal battle, aristocratic features
+      beneath an open-faced helm, crimson blade dripping with stolen essence,
+      mounted on a nightmare steed with burning eyes, gothic battlefield at
+      night, 90s Magic the Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+# === CREATURES - Mages ===
+
+  - id: 3071
+    name: "Temporal Adept"
+    card_type: creature
+    tags: [Mage]
+    prompt: >
+      A female time mage who moves with supernatural Quick speed, robes of black
+      and neon blue with temporal symbols, manipulating time streams around her
+      form allowing faster action, focused expression with glowing eyes calculating
+      temporal possibilities, clockwork and hourglasses floating around her,
+      gothic tower laboratory, 90s Magic the Gathering card art, dark fantasy
+      illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+# === SPELLS ===
+
+  - id: 3009
+    name: "Dark Insight"
+    card_type: spell
+    prompt: >
+      A mage channeling forbidden knowledge through dark rituals, neon blue
+      runes swirling around their head as cards of power are drawn, secrets
+      visible in the swirling magic, the cost of knowledge shown in exhausted
+      expression, gothic library with forbidden tomes, 90s Magic the Gathering
+      card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3011
+    name: "Obliteration"
+    card_type: spell
+    prompt: >
+      A devastating blast of void energy completely destroying a target, the
+      victim disintegrating into nothingness as reality itself rejects them,
+      caster channeling the obliterating force with both hands extended, neon
+      blue and black energy spiraling into the point of annihilation, gothic
+      battlefield with nothing remaining, 90s Magic the Gathering card art,
+      dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3012
+    name: "Mind Shatter"
+    card_type: spell
+    prompt: >
+      Psychic energy tearing through a victim's mind dealing devastating damage,
+      the target clutching their head as their sanity fractures, neon blue
+      lightning arcing from the caster's temples, visible psychic shockwave
+      rippling outward, gothic tower with the victim collapsing, 90s Magic
+      the Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3013
+    name: "Cataclysm"
+    card_type: spell
+    prompt: >
+      A massive wave of destructive energy hitting all creatures on the battlefield,
+      void energy erupting from the ground in devastating waves, creatures being
+      thrown back by the cataclysmic force, the caster floating above the chaos
+      controlling the destruction, gothic battlefield being torn apart, 90s Magic
+      the Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3026
+    name: "Dark Empowerment"
+    card_type: spell
+    prompt: >
+      Dark energy flowing into an ally creature granting Quick speed and enhanced
+      power, the recipient's form crackling with neon blue energy as they
+      accelerate, the caster channeling forbidden power with glowing hands,
+      shadows wrapping around the empowered creature, gothic ritual chamber,
+      90s Magic the Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3027
+    name: "Void Rift"
+    card_type: spell
+    prompt: >
+      A tear in reality opening to unleash devastating void energy, the target
+      being pulled toward the hungry rift, neon blue and black energy spiraling
+      into the dimensional tear, caster controlling the rift with arcane gestures,
+      gothic architecture cracking around the unstable rift, 90s Magic the
+      Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3030
+    name: "Soul Harvest"
+    card_type: spell
+    prompt: >
+      A reaper figure harvesting a soul from a dying enemy, crimson essence
+      flowing from victim to caster as healing if the target dies, spectral
+      scythe cutting the soul free, the harvested energy visible as swirling
+      red light, gothic graveyard with the harvest in progress, 90s Magic the
+      Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3031
+    name: "Consume Essence"
+    card_type: spell
+    prompt: >
+      Dark tendrils completely consuming a weakened enemy's essence, the victim
+      dissolving as their knowledge flows to the caster through drawn cards,
+      shadowy maw devouring the target whole, neon blue runes guiding the
+      consumed energy, gothic crypt with the consumption in progress, 90s Magic
+      the Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3032
+    name: "Vampiric Execution"
+    card_type: spell
+    prompt: >
+      A ceremonial execution that heals the caster and grants knowledge if it
+      kills, executioner's blade descending as crimson energy flows back to the
+      caster, the victim's life and knowledge being stolen simultaneously, gothic
+      execution chamber with blood magic circles, 90s Magic the Gathering card
+      art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3033
+    name: "Shadow Return"
+    card_type: spell
+    prompt: >
+      An enemy being forcibly returned through shadow magic while taking damage,
+      the victim dissolving into shadows as they're bounced back, small amount
+      of damage dealt by the shadowy transit, gothic corridor with shadows
+      reaching up to grab the target, 90s Magic the Gathering card art, dark
+      fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3034
+    name: "Mass Dispersion"
+    card_type: spell
+    prompt: >
+      A wave of void energy dispersing all small creatures back to their origins,
+      multiple enemies being caught in the mass bounce effect, caster channeling
+      the dispersion with arms spread wide, gothic battlefield clearing as
+      creatures vanish, 90s Magic the Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3035
+    name: "Vampiric Surge"
+    card_type: spell
+    prompt: >
+      Crimson energy surging through all Lifesteal creatures enhancing their
+      attack power, multiple vampiric creatures glowing with enhanced bloodlust,
+      the caster channeling the surge from a blood ritual circle, gothic
+      cathedral with empowered vampires, 90s Magic the Gathering card art,
+      dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3036
+    name: "Blood Pact"
+    card_type: spell
+    prompt: >
+      A dark contract being sealed between caster and creature granting Lifesteal,
+      blood magic binding the pact with crimson chains of energy, the creature
+      gaining vampiric power as the deal is struck, ritual circle glowing with
+      the agreed terms, gothic chamber with contract scrolls, 90s Magic the
+      Gathering card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3040
+    name: "Shadow Clone"
+    card_type: spell
+    prompt: >
+      A perfect shadow duplicate being created from an ally creature, the copy
+      emerging from the original's shadow as a perfect mirror, two identical
+      figures standing together as the spell completes, darkness swirling
+      between them, gothic hall with multiple shadows, 90s Magic the Gathering
+      card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3044
+    name: "Corruption"
+    card_type: spell
+    prompt: >
+      Dark magic corrupting an enemy and transforming them into a lesser shade,
+      the victim's form dissolving and reforming as a corrupted shadow creature,
+      caster channeling the corruption with crackling void energy, the original
+      creature screaming as transformation takes hold, gothic corruption ritual,
+      90s Magic the Gathering card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3045
+    name: "Dark Metamorphosis"
+    card_type: spell
+    prompt: >
+      An ally creature undergoing dark metamorphosis into a powerful shadow beast,
+      the original form shattering as something greater emerges, Quick shadow
+      beast rising from the transformation with glowing eyes, dark cocoon of
+      energy splitting open, gothic laboratory with the transformation, 90s
+      Magic the Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3050
+    name: "Bloodthirst"
+    card_type: spell
+    prompt: >
+      Vampiric hunger being granted to a creature along with enhanced power,
+      the recipient's eyes turning crimson with bloodlust, fangs growing as
+      Lifesteal takes hold, caster channeling blood magic into willing subject,
+      gothic castle with the empowerment ritual, 90s Magic the Gathering card
+      art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3053
+    name: "Cloak of Shadows"
+    card_type: spell
+    prompt: >
+      Shadows wrapping around a creature granting Stealth and enhanced stats,
+      the recipient fading into darkness as the cloak takes effect, only glowing
+      eyes visible through the shadow veil, caster weaving the shadow cloak
+      with delicate hand movements, gothic castle corridor, 90s Magic the
+      Gathering card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3062
+    name: "Sanguine Blessing"
+    card_type: spell
+    prompt: >
+      A vampire lord blessing a creature with the gift of Lifesteal, crimson
+      energy flowing from extended fangs to the blessed recipient, the creature
+      gaining vampiric characteristics as the blessing takes hold, gothic
+      church converted to vampire sanctuary, 90s Magic the Gathering card art,
+      dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3065
+    name: "Cloak of Shadows"
+    card_type: spell
+    prompt: >
+      Simple shadow magic granting Stealth to an ally, the creature fading into
+      surrounding darkness, shadows reaching up to embrace and conceal them,
+      caster gesturing the shadows into protective formation, gothic alleyway
+      with the creature disappearing, 90s Magic the Gathering card art, dark
+      fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3066
+    name: "Ambush"
+    card_type: spell
+    prompt: >
+      A devastating surprise attack from shadows dealing heavy damage, assassin
+      emerging from darkness to strike an unsuspecting victim, the ambush
+      perfectly executed with lethal precision, victim recoiling from the
+      sudden strike, gothic corridor with the ambush sprung, 90s Magic the
+      Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3067
+    name: "Mirror Image"
+    card_type: spell
+    prompt: >
+      A perfect magical duplicate being created of an ally creature, the mirror
+      image stepping out from the original as an exact copy, both figures
+      identical and ready for battle, arcane mirror visible shattering as the
+      duplicate emerges, gothic hall of mirrors, 90s Magic the Gathering card
+      art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3069
+    name: "Identity Theft"
+    card_type: spell
+    prompt: >
+      Dark magic stealing an enemy's form to create a copy for the caster,
+      the victim's essence being pulled away to form a duplicate on the
+      opposite side, shadowy tendrils connecting original and copy during
+      the theft, gothic dungeon with the theft in progress, 90s Magic the
+      Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3072
+    name: "Haste"
+    card_type: spell
+    prompt: >
+      Time magic granting Quick speed and refreshing a creature for immediate
+      action, the recipient blurring with accelerated time as they become ready
+      to act again, temporal energy crackling around their form, caster
+      manipulating an hourglass that flows backwards, gothic tower with time
+      magic, 90s Magic the Gathering card art, dark fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3073
+    name: "Void Strike"
+    card_type: spell
+    prompt: >
+      A concentrated blast of void energy dealing damage while granting knowledge
+      through card draw, the strike tearing information from the victim as it
+      damages, neon blue void bolt connecting caster to target, gothic battlefield
+      with the strike in progress, 90s Magic the Gathering card art, dark fantasy
+      illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+# === SUPPORTS ===
+
+  - id: 3014
+    name: "Dark Altar"
+    card_type: support
+    prompt: >
+      A sinister altar granting Lifesteal to all creatures, blood magic circles
+      carved into black stone, crimson essence pooling in ritual bowls, gothic
+      architecture with candles and dark offerings, the altar radiating vampiric
+      power to all nearby, sacrificial implements visible, 90s Magic the Gathering
+      card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3028
+    name: "Shadow Sanctum"
+    card_type: support
+    prompt: >
+      A holy place of shadow granting Stealth to all creatures, darkness pooling
+      unnaturally in the sanctum's corners, gothic architecture with shadows
+      that move independently, creatures within fading into protective darkness,
+      unholy altar at the center radiating shadow magic, 90s Magic the Gathering
+      card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3029
+    name: "Blood Font"
+    card_type: support
+    prompt: >
+      A fountain of blood magic providing healing each turn, crimson essence
+      bubbling up from dark stone basin, gothic architecture surrounding the
+      vampiric font, creatures drinking from its healing flow, ornate dark
+      metal work and blood-red gems decorating the structure, 90s Magic the
+      Gathering card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3049
+    name: "Life Drain Aura"
+    card_type: support
+    prompt: >
+      A dark magical field granting Lifesteal to all within its radius, crimson
+      mist spreading across the battlefield, creatures within gaining vampiric
+      aura visible around their forms, gothic obelisk at the center projecting
+      the draining field, enemy life force visibly being siphoned, 90s Magic
+      the Gathering card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3054
+    name: "Shadow Network"
+    card_type: support
+    prompt: >
+      A web of interconnected shadows granting Stealth to all allies, darkness
+      flowing between creatures like a living network, gothic architecture with
+      shadows that connect impossible distances, creatures fading in and out
+      of visibility as they move through the network, 90s Magic the Gathering
+      card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3061
+    name: "Blood Altar"
+    card_type: support
+    prompt: >
+      A sacrificial altar providing healing energy each turn, blood offerings
+      placed upon dark stone transformed into healing power, gothic temple
+      architecture with crimson stained glass, the altar glowing with stored
+      life force, ritual implements and candles surrounding it, 90s Magic the
+      Gathering card art, dark fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+  - id: 3074
+    name: "Shadow Nexus"
+    card_type: support
+    prompt: >
+      A convergence point of shadow energy granting attack bonuses to all allies,
+      multiple shadow streams flowing into a central dark crystal, creatures
+      drawing power from the nexus gaining enhanced offense, gothic spire with
+      the nexus pulsing at its peak, 90s Magic the Gathering card art, dark
+      fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic nature, bright, cheerful, blurry, low quality"
+
+# === ALL OBSIDION PROMPTS COMPLETE ===
