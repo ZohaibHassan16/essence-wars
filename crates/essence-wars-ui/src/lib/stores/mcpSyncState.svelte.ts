@@ -2,6 +2,9 @@
 //
 // This store manages displaying game state that was synced from the MCP server.
 // It polls the Tauri backend for synced state and displays it when available.
+//
+// AUTO-SWITCH MODE: The store automatically polls for synced state even when idle,
+// and will auto-switch to "watching" phase when MCP syncs game state.
 
 import type { GameStateDto } from "$lib/api/types";
 import * as api from "$lib/api/game";
@@ -22,7 +25,9 @@ class McpSyncStore {
   // Polling
   isPolling = $state<boolean>(false);
   private pollInterval: ReturnType<typeof setInterval> | null = null;
+  private autoWatchInterval: ReturnType<typeof setInterval> | null = null;
   private readonly POLL_INTERVAL_MS = 500; // Poll every 500ms
+  private readonly AUTO_WATCH_INTERVAL_MS = 1000; // Check for state every 1s when idle
   private readonly STALE_THRESHOLD_MS = 5000; // Consider stale after 5s
 
   // Error handling
@@ -51,13 +56,67 @@ class McpSyncStore {
   // Actions
   // ============================================================================
 
-  /** Start watching for MCP-synced game state */
+  /**
+   * Start auto-watch mode - polls in background and auto-switches to watching
+   * when MCP syncs game state. Call this on app initialization.
+   */
+  startAutoWatch() {
+    if (this.autoWatchInterval) return;
+
+    this.autoWatchInterval = setInterval(() => {
+      this.checkForAutoSwitch();
+    }, this.AUTO_WATCH_INTERVAL_MS);
+
+    // Initial check
+    this.checkForAutoSwitch();
+  }
+
+  /** Stop auto-watch mode */
+  stopAutoWatch() {
+    if (this.autoWatchInterval) {
+      clearInterval(this.autoWatchInterval);
+      this.autoWatchInterval = null;
+    }
+  }
+
+  /** Check for synced state and auto-switch to watching if found */
+  private async checkForAutoSwitch() {
+    // Only auto-switch when in idle phase
+    if (this.phase !== "idle") return;
+
+    try {
+      const result = await api.getMcpSyncedState();
+      if (result && result.ageMs < this.STALE_THRESHOLD_MS) {
+        // Fresh state detected - auto-switch to watching mode
+        this.gameState = result.state;
+        this.lastSyncTimestamp = result.timestamp;
+        this.stateAgeMs = result.ageMs;
+        this.phase = "watching";
+        this.error = null;
+
+        // Start active polling now that we're watching
+        this.startActivePolling();
+      }
+    } catch (e) {
+      // Silently ignore errors during auto-watch - it's just background checking
+      console.debug("MCP auto-watch check error:", e);
+    }
+  }
+
+  /** Start watching for MCP-synced game state (manual trigger) */
   startWatching() {
     if (this.isPolling) return;
 
-    this.isPolling = true;
     this.phase = "watching";
     this.error = null;
+    this.startActivePolling();
+  }
+
+  /** Start active polling (internal) */
+  private startActivePolling() {
+    if (this.isPolling) return;
+
+    this.isPolling = true;
 
     // Initial poll
     this.pollSyncedState();
@@ -121,3 +180,7 @@ class McpSyncStore {
 }
 
 export const mcpSyncStore = new McpSyncStore();
+
+// Auto-start the background watcher when this module loads
+// This enables auto-switch to MCP sync view when state is received
+mcpSyncStore.startAutoWatch();
