@@ -47,9 +47,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
@@ -62,27 +64,41 @@ jobs:
         working-directory: crates/essence-wars-ui
         run: pnpm run build
 
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli --version "^2.0.0"
+      - name: Install Tauri CLI (cached)
+        run: |
+          cargo install tauri-cli --version ^2.0.0 --locked || echo "Using cached tauri-cli"
 
       - name: Build Tauri app (Windows)
         working-directory: crates/essence-wars-ui
         run: cargo tauri build
 
+      - name: List build outputs (debug)
+        run: |
+          echo "Checking target directory..."
+          dir target\release\
+          if (Test-Path target\release\bundle) { dir target\release\bundle\ -Recurse }
+        shell: pwsh
+
+      - name: Upload Windows MSI installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: essence-wars-windows-installer
+          path: target/release/bundle/msi/*.msi
+          retention-days: 30
+
       - name: Upload Windows executable
         uses: actions/upload-artifact@v4
         with:
-          name: essence-wars-windows-x64
-          path: |
-            crates/essence-wars-ui/src-tauri/target/release/essence-wars-ui.exe
-            crates/essence-wars-ui/src-tauri/target/release/bundle/msi/*.msi
+          name: essence-wars-windows-exe
+          path: target/release/essence-wars-ui.exe
           retention-days: 30
+          if-no-files-found: warn
 
       - name: Create release (on tags)
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            crates/essence-wars-ui/src-tauri/target/release/bundle/msi/*.msi
+            target/release/bundle/msi/*.msi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
