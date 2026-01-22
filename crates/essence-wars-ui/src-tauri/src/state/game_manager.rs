@@ -42,11 +42,10 @@ impl GameManager {
         // Get the data directory
         let data_dir = cardgame::data_dir();
 
-        // Load card database - load_from_yaml expects a directory path as &str
+        // Load card database from directory
         let cards_path = data_dir.join("cards/core_set");
-        let card_db = CardDatabase::load_from_yaml(
-            cards_path.to_str().ok_or("Invalid cards path")?
-        ).map_err(|e| format!("Failed to load card database: {}", e))?;
+        let card_db = CardDatabase::load_from_directory(&cards_path)
+            .map_err(|e| format!("Failed to load card database: {}", e))?;
 
         // Load deck registry - takes only a path
         let deck_registry = DeckRegistry::load_from_directory(data_dir.join("decks"))
