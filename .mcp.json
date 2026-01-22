@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "essence-wars": {
+      "command": "/home/chris/ai-cardgame/target/release/essence-wars-mcp"
+    }
+  }
+}

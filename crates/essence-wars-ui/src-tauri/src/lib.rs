@@ -3,12 +3,16 @@
 //! A Tauri-based desktop client for the Essence Wars card game.
 
 mod commands;
+mod screenshot_server;
 mod state;
 
 pub mod ai;
 
 use commands::*;
+use screenshot_server::ScreenshotState;
 use state::{GameManager, ReplayManager};
+use std::sync::Arc;
+use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -22,10 +26,35 @@ pub fn run() {
     )
     .expect("Failed to initialize replay manager");
 
+    // Initialize screenshot state for HTTP server
+    let screenshot_state = Arc::new(ScreenshotState::new());
+    let screenshot_state_for_server = screenshot_state.clone();
+
+    // Start screenshot HTTP server in background thread
+    std::thread::spawn(move || {
+        let rt = tokio::runtime::Runtime::new().expect("Failed to create tokio runtime");
+        rt.block_on(async {
+            let port = screenshot_server::DEFAULT_PORT;
+            if let Err(e) = screenshot_server::start_server(screenshot_state_for_server, port).await
+            {
+                eprintln!("Screenshot server error: {}", e);
+            }
+        });
+    });
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .manage(game_manager)
         .manage(replay_manager)
+        .manage(screenshot_state)
+        .setup(|app| {
+            // Register the main window title with screenshot state
+            // The window title is "Essence Wars" as configured in tauri.conf.json
+            let state: tauri::State<'_, Arc<ScreenshotState>> = app.state();
+            state.set_window_title("Essence Wars".to_string());
+            eprintln!("Screenshot server: registered window 'Essence Wars'");
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             list_decks,
             list_bots,

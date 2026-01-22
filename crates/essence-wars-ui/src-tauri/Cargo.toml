@@ -26,7 +26,17 @@ serde_json.workspace = true
 cardgame.workspace = true
 
 # Async
-tokio = { version = "1", features = ["sync"] }
+tokio = { version = "1", features = ["sync", "rt-multi-thread", "net"] }
+
+# HTTP server for screenshot capture
+axum = "0.8"
+
+# Screenshot capture
+xcap = "0.3"
+image = "0.25"
+
+# Error handling
+anyhow = "1.0"
 
 # Utilities
 uuid = { version = "1.0", features = ["v4", "serde"] }
