@@ -10,9 +10,8 @@
 
 ```bash
 # Build
-cargo build --release                    # All crates
+cargo build --release                    # Full workspace
 cargo build --release -p cardgame        # Core engine only
-cargo build --release -p essence-wars-3d # 3D client only
 
 # Test
 cargo nextest run --status-level=fail    # ~629 tests (recommended)
@@ -41,21 +40,17 @@ cargo run --release --bin diagnose -- 200
 # Benchmarks
 cargo bench -p cardgame
 
-# 3D client
-cargo run --release -p essence-wars-3d
-
 # Modal cloud (setup: uv tool install modal && modal token new)
 modal run modal_tune.py::main
 ```
 
 ## Project Structure
 
-**Cargo workspace** with two crates:
+**Cargo workspace** with the core engine crate:
 
 | Crate | Purpose |
 |-------|---------|
 | `cardgame` | Core game engine, AI bots, tuning infrastructure |
-| `essence-wars-3d` | Bevy 3D client with Glassbox AI visualization |
 
 **Key locations:**
 - `crates/cardgame/src/` - Core engine source (~25k lines)
@@ -64,7 +59,6 @@ modal run modal_tune.py::main
 - `crates/cardgame/src/bots/` - RandomBot, GreedyBot, MctsBot
 - `crates/cardgame/src/bin/` - CLIs: arena, tune, validate, diagnose
 - `crates/cardgame/tests/unit/` - Unit tests (separate from src)
-- `crates/essence-wars-3d/src/` - Bevy 3D client
 - `python/essence_wars/` - Python bindings and ML agents
 - `python/essence_wars/agents/` - PPO, AlphaZero, Card2Vec, embeddings
 - `python/essence_wars/data/` - Dataset loaders (MCTSDataset, ChunkedMCTSDataset)
@@ -122,14 +116,6 @@ pub trait Bot: Send {
 ### GreedyBot Weights (24 params)
 
 Life, creature stats, board state, resources, keywords (guard/lethal/lifesteal/rush/ranged/piercing/shield/quick), terminal bonuses. See `crates/cardgame/src/bots/weights.rs`.
-
-### Bot Introspection
-
-`MctsBot` provides introspection for Glassbox visualization:
-```rust
-let bot = MctsBot::new(1000).with_introspection(IntrospectionConfig::full());
-// Access via bot.last_decision() -> Option<BotDecision>
-```
 
 ## Game Rules
 
@@ -257,77 +243,6 @@ See `docs/tuning-pipeline.md` for full options.
 | Random game | ~80k/sec |
 | Greedy game | ~17k/sec |
 | Engine fork | ~99 ns |
-
-## Bevy 3D Client
-
-```bash
-cargo run --release -p essence-wars-3d
-```
-
-Press **'G'** to toggle Glassbox AI visualization (MCTS tree, action probabilities, value gauge).
-
-See `crates/essence-wars-3d/README.md` for details.
-
-### Headless Mode
-
-The 3D client supports headless operation for testing and benchmarking:
-
-```bash
-# Visual debugging (default) - watch AI play with normal pacing
-cargo run --release -p essence-wars-3d -- --headless
-
-# Fast mode - skip visual delays for quick testing
-cargo run --release -p essence-wars-3d -- --headless --fast
-
-# Multi-game benchmark with JSON output
-cargo run --release -p essence-wars-3d -- --headless --fast --games 100 --json
-
-# Debug logging (arena-style per-action output)
-cargo run --release -p essence-wars-3d -- --headless --fast --debug
-
-# Custom decks and seed
-cargo run --release -p essence-wars-3d -- --headless --deck1 colossus_wall --deck2 broodmother_swarm --seed 42
-
-# Screenshot capture at specific turns
-cargo run --release -p essence-wars-3d -- --headless --fast \
-    --screenshot-turns 1,5,10 --screenshot-dir ./debug_shots
-
-# Screenshot capture on events (turn_start, combat, game_over)
-cargo run --release -p essence-wars-3d -- --headless --fast \
-    --screenshot-events game_over --screenshot-dir ./debug_shots
-
-# Combined: screenshots + JSON output for visual debugging
-cargo run --release -p essence-wars-3d -- --headless --fast --json \
-    --screenshot-turns 1 --screenshot-events game_over \
-    --screenshot-dir ./debug_shots
-```
-
-| Flag | Description |
-|------|-------------|
-| `--headless` | Auto-start AI vs AI game, skip menu |
-| `--fast` | Skip visual timers, run as fast as possible |
-| `--games N` | Run N games (default: 1) |
-| `--json` | Output results as JSON (for scripting) |
-| `--debug` | Per-action logging like arena binary |
-| `--human` | Player 1 is human (interactive) |
-| `--screenshot-turns 1,5,10` | Capture screenshots at specific turn numbers |
-| `--screenshot-interval 2.0` | Capture screenshots every N seconds |
-| `--screenshot-events X,Y` | Capture on events: `turn_start`, `combat`, `game_over` |
-| `--screenshot-dir PATH` | Output directory for screenshots (default: `screenshots/`) |
-
-**Screenshot filename pattern:** `game_{game_num}_turn_{turn}_{event}_{elapsed}s.png`
-
-**JSON output format:**
-```json
-{
-  "version": "0.7.0",
-  "config": { "deck1": "...", "deck2": "...", "seed": 42, "games": 100 },
-  "results": { "player1_wins": 54, "player2_wins": 43, "draws": 3, ... },
-  "timing": { "total_seconds": 12.45, "avg_game_ms": 124.5, "games_per_second": 8.03 },
-  "metrics": { "avg_turns": 18.5, "avg_actions": 42.3 },
-  "screenshots": ["screenshots/game_1_turn_1_turn_start_0s.png", "..."]
-}
-```
 
 ## Python/ML Infrastructure
 
@@ -520,7 +435,7 @@ Also published on HuggingFace: [`ChristianWissworWo/essence-wars-mcts-games`](ht
 
 ## Versioning
 
-Version in **root `Cargo.toml`** `[workspace.package]`. Both crates share it.
+Version in **root `Cargo.toml`** `[workspace.package]`.
 
 | Change | Bump |
 |--------|------|

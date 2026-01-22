@@ -2,7 +2,6 @@
 resolver = "2"
 members = [
     "crates/cardgame",
-    "crates/essence-wars-3d",
 ]
 
 [workspace.package]

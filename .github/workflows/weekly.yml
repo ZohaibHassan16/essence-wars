@@ -1,8 +1,5 @@
 # Weekly Workflow - Runs exhaustive overnight tests
 # Scheduled for Sunday 3 AM UTC (~2-3 hours)
-#
-# Note: Only builds/tests the cardgame crate. The essence-wars-3d crate
-# requires system graphics libraries (Wayland, X11) not available in CI.
 
 name: Weekly Exhaustive Tests
 

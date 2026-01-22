@@ -11,8 +11,8 @@ uv sync --all-groups
 # Run tests
 cargo nextest run
 
-# Play a game
-cargo run --release -p essence-wars-3d
+# Run arena matches
+cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --games 100 --progress
 ```
 
 ## Documentation

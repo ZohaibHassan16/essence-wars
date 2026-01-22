@@ -7,14 +7,13 @@
 
 ## Workspace Structure
 
-This project uses a **Cargo workspace** with two crates:
+This project uses a **Cargo workspace** with the core engine crate:
 
 | Crate | Purpose | Path |
 |-------|---------|------|
 | `cardgame` | Core game engine, AI bots, research tools | `crates/cardgame/` |
-| `essence-wars-3d` | Bevy 3D client with Glassbox AI visualization | `crates/essence-wars-3d/` |
 
-**Critical Dependency Rule:** `cardgame` is pure engine code with zero game client dependencies. `essence-wars-3d` depends on `cardgame` as a library. This enables independent AI research without touching the game client.
+The `cardgame` crate is pure engine code designed for AI research.
 
 ## Architecture
 
@@ -43,13 +42,6 @@ This project uses a **Cargo workspace** with two crates:
 - **Metrics**: BoardAdvantage, TempoMetrics with statistical validation (Wilson CI, chi-square)
 - **Export**: CSV/JSON export for deeper analysis
 
-### 3D Game Client (`crates/essence-wars-3d/src/`)
-- **Bevy Integration**: Full 3D game client with Bevy 0.15.3
-- **Glassbox Mode**: AI visualization panels (MCTS tree, action probabilities, value gauge)
-- **GameBridge**: Resource wrapping GameClient, exposes bot introspection for UI
-- **Rendering**: board.rs, creatures.rs, camera.rs, lighting.rs
-- **UI**: HUD, hand display, menu system via bevy_egui
-
 ### Python Tooling (`python/`)
 - **Analysis**: `python/cardgame/analysis/` - Parses tuning logs, generates plots (4-panel dashboards)
 - **Entry Script**: analyze-tuning.sh script - Wrapper using `uv run` (no venv needed)
@@ -58,17 +50,13 @@ This project uses a **Cargo workspace** with two crates:
 
 ### Build & Test
 ```bash
-# Build all crates
-cargo build --release                    # Full workspace (2m 34s)
-cargo build --release -p cardgame        # Engine only (14s)
-cargo build --release -p essence-wars-3d # 3D client only
+# Build
+cargo build --release                    # Full workspace
+cargo build --release -p cardgame        # Engine only
 
 # Run tests
 cargo nextest run --status-level=fail    # Preferred: 629+ tests, only shows failures
 cargo test                               # Alternative: standard cargo test
-
-# Run 3D client with Glassbox AI visualization
-cargo run --release -p essence-wars-3d
 
 # Run linter
 ./scripts/run-clippy.sh                  # Lint production code (excludes tests)
@@ -195,12 +183,9 @@ Fitness evaluation uses Rayon for parallel game execution - enabled by default i
 3. **Check `--list-decks`** - Before using custom deck IDs in arena/tune
 4. **Arena needs card DB** - Default path `data/cards`, override with `--cards`
 5. **Weights are optional** - GreedyBot/MctsBot use defaults if no `--weights` specified
-6. **Crate-specific commands** - Use `-p cardgame` or `-p essence-wars-3d` when needed
 
 ## Documentation References
 - Game rules: design-engine.md in docs - Complete game specification
-- Full context: CLAUDE.md in root - Detailed project documentation (680+ lines)
-- Architecture: jrpg-architecture.md in docs - Bevy 3D client architecture
-- Glassbox: bevy-glassbox-implementation.md in docs - AI visualization system
+- Full context: CLAUDE.md in root - Detailed project documentation
 - Modal setup: modal-cloud-setup.md in docs - Cloud training configuration
 - Roadmap: ROADMAP.md in root - Future work and development priorities

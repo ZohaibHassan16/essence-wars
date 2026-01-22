@@ -1,8 +1,5 @@
 # CI Workflow - Runs on every push and PR
 # Standard tests + quick validation (~5 minutes)
-#
-# Note: Only builds/tests the cardgame crate. The essence-wars-3d crate
-# requires system graphics libraries (Wayland, X11) not available in CI.
 
 name: CI
 
