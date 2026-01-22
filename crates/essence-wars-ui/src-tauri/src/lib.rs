@@ -15,6 +15,20 @@ use std::sync::Arc;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // Set data directory for bundled resources
+    #[cfg(not(debug_assertions))]
+    {
+        if let Ok(exe_path) = std::env::current_exe() {
+            if let Some(exe_dir) = exe_path.parent() {
+                // On Windows, Tauri bundles resources next to the exe
+                let bundled_data = exe_dir.join("data");
+                if bundled_data.exists() {
+                    std::env::set_var("CARDGAME_DATA_DIR", bundled_data);
+                }
+            }
+        }
+    }
+
     // Initialize game manager
     let game_manager = GameManager::new().expect("Failed to initialize game manager");
 
