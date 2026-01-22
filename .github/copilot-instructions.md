@@ -1,7 +1,7 @@
 # AI Coding Agent Instructions - Essence Wars
 
 ## Project Overview
-**Essence Wars** is a deterministic, perfect-information card game engine built in Rust for AI research (MCTS, RL). Think "Chess with Cards" - no hidden information, no RNG during play. The engine prioritizes performance (cloning speed for tree search) and correctness (629+ tests).
+**Essence Wars** is a deterministic, perfect-information card game engine built in Rust. Think "Chess with Cards" - no hidden information, no RNG during play. The engine prioritizes performance (cloning speed for tree search) and correctness (629+ tests).
 
 **Current Version:** 0.6.0
 
@@ -93,27 +93,12 @@ cargo run --release --bin tune -- --mode specialist \
 # Faction specialist (auto-saves to data/weights/specialists/)
 cargo run --release --bin tune -- --mode faction-specialist \
   --faction argentum --tag argentum_v1 --generations 100
-
-# Cloud tuning via Modal (4x faster, parallel execution)
-modal run modal_tune.py::main                    # Full pipeline (train + validate + auto-deploy)
-modal run modal_tune.py::main --mode train-only  # Train only + auto-deploy weights
-modal run modal_tune.py::main --single argentum  # Single specialist
-```
-
-### Analyze Results
-```bash
-./scripts/analyze-tuning.sh --latest                    # Latest experiment (generates plots + REPORT.md)
-./scripts/analyze-tuning.sh experiments/mcts/2026-01-12_1430_baseline
-./scripts/analyze-tuning.sh --all                       # Analyze all experiments
 ```
 
 ### Validation & Diagnostics
 ```bash
 # Balance validation (round-robin: 66 deck matchups × 2 directions × games)
 cargo run --release --bin validate -- --games 100 --output results.json
-
-# Cloud validation (high confidence, 1500 games per matchup = 198k total)
-modal run modal_tune.py::main --mode validate-only --validation-games 1500
 
 # P1/P2 asymmetry diagnostics
 cargo run --release --bin diagnose -- 500 --export all --include-turns
@@ -137,13 +122,6 @@ When adding tests for a core module, create the corresponding `_tests.rs` file i
 
 **Experiment ID Convention:** `{YYYY-MM-DD_HHMM}_{tag}` (e.g., `2026-01-12_1430_baseline`)
 
-Every training run must:
-1. Create timestamped folder in `experiments/{mcts,ppo,alphazero}/`
-2. Save `config.yaml` at start
-3. Log metrics to `stats.csv`
-4. Generate plots in `plots/` subdirectory
-
-Use `docs/experiments/` for curated reports worth preserving in git.
 
 ### Card Definitions
 - **YAML format**: data/cards/core_set - 300 cards organized by faction (argentum.yaml, symbiote.yaml, obsidion.yaml, neutral.yaml - 75 cards each)
@@ -187,5 +165,3 @@ Fitness evaluation uses Rayon for parallel game execution - enabled by default i
 ## Documentation References
 - Game rules: design-engine.md in docs - Complete game specification
 - Full context: CLAUDE.md in root - Detailed project documentation
-- Modal setup: modal-cloud-setup.md in docs - Cloud training configuration
-- Roadmap: ROADMAP.md in root - Future work and development priorities

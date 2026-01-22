@@ -5,7 +5,7 @@
 mod common;
 
 use cardgame::arena::GameRunner;
-use cardgame::bots::{GreedyBot, MctsBot, MctsConfig, RandomBot};
+use cardgame::bots::{AlphaBetaBot, AlphaBetaConfig, GreedyBot, MctsBot, MctsConfig, RandomBot};
 use cardgame::cards::CardDatabase;
 use cardgame::decks::DeckRegistry;
 use cardgame::engine::GameEngine;
@@ -251,6 +251,81 @@ fn test_greedy_vs_random_100_games() {
         greedy_win_rate >= 0.75,
         "Greedy should dominate Random, got only {:.1}% win rate",
         greedy_win_rate * 100.0
+    );
+}
+
+#[test]
+fn test_alphabeta_vs_greedy_20_games() {
+    let card_db = load_card_db();
+    let deck = arena_test_deck();
+
+    // Use fast Alpha-Beta config (depth 4) for testing
+    let config = AlphaBetaConfig::with_depth(4);
+
+    let mut alphabeta = AlphaBetaBot::with_config(&card_db, config, 12345);
+    let mut greedy = GreedyBot::new(&card_db, 54321);
+
+    let results = run_traced_match(
+        &card_db,
+        &mut alphabeta,
+        &mut greedy,
+        deck.clone(),
+        deck,
+        20,
+        4000,
+    );
+
+    verify_no_anomalies(&results, "AlphaBeta vs Greedy");
+
+    // AlphaBeta should outperform Greedy due to lookahead
+    let alphabeta_win_rate = calculate_win_rate(&results);
+    println!(
+        "AlphaBeta vs Greedy: AlphaBeta win rate = {:.1}%",
+        alphabeta_win_rate * 100.0
+    );
+
+    // AlphaBeta with depth 4 should win at least 50% against Greedy
+    assert!(
+        alphabeta_win_rate >= 0.5,
+        "AlphaBeta should match or outperform Greedy, got only {:.1}% win rate",
+        alphabeta_win_rate * 100.0
+    );
+}
+
+#[test]
+#[ignore = "tier_quick"] // ~2 min: 20 AlphaBeta vs MCTS games
+fn test_alphabeta_vs_mcts_20_games() {
+    let card_db = load_card_db();
+    let deck = arena_test_deck();
+
+    // Alpha-Beta depth 6 vs MCTS with 100 sims
+    let ab_config = AlphaBetaConfig::with_depth(6);
+    let mcts_config = MctsConfig {
+        simulations: 100,
+        exploration: 1.414,
+        max_rollout_depth: 100,
+        ..Default::default()
+    };
+
+    let mut alphabeta = AlphaBetaBot::with_config(&card_db, ab_config, 12345);
+    let mut mcts = MctsBot::with_config(&card_db, mcts_config, 54321);
+
+    let results = run_traced_match(
+        &card_db,
+        &mut alphabeta,
+        &mut mcts,
+        deck.clone(),
+        deck,
+        20,
+        5000,
+    );
+
+    verify_no_anomalies(&results, "AlphaBeta vs MCTS");
+
+    let alphabeta_win_rate = calculate_win_rate(&results);
+    println!(
+        "AlphaBeta vs MCTS: AlphaBeta win rate = {:.1}%",
+        alphabeta_win_rate * 100.0
     );
 }
 
@@ -543,16 +618,16 @@ fn stress_test_bot_hierarchy() {
     let card_db = load_card_db();
     let deck = arena_test_deck();
 
-    // Test that bot hierarchy is maintained: MCTS > Greedy > Random
+    // Test that bot hierarchy is maintained: AlphaBeta/MCTS > Greedy > Random
 
     // MCTS vs Greedy - use moderate config (300 sims) for reliable wins
-    let config = MctsConfig {
+    let mcts_config = MctsConfig {
         simulations: 300,
         exploration: 1.414,
         max_rollout_depth: 100, // Match arena default
         ..Default::default()
     };
-    let mut mcts = MctsBot::with_config(&card_db, config, 12345);
+    let mut mcts = MctsBot::with_config(&card_db, mcts_config, 12345);
     let mut greedy = GreedyBot::new(&card_db, 54321);
 
     let mcts_v_greedy = run_traced_match(
@@ -565,6 +640,22 @@ fn stress_test_bot_hierarchy() {
         20000,
     );
     let mcts_win_rate = calculate_win_rate(&mcts_v_greedy);
+
+    // AlphaBeta vs Greedy - use depth 6 for reliable wins
+    let ab_config = AlphaBetaConfig::with_depth(6);
+    let mut alphabeta = AlphaBetaBot::with_config(&card_db, ab_config, 12345);
+    let mut greedy3 = GreedyBot::new(&card_db, 54321);
+
+    let ab_v_greedy = run_traced_match(
+        &card_db,
+        &mut alphabeta,
+        &mut greedy3,
+        deck.clone(),
+        deck.clone(),
+        50,
+        25000,
+    );
+    let ab_win_rate = calculate_win_rate(&ab_v_greedy);
 
     // Greedy vs Random
     let mut greedy2 = GreedyBot::new(&card_db, 12345);
@@ -583,12 +674,17 @@ fn stress_test_bot_hierarchy() {
 
     println!("Bot hierarchy test:");
     println!("  MCTS vs Greedy: MCTS wins {:.1}%", mcts_win_rate * 100.0);
+    println!("  AlphaBeta vs Greedy: AlphaBeta wins {:.1}%", ab_win_rate * 100.0);
     println!("  Greedy vs Random: Greedy wins {:.1}%", greedy_win_rate * 100.0);
 
     // Verify hierarchy
     assert!(
         mcts_win_rate >= 0.5,
         "MCTS should outperform Greedy"
+    );
+    assert!(
+        ab_win_rate >= 0.5,
+        "AlphaBeta should outperform Greedy"
     );
     assert!(
         greedy_win_rate >= 0.85,

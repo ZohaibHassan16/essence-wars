@@ -1,14 +1,16 @@
 # Bot Weights
 
-This directory contains weight configurations for GreedyBot and MctsBot evaluation functions.
+This directory contains weight configurations for GreedyBot, MctsBot, and AlphaBetaBot evaluation functions.
 
 ## Files
 
-- **`generalist.toml`** - Auto-deployed generalist weights (all decks)
-- **`specialists/`** - Auto-deployed faction specialist weights
+- **`generalist.toml`** - Auto-deployed generalist weights for Greedy/MCTS (all decks)
+- **`specialists/`** - Auto-deployed faction specialist weights for Greedy/MCTS
   - `argentum.toml` - Optimized for Argentum faction
   - `symbiote.toml` - Optimized for Symbiote faction
   - `obsidion.toml` - Optimized for Obsidion faction
+- **`alphabeta/`** - Tuned weights for Alpha-Beta bot
+  - `generalist.toml` - Cross-faction weights (90% vs MCTS-100, 60-70% vs MCTS-1000)
 - **`default.toml`** - Legacy fallback (deprecated, use generalist.toml)
 
 ## Auto-Deploy System
@@ -21,9 +23,13 @@ cargo run --release --bin tune -- --mode generalist --tag gen-v0.4
 
 # Train specialist → auto-deploys to specialists/argentum.toml
 cargo run --release --bin tune -- --mode faction-specialist --faction argentum --tag arg-v0.4
+
+# Train Alpha-Beta weights → saves to experiments/, copy manually
+cargo run --release --bin tune -- --mode alphabeta --ab-depth 6 --generations 30 --tag ab-v1
+cp experiments/mcts/<latest>/weights.toml data/weights/alphabeta/generalist.toml
 ```
 
-No manual copying needed! 🎉
+No manual copying needed for greedy/mcts!
 
 ## Usage
 
@@ -38,6 +44,10 @@ Both GreedyBot and MctsBot automatically load weights from:
 # Uses generalist.toml automatically
 cargo run --release --bin arena -- --bot1 greedy --bot2 random --games 100
 cargo run --release --bin arena -- --bot1 mcts --bot2 random --games 20
+
+# Alpha-Beta with tuned weights
+cargo run --release --bin arena -- --bot1 alphabeta --bot2 mcts \
+  --weights1 data/weights/alphabeta/generalist.toml --ab-depth 8 --games 50
 ```
 
 ### Override with Custom Weights

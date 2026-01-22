@@ -4,6 +4,7 @@
 //!   cargo run --release --bin arena -- --bot1 random --bot2 random --games 100
 //!   cargo run --release --bin arena -- --bot1 greedy --bot2 greedy --games 100
 //!   cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --seed 12345 --debug
+//!   cargo run --release --bin arena -- --bot1 alphabeta --bot2 mcts --ab-depth 8 --games 50
 //!   cargo run --release --bin arena -- --deck1 symbiote_aggro --deck2 argentum_control
 //!
 //! Agent types (with auto-loaded specialist weights):
@@ -30,11 +31,11 @@ use cardgame::execution::configure_thread_pool;
 #[command(name = "arena")]
 #[command(about = "Run matches between card game bots", long_about = None)]
 struct Args {
-    /// Bot 1 type (random, greedy, mcts)
+    /// Bot 1 type (random, greedy, mcts, alphabeta, agent-*)
     #[arg(long, default_value = "random")]
     bot1: String,
 
-    /// Bot 2 type (random, greedy, mcts)
+    /// Bot 2 type (random, greedy, mcts, alphabeta, agent-*)
     #[arg(long, default_value = "random")]
     bot2: String,
 
@@ -82,11 +83,11 @@ struct Args {
     #[arg(long)]
     progress: bool,
 
-    /// Custom weights file for bot 1 (TOML format, only for greedy/mcts)
+    /// Custom weights file for bot 1 (TOML format, for greedy/mcts/alphabeta)
     #[arg(long)]
     weights1: Option<PathBuf>,
 
-    /// Custom weights file for bot 2 (TOML format, only for greedy/mcts)
+    /// Custom weights file for bot 2 (TOML format, for greedy/mcts/alphabeta)
     #[arg(long)]
     weights2: Option<PathBuf>,
 
@@ -181,7 +182,7 @@ fn main() {
         Ok(t) => t,
         Err(_) => {
             eprintln!(
-                "Unknown bot type: {}. Available: random, greedy, mcts, agent-argentum, agent-symbiote, agent-obsidion, agent-generalist",
+                "Unknown bot type: {}. Available: random, greedy, mcts, alphabeta, agent-argentum, agent-symbiote, agent-obsidion, agent-generalist",
                 args.bot1
             );
             process::exit(1);
@@ -192,7 +193,7 @@ fn main() {
         Ok(t) => t,
         Err(_) => {
             eprintln!(
-                "Unknown bot type: {}. Available: random, greedy, mcts, agent-argentum, agent-symbiote, agent-obsidion, agent-generalist",
+                "Unknown bot type: {}. Available: random, greedy, mcts, alphabeta, agent-argentum, agent-symbiote, agent-obsidion, agent-generalist",
                 args.bot2
             );
             process::exit(1);

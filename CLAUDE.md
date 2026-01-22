@@ -96,10 +96,32 @@ When adding tests, create in `tests/unit/` and add module to `tests/unit.rs`.
 | Bot | Description |
 |-----|-------------|
 | `random` | Uniform random selection |
-| `greedy` | Heuristic evaluation (24 tunable weights) |
+| `greedy` | Heuristic evaluation (28 tunable weights) |
 | `mcts` | UCB1 tree search with greedy rollouts |
+| `alphabeta` | Alpha-Beta minimax search (depth 6-8 recommended) |
 | `agent-{faction}` | MCTS with faction-specialist weights |
 | `agent-generalist` | MCTS with cross-faction weights |
+
+### Alpha-Beta Bot
+
+The `alphabeta` bot uses minimax search with alpha-beta pruning for efficient tree search. It achieves **60-70% win rate vs MCTS-1000** at depth 8.
+
+```bash
+# Basic usage (depth 6 default)
+cargo run --release --bin arena -- --bot1 alphabeta --bot2 mcts --games 50
+
+# Custom depth (8 recommended for strength, 6 for speed)
+cargo run --release --bin arena -- --bot1 alphabeta --bot2 mcts --ab-depth 8 --games 50
+
+# With tuned weights
+cargo run --release --bin arena -- --bot1 alphabeta --bot2 mcts \
+  --weights1 data/weights/alphabeta/generalist.toml --ab-depth 8 --games 50
+```
+
+**Performance characteristics:**
+- Depth 6: ~8s/game, 90% vs MCTS-100
+- Depth 8: ~50s/game, 60-70% vs MCTS-1000
+- Depth 10+: Too slow for practical use
 
 ### Bot Trait
 
