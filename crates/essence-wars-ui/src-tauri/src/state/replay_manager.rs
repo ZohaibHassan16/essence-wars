@@ -265,9 +265,7 @@ impl ReplayManager {
                 // Convert winner based on perspective
                 let winner_num = if player_first {
                     if winner == PlayerId::PLAYER_ONE { 1 } else { 2 }
-                } else {
-                    if winner == PlayerId::PLAYER_ONE { 2 } else { 1 }
-                };
+                } else if winner == PlayerId::PLAYER_ONE { 2 } else { 1 };
                 (Some(winner_num), format!("{:?}", reason))
             }
             Some(cardgame::core::state::GameResult::Draw) => (None, "TurnLimit".to_string()),
@@ -405,7 +403,7 @@ impl ReplayManager {
         use chrono::{DateTime, Utc};
 
         let dt = DateTime::from_timestamp(timestamp as i64, 0)
-            .unwrap_or_else(|| Utc::now());
+            .unwrap_or_else(Utc::now);
         dt.format("%Y-%m-%d_%H%M").to_string()
     }
 
@@ -414,7 +412,7 @@ impl ReplayManager {
         use chrono::{DateTime, Local, Utc};
 
         let dt = DateTime::from_timestamp(timestamp as i64, 0)
-            .unwrap_or_else(|| Utc::now());
+            .unwrap_or_else(Utc::now);
         let local: DateTime<Local> = DateTime::from(dt);
         local.format("%b %d, %Y %H:%M").to_string()
     }

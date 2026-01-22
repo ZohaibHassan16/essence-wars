@@ -106,6 +106,13 @@ pub struct FitnessResult {
     pub eval_time: Duration,
 }
 
+/// Configuration for Alpha-Beta vs MCTS matches.
+struct MatchConfig {
+    ab_depth: u32,
+    mcts_sims: u32,
+    max_actions: usize,
+}
+
 /// Evaluator for measuring bot performance.
 pub struct Evaluator<'a> {
     card_db: &'a CardDatabase,
@@ -980,10 +987,11 @@ impl<'a> Evaluator<'a> {
                 let matchup_seed = base_seed.wrapping_add((matchup_idx * 10000) as u64);
 
                 // Run games for this matchup
+                let config = MatchConfig { ab_depth, mcts_sims, max_actions };
                 let game_results: Vec<(bool, u32)> = (0..games_per_matchup).into_par_iter().map(|i| {
                     let seed = matchup_seed.wrapping_add(i as u64);
                     Self::run_alphabeta_vs_mcts_static(
-                        card_db, weights, deck1, deck2, seed, max_actions, ab_depth, mcts_sims
+                        card_db, weights, deck1, deck2, seed, &config
                     )
                 }).collect();
 
@@ -998,13 +1006,14 @@ impl<'a> Evaluator<'a> {
             }
         } else {
             // Sequential evaluation
+            let config = MatchConfig { ab_depth, mcts_sims, max_actions };
             for (matchup_idx, (deck1, deck2)) in matchups.iter().enumerate() {
                 let matchup_seed = base_seed.wrapping_add((matchup_idx * 10000) as u64);
 
                 for i in 0..games_per_matchup {
                     let seed = matchup_seed.wrapping_add(i as u64);
                     let (won, turns) = Self::run_alphabeta_vs_mcts_static(
-                        card_db, weights, deck1, deck2, seed, max_actions, ab_depth, mcts_sims
+                        card_db, weights, deck1, deck2, seed, &config
                     );
                     if won { total_wins += 1; }
                     total_turns += turns;
@@ -1028,23 +1037,21 @@ impl<'a> Evaluator<'a> {
         deck1: &[CardId],
         deck2: &[CardId],
         seed: u64,
-        max_actions: usize,
-        ab_depth: u32,
-        mcts_sims: u32,
+        config: &MatchConfig,
     ) -> (bool, u32) {
         // Create Alpha-Beta bot with candidate weights
         let mut bot_weights = crate::bots::BotWeights::new("tuning_candidate");
         bot_weights.default.greedy = weights.clone();
         let mut ab_bot = AlphaBetaBot::with_config_and_weights(
             card_db,
-            AlphaBetaConfig::with_depth(ab_depth),
+            AlphaBetaConfig::with_depth(config.ab_depth),
             &bot_weights,
             seed,
         );
 
         // Create MCTS bot as opponent
         let mcts_config = MctsConfig {
-            simulations: mcts_sims,
+            simulations: config.mcts_sims,
             exploration: 1.414,
             max_rollout_depth: 50,
             parallel_trees: 1,
@@ -1057,7 +1064,7 @@ impl<'a> Evaluator<'a> {
         engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
 
         let mut action_count = 0;
-        while !engine.is_game_over() && action_count < max_actions {
+        while !engine.is_game_over() && action_count < config.max_actions {
             let current_player = engine.current_player();
 
             let action = if current_player == PlayerId::PLAYER_ONE {
