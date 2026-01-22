@@ -113,7 +113,12 @@ impl GameManager {
             BotInfo {
                 id: "mcts".to_string(),
                 name: "MCTS Bot".to_string(),
-                description: "Uses Monte Carlo Tree Search. Strongest opponent.".to_string(),
+                description: "Uses Monte Carlo Tree Search. Configurable strength.".to_string(),
+            },
+            BotInfo {
+                id: "alphabeta".to_string(),
+                name: "Alpha-Beta Bot".to_string(),
+                description: "Uses minimax search with pruning. Configurable depth.".to_string(),
             },
         ]
     }
@@ -481,12 +486,15 @@ impl GameManager {
         // Storage for actions
         let mut actions: Vec<SpectatorAction> = Vec::new();
 
-        // Bot configurations - use configured simulations for MCTS
+        // Bot configurations - use configured values
         let mcts_config = MctsConfig {
             simulations: config.mcts_simulations,
             ..MctsConfig::default()
         };
-        let alphabeta_config = AlphaBetaConfig::default();
+        let alphabeta_config = AlphaBetaConfig {
+            max_depth: config.alphabeta_depth,
+            ..AlphaBetaConfig::default()
+        };
 
         // Play game to completion
         while !client.is_game_over() {
@@ -955,12 +963,15 @@ impl SpectatorComputer {
         // Storage for actions
         let mut actions: Vec<SpectatorAction> = Vec::new();
 
-        // Bot configurations - use configured simulations for MCTS
+        // Bot configurations - use configured values
         let mcts_config = MctsConfig {
             simulations: config.mcts_simulations,
             ..MctsConfig::default()
         };
-        let alphabeta_config = AlphaBetaConfig::default();
+        let alphabeta_config = AlphaBetaConfig {
+            max_depth: config.alphabeta_depth,
+            ..AlphaBetaConfig::default()
+        };
 
         // Play game to completion
         while !client.is_game_over() {

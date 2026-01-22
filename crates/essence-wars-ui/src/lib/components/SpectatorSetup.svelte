@@ -15,6 +15,30 @@
   let showAdvanced = $state(false);
   let customSeed = $state("");
 
+  // Bot configuration
+  let mctsSimulations = $state(100);
+  let alphabetaDepth = $state(4);
+
+  // Check if any player is using MCTS or Alpha-Beta
+  const usesMcts = $derived(player1Bot === "mcts" || player2Bot === "mcts");
+  const usesAlphabeta = $derived(player1Bot === "alphabeta" || player2Bot === "alphabeta");
+
+  // MCTS simulation presets
+  const mctsPresets = [
+    { value: 50, label: "50 (Fast)" },
+    { value: 100, label: "100 (Default)" },
+    { value: 250, label: "250 (Medium)" },
+    { value: 500, label: "500 (Strong)" },
+  ];
+
+  // Alpha-Beta depth presets
+  const alphabetaPresets = [
+    { value: 2, label: "2 (Instant)" },
+    { value: 4, label: "4 (Fast)" },
+    { value: 6, label: "6 (Medium)" },
+    { value: 8, label: "8 (Strong)" },
+  ];
+
   function getFactionColor(faction: string): string {
     switch (faction) {
       case "argentum":
@@ -37,6 +61,8 @@
       player2DeckId: player2Deck,
       player2BotType: player2Bot,
       seed: customSeed ? parseInt(customSeed, 10) : undefined,
+      mctsSimulations: usesMcts ? mctsSimulations : undefined,
+      alphabetaDepth: usesAlphabeta ? alphabetaDepth : undefined,
     };
 
     spectatorStore.setWatchLive(watchLive);
@@ -204,7 +230,51 @@
       </div>
 
       {#if showAdvanced}
-        <div class="mt-4 p-4 bg-ui-bg/50 rounded">
+        <div class="mt-4 p-4 bg-ui-bg/50 rounded space-y-4">
+          <!-- Bot Configuration -->
+          <div class="grid grid-cols-2 gap-4">
+            <!-- MCTS Simulations (only shown when MCTS is selected) -->
+            {#if usesMcts}
+              <div>
+                <span class="text-sm text-ui-text-dim block mb-2">MCTS Simulations</span>
+                <div class="flex flex-wrap gap-1">
+                  {#each mctsPresets as preset}
+                    <button
+                      class="px-3 py-1.5 rounded text-sm transition-colors
+                             {mctsSimulations === preset.value
+                               ? 'bg-ui-action text-white'
+                               : 'bg-ui-bg border border-gray-600 text-ui-text-dim hover:border-ui-action hover:text-ui-action'}"
+                      onclick={() => (mctsSimulations = preset.value)}
+                    >
+                      {preset.label}
+                    </button>
+                  {/each}
+                </div>
+              </div>
+            {/if}
+
+            <!-- Alpha-Beta Depth (only shown when Alpha-Beta is selected) -->
+            {#if usesAlphabeta}
+              <div>
+                <span class="text-sm text-ui-text-dim block mb-2">Alpha-Beta Depth</span>
+                <div class="flex flex-wrap gap-1">
+                  {#each alphabetaPresets as preset}
+                    <button
+                      class="px-3 py-1.5 rounded text-sm transition-colors
+                             {alphabetaDepth === preset.value
+                               ? 'bg-ui-action text-white'
+                               : 'bg-ui-bg border border-gray-600 text-ui-text-dim hover:border-ui-action hover:text-ui-action'}"
+                      onclick={() => (alphabetaDepth = preset.value)}
+                    >
+                      {preset.label}
+                    </button>
+                  {/each}
+                </div>
+              </div>
+            {/if}
+          </div>
+
+          <!-- Custom Seed -->
           <label class="block">
             <span class="text-sm text-ui-text-dim">Custom Seed (for reproducibility)</span>
             <input

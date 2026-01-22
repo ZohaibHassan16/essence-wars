@@ -11,11 +11,11 @@ use super::serialization::{ActionInfo, GameEventDto, GameStateDto};
 pub struct SpectatorConfig {
     /// Deck ID for player 1
     pub player1_deck_id: String,
-    /// Bot type for player 1 (random, greedy, mcts)
+    /// Bot type for player 1 (random, greedy, mcts, alphabeta)
     pub player1_bot_type: String,
     /// Deck ID for player 2
     pub player2_deck_id: String,
-    /// Bot type for player 2 (random, greedy, mcts)
+    /// Bot type for player 2 (random, greedy, mcts, alphabeta)
     pub player2_bot_type: String,
     /// Optional fixed seed for reproducibility
     pub seed: Option<u64>,
@@ -23,10 +23,18 @@ pub struct SpectatorConfig {
     /// Higher values = stronger play but slower computation
     #[serde(default = "default_mcts_simulations")]
     pub mcts_simulations: u32,
+    /// Alpha-Beta search depth (default: 4 for fast playback)
+    /// Higher values = stronger play but exponentially slower
+    #[serde(default = "default_alphabeta_depth")]
+    pub alphabeta_depth: u32,
 }
 
 fn default_mcts_simulations() -> u32 {
     100 // Fast default for debug builds
+}
+
+fn default_alphabeta_depth() -> u32 {
+    4 // Fast default for debug builds
 }
 
 /// A single action in the spectator match with full context
@@ -141,15 +149,21 @@ mod tests {
             player2_deck_id: "broodmother_swarm".to_string(),
             player2_bot_type: "greedy".to_string(),
             seed: Some(12345),
+            mcts_simulations: 100,
+            alphabeta_depth: 4,
         };
 
         let json = serde_json::to_string(&config).unwrap();
         assert!(json.contains("player1DeckId"));
         assert!(json.contains("player1BotType"));
+        assert!(json.contains("mctsSimulations"));
+        assert!(json.contains("alphabetaDepth"));
 
         let parsed: SpectatorConfig = serde_json::from_str(&json).unwrap();
         assert_eq!(parsed.player1_deck_id, "architect_fortify");
         assert_eq!(parsed.seed, Some(12345));
+        assert_eq!(parsed.mcts_simulations, 100);
+        assert_eq!(parsed.alphabeta_depth, 4);
     }
 
     #[test]
@@ -217,6 +231,7 @@ mod tests {
             player2_bot_type: "random".to_string(),
             seed: Some(12345), // Fixed seed for reproducibility
             mcts_simulations: 100,
+            alphabeta_depth: 4,
         };
 
         let result = computer.compute_match(config);
@@ -276,6 +291,7 @@ mod tests {
             player2_bot_type: "greedy".to_string(),
             seed: Some(54321),
             mcts_simulations: 100,
+            alphabeta_depth: 4,
         };
 
         let result = computer.compute_match(config);

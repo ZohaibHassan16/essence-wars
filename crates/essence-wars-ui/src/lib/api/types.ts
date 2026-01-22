@@ -138,6 +138,8 @@ export interface SpectatorConfig {
   seed?: number;
   /** Number of MCTS simulations per move (default: 100 for fast playback) */
   mctsSimulations?: number;
+  /** Alpha-Beta search depth (default: 4 for fast playback) */
+  alphabetaDepth?: number;
 }
 
 /** A single action in the spectator match with full context */
