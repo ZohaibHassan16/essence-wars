@@ -146,6 +146,20 @@ async fn capture_screenshot(State(state): State<Arc<ScreenshotState>>) -> impl I
 
 /// Find and capture a window by title substring.
 fn capture_window_by_title(title: &str) -> Result<Vec<u8>, String> {
+    // Try xcap first (works on normal displays)
+    match capture_with_xcap(title) {
+        Ok(bytes) => return Ok(bytes),
+        Err(xcap_err) => {
+            eprintln!("xcap failed: {}, trying ImageMagick fallback...", xcap_err);
+        }
+    }
+
+    // Fallback: use ImageMagick import (works in Xvfb headless mode)
+    capture_with_imagemagick()
+}
+
+/// Capture window using xcap library.
+fn capture_with_xcap(title: &str) -> Result<Vec<u8>, String> {
     // Enumerate all windows
     let windows = Window::all().map_err(|e| format!("Failed to enumerate windows: {}", e))?;
 
@@ -169,6 +183,35 @@ fn capture_window_by_title(title: &str) -> Result<Vec<u8>, String> {
         .map_err(|e| format!("PNG encoding failed: {}", e))?;
 
     Ok(buf)
+}
+
+/// Capture screen using ImageMagick import command.
+/// This works in Xvfb headless mode where xcap can't find windows.
+fn capture_with_imagemagick() -> Result<Vec<u8>, String> {
+    use std::process::Command;
+
+    // Create temp file for screenshot
+    let temp_path = "/tmp/essence-wars-screenshot.png";
+
+    // Run ImageMagick import command to capture root window
+    let output = Command::new("import")
+        .args(["-window", "root", temp_path])
+        .output()
+        .map_err(|e| format!("Failed to run ImageMagick import: {}", e))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("ImageMagick import failed: {}", stderr));
+    }
+
+    // Read the PNG file
+    let bytes = std::fs::read(temp_path)
+        .map_err(|e| format!("Failed to read screenshot file: {}", e))?;
+
+    // Clean up temp file (ignore errors)
+    let _ = std::fs::remove_file(temp_path);
+
+    Ok(bytes)
 }
 
 /// Health check endpoint.

@@ -144,21 +144,29 @@ if [ ! -d "node_modules" ]; then
 fi
 
 # Build if requested or if no release binary exists
-BUILD_FLAG=""
-if [ "$1" = "--build" ] || [ ! -f "src-tauri/target/release/essence-wars-ui" ]; then
+# Note: tauri builds to workspace root target/, not src-tauri/target/
+RELEASE_BINARY="../../target/release/essence-wars-ui"
+if [ "$1" = "--build" ] || [ ! -f "$RELEASE_BINARY" ]; then
     echo -e "${BLUE}Building release binary...${NC}"
     pnpm tauri build 2>&1 | tail -20
     echo -e "${GREEN}Build complete${NC}"
+else
+    echo -e "${GREEN}Using existing binary: $RELEASE_BINARY${NC}"
 fi
 
-# Find the binary
+# Find the binary (tauri builds to workspace root target/, not src-tauri/target/)
 BINARY=""
-if [ -f "src-tauri/target/release/essence-wars-ui" ]; then
+if [ -f "../../target/release/essence-wars-ui" ]; then
+    BINARY="../../target/release/essence-wars-ui"
+elif [ -f "src-tauri/target/release/essence-wars-ui" ]; then
     BINARY="src-tauri/target/release/essence-wars-ui"
+elif [ -f "../../target/debug/essence-wars-ui" ]; then
+    BINARY="../../target/debug/essence-wars-ui"
 elif [ -f "src-tauri/target/debug/essence-wars-ui" ]; then
     BINARY="src-tauri/target/debug/essence-wars-ui"
 else
     echo -e "${RED}Error: Could not find essence-wars-ui binary${NC}"
+    echo "Searched in: ../../target/release/, src-tauri/target/release/"
     echo "Try running with --build flag"
     exit 1
 fi
