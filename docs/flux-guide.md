@@ -25,9 +25,7 @@ Your models should be organized in `~/.ai-assets/models/flux/`:
 ├── ae.safetensors                # 320MB - VAE (shared)
 ├── clip_l.safetensors            # 235MB - CLIP encoder (shared)
 ├── t5-Q5_K_M.gguf               # ~2GB - T5 text encoder (faster, recommended)
-├── t5xxl_fp8_e4m3fn.safetensors # 4.6GB - T5 text encoder (alternative)
-└── controlnet/
-    └── controlnet.safetensors   # 1.4GB - FLUX ControlNet (Canny/Depth)
+└── t5xxl_fp8_e4m3fn.safetensors # 4.6GB - T5 text encoder (alternative)
 ```
 
 LoRAs should be in `~/.ai-assets/loras/`:
@@ -69,114 +67,7 @@ cd ~/stable-diffusion.cpp
 
 ---
 
-## 4. ControlNet for Consistent Compositions (CLI)
-
-**ControlNet** allows you to guide image generation with reference images (edges, depth maps, poses) while keeping the CLI-only workflow. Perfect for UI elements, commander busts, and consistent layouts.
-
-### Setup ControlNet
-
-**Download FLUX ControlNet** (Canny edge detection):
-```bash
-# Manual download from: https://huggingface.co/XLabs-AI/flux-controlnet-canny
-# Save to: ~/.ai-assets/models/flux/controlnet/controlnet.safetensors
-```
-
-### Create Control Images
-
-**Extract Canny edges** using the provided script:
-
-```bash
-# Using the automated script (handles RGB conversion automatically)
-python3 scripts/extract-edges.py reference.png edges.png
-
-# Or manually with ImageMagick (must convert to RGB - ControlNet needs 3 channels!)
-convert reference.png -canny 0x1+10%+30% edges_gray.png
-convert edges_gray.png -separate -combine PNG24:edges.png
-
-# Or with OpenCV Python (automatically outputs RGB)
-python3 -c "
-import cv2
-img = cv2.imread('reference.png', 0)
-edges = cv2.Canny(img, 100, 200)
-edges_rgb = cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB)  # Convert to RGB!
-cv2.imwrite('edges.png', edges_rgb)
-"
-```
-
-**Important:** ControlNet requires RGB images (3 channels). Grayscale edge maps will fail with:
-```
-ERROR: the number of channels for the input image must be >= 3, but got 1 channels
-```
-
-### Generate with ControlNet
-
-```bash
-cd ~/stable-diffusion.cpp
-
-./build/bin/sd-cli \
-  --diffusion-model ~/.ai-assets/models/flux/flux-dev-q8.gguf \
-  --vae ~/.ai-assets/models/flux/ae.safetensors \
-  --clip_l ~/.ai-assets/models/flux/clip_l.safetensors \
-  --t5xxl ~/.ai-assets/models/flux/t5-Q5_K_M.gguf \
-  --control-net ~/.ai-assets/models/flux/controlnet/controlnet.safetensors \
-  --control-image edges.png \
-  --control-strength 0.75 \
-  --lora-model-dir ~/.ai-assets/loras/ \
-  -p "A powerful female warrior in ornate armor, heroic pose, 90s MTG art <lora:classical-painting:0.7>" \
-  --cfg-scale 1.0 --sampling-method euler --steps 20 \
-  -H 896 -W 704 \
-  -o output.png
-```
-
-**ControlNet Parameters:**
-- `--control-net`: Path to ControlNet model
-- `--control-image`: Edge map or control image
-- `--control-strength 0.75`: How much to follow control (0.5=loose, 1.0=strict)
-
-### Use Cases for Essence Wars
-
-**1. Commander Busts** (Consistent Pose)
-```bash
-# Create one reference pose → Extract edges → Batch generate all 12 commanders
-scripts/generate-commanders.sh quality  # Uses ControlNet with faction prompts
-```
-
-**2. UI Elements** (Faction Frames)
-```bash
-# Sketch frame shape → Extract edges → Generate faction-specific styles
-python3 scripts/extract-edges.py frame-sketch.png frame-edges.png
-
-# Generate Argentum frame
-./build/bin/sd-cli \
-  --control-net ~/.ai-assets/models/flux/controlnet/controlnet.safetensors \
-  --control-image frame-edges.png \
-  --control-strength 0.9 \
-  -p "ornate art deco gold filigree frame, white marble, geometric patterns" \
-  -H 512 -W 512 -o argentum-frame.png
-```
-
-**3. Playmats** (Layout Consistency)
-```bash
-# Create layout guide → Generate battlefield backgrounds with safe zones
-python3 scripts/extract-edges.py playmat-layout.png layout-edges.png
-
-./build/bin/sd-cli \
-  --control-net ~/.ai-assets/models/flux/controlnet/controlnet.safetensors \
-  --control-image layout-edges.png \
-  --control-strength 0.6 \
-  -p "epic fantasy battlefield, dramatic lighting, safe zones for cards" \
-  -H 1080 -W 1920 -o playmat.png
-```
-
-**4. Loading Screens** (Composition Control)
-```bash
-# Define hero placement zones → Generate faction-specific loading art
-# Lower control strength (0.5-0.6) for more artistic freedom
-```
-
----
-
-## 5. Essence Wars Art Direction
+## 4. Essence Wars Art Direction
 
 ### Core Art Style
 - **90s Magic the Gathering card art aesthetic**
@@ -194,7 +85,7 @@ python3 scripts/extract-edges.py playmat-layout.png layout-edges.png
 
 ---
 
-## 7. Faction-Specific Prompts
+## 5. Faction-Specific Prompts
 
 ### 🏛️ ARGENTUM COMBINE (Order & Industry)
 
@@ -316,7 +207,7 @@ python3 scripts/extract-edges.py playmat-layout.png layout-edges.png
 
 ---
 
-## 8. LoRA Usage Guide
+## 6. LoRA Usage Guide
 
 ### Single LoRA
 ```bash
@@ -338,7 +229,7 @@ python3 scripts/extract-edges.py playmat-layout.png layout-edges.png
 
 ---
 
-## 9. Rapid Prototyping with FLUX Schnell
+## 7. Rapid Prototyping with FLUX Schnell
 
 For quick iterations and testing compositions, use FLUX Schnell (4 steps):
 
@@ -365,7 +256,7 @@ For quick iterations and testing compositions, use FLUX Schnell (4 steps):
 
 ---
 
-## 10. Troubleshooting
+## 8. Troubleshooting
 
 ### Issue: "unknown format" errors
 **Solution:** Ensure all model files are properly downloaded (not 0 bytes)
@@ -387,23 +278,9 @@ ls ~/.ai-assets/loras/
 # Not: <lora:classical-painting.safetensors:0.7>
 ```
 
-### Issue: ControlNet error "channels must be >= 3, but got 1 channels"
-**Problem:** Edge map is grayscale (1 channel), but ControlNet needs RGB (3 channels)
-**Solution:** Convert edges to RGB format:
-```bash
-# Using the script (automatic)
-python3 scripts/extract-edges.py reference.png edges.png
-
-# Or manually with ImageMagick
-convert edges_gray.png -separate -combine PNG24:edges_rgb.png
-
-# Verify it's RGB (should say "sRGB" not "Gray")
-identify edges_rgb.png
-```
-
 ---
 
-## 11. Performance Tips
+## 9. Performance Tips
 
 ### Optimize Generation Speed:
 1. **Use Q5 T5 encoder** (faster, less VRAM): `t5-Q5_K_M.gguf`
@@ -418,7 +295,7 @@ identify edges_rgb.png
 
 ---
 
-## 12. Quick Reference Commands
+## 10. Quick Reference Commands
 
 ### Test Your Setup:
 ```bash

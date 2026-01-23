@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { CardDto } from "$lib/api/types";
   import CardPreview from "./CardPreview.svelte";
+  import KeywordIcon from "./KeywordIcon.svelte";
 
   let {
     card,
@@ -51,29 +52,59 @@
 
 <div class="relative">
   <button
-    class="w-20 h-28 rounded-lg border-2 transition-all duration-150 flex flex-col relative
+    class="hand-card-btn rounded-lg border-2 transition-all duration-150 flex flex-col relative
            no-select overflow-hidden
            {isHidden ? 'bg-ui-panel border-gray-600' : getFactionBg(card.faction) + ' ' + getFactionBorder(card.faction)}
            {isSelected ? 'ring-2 ring-ui-action scale-110 -translate-y-4 z-20 shadow-lg ' + getFactionGlow(card.faction) : ''}
-           {isPlayable && !isSelected ? 'hover:scale-105 hover:-translate-y-2 hover:shadow-md cursor-pointer' : ''}
+           {isPlayable && !isSelected ? 'cursor-pointer' : ''}
            {!isPlayable && !isHidden ? 'opacity-50 grayscale-[30%]' : ''}
            disabled:cursor-not-allowed"
+    style="width: var(--card-hand-width); height: var(--card-hand-height);"
     onclick={onClick}
     onmouseenter={() => isHovered = true}
     onmouseleave={() => isHovered = false}
     disabled={!onClick || isHidden}
   >
     {#if isHidden}
-      <!-- Hidden card (opponent's hand) -->
-      <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-800">
-        <div class="w-10 h-10 rounded-full border-2 border-gray-500 flex items-center justify-center">
-          <span class="text-gray-400 text-lg font-bold">?</span>
+      <!-- Hidden card (opponent's hand) - CSS card back design -->
+      <div class="w-full h-full flex items-center justify-center relative overflow-hidden
+                  bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950">
+        <!-- Decorative border pattern -->
+        <div class="absolute inset-2 border border-amber-900/30 rounded"></div>
+        <div class="absolute inset-3 border border-amber-800/20 rounded"></div>
+
+        <!-- Central emblem -->
+        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-amber-900/40 to-amber-950/60
+                    border border-amber-700/50 flex items-center justify-center shadow-inner">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-br from-amber-600/30 to-amber-800/40
+                      border border-amber-600/40 flex items-center justify-center">
+            <span class="text-amber-500/70 text-sm font-bold">E</span>
+          </div>
         </div>
+
+        <!-- Corner accents -->
+        <div class="absolute top-3 left-3 w-3 h-3 border-l border-t border-amber-700/30"></div>
+        <div class="absolute top-3 right-3 w-3 h-3 border-r border-t border-amber-700/30"></div>
+        <div class="absolute bottom-3 left-3 w-3 h-3 border-l border-b border-amber-700/30"></div>
+        <div class="absolute bottom-3 right-3 w-3 h-3 border-r border-b border-amber-700/30"></div>
       </div>
     {:else}
+      <!-- Card art background -->
+      {#if card.artPath}
+        <div class="absolute inset-0 overflow-hidden rounded-md">
+          <img
+            src="/{card.artPath}"
+            alt=""
+            class="w-full h-full object-cover object-top opacity-40"
+            onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+          />
+          <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/70"></div>
+        </div>
+      {/if}
+
       <!-- Cost badge -->
-      <div class="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-mana flex items-center justify-center
-                  text-white text-xs font-bold shadow-md border border-blue-400 z-10">
+      <div class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-mana flex items-center justify-center
+                  text-white text-sm font-bold shadow-md border-2 border-blue-400 z-10">
         {card.cost}
       </div>
 
@@ -84,50 +115,48 @@
       {/if}
 
       <!-- Card content -->
-      <div class="flex-1 flex flex-col p-1 pt-2 relative z-0">
+      <div class="flex-1 flex flex-col p-2 pt-3 relative z-0">
         <!-- Name -->
-        <div class="text-[10px] font-semibold truncate w-full text-center leading-tight text-ui-text px-0.5">
+        <div class="text-xs font-semibold truncate w-full text-center leading-tight text-ui-text px-1">
           {card.name}
         </div>
 
         <!-- Type -->
-        <div class="text-[8px] text-ui-text-dim capitalize mt-0.5 text-center">
+        <div class="text-[10px] text-ui-text-dim capitalize mt-1 text-center">
           {card.cardType}
         </div>
 
-        <!-- Keywords preview (first 2) -->
+        <!-- Keywords preview (icons only, first 3) -->
         {#if card.keywords && card.keywords.length > 0}
-          <div class="flex flex-wrap justify-center gap-0.5 mt-1">
-            {#each card.keywords.slice(0, 2) as keyword}
-              <span class="text-[7px] px-1 py-0.5 rounded bg-gray-800/60 text-ui-text-dim">
-                {keyword}
-              </span>
+          <div class="flex flex-wrap justify-center gap-1 mt-2">
+            {#each card.keywords.slice(0, 3) as keyword}
+              <KeywordIcon {keyword} size={12} showLabel={false} />
             {/each}
-            {#if card.keywords.length > 2}
-              <span class="text-[7px] text-ui-text-dim">+{card.keywords.length - 2}</span>
+            {#if card.keywords.length > 3}
+              <span class="text-[10px] text-ui-text-dim">+{card.keywords.length - 3}</span>
             {/if}
           </div>
         {/if}
 
         <!-- Stats -->
         {#if card.cardType === "creature" && card.attack !== undefined && card.health !== undefined}
-          <div class="flex justify-center items-center gap-1 mt-auto mb-1">
-            <span class="w-5 h-5 rounded bg-damage/20 flex items-center justify-center text-damage text-xs font-bold">
+          <div class="flex justify-center items-center gap-2 mt-auto mb-2">
+            <span class="w-7 h-7 rounded bg-damage/20 flex items-center justify-center text-damage text-sm font-bold">
               {card.attack}
             </span>
-            <span class="w-5 h-5 rounded bg-health/20 flex items-center justify-center text-health text-xs font-bold">
+            <span class="w-7 h-7 rounded bg-health/20 flex items-center justify-center text-health text-sm font-bold">
               {card.health}
             </span>
           </div>
         {:else if card.cardType === "support" && card.durability !== undefined}
-          <div class="flex justify-center mt-auto mb-1">
-            <span class="w-5 h-5 rounded bg-mana/20 flex items-center justify-center text-mana text-xs font-bold">
+          <div class="flex justify-center mt-auto mb-2">
+            <span class="w-7 h-7 rounded bg-mana/20 flex items-center justify-center text-mana text-sm font-bold">
               {card.durability}
             </span>
           </div>
         {:else if card.cardType === "spell"}
           <div class="flex-1 flex items-center justify-center">
-            <span class="text-[8px] text-ui-text-dim">Spell</span>
+            <span class="text-[10px] text-ui-text-dim">Spell</span>
           </div>
         {:else}
           <div class="flex-1"></div>

@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { CardDto, CreatureDto } from "$lib/api/types";
+  import KeywordIcon from "./KeywordIcon.svelte";
 
   let {
     card,
@@ -48,59 +49,68 @@
 
 {#if card}
   <div
-    class="absolute {positionClass} z-50 w-56 rounded-xl border-2 shadow-2xl pointer-events-none
+    class="absolute {positionClass} z-50 rounded-xl border-2 shadow-2xl pointer-events-none
            {getFactionBorder(card.faction)} {getFactionBg(card.faction)}"
-    style="backdrop-filter: blur(8px);"
+    style="width: var(--card-preview-width); backdrop-filter: blur(8px);"
   >
     <!-- Card Header -->
-    <div class="px-3 py-2 border-b border-gray-700">
+    <div class="px-4 py-3 border-b border-gray-700">
       <div class="flex items-center justify-between">
-        <span class="font-bold text-ui-text">{card.name}</span>
-        <span class="w-7 h-7 rounded-full bg-mana flex items-center justify-center text-white text-sm font-bold">
+        <span class="font-bold text-ui-text text-lg">{card.name}</span>
+        <span class="w-8 h-8 rounded-full bg-mana flex items-center justify-center text-white text-base font-bold">
           {card.cost}
         </span>
       </div>
-      <div class="text-xs {getFactionAccent(card.faction)} capitalize mt-0.5">
+      <div class="text-sm {getFactionAccent(card.faction)} capitalize mt-1">
         {card.faction} {card.cardType}
       </div>
     </div>
 
-    <!-- Card Art Placeholder -->
-    <div class="h-28 bg-gray-800/50 flex items-center justify-center border-b border-gray-700">
-      <div class="text-ui-text-dim text-xs">[Card Art]</div>
+    <!-- Card Art -->
+    <div class="h-36 bg-gray-800/50 overflow-hidden border-b border-gray-700 relative">
+      {#if card.artPath}
+        <img
+          src="/{card.artPath}"
+          alt={card.name}
+          class="w-full h-full object-cover object-top"
+          onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+        />
+      {/if}
+      <div class="absolute inset-0 flex items-center justify-center text-ui-text-dim text-sm pointer-events-none"
+           class:hidden={card.artPath}>
+        [No Art]
+      </div>
     </div>
 
     <!-- Stats -->
     {#if card.cardType === "creature"}
-      <div class="px-3 py-2 border-b border-gray-700">
+      <div class="px-4 py-3 border-b border-gray-700">
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <span class="text-damage font-bold text-lg">{creature?.attack ?? card.attack}</span>
-            <span class="text-ui-text-dim">/</span>
-            <span class="text-health font-bold text-lg">{creature?.health ?? card.health}</span>
+          <div class="flex items-center gap-3">
+            <span class="text-damage font-bold text-xl">{creature?.attack ?? card.attack}</span>
+            <span class="text-ui-text-dim text-lg">/</span>
+            <span class="text-health font-bold text-xl">{creature?.health ?? card.health}</span>
             {#if creature && creature.maxHealth !== creature.health}
-              <span class="text-ui-text-dim text-sm">({creature.maxHealth} max)</span>
+              <span class="text-ui-text-dim text-base">({creature.maxHealth} max)</span>
             {/if}
           </div>
         </div>
       </div>
     {:else if card.cardType === "support" && card.durability}
-      <div class="px-3 py-2 border-b border-gray-700">
-        <div class="flex items-center gap-2">
-          <span class="text-mana font-bold text-lg">{card.durability}</span>
-          <span class="text-ui-text-dim text-sm">Durability</span>
+      <div class="px-4 py-3 border-b border-gray-700">
+        <div class="flex items-center gap-3">
+          <span class="text-mana font-bold text-xl">{card.durability}</span>
+          <span class="text-ui-text-dim text-base">Durability</span>
         </div>
       </div>
     {/if}
 
     <!-- Keywords -->
     {#if card.keywords && card.keywords.length > 0}
-      <div class="px-3 py-2 border-b border-gray-700">
-        <div class="flex flex-wrap gap-1">
+      <div class="px-4 py-3 border-b border-gray-700">
+        <div class="flex flex-wrap gap-1.5">
           {#each card.keywords as keyword}
-            <span class="px-2 py-0.5 rounded text-xs bg-ui-panel text-ui-text border border-gray-600">
-              {keyword}
-            </span>
+            <KeywordIcon {keyword} size={14} />
           {/each}
         </div>
       </div>
@@ -108,8 +118,8 @@
 
     <!-- Creature Status (if on board) -->
     {#if creature}
-      <div class="px-3 py-2 border-b border-gray-700">
-        <div class="flex items-center gap-2 text-xs">
+      <div class="px-4 py-3 border-b border-gray-700">
+        <div class="flex items-center gap-2 text-sm">
           {#if creature.canAttack}
             <span class="text-health">Ready to attack</span>
           {:else if creature.isExhausted}
@@ -122,7 +132,7 @@
     {/if}
 
     <!-- Card ID (debug info) -->
-    <div class="px-3 py-1.5 text-[10px] text-ui-text-dim">
+    <div class="px-4 py-2 text-xs text-ui-text-dim">
       ID: {card.cardId}
     </div>
   </div>

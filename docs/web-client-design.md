@@ -1,11 +1,5 @@
 # Essence Wars Desktop Client - Design Document
 
-**Version:** 1.0 (Planning)
-**Date:** January 2026
-**Status:** Pre-Development
-
----
-
 ## 1. Overview
 
 ### 1.1 Vision
@@ -769,21 +763,21 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] Implement and Test
 - [x] Debug and Playtest thoroughly
 
-### Phase 7: Art Asset Sprint 
-- [ ] Create board backgrounds via FLUX
-- [ ] Design keyword icons
-- [ ] UI element graphics (for all Menus and Screens)
-- [ ] Card back design
-- [ ] Card frame designs (all 4 factions)
-- [ ] Load Card Artwork and other art assets in game
+### Phase 7: Asset Integration
+- [x] Fix card art path generation in backend
+- [x] Wire card art display in CardPreview component
+- [x] Add card art backgrounds to HandCard component
+- [x] Add creature art backgrounds to CreatureSlot component
+- [x] Add support art backgrounds to SupportSlot component
+- [x] Add frame overlay support (after frames created)
+- [x] Add board background support (after backgrounds created)
+- [x] Add keyword icon rendering (after icons created)
 
 ### Phase 8: Audio Implementation
 - [ ] Howler.js integration
 - [ ] Music system with dynamic layers
 - [ ] Volume controls
-- [ ] Create sound effects and Music via `AudioCraft`
-- [ ] Create Faction ambient sounds
-
+- [ ] Source sound effects, ambient sounds and Music
 
 ### Phase 9: Polish & Testing
 - [ ] Settings screen
@@ -799,7 +793,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [ ] Installer/package creation
 - [ ] Final testing on both platforms
 - [ ] Documentation
-- [ ] Disuss Hosting Providers (Github, itch.io, Google Drive, ...)
+- [ ] Disuss Hosting Providers (itch.io, Google Drive, ...)
 
 ---
 
@@ -837,21 +831,6 @@ See `docs/flux-guide.md` for full command templates.
 | UI elements | Buttons, bars, panels | Not started |
 | Sound effects | ~30 sounds | Not started |
 | Music | 1-3 tracks + ambient | Not started |
-
----
-
-## 10. Future Considerations
-
-### Deferred Features (v2.0+)
-- Deck builder UI
-- Tournament mode
-- Card collection/unlock system
-
-### Technical Considerations
-- Card art caching strategy (lazy load)
-- Replay file compression for long games
-
----
 
 ## Appendix A: Keyboard Shortcuts
 

@@ -31,6 +31,22 @@
   --color-damage: #EF4444;
   --color-mana: #3B82F6;
   --color-gold: #F59E0B;
+
+  /* Card Sizing - Target resolution: 2560x1600 */
+  --card-hand-width: 140px;
+  --card-hand-height: 200px;
+  --card-creature-width: 200px;
+  --card-creature-height: 260px;
+  --card-support-width: 120px;
+  --card-support-height: 160px;
+  --card-preview-width: 280px;
+
+  /* Board Layout */
+  --board-gap: 16px;
+  --hand-overlap: 40px;
+  --hand-hover-lift: 60px;
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 48px;
 }
 
 /* Base Styles */
@@ -86,4 +102,164 @@ body {
 
 .glow-gold {
   box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+}
+
+/* Board Backgrounds - Subtle faction-inspired gradients */
+.board-bg-default {
+  background: linear-gradient(
+    180deg,
+    #1a1a2e 0%,
+    #16213e 30%,
+    #1a1a2e 70%,
+    #16213e 100%
+  );
+}
+
+.board-bg-argentum {
+  background: linear-gradient(
+    180deg,
+    rgba(26, 26, 46, 1) 0%,
+    rgba(212, 175, 55, 0.08) 25%,
+    rgba(245, 245, 245, 0.05) 50%,
+    rgba(212, 175, 55, 0.08) 75%,
+    rgba(26, 26, 46, 1) 100%
+  );
+}
+
+.board-bg-symbiote {
+  background: linear-gradient(
+    180deg,
+    rgba(26, 26, 46, 1) 0%,
+    rgba(26, 71, 42, 0.15) 25%,
+    rgba(74, 0, 128, 0.1) 50%,
+    rgba(26, 71, 42, 0.15) 75%,
+    rgba(26, 26, 46, 1) 100%
+  );
+}
+
+.board-bg-obsidion {
+  background: linear-gradient(
+    180deg,
+    rgba(26, 26, 46, 1) 0%,
+    rgba(139, 0, 0, 0.12) 25%,
+    rgba(0, 255, 255, 0.05) 50%,
+    rgba(139, 0, 0, 0.12) 75%,
+    rgba(26, 26, 46, 1) 100%
+  );
+}
+
+.board-bg-neutral {
+  background: linear-gradient(
+    180deg,
+    rgba(26, 26, 46, 1) 0%,
+    rgba(139, 69, 19, 0.1) 25%,
+    rgba(210, 180, 140, 0.08) 50%,
+    rgba(139, 69, 19, 0.1) 75%,
+    rgba(26, 26, 46, 1) 100%
+  );
+}
+
+/* Hand card fanning effect */
+.hand-card {
+  transition: transform 0.2s ease-out, z-index 0s;
+}
+
+.hand-card:hover {
+  transform: translateY(calc(-1 * var(--hand-hover-lift))) scale(1.08);
+  z-index: 100;
+}
+
+.hand-container {
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+}
+
+.hand-container > .hand-card {
+  margin-left: calc(-1 * var(--hand-overlap));
+}
+
+.hand-container > .hand-card:first-child {
+  margin-left: 0;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1920px) {
+  :root {
+    --card-hand-width: 120px;
+    --card-hand-height: 170px;
+    --card-creature-width: 160px;
+    --card-creature-height: 210px;
+    --card-support-width: 100px;
+    --card-support-height: 130px;
+    --card-preview-width: 240px;
+    --hand-overlap: 30px;
+    --hand-hover-lift: 50px;
+  }
+}
+
+@media (max-width: 1600px) {
+  :root {
+    --card-hand-width: 100px;
+    --card-hand-height: 140px;
+    --card-creature-width: 130px;
+    --card-creature-height: 170px;
+    --card-support-width: 80px;
+    --card-support-height: 105px;
+    --card-preview-width: 220px;
+    --hand-overlap: 25px;
+    --hand-hover-lift: 40px;
+  }
+}
+
+@media (max-width: 1280px) {
+  :root {
+    --card-hand-width: 80px;
+    --card-hand-height: 112px;
+    --card-creature-width: 112px;
+    --card-creature-height: 144px;
+    --card-support-width: 64px;
+    --card-support-height: 80px;
+    --card-preview-width: 200px;
+    --hand-overlap: 20px;
+    --hand-hover-lift: 30px;
+    --sidebar-width: 240px;
+  }
+}
+
+/* Sidebar collapse animation */
+.sidebar {
+  transition: width 0.3s ease-out;
+  overflow: hidden;
+}
+
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+.sidebar.expanded {
+  width: var(--sidebar-width);
+}
+
+.sidebar-content {
+  width: var(--sidebar-width);
+  transition: opacity 0.2s ease-out;
+}
+
+.sidebar.collapsed .sidebar-content {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Battlefield row layout */
+.battlefield-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--board-gap);
+}
+
+.creature-row {
+  display: flex;
+  gap: calc(var(--board-gap) / 2);
 }

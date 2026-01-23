@@ -249,12 +249,8 @@ impl CardDto {
             _ => Vec::new(),
         };
 
-        let art_path = Some(format!(
-            "cards/{}/{}_{}.png",
-            faction,
-            card.id,
-            card.name.to_lowercase().replace(' ', "_")
-        ));
+        // Art path matches files in static/cards/core_set/{id}.webp
+        let art_path = Some(format!("cards/core_set/{}.webp", card.id));
 
         Self {
             card_id: card.id,
@@ -281,7 +277,7 @@ impl CardDto {
             health: None,
             keywords: Vec::new(),
             durability: None,
-            art_path: Some("cards/card_back.png".to_string()),
+            art_path: None, // Hidden cards use CSS card back design
         }
     }
 }
@@ -291,12 +287,8 @@ impl CreatureDto {
         let faction = faction_from_card_id(card.id);
         let keywords = keywords_to_strings(&creature.keywords);
 
-        let art_path = Some(format!(
-            "cards/{}/{}_{}.png",
-            faction,
-            card.id,
-            card.name.to_lowercase().replace(' ', "_")
-        ));
+        // Art path matches files in static/cards/core_set/{id}.webp
+        let art_path = Some(format!("cards/core_set/{}.webp", card.id));
 
         Self {
             instance_id: creature.instance_id.0,
@@ -342,12 +334,8 @@ impl SupportDto {
     pub fn from_support(support: &Support, card: &CardDefinition) -> Self {
         let faction = faction_from_card_id(card.id);
 
-        let art_path = Some(format!(
-            "cards/{}/{}_{}.png",
-            faction,
-            card.id,
-            card.name.to_lowercase().replace(' ', "_")
-        ));
+        // Art path matches files in static/cards/core_set/{id}.webp
+        let art_path = Some(format!("cards/core_set/{}.webp", card.id));
 
         Self {
             card_id: card.id,

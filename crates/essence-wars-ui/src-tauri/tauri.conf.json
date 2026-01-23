@@ -32,8 +32,8 @@
       "icons/icon.ico"
     ],
     "resources": [
-      "../../../data/cards/**",
-      "../../../data/decks/**"
+      "../../../data/cards/core_set/*.yaml",
+      "../../../data/decks/**/*.toml"
     ]
   }
 }
