@@ -3,24 +3,43 @@
   import { spectatorStore } from "$lib/stores/spectatorState.svelte";
   import { replayStore } from "$lib/stores/replayState.svelte";
   import { mcpSyncStore } from "$lib/stores/mcpSyncState.svelte";
+  import { playSound } from "$lib/audio";
+
+  let { onOpenSettings }: { onOpenSettings?: () => void } = $props();
 
   let isLoadingSpectator = $state(false);
   let isLoadingReplays = $state(false);
 
+  function handleButtonHover() {
+    playSound('buttonHover');
+  }
+
+  function handleButtonClick() {
+    playSound('buttonClick');
+  }
+
   async function startSpectatorMode() {
+    handleButtonClick();
     isLoadingSpectator = true;
     await spectatorStore.loadDecksAndBots();
     isLoadingSpectator = false;
   }
 
   async function openReplayBrowser() {
+    handleButtonClick();
     isLoadingReplays = true;
     await replayStore.loadReplayList();
     isLoadingReplays = false;
   }
 
   function startMcpSync() {
+    handleButtonClick();
     mcpSyncStore.startWatching();
+  }
+
+  function startGame() {
+    handleButtonClick();
+    gameStore.loadDecksAndBots();
   }
 </script>
 
@@ -33,7 +52,8 @@
       <button
         class="w-64 px-8 py-4 bg-ui-action text-white rounded-lg font-bold text-lg
                hover:bg-ui-action/80 transition-all hover:scale-105"
-        onclick={() => gameStore.loadDecksAndBots()}
+        onclick={startGame}
+        onmouseenter={handleButtonHover}
         disabled={gameStore.isLoading || isLoadingSpectator}
       >
         {#if gameStore.isLoading}
@@ -47,6 +67,7 @@
         class="w-64 px-8 py-4 bg-ui-panel text-ui-text rounded-lg font-bold text-lg
                border border-gray-600 hover:border-ui-action hover:text-ui-action transition-all hover:scale-105"
         onclick={startSpectatorMode}
+        onmouseenter={handleButtonHover}
         disabled={gameStore.isLoading || isLoadingSpectator || isLoadingReplays}
       >
         {#if isLoadingSpectator}
@@ -60,6 +81,7 @@
         class="w-64 px-8 py-4 bg-ui-panel text-ui-text rounded-lg font-bold text-lg
                border border-gray-600 hover:border-ui-action hover:text-ui-action transition-all hover:scale-105"
         onclick={openReplayBrowser}
+        onmouseenter={handleButtonHover}
         disabled={gameStore.isLoading || isLoadingSpectator || isLoadingReplays}
       >
         {#if isLoadingReplays}
@@ -73,8 +95,21 @@
 
       <button
         class="w-64 px-8 py-4 bg-ui-panel text-ui-text rounded-lg font-bold text-lg
+               border border-gray-600 hover:border-gray-500 hover:text-ui-text transition-all hover:scale-105"
+        onclick={() => {
+          handleButtonClick();
+          onOpenSettings?.();
+        }}
+        onmouseenter={handleButtonHover}
+      >
+        Settings
+      </button>
+
+      <button
+        class="w-64 px-8 py-4 bg-ui-panel text-ui-text rounded-lg font-bold text-lg
                border border-mana/50 hover:border-mana hover:text-mana transition-all hover:scale-105"
         onclick={startMcpSync}
+        onmouseenter={handleButtonHover}
         disabled={gameStore.isLoading || isLoadingSpectator || isLoadingReplays}
       >
         MCP Sync View

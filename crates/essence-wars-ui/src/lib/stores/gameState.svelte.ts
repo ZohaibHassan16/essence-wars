@@ -3,6 +3,8 @@
 import type { GameStateDto, ActionInfo, DeckInfo, BotInfo, GameEventDto, AiHintResponse } from "$lib/api/types";
 import * as api from "$lib/api/game";
 import { triggerDamage, triggerHeal, triggerDeath, triggerSpawn, triggerAttack } from "$lib/animations/actions";
+import { playSound, playAttackSound, playCardSound } from "$lib/audio";
+import { gameSettings } from "./gameSettings.svelte";
 
 // Game state type for our reactive store
 export type GamePhase = "menu" | "setup" | "playing" | "gameOver";
@@ -38,6 +40,12 @@ class GameStore {
   // AI Hint state
   currentHint = $state<AiHintResponse | null>(null);
   isHintLoading = $state(false);
+
+  // AI turn tracking (prevents race conditions)
+  private isAiTurnInProgress = false;
+
+  // AI turn failure tracking
+  aiTurnFailed = $state(false);
 
   // Computed
   get isPlayerTurn() {
@@ -105,6 +113,8 @@ class GameStore {
       this.legalActions = await api.getLegalActions(this.gameId);
     } catch (e) {
       console.error("Failed to get legal actions:", e);
+      this.error = `Failed to get legal actions: ${e instanceof Error ? e.message : String(e)}`;
+      this.legalActions = []; // Clear stale state
     }
   }
 
@@ -137,12 +147,19 @@ class GameStore {
       await this.processEventsForAnimations(update.events, update.lastAction);
 
       if (update.state.isGameOver) {
+        // Play victory or defeat sound
+        if (update.state.winner === 1) {
+          playSound('victory');
+        } else if (update.state.winner === 2) {
+          playSound('defeat');
+        }
         this.phase = "gameOver";
       } else {
         await this.refreshLegalActions();
 
         // If it's now opponent's turn, get AI move
         if (update.state.activePlayer === 2 && isPlayerAction) {
+          playSound('turnStartOpponent');
           await this.doAiTurn();
         }
       }
@@ -156,47 +173,83 @@ class GameStore {
   async doAiTurn() {
     if (!this.gameId || this.gameState?.isGameOver) return;
 
-    // Keep making AI moves until it's player's turn or game ends
-    while (this.gameState && this.gameState.activePlayer === 2 && !this.gameState.isGameOver) {
-      try {
-        const aiAction = await api.getAiMove(this.gameId);
+    // Prevent re-entry - only one AI turn loop at a time
+    if (this.isAiTurnInProgress) return;
+    this.isAiTurnInProgress = true;
 
-        // Apply action and log as AI action
-        const prevState = this.gameState;
-        const update = await api.applyAction(this.gameId, aiAction.index);
-        this.gameState = update.state;
+    // Capture game ID at start to detect if game changed during async ops
+    const startGameId = this.gameId;
 
-        // Log the AI action
-        if (update.lastAction) {
-          const loggedAction: LoggedAction = {
-            ...update.lastAction,
-            player: 2,
-            turn: prevState?.turn ?? 1,
-            timestamp: Date.now(),
-          };
-          this.actionHistory = [...this.actionHistory, loggedAction];
+    try {
+      // Keep making AI moves until it's player's turn or game ends
+      while (this.gameState && this.gameState.activePlayer === 2 && !this.gameState.isGameOver) {
+        // Abort if game changed (e.g., user quit and started new game)
+        if (this.gameId !== startGameId) {
+          console.debug("Game ID changed during AI turn, aborting");
+          return;
         }
 
-        // Log events
-        if (update.events.length > 0) {
-          this.eventHistory = [...this.eventHistory, ...update.events];
+        try {
+          const aiAction = await api.getAiMove(this.gameId);
+
+          // Check again after async call
+          if (this.gameId !== startGameId) {
+            console.debug("Game ID changed during AI move, aborting");
+            return;
+          }
+
+          // Apply action and log as AI action
+          const prevState = this.gameState;
+          const update = await api.applyAction(this.gameId, aiAction.index);
+          this.gameState = update.state;
+
+          // Log the AI action
+          if (update.lastAction) {
+            const loggedAction: LoggedAction = {
+              ...update.lastAction,
+              player: 2,
+              turn: prevState?.turn ?? 1,
+              timestamp: Date.now(),
+            };
+            this.actionHistory = [...this.actionHistory, loggedAction];
+          }
+
+          // Log events
+          if (update.events.length > 0) {
+            this.eventHistory = [...this.eventHistory, ...update.events];
+          }
+
+          // Process animations for AI actions
+          await this.processEventsForAnimationsAi(update.events, update.lastAction);
+
+          // Delay between AI actions for visibility (configurable)
+          await new Promise(r => setTimeout(r, gameSettings.aiTurnDelay));
+        } catch (e) {
+          console.error("AI turn error:", e);
+          this.error = `AI turn failed: ${e instanceof Error ? e.message : String(e)}`;
+          this.aiTurnFailed = true;
+          return; // Exit the loop and method on error
         }
-
-        // Process animations for AI actions
-        await this.processEventsForAnimationsAi(update.events, update.lastAction);
-
-        // Small delay between AI actions for visibility
-        await new Promise(r => setTimeout(r, 300));
-      } catch (e) {
-        console.error("AI turn error:", e);
-        break;
       }
-    }
 
-    if (this.gameState?.isGameOver) {
-      this.phase = "gameOver";
-    } else {
-      await this.refreshLegalActions();
+      // Only update state if we're still on the same game
+      if (this.gameId === startGameId) {
+        if (this.gameState?.isGameOver) {
+          // Play victory or defeat sound
+          if (this.gameState.winner === 1) {
+            playSound('victory');
+          } else if (this.gameState.winner === 2) {
+            playSound('defeat');
+          }
+          this.phase = "gameOver";
+        } else {
+          // Player's turn now
+          playSound('turnStartPlayer');
+          await this.refreshLegalActions();
+        }
+      }
+    } finally {
+      this.isAiTurnInProgress = false;
     }
   }
 
@@ -298,6 +351,17 @@ class GameStore {
     this.currentHint = null;
   }
 
+  clearError() {
+    this.error = null;
+  }
+
+  /** Retry AI turn after a failure */
+  async retryAiTurn() {
+    this.aiTurnFailed = false;
+    this.error = null;
+    await this.doAiTurn();
+  }
+
   async undoAction() {
     if (!this.gameId) return;
     this.isLoading = true;
@@ -327,9 +391,24 @@ class GameStore {
   }
 
   /**
-   * Process game events and trigger animations
+   * Process game events and trigger animations + sounds
    */
   async processEventsForAnimations(events: GameEventDto[], lastAction?: ActionInfo): Promise<void> {
+    // Determine card type from events for sound
+    const hasCreatureSpawn = events.some(e => e.eventType === "creature_spawned");
+    const hasSupportPlayed = events.some(e => e.eventType === "support_played");
+
+    if (lastAction?.actionType === "play_card") {
+      if (hasCreatureSpawn) {
+        playCardSound('creature');
+      } else if (hasSupportPlayed) {
+        playCardSound('support');
+      } else {
+        // Assume spell for other play_card actions
+        playCardSound('spell');
+      }
+    }
+
     for (const event of events) {
       const data = event.data as Record<string, unknown>;
 
@@ -338,8 +417,8 @@ class GameStore {
           const player = data.player as number;
           const slot = data.slot as number;
           const elementId = `creature-${player === 1 ? "player" : "opponent"}-${slot}`;
-          // Small delay to let the DOM update
-          await new Promise(r => setTimeout(r, 50));
+          // Minimal delay to let the DOM update (one frame)
+          await new Promise(r => setTimeout(r, 16));
           await triggerSpawn(elementId);
           break;
         }
@@ -348,6 +427,7 @@ class GameStore {
           const player = data.player as number;
           const slot = data.slot as number;
           const elementId = `creature-${player === 1 ? "player" : "opponent"}-${slot}`;
+          playSound('creatureDeath');
           await triggerDeath(elementId);
           break;
         }
@@ -358,8 +438,17 @@ class GameStore {
           const newLife = data.new as number;
           const diff = newLife - oldLife;
 
-          // For now, we don't have a player avatar element to animate
-          // This could be enhanced later
+          if (diff > 0) {
+            playSound('heal');
+          } else if (diff < 0) {
+            playSound('damage');
+          }
+          break;
+        }
+
+        case "damage_dealt": {
+          const amount = (data.amount as number) || 1;
+          playAttackSound(amount);
           break;
         }
       }
@@ -370,6 +459,11 @@ class GameStore {
       const attackerId = `creature-player-${lastAction.sourceSlot}`;
       const defenderId = `creature-opponent-${lastAction.targetSlot}`;
 
+      // Play attack sound if no damage_dealt event was processed
+      if (!events.some(e => e.eventType === "damage_dealt")) {
+        playAttackSound(2); // Default medium attack
+      }
+
       await triggerAttack(attackerId, defenderId, () => {
         triggerDamage(defenderId, 1);
       });
@@ -377,9 +471,24 @@ class GameStore {
   }
 
   /**
-   * Process game events for AI actions (swapped sides)
+   * Process game events for AI actions (swapped sides) + sounds
    */
   async processEventsForAnimationsAi(events: GameEventDto[], lastAction?: ActionInfo): Promise<void> {
+    // Determine card type from events for sound
+    const hasCreatureSpawn = events.some(e => e.eventType === "creature_spawned");
+    const hasSupportPlayed = events.some(e => e.eventType === "support_played");
+
+    if (lastAction?.actionType === "play_card") {
+      if (hasCreatureSpawn) {
+        playCardSound('creature');
+      } else if (hasSupportPlayed) {
+        playCardSound('support');
+      } else {
+        // Assume spell for other play_card actions
+        playCardSound('spell');
+      }
+    }
+
     for (const event of events) {
       const data = event.data as Record<string, unknown>;
 
@@ -389,7 +498,7 @@ class GameStore {
           const slot = data.slot as number;
           // AI is player 2, so their creatures are on "opponent" side visually
           const elementId = `creature-${player === 2 ? "opponent" : "player"}-${slot}`;
-          await new Promise(r => setTimeout(r, 50));
+          await new Promise(r => setTimeout(r, 16));
           await triggerSpawn(elementId);
           break;
         }
@@ -398,7 +507,27 @@ class GameStore {
           const player = data.player as number;
           const slot = data.slot as number;
           const elementId = `creature-${player === 2 ? "opponent" : "player"}-${slot}`;
+          playSound('creatureDeath');
           await triggerDeath(elementId);
+          break;
+        }
+
+        case "life_changed": {
+          const oldLife = data.old as number;
+          const newLife = data.new as number;
+          const diff = newLife - oldLife;
+
+          if (diff > 0) {
+            playSound('heal');
+          } else if (diff < 0) {
+            playSound('damage');
+          }
+          break;
+        }
+
+        case "damage_dealt": {
+          const amount = (data.amount as number) || 1;
+          playAttackSound(amount);
           break;
         }
       }
@@ -408,6 +537,11 @@ class GameStore {
     if (lastAction?.actionType === "attack" && lastAction.sourceSlot !== undefined && lastAction.targetSlot !== undefined) {
       const attackerId = `creature-opponent-${lastAction.sourceSlot}`;
       const defenderId = `creature-player-${lastAction.targetSlot}`;
+
+      // Play attack sound if no damage_dealt event was processed
+      if (!events.some(e => e.eventType === "damage_dealt")) {
+        playAttackSound(2); // Default medium attack
+      }
 
       await triggerAttack(attackerId, defenderId, () => {
         triggerDamage(defenderId, 1);

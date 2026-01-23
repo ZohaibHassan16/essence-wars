@@ -9,6 +9,7 @@
     children: Snippet;
   } = $props();
 
+  // svelte-ignore state_referenced_locally
   let isCollapsed = $state(initialCollapsed);
 
   function toggle() {

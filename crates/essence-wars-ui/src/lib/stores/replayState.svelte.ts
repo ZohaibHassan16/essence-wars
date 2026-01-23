@@ -46,12 +46,20 @@ class ReplayStore {
   get currentState(): GameStateDto | null {
     if (!this.match) return null;
     if (this.currentActionIndex < 0) return this.match.initialState;
+    // Bounds check: return last valid state if index out of bounds
+    if (this.currentActionIndex >= this.match.actions.length) {
+      return this.match.actions.length > 0
+        ? this.match.actions[this.match.actions.length - 1].stateAfter
+        : this.match.initialState;
+    }
     return this.match.actions[this.currentActionIndex].stateAfter;
   }
 
   /** Current action (null if at initial state) */
   get currentAction(): SpectatorAction | null {
     if (!this.match || this.currentActionIndex < 0) return null;
+    // Bounds check: return null if index out of bounds
+    if (this.currentActionIndex >= this.match.actions.length) return null;
     return this.match.actions[this.currentActionIndex];
   }
 

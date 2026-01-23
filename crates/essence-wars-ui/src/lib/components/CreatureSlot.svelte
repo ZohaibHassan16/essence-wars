@@ -1,8 +1,9 @@
 <script lang="ts">
   import type { CreatureDto, CardDto } from "$lib/api/types";
   import CardPreview from "./CardPreview.svelte";
-  import { animationRegistry } from "$lib/animations/actions";
-  import { onMount, onDestroy } from "svelte";
+  import { animatable } from "$lib/animations/actions";
+  import { playSound } from "$lib/audio";
+  import { gameSettings } from "$lib/stores/gameSettings.svelte";
 
   let {
     creature = null,
@@ -12,6 +13,7 @@
     isSelected = false,
     isValidTarget = false,
     onClick,
+    showKeyHint = false,
   }: {
     creature: CreatureDto | null;
     slot: number;
@@ -20,23 +22,13 @@
     isSelected?: boolean;
     isValidTarget?: boolean;
     onClick?: () => void;
+    showKeyHint?: boolean;
   } = $props();
 
   let isHovered = $state(false);
-  let slotElement: HTMLButtonElement;
 
   // Animation ID for this slot
   const animationId = $derived(`creature-${isPlayerSide ? "player" : "opponent"}-${slot}`);
-
-  // Register/unregister with animation system
-  $effect(() => {
-    if (slotElement) {
-      animationRegistry.set(animationId, slotElement);
-      return () => {
-        animationRegistry.delete(animationId);
-      };
-    }
-  });
 
   function getFactionBorder(faction: string): string {
     switch (faction) {
@@ -78,7 +70,8 @@
 
 <div class="relative">
   <button
-    bind:this={slotElement}
+    use:animatable
+    data-animate-id={animationId}
     class="creature-slot rounded-xl border-2 transition-all duration-150 flex flex-col items-center justify-between p-3
            no-select relative overflow-hidden
            {creature ? getFactionBorder(creature.faction) + ' ' + getFactionBg(creature.faction) : 'border-gray-600 border-dashed bg-ui-bg/30'}
@@ -88,8 +81,16 @@
            {creature && isPlayerSide ? 'hover:scale-102 cursor-pointer' : creature ? 'cursor-pointer' : 'cursor-default'}
            disabled:cursor-not-allowed"
     style="width: var(--card-creature-width); height: var(--card-creature-height);"
-    onclick={onClick}
-    onmouseenter={() => isHovered = true}
+    onclick={() => {
+      if (onClick) {
+        if (creature) playSound('cardSelect');
+        onClick();
+      }
+    }}
+    onmouseenter={() => {
+      isHovered = true;
+      if (creature && onClick) playSound('cardHover');
+    }}
     onmouseleave={() => isHovered = false}
     disabled={!onClick}
   >
@@ -101,6 +102,8 @@
             src="/{creature.artPath}"
             alt=""
             class="w-full h-full object-cover object-top opacity-30"
+            loading="lazy"
+            decoding="async"
             onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
           <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/60"></div>
@@ -119,6 +122,14 @@
       <!-- Can attack indicator -->
       {#if creature.canAttack && isPlayerSide}
         <div class="absolute top-2 right-2 w-3 h-3 rounded-full bg-health animate-pulse"></div>
+      {/if}
+
+      <!-- Keyboard hint badge (only for player creatures that can attack) -->
+      {#if showKeyHint && gameSettings.showKeyboardHints && isPlayerSide && creature.canAttack}
+        <div class="absolute top-2 left-2 w-5 h-5 rounded bg-gray-800/90 flex items-center justify-center
+                    text-ui-text-dim text-xs font-mono border border-gray-600 z-10">
+          {slot + 1}
+        </div>
       {/if}
 
       <!-- Exhausted overlay -->

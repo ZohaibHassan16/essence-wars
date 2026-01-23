@@ -1,9 +1,11 @@
 <script lang="ts">
+  import { onMount, onDestroy } from "svelte";
   import { gameStore } from "$lib/stores/gameState.svelte";
   import { spectatorStore } from "$lib/stores/spectatorState.svelte";
   import { replayStore } from "$lib/stores/replayState.svelte";
   import { mcpSyncStore } from "$lib/stores/mcpSyncState.svelte";
   import * as api from "$lib/api/game";
+  import { preloadSounds } from "$lib/audio";
   import MainMenu from "$lib/components/MainMenu.svelte";
   import SetupScreen from "$lib/components/SetupScreen.svelte";
   import GameBoard from "$lib/components/GameBoard.svelte";
@@ -14,6 +16,91 @@
   import ReplayBrowser from "$lib/components/ReplayBrowser.svelte";
   import ReplayPlayback from "$lib/components/ReplayPlayback.svelte";
   import McpSyncView from "$lib/components/McpSyncView.svelte";
+  import SettingsScreen from "$lib/components/SettingsScreen.svelte";
+  import { audioSettings } from "$lib/stores/audioSettings.svelte";
+
+  // Settings screen state
+  let showSettings = $state(false);
+
+  // Global keyboard handler
+  function handleKeydown(event: KeyboardEvent) {
+    // Skip if user is in an input field
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      return;
+    }
+
+    // Global shortcuts (work anywhere)
+    switch (event.key.toLowerCase()) {
+      case 'm':
+        event.preventDefault();
+        audioSettings.toggleMute();
+        return;
+    }
+
+    // Gameplay shortcuts (only during playing phase, player's turn, not loading)
+    if (gameStore.phase === "playing" && gameStore.isPlayerTurn && !gameStore.isLoading) {
+      switch (event.key.toLowerCase()) {
+        case ' ':
+          event.preventDefault();
+          gameStore.endTurn();
+          return;
+        case 'escape':
+          event.preventDefault();
+          gameStore.clearSelection();
+          return;
+        case 'h':
+          event.preventDefault();
+          gameStore.requestHint();
+          return;
+        // Number keys 1-5 for selecting player creatures
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5': {
+          event.preventDefault();
+          const slot = parseInt(event.key) - 1;
+          const creature = gameStore.gameState?.player.creatures[slot];
+          if (creature?.canAttack) {
+            gameStore.selectCreature(slot);
+          }
+          return;
+        }
+        // Q-U for selecting cards in hand (positions 0-6)
+        case 'q':
+        case 'w':
+        case 'e':
+        case 'r':
+        case 't':
+        case 'y':
+        case 'u': {
+          event.preventDefault();
+          const keyMap: Record<string, number> = { q: 0, w: 1, e: 2, r: 3, t: 4, y: 5, u: 6 };
+          const cardIndex = keyMap[event.key.toLowerCase()];
+          const hand = gameStore.gameState?.player.hand ?? [];
+          if (cardIndex < hand.length) {
+            gameStore.selectCard(cardIndex);
+          }
+          return;
+        }
+      }
+    }
+  }
+
+  // Initialize on app mount
+  onMount(() => {
+    preloadSounds();
+    // Start MCP auto-watch for auto-switching when MCP syncs state
+    mcpSyncStore.startAutoWatch();
+    // Add global keyboard listener
+    window.addEventListener('keydown', handleKeydown);
+  });
+
+  // Cleanup on app unmount
+  onDestroy(() => {
+    mcpSyncStore.cleanup();
+    window.removeEventListener('keydown', handleKeydown);
+  });
 
   // Helper functions to build props for GameOverScreen
 
@@ -104,8 +191,11 @@
   }
 </script>
 
+<!-- Settings screen (overlays everything) -->
+{#if showSettings}
+  <SettingsScreen onBack={() => showSettings = false} />
 <!-- MCP Sync mode takes top precedence when active -->
-{#if mcpSyncStore.phase === "watching" || mcpSyncStore.phase === "disconnected"}
+{:else if mcpSyncStore.phase === "watching" || mcpSyncStore.phase === "disconnected"}
   <McpSyncView />
 <!-- Replay mode when active -->
 {:else if replayStore.phase === "browser" || replayStore.phase === "loading"}
@@ -125,7 +215,7 @@
   <GameOverScreen {...getSpectatorGameOverProps()} />
 <!-- Game mode -->
 {:else if gameStore.phase === "menu"}
-  <MainMenu />
+  <MainMenu onOpenSettings={() => showSettings = true} />
 {:else if gameStore.phase === "setup"}
   <SetupScreen />
 {:else if gameStore.phase === "playing"}

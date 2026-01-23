@@ -16,6 +16,37 @@ import type {
   McpSyncedState,
 } from "./types";
 
+/** Error thrown when an IPC call times out */
+export class IpcTimeoutError extends Error {
+  constructor(operation: string, timeoutMs: number) {
+    super(`Operation "${operation}" timed out after ${timeoutMs}ms`);
+    this.name = "IpcTimeoutError";
+  }
+}
+
+/** Wrap a promise with a timeout */
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  operation: string
+): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new IpcTimeoutError(operation, timeoutMs));
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+    }
+  }
+}
+
 export async function listDecks(): Promise<DeckInfo[]> {
   return await invoke<DeckInfo[]>("list_decks");
 }
@@ -44,7 +75,11 @@ export async function applyAction(
 }
 
 export async function getAiMove(gameId: string): Promise<ActionInfo> {
-  return await invoke<ActionInfo>("get_ai_move", { gameId });
+  return await withTimeout(
+    invoke<ActionInfo>("get_ai_move", { gameId }),
+    30000,
+    "getAiMove"
+  );
 }
 
 export async function endGame(gameId: string): Promise<GameResultDto> {
@@ -52,7 +87,11 @@ export async function endGame(gameId: string): Promise<GameResultDto> {
 }
 
 export async function getAiHint(gameId: string): Promise<AiHintResponse> {
-  return await invoke<AiHintResponse>("get_ai_hint", { gameId });
+  return await withTimeout(
+    invoke<AiHintResponse>("get_ai_hint", { gameId }),
+    30000,
+    "getAiHint"
+  );
 }
 
 export async function undoAction(gameId: string): Promise<GameStateDto> {
@@ -71,7 +110,11 @@ export async function canUndo(gameId: string): Promise<boolean> {
 export async function computeSpectatorMatch(
   config: SpectatorConfig
 ): Promise<SpectatorMatch> {
-  return await invoke<SpectatorMatch>("compute_spectator_match", { config });
+  return await withTimeout(
+    invoke<SpectatorMatch>("compute_spectator_match", { config }),
+    300000, // 5 minutes
+    "computeSpectatorMatch"
+  );
 }
 
 // ============================================================================

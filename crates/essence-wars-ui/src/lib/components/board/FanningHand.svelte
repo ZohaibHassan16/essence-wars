@@ -9,6 +9,7 @@
     isPlayableCallback,
     onCardClick,
     compact = false,
+    showKeyHints = false,
   }: {
     cards: CardDto[];
     selectedCardIndex?: number | null;
@@ -16,6 +17,7 @@
     isPlayableCallback?: (index: number) => boolean;
     onCardClick?: (index: number) => void;
     compact?: boolean;
+    showKeyHints?: boolean;
   } = $props();
 
   // Calculate rotation for fanning effect
@@ -59,6 +61,7 @@
           isSelected={selectedCardIndex === i}
           {isPlayable}
           onClick={isInteractive && onCardClick ? () => onCardClick(i) : undefined}
+          showKeyHint={showKeyHints}
         />
       </div>
     {/each}

@@ -54,7 +54,7 @@
       </div>
     {/if}
 
-    <div class="grid grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <!-- Player Deck Selection -->
       <div>
         <h3 class="text-lg font-semibold text-ui-text mb-3">Your Deck</h3>

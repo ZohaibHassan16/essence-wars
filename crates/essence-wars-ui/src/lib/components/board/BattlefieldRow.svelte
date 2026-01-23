@@ -12,6 +12,7 @@
     validAttackTargets = [],
     onCreatureClick,
     onSupportClick,
+    showKeyHints = false,
   }: {
     creatures: (CreatureDto | null)[];
     supports: (SupportDto | null)[];
@@ -21,6 +22,7 @@
     validAttackTargets?: number[];
     onCreatureClick?: (slot: number) => void;
     onSupportClick?: (slot: number) => void;
+    showKeyHints?: boolean;
   } = $props();
 </script>
 
@@ -46,6 +48,7 @@
         isSelected={selectedCreatureSlot === i}
         isValidTarget={validAttackTargets.includes(i)}
         onClick={onCreatureClick ? () => onCreatureClick(i) : undefined}
+        showKeyHint={showKeyHints}
       />
     {/each}
   </div>

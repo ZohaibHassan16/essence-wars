@@ -227,6 +227,38 @@ body {
   }
 }
 
+@media (max-width: 1024px) {
+  :root {
+    --card-hand-width: 70px;
+    --card-hand-height: 98px;
+    --card-creature-width: 96px;
+    --card-creature-height: 124px;
+    --card-support-width: 56px;
+    --card-support-height: 72px;
+    --card-preview-width: 180px;
+    --hand-overlap: 18px;
+    --hand-hover-lift: 25px;
+    --sidebar-width: 220px;
+    --board-gap: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --card-hand-width: 56px;
+    --card-hand-height: 78px;
+    --card-creature-width: 80px;
+    --card-creature-height: 104px;
+    --card-support-width: 48px;
+    --card-support-height: 62px;
+    --card-preview-width: 160px;
+    --hand-overlap: 14px;
+    --hand-hover-lift: 20px;
+    --sidebar-width: 200px;
+    --board-gap: 8px;
+  }
+}
+
 /* Sidebar collapse animation */
 .sidebar {
   transition: width 0.3s ease-out;

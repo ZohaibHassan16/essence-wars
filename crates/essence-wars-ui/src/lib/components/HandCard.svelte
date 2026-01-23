@@ -2,6 +2,8 @@
   import type { CardDto } from "$lib/api/types";
   import CardPreview from "./CardPreview.svelte";
   import KeywordIcon from "./KeywordIcon.svelte";
+  import { playSound } from "$lib/audio";
+  import { gameSettings } from "$lib/stores/gameSettings.svelte";
 
   let {
     card,
@@ -9,13 +11,18 @@
     isSelected = false,
     isPlayable = false,
     onClick,
+    showKeyHint = false,
   }: {
     card: CardDto;
     index: number;
     isSelected?: boolean;
     isPlayable?: boolean;
     onClick?: () => void;
+    showKeyHint?: boolean;
   } = $props();
+
+  // Keyboard hint keys for positions 0-6
+  const keyHints = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U'];
 
   let isHovered = $state(false);
 
@@ -60,8 +67,16 @@
            {!isPlayable && !isHidden ? 'opacity-50 grayscale-[30%]' : ''}
            disabled:cursor-not-allowed"
     style="width: var(--card-hand-width); height: var(--card-hand-height);"
-    onclick={onClick}
-    onmouseenter={() => isHovered = true}
+    onclick={() => {
+      if (onClick && !isHidden) {
+        playSound('cardSelect');
+        onClick();
+      }
+    }}
+    onmouseenter={() => {
+      isHovered = true;
+      if (!isHidden && isPlayable) playSound('cardHover');
+    }}
     onmouseleave={() => isHovered = false}
     disabled={!onClick || isHidden}
   >
@@ -96,6 +111,8 @@
             src="/{card.artPath}"
             alt=""
             class="w-full h-full object-cover object-top opacity-40"
+            loading="lazy"
+            decoding="async"
             onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
           <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/70"></div>
@@ -107,6 +124,14 @@
                   text-white text-sm font-bold shadow-md border-2 border-blue-400 z-10">
         {card.cost}
       </div>
+
+      <!-- Keyboard hint badge -->
+      {#if showKeyHint && gameSettings.showKeyboardHints && index < keyHints.length}
+        <div class="absolute -top-1 -left-1 w-5 h-5 rounded bg-gray-800/90 flex items-center justify-center
+                    text-ui-text-dim text-xs font-mono border border-gray-600 z-10">
+          {keyHints[index]}
+        </div>
+      {/if}
 
       <!-- Playable indicator glow -->
       {#if isPlayable && !isSelected}

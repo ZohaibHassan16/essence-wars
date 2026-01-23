@@ -1,5 +1,6 @@
 <script lang="ts">
   import { gameStore } from "$lib/stores/gameState.svelte";
+  import { gameSettings } from "$lib/stores/gameSettings.svelte";
   import BattlefieldRow from "./board/BattlefieldRow.svelte";
   import FanningHand from "./board/FanningHand.svelte";
   import PlayerInfoWidget from "./board/PlayerInfoWidget.svelte";
@@ -7,6 +8,8 @@
   import ActionLog from "./ActionLog.svelte";
   import HintPanel from "./HintPanel.svelte";
   import TurnTransition from "./TurnTransition.svelte";
+  import AudioControls from "./AudioControls.svelte";
+  import { playSound } from "$lib/audio";
 
   const gameState = $derived(gameStore.gameState);
   const isPlayerTurn = $derived(gameStore.isPlayerTurn);
@@ -125,6 +128,36 @@
   visible={showTurnTransition}
 />
 
+<!-- Error banner -->
+{#if gameStore.error}
+  <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-lg">
+    <div class="p-4 bg-damage/90 border border-damage rounded-lg text-white shadow-xl">
+      <div class="flex items-start gap-3">
+        <div class="flex-1">
+          <p class="font-semibold">Error</p>
+          <p class="text-sm mt-1">{gameStore.error}</p>
+        </div>
+        <div class="flex gap-2">
+          {#if gameStore.aiTurnFailed}
+            <button
+              class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm font-medium transition-colors"
+              onclick={() => gameStore.retryAiTurn()}
+            >
+              Retry
+            </button>
+          {/if}
+          <button
+            class="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm font-medium transition-colors"
+            onclick={() => gameStore.clearError()}
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+{/if}
+
 <div class="w-full h-full flex {boardBgClass}">
   <!-- Main game area -->
   <div class="flex-1 flex flex-col min-w-0">
@@ -183,6 +216,7 @@
         highlightedSlots={getHighlightedSlots()}
         onCreatureClick={handlePlayerCreatureClick}
         onSupportClick={handlePlayerSupportClick}
+        showKeyHints={isPlayerTurn}
       />
     </div>
 
@@ -194,6 +228,7 @@
         isInteractive={true}
         isPlayableCallback={isCardPlayable}
         onCardClick={handleCardClick}
+        showKeyHints={isPlayerTurn}
       />
     </div>
 
@@ -214,7 +249,11 @@
             class="px-4 py-2 bg-amber-700 text-white rounded-lg font-semibold
                    hover:bg-amber-600 active:scale-95 transition-all
                    disabled:opacity-50 disabled:cursor-not-allowed"
-            onclick={() => gameStore.undoAction()}
+            onclick={() => {
+              playSound('buttonClick');
+              gameStore.undoAction();
+            }}
+            onmouseenter={() => playSound('buttonHover')}
             disabled={gameStore.isLoading || gameStore.actionHistory.length === 0}
             title="Undo last action (dev mode)"
           >
@@ -224,10 +263,14 @@
             class="px-6 py-2 bg-ui-action text-white rounded-lg font-semibold
                    hover:bg-ui-action/80 active:scale-95 transition-all
                    disabled:opacity-50 disabled:cursor-not-allowed"
-            onclick={() => gameStore.endTurn()}
+            onclick={() => {
+              playSound('buttonClick');
+              gameStore.endTurn();
+            }}
+            onmouseenter={() => playSound('buttonHover')}
             disabled={gameStore.isLoading}
           >
-            End Turn
+            End Turn{#if gameSettings.showKeyboardHints}<span class="ml-2 text-xs opacity-70">(Space)</span>{/if}
           </button>
         {:else}
           <div class="px-5 py-2 bg-gray-700 text-ui-text-dim rounded-lg font-semibold flex items-center gap-2">
@@ -237,10 +280,15 @@
         {/if}
         <button
           class="px-4 py-2 bg-gray-700 text-ui-text rounded-lg hover:bg-gray-600 transition-colors"
-          onclick={() => gameStore.quitGame()}
+          onclick={() => {
+            playSound('buttonClick');
+            gameStore.quitGame();
+          }}
+          onmouseenter={() => playSound('buttonHover')}
         >
           Quit
         </button>
+        <AudioControls />
       {/snippet}
     </PlayerInfoWidget>
   </div>

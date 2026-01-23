@@ -452,69 +452,66 @@ Subtle animated backgrounds for each faction matchup:
 
 ## 5. Audio Design
 
-### 5.1 Music System
+### 5.1 Approach: Procedural SFX with jsfxr
 
-**Dynamic Orchestral Track:**
-- Base layer: Epic orchestral theme (looping, ~3-5 minutes)
-- Intensity layers that crossfade based on game state:
-  - **Calm:** Early game, building board
-  - **Tension:** Mid-game, both players healthy
-  - **Climax:** Either player below 10 life
-  - **Victory:** Triumphant swell on win
-  - **Defeat:** Somber fade on loss
+All sound effects are generated procedurally using **jsfxr** (JavaScript port of sfxr). This eliminates the need for audio asset files and keeps the build lightweight.
 
-**Faction Ambient Undertones:**
-- Argentum: Industrial hum, distant machinery, steam hisses
-- Symbiote: Jungle sounds, creature calls, organic squelches
-- Obsidion: Gothic choir whispers, ethereal drones, crystal tones
-- Mixed based on player faction vs opponent faction
+**What's included:**
+- UI feedback sounds
+- Card interaction sounds
+- Combat sounds
+- Game state sounds
+
+**What's deferred (post-release):**
+- Background music
+- Ambient sounds
+- Faction-specific audio themes
 
 ### 5.2 Sound Effects
 
+All sounds generated via jsfxr with tuned parameters:
+
 #### UI Sounds
-| Event | Sound |
-|-------|-------|
-| Button hover | Soft tick |
-| Button click | Satisfying click |
-| Card hover | Paper rustle |
-| Menu open | Whoosh |
-| Menu close | Reverse whoosh |
+| Event | jsfxr Type | Description |
+|-------|------------|-------------|
+| Button hover | blip | Soft high-pitched tick |
+| Button click | select | Satisfying click |
+| Card hover | blip | Subtle paper-like rustle |
+| Menu open | powerUp | Quick whoosh up |
+| Menu close | powerUp | Quick whoosh down (reversed params) |
 
 #### Card Sounds
-| Event | Sound |
-|-------|-------|
-| Card draw | Card slide + flip |
-| Card play (creature) | Thud + faction-specific |
-| Card play (spell) | Magic whoosh |
-| Card play (support) | Mechanical clunk |
-| Card select | Subtle chime |
+| Event | jsfxr Type | Description |
+|-------|------------|-------------|
+| Card draw | pickUp | Card slide sound |
+| Card play (creature) | hit | Thud/placement |
+| Card play (spell) | laser | Magic whoosh |
+| Card play (support) | hit | Mechanical clunk |
+| Card select | blip | Subtle chime |
 
 #### Combat Sounds
-| Event | Sound |
-|-------|-------|
-| Attack (light, 1-2 dmg) | Quick swipe |
-| Attack (medium, 3-4 dmg) | Heavy slash |
-| Attack (heavy, 5+ dmg) | Crushing impact |
-| Creature death | Faction-specific death cry |
-| Lethal trigger | Sinister sting |
-| Lifesteal trigger | Slurping drain |
+| Event | jsfxr Type | Description |
+|-------|------------|-------------|
+| Attack (light) | hit | Quick swipe |
+| Attack (medium) | hit | Heavy slash |
+| Attack (heavy) | explosion | Crushing impact |
+| Creature death | explosion | Death burst |
+| Damage dealt | hit | Impact thud |
+| Heal | powerUp | Rising tone |
 
 #### Game State Sounds
-| Event | Sound |
-|-------|-------|
-| Turn start (yours) | Bell chime |
-| Turn start (opponent) | Lower bell |
-| Low health warning | Heartbeat |
-| Victory | Triumphant fanfare |
-| Defeat | Somber sting |
+| Event | jsfxr Type | Description |
+|-------|------------|-------------|
+| Turn start (yours) | powerUp | Bell-like chime |
+| Turn start (opponent) | blip | Lower tone |
+| Victory | powerUp | Triumphant fanfare |
+| Defeat | hit | Somber sting |
 
 ### 5.3 Volume Controls
 
-Settings panel with separate sliders:
-- Master Volume
-- Music Volume
-- SFX Volume
-- Ambient Volume
+Settings panel:
+- Master Volume slider
+- SFX Volume slider
 - Mute All toggle
 
 ---
@@ -773,19 +770,23 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] Add board background support (after backgrounds created)
 - [x] Add keyword icon rendering (after icons created)
 
-### Phase 8: Audio Implementation
-- [ ] Howler.js integration
-- [ ] Music system with dynamic layers
-- [ ] Volume controls
-- [ ] Source sound effects, ambient sounds and Music
+### Phase 8: Audio Implementation (Procedural SFX)
+- [x] jsfxr integration for procedural sound generation
+- [x] UI sounds (button hover/click, card hover, menu open/close)
+- [x] Card sounds (draw, play creature/spell/support, select)
+- [x] Combat sounds (attack light/medium/heavy, death, damage, heal)
+- [x] Game state sounds (turn start, victory, defeat)
+- [x] Volume controls (Master, SFX sliders, Mute toggle)
+- [x] Audio settings store with persistence
+- [x] Wire sounds to game events
 
 ### Phase 9: Polish & Testing
-- [ ] Settings screen
-- [ ] Keyboard shortcuts
-- [ ] Window resize handling
-- [ ] Error handling and recovery
-- [ ] Performance optimization
-- [ ] Bug fixing
+- [x] Settings screen
+- [x] Keyboard shortcuts
+- [x] Window resize handling
+- [x] Error handling and recovery
+- [x] Performance optimization
+- [x] Bug fixing
 
 ### Phase 10: Release Prep
 - [ ] Build for Windows
@@ -829,8 +830,8 @@ See `docs/flux-guide.md` for full command templates.
 | Keyword icons | 14 icons | Not started |
 | Board backgrounds | 5 backgrounds | Not started |
 | UI elements | Buttons, bars, panels | Not started |
-| Sound effects | ~30 sounds | Not started |
-| Music | 1-3 tracks + ambient | Not started |
+| Sound effects | Procedural (jsfxr) | No assets needed |
+| Music | Deferred post-release | N/A |
 
 ## Appendix A: Keyboard Shortcuts
 

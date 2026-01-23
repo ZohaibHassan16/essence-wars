@@ -18,7 +18,7 @@ export const animatable: Action<HTMLElement, AnimatableParams | undefined> = (no
   // Store the element reference in a global registry for cross-component animations
   const id = node.dataset.animateId;
   if (id) {
-    animationRegistry.set(id, node);
+    animationRegistry.set(id, new WeakRef(node));
   }
 
   return {
@@ -30,14 +30,70 @@ export const animatable: Action<HTMLElement, AnimatableParams | undefined> = (no
   };
 };
 
-// Global registry for animated elements
-export const animationRegistry = new Map<string, HTMLElement>();
+// Global registry for animated elements using WeakRef
+const animationRegistry = new Map<string, WeakRef<HTMLElement>>();
+
+// Track active floating elements for cleanup
+const activeFloatingElements = new Set<HTMLElement>();
 
 /**
- * Get an animated element by its ID
+ * Get an animated element by its ID (handles WeakRef deref and cleanup)
  */
 export function getAnimatedElement(id: string): HTMLElement | undefined {
-  return animationRegistry.get(id);
+  const ref = animationRegistry.get(id);
+  if (!ref) return undefined;
+
+  const element = ref.deref();
+  if (!element) {
+    // Element was garbage collected, clean up the registry
+    animationRegistry.delete(id);
+    return undefined;
+  }
+  return element;
+}
+
+/**
+ * Clean up stale animation refs (elements that were garbage collected)
+ */
+export function cleanupStaleAnimationRefs(): void {
+  for (const [id, ref] of animationRegistry) {
+    if (!ref.deref()) {
+      animationRegistry.delete(id);
+    }
+  }
+}
+
+/**
+ * Clean up all floating elements (call on scene transitions)
+ */
+export function cleanupAllFloatingElements(): void {
+  for (const element of activeFloatingElements) {
+    try {
+      element.remove();
+    } catch {
+      // Element may already be removed
+    }
+  }
+  activeFloatingElements.clear();
+}
+
+/**
+ * Create a colored overlay for visual effects (more performant than filters)
+ */
+function createOverlay(element: HTMLElement, color: string, opacity: number): HTMLElement {
+  const overlay = document.createElement("div");
+  overlay.style.cssText = `
+    position: absolute;
+    inset: 0;
+    background-color: ${color};
+    opacity: ${opacity};
+    pointer-events: none;
+    border-radius: inherit;
+    z-index: 10;
+  `;
+  element.style.position = "relative";
+  element.appendChild(overlay);
+  return overlay;
 }
 
 /**
@@ -45,21 +101,25 @@ export function getAnimatedElement(id: string): HTMLElement | undefined {
  */
 export function triggerDamage(elementOrId: HTMLElement | string, amount: number): void {
   const element = typeof elementOrId === "string"
-    ? animationRegistry.get(elementOrId)
+    ? getAnimatedElement(elementOrId)
     : elementOrId;
 
   if (!element) return;
 
   const intensity = Math.min(amount * 3, 20);
 
-  // Flash red and shake
+  // Create red overlay instead of filter (more performant)
+  const overlay = createOverlay(element, "#ef4444", 0);
+
   const tl = gsap.timeline();
 
-  tl.to(element, {
-    filter: "brightness(1.5) sepia(1) hue-rotate(-50deg) saturate(2)",
+  // Flash overlay
+  tl.to(overlay, {
+    opacity: 0.4,
     duration: 0.08,
   });
 
+  // Shake with transform (GPU accelerated)
   tl.to(element, {
     x: intensity,
     duration: 0.04,
@@ -68,11 +128,17 @@ export function triggerDamage(elementOrId: HTMLElement | string, amount: number)
     ease: "none",
   }, "<");
 
+  // Fade out overlay and reset position
+  tl.to(overlay, {
+    opacity: 0,
+    duration: 0.15,
+    onComplete: () => overlay.remove(),
+  });
+
   tl.to(element, {
-    filter: "",
     x: 0,
     duration: 0.15,
-  });
+  }, "<");
 
   // Show damage number
   showFloatingNumber(element, amount, false);
@@ -83,26 +149,42 @@ export function triggerDamage(elementOrId: HTMLElement | string, amount: number)
  */
 export function triggerHeal(elementOrId: HTMLElement | string, amount: number): void {
   const element = typeof elementOrId === "string"
-    ? animationRegistry.get(elementOrId)
+    ? getAnimatedElement(elementOrId)
     : elementOrId;
 
   if (!element) return;
 
+  // Create green overlay instead of filter (more performant)
+  const overlay = createOverlay(element, "#22c55e", 0);
+
   const tl = gsap.timeline();
 
-  tl.to(element, {
-    filter: "brightness(1.3) sepia(0.5) hue-rotate(80deg) saturate(1.5)",
-    scale: 1.05,
+  // Flash green and scale up
+  tl.to(overlay, {
+    opacity: 0.3,
     duration: 0.2,
     ease: "power2.out",
   });
 
   tl.to(element, {
-    filter: "",
+    scale: 1.05,
+    duration: 0.2,
+    ease: "power2.out",
+  }, "<");
+
+  // Fade overlay and scale back
+  tl.to(overlay, {
+    opacity: 0,
+    duration: 0.3,
+    ease: "power2.in",
+    onComplete: () => overlay.remove(),
+  });
+
+  tl.to(element, {
     scale: 1,
     duration: 0.3,
     ease: "power2.in",
-  });
+  }, "<");
 
   // Show heal number
   showFloatingNumber(element, amount, true);
@@ -114,7 +196,7 @@ export function triggerHeal(elementOrId: HTMLElement | string, amount: number): 
 export function triggerDeath(elementOrId: HTMLElement | string): Promise<void> {
   return new Promise((resolve) => {
     const element = typeof elementOrId === "string"
-      ? animationRegistry.get(elementOrId)
+      ? getAnimatedElement(elementOrId)
       : elementOrId;
 
     if (!element) {
@@ -122,13 +204,19 @@ export function triggerDeath(elementOrId: HTMLElement | string): Promise<void> {
       return;
     }
 
+    // Create white overlay for death flash
+    const overlay = createOverlay(element, "#ffffff", 0);
+
     const tl = gsap.timeline({
-      onComplete: resolve,
+      onComplete: () => {
+        overlay.remove();
+        resolve();
+      },
     });
 
-    // Flash white
-    tl.to(element, {
-      filter: "brightness(3) grayscale(1)",
+    // Flash white overlay
+    tl.to(overlay, {
+      opacity: 0.8,
       duration: 0.1,
     });
 
@@ -140,15 +228,20 @@ export function triggerDeath(elementOrId: HTMLElement | string): Promise<void> {
       repeat: 6,
     });
 
-    // Fade out and shrink
+    // Fade overlay to dark and element out
+    tl.to(overlay, {
+      backgroundColor: "#000000",
+      opacity: 0.6,
+      duration: 0.2,
+    });
+
     tl.to(element, {
       opacity: 0,
       scale: 0.5,
       y: 15,
-      filter: "brightness(0.3) grayscale(1)",
       duration: 0.4,
       ease: "power2.in",
-    });
+    }, "<");
   });
 }
 
@@ -158,13 +251,16 @@ export function triggerDeath(elementOrId: HTMLElement | string): Promise<void> {
 export function triggerSpawn(elementOrId: HTMLElement | string): Promise<void> {
   return new Promise((resolve) => {
     const element = typeof elementOrId === "string"
-      ? animationRegistry.get(elementOrId)
+      ? getAnimatedElement(elementOrId)
       : elementOrId;
 
     if (!element) {
       resolve();
       return;
     }
+
+    // Create bright overlay for spawn glow
+    const overlay = createOverlay(element, "#ffffff", 0);
 
     // Start state
     gsap.set(element, {
@@ -174,26 +270,38 @@ export function triggerSpawn(elementOrId: HTMLElement | string): Promise<void> {
     });
 
     const tl = gsap.timeline({
-      onComplete: resolve,
+      onComplete: () => {
+        overlay.remove();
+        resolve();
+      },
     });
 
-    // Pop in with glow
+    // Pop in with glow overlay
     tl.to(element, {
       opacity: 1,
       scale: 1.1,
       y: 0,
-      filter: "brightness(1.5)",
       duration: 0.25,
       ease: "back.out(1.7)",
     });
 
-    // Settle
+    tl.to(overlay, {
+      opacity: 0.3,
+      duration: 0.25,
+      ease: "back.out(1.7)",
+    }, "<");
+
+    // Settle and fade overlay
     tl.to(element, {
       scale: 1,
-      filter: "",
       duration: 0.15,
       ease: "power2.out",
     });
+
+    tl.to(overlay, {
+      opacity: 0,
+      duration: 0.15,
+    }, "<");
   });
 }
 
@@ -206,8 +314,8 @@ export function triggerAttack(
   onImpact?: () => void
 ): Promise<void> {
   return new Promise((resolve) => {
-    const attacker = animationRegistry.get(attackerId);
-    const defender = animationRegistry.get(defenderId);
+    const attacker = getAnimatedElement(attackerId);
+    const defender = getAnimatedElement(defenderId);
 
     if (!attacker || !defender) {
       onImpact?.();
@@ -222,17 +330,28 @@ export function triggerAttack(
     const deltaY = defenderRect.top - attackerRect.top;
     const lungeDistance = 0.35;
 
+    // Create overlay for attack glow
+    const overlay = createOverlay(attacker, "#ffffff", 0);
+
     const tl = gsap.timeline({
-      onComplete: resolve,
+      onComplete: () => {
+        overlay.remove();
+        resolve();
+      },
     });
 
-    // Wind up
+    // Wind up with overlay glow
     tl.to(attacker, {
       scale: 1.15,
-      filter: "brightness(1.2)",
       duration: 0.15,
       ease: "power2.out",
     });
+
+    tl.to(overlay, {
+      opacity: 0.2,
+      duration: 0.15,
+      ease: "power2.out",
+    }, "<");
 
     // Lunge
     tl.to(attacker, {
@@ -248,10 +367,14 @@ export function triggerAttack(
       x: 0,
       y: 0,
       scale: 1,
-      filter: "",
       duration: 0.3,
       ease: "power2.out",
     });
+
+    tl.to(overlay, {
+      opacity: 0,
+      duration: 0.3,
+    }, "<");
   });
 }
 
@@ -278,13 +401,32 @@ function showFloatingNumber(element: HTMLElement, amount: number, isHeal: boolea
   numberEl.textContent = isHeal ? `+${amount}` : `-${amount}`;
   document.body.appendChild(numberEl);
 
+  // Track floating element for cleanup
+  activeFloatingElements.add(numberEl);
+
+  // Cleanup function
+  const cleanup = () => {
+    activeFloatingElements.delete(numberEl);
+    try {
+      numberEl.remove();
+    } catch {
+      // Already removed
+    }
+  };
+
+  // Fallback cleanup in case animation doesn't complete
+  const fallbackTimeout = setTimeout(cleanup, 1500);
+
   gsap.to(numberEl, {
     y: -50,
     opacity: 0,
     scale: 1.3,
     duration: 0.8,
     ease: "power2.out",
-    onComplete: () => numberEl.remove(),
+    onComplete: () => {
+      clearTimeout(fallbackTimeout);
+      cleanup();
+    },
   });
 }
 

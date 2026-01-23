@@ -79,6 +79,12 @@ class McpSyncStore {
     }
   }
 
+  /** Cleanup all intervals - call on component unmount */
+  cleanup() {
+    this.stopAutoWatch();
+    this.stopWatching();
+  }
+
   /** Check for synced state and auto-switch to watching if found */
   private async checkForAutoSwitch() {
     // Only auto-switch when in idle phase
@@ -114,6 +120,12 @@ class McpSyncStore {
 
   /** Start active polling (internal) */
   private startActivePolling() {
+    // Clear any existing poll interval to prevent double-polling
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.pollInterval = null;
+    }
+
     if (this.isPolling) return;
 
     this.isPolling = true;
@@ -180,7 +192,3 @@ class McpSyncStore {
 }
 
 export const mcpSyncStore = new McpSyncStore();
-
-// Auto-start the background watcher when this module loads
-// This enables auto-switch to MCP sync view when state is received
-mcpSyncStore.startAutoWatch();
