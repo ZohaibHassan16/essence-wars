@@ -118,20 +118,21 @@
     background: rgba(0, 0, 0, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    padding: 12px;
-    font-size: 0.85rem;
+    padding: 10px;
+    font-size: 0.95rem;
   }
 
   .hint-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
   .hint-title {
     font-weight: 600;
     color: #a78bfa;
+    font-size: 1rem;
   }
 
   .hint-button {
@@ -140,7 +141,7 @@
     border-radius: 6px;
     padding: 6px 12px;
     color: white;
-    font-size: 0.8rem;
+    font-size: 0.875rem;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -159,8 +160,8 @@
   }
 
   .spinner {
-    width: 12px;
-    height: 12px;
+    width: 14px;
+    height: 14px;
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-top-color: white;
     border-radius: 50%;
@@ -176,11 +177,11 @@
   .hint-content {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
 
   .action-label {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: rgba(255, 255, 255, 0.5);
     margin-bottom: 4px;
     text-transform: uppercase;
@@ -191,7 +192,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 10px;
+    padding: 6px 8px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 6px;
@@ -218,17 +219,17 @@
   }
 
   .action-icon {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 
   .action-desc {
     flex: 1;
-    font-size: 0.8rem;
+    font-size: 0.875rem;
   }
 
   .action-score {
     font-family: monospace;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     padding: 2px 6px;
     background: rgba(34, 197, 94, 0.2);
     color: #4ade80;
@@ -246,7 +247,7 @@
   }
 
   .delta {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     opacity: 0.7;
     margin-left: 2px;
   }
@@ -254,19 +255,19 @@
   .alternatives {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
   }
 
   .hint-meta {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.4);
     text-align: right;
   }
 
   .hint-placeholder {
     color: rgba(255, 255, 255, 0.4);
-    font-size: 0.8rem;
+    font-size: 0.875rem;
     text-align: center;
-    padding: 16px 0;
+    padding: 12px 0;
   }
 </style>

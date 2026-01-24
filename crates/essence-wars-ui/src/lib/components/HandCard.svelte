@@ -140,48 +140,48 @@
       {/if}
 
       <!-- Card content -->
-      <div class="flex-1 flex flex-col p-2 pt-3 relative z-0">
+      <div class="flex-1 flex flex-col p-1.5 pt-2 relative z-0">
         <!-- Name -->
-        <div class="text-xs font-semibold truncate w-full text-center leading-tight text-ui-text px-1">
+        <div class="text-sm font-semibold truncate w-full text-center leading-tight text-ui-text px-0.5">
           {card.name}
         </div>
 
         <!-- Type -->
-        <div class="text-[10px] text-ui-text-dim capitalize mt-1 text-center">
+        <div class="text-xs text-ui-text-dim capitalize mt-0.5 text-center">
           {card.cardType}
         </div>
 
         <!-- Keywords preview (icons only, first 3) -->
         {#if card.keywords && card.keywords.length > 0}
-          <div class="flex flex-wrap justify-center gap-1 mt-2">
+          <div class="flex flex-wrap justify-center gap-0.5 mt-1">
             {#each card.keywords.slice(0, 3) as keyword}
-              <KeywordIcon {keyword} size={12} showLabel={false} />
+              <KeywordIcon {keyword} size={14} showLabel={false} />
             {/each}
             {#if card.keywords.length > 3}
-              <span class="text-[10px] text-ui-text-dim">+{card.keywords.length - 3}</span>
+              <span class="text-xs text-ui-text-dim">+{card.keywords.length - 3}</span>
             {/if}
           </div>
         {/if}
 
         <!-- Stats -->
         {#if card.cardType === "creature" && card.attack !== undefined && card.health !== undefined}
-          <div class="flex justify-center items-center gap-2 mt-auto mb-2">
-            <span class="w-7 h-7 rounded bg-damage/20 flex items-center justify-center text-damage text-sm font-bold">
+          <div class="flex justify-center items-center gap-1.5 mt-auto mb-1">
+            <span class="w-6 h-6 rounded bg-damage/20 flex items-center justify-center text-damage text-sm font-bold">
               {card.attack}
             </span>
-            <span class="w-7 h-7 rounded bg-health/20 flex items-center justify-center text-health text-sm font-bold">
+            <span class="w-6 h-6 rounded bg-health/20 flex items-center justify-center text-health text-sm font-bold">
               {card.health}
             </span>
           </div>
         {:else if card.cardType === "support" && card.durability !== undefined}
-          <div class="flex justify-center mt-auto mb-2">
-            <span class="w-7 h-7 rounded bg-mana/20 flex items-center justify-center text-mana text-sm font-bold">
+          <div class="flex justify-center mt-auto mb-1">
+            <span class="w-6 h-6 rounded bg-mana/20 flex items-center justify-center text-mana text-sm font-bold">
               {card.durability}
             </span>
           </div>
         {:else if card.cardType === "spell"}
           <div class="flex-1 flex items-center justify-center">
-            <span class="text-[10px] text-ui-text-dim">Spell</span>
+            <span class="text-xs text-ui-text-dim">Spell</span>
           </div>
         {:else}
           <div class="flex-1"></div>

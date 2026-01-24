@@ -32,21 +32,25 @@
   --color-mana: #3B82F6;
   --color-gold: #F59E0B;
 
-  /* Card Sizing - Target resolution: 2560x1600 */
-  --card-hand-width: 140px;
-  --card-hand-height: 200px;
-  --card-creature-width: 200px;
-  --card-creature-height: 260px;
-  --card-support-width: 120px;
-  --card-support-height: 160px;
-  --card-preview-width: 280px;
+  /* Card Sizing - Default for large displays (2560+) */
+  /* Sized to fit comfortably on a 1440p display without scrolling */
+  --card-hand-width: 100px;
+  --card-hand-height: 140px;
+  --card-creature-width: 140px;
+  --card-creature-height: 180px;
+  --card-support-width: 90px;
+  --card-support-height: 115px;
+  --card-preview-width: 260px;
 
   /* Board Layout */
-  --board-gap: 16px;
-  --hand-overlap: 40px;
-  --hand-hover-lift: 60px;
-  --sidebar-width: 280px;
+  --board-gap: 12px;
+  --hand-overlap: 28px;
+  --hand-hover-lift: 40px;
+  --sidebar-width: 260px;
   --sidebar-collapsed-width: 48px;
+
+  /* Font scaling - base multiplier for readability */
+  --font-scale: 1;
 }
 
 /* Base Styles */
@@ -183,79 +187,86 @@ body {
   margin-left: 0;
 }
 
-/* Responsive breakpoints */
-@media (max-width: 1920px) {
+/* Responsive breakpoints - HEIGHT-based for proper vertical fitting */
+/* Use min-height to scale up only when there's vertical space */
+
+/* Extra tall displays (1440p+) - can use larger cards */
+@media (min-height: 1000px) {
   :root {
     --card-hand-width: 120px;
-    --card-hand-height: 170px;
+    --card-hand-height: 168px;
     --card-creature-width: 160px;
-    --card-creature-height: 210px;
+    --card-creature-height: 208px;
     --card-support-width: 100px;
     --card-support-height: 130px;
-    --card-preview-width: 240px;
-    --hand-overlap: 30px;
+    --card-preview-width: 280px;
+    --hand-overlap: 35px;
     --hand-hover-lift: 50px;
+    --board-gap: 16px;
+    --sidebar-width: 280px;
   }
 }
 
+/* Width-based breakpoints for smaller displays */
 @media (max-width: 1600px) {
   :root {
-    --card-hand-width: 100px;
-    --card-hand-height: 140px;
+    --card-hand-width: 95px;
+    --card-hand-height: 133px;
     --card-creature-width: 130px;
-    --card-creature-height: 170px;
-    --card-support-width: 80px;
-    --card-support-height: 105px;
-    --card-preview-width: 220px;
-    --hand-overlap: 25px;
-    --hand-hover-lift: 40px;
+    --card-creature-height: 168px;
+    --card-support-width: 82px;
+    --card-support-height: 106px;
+    --card-preview-width: 240px;
+    --hand-overlap: 26px;
+    --hand-hover-lift: 38px;
   }
 }
 
 @media (max-width: 1280px) {
   :root {
-    --card-hand-width: 80px;
-    --card-hand-height: 112px;
-    --card-creature-width: 112px;
-    --card-creature-height: 144px;
-    --card-support-width: 64px;
-    --card-support-height: 80px;
-    --card-preview-width: 200px;
-    --hand-overlap: 20px;
-    --hand-hover-lift: 30px;
+    --card-hand-width: 85px;
+    --card-hand-height: 119px;
+    --card-creature-width: 115px;
+    --card-creature-height: 149px;
+    --card-support-width: 72px;
+    --card-support-height: 93px;
+    --card-preview-width: 220px;
+    --hand-overlap: 22px;
+    --hand-hover-lift: 32px;
     --sidebar-width: 240px;
+    --board-gap: 10px;
   }
 }
 
 @media (max-width: 1024px) {
   :root {
-    --card-hand-width: 70px;
-    --card-hand-height: 98px;
-    --card-creature-width: 96px;
-    --card-creature-height: 124px;
-    --card-support-width: 56px;
-    --card-support-height: 72px;
-    --card-preview-width: 180px;
+    --card-hand-width: 72px;
+    --card-hand-height: 100px;
+    --card-creature-width: 100px;
+    --card-creature-height: 130px;
+    --card-support-width: 62px;
+    --card-support-height: 80px;
+    --card-preview-width: 200px;
     --hand-overlap: 18px;
-    --hand-hover-lift: 25px;
+    --hand-hover-lift: 26px;
     --sidebar-width: 220px;
-    --board-gap: 12px;
+    --board-gap: 8px;
   }
 }
 
 @media (max-width: 768px) {
   :root {
-    --card-hand-width: 56px;
-    --card-hand-height: 78px;
-    --card-creature-width: 80px;
-    --card-creature-height: 104px;
-    --card-support-width: 48px;
-    --card-support-height: 62px;
-    --card-preview-width: 160px;
+    --card-hand-width: 60px;
+    --card-hand-height: 84px;
+    --card-creature-width: 84px;
+    --card-creature-height: 109px;
+    --card-support-width: 52px;
+    --card-support-height: 67px;
+    --card-preview-width: 180px;
     --hand-overlap: 14px;
     --hand-hover-lift: 20px;
     --sidebar-width: 200px;
-    --board-gap: 8px;
+    --board-gap: 6px;
   }
 }
 

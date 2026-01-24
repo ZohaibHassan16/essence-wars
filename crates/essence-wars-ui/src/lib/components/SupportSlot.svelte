@@ -71,7 +71,7 @@
       {/if}
 
       <!-- Support name -->
-      <div class="relative z-10 text-xs font-semibold truncate w-full px-1 text-center mt-1">
+      <div class="relative z-10 text-sm font-semibold truncate w-full px-1 text-center mt-1">
         {support.name}
       </div>
 
@@ -80,16 +80,16 @@
 
       <!-- Durability badge -->
       <div class="relative z-10 flex items-center justify-center mb-1">
-        <div class="w-8 h-8 rounded-full bg-mana/30 border border-mana/50 flex items-center justify-center">
-          <span class="text-mana font-bold text-sm">{support.durability}</span>
+        <div class="w-7 h-7 rounded-full bg-mana/30 border border-mana/50 flex items-center justify-center">
+          <span class="text-mana font-bold text-base">{support.durability}</span>
         </div>
       </div>
     {:else}
       <div class="flex-1 flex flex-col items-center justify-center">
-        <div class="w-8 h-8 rounded border border-gray-600 flex items-center justify-center mb-1">
-          <span class="text-ui-text-dim text-xs">S{slot + 1}</span>
+        <div class="w-7 h-7 rounded border border-gray-600 flex items-center justify-center mb-1">
+          <span class="text-ui-text-dim text-sm">S{slot + 1}</span>
         </div>
-        <span class="text-gray-500 text-[10px]">Support</span>
+        <span class="text-gray-500 text-xs">Support</span>
       </div>
     {/if}
   </button>

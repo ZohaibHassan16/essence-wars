@@ -175,7 +175,7 @@
     />
 
     <!-- Opponent hand (hidden cards, compact) -->
-    <div class="bg-gray-900/30 py-2">
+    <div class="bg-gray-900/30 py-1">
       <FanningHand
         cards={gameState?.opponent.hand ?? []}
         compact={true}
@@ -183,7 +183,7 @@
     </div>
 
     <!-- Main board area -->
-    <div class="flex-1 flex flex-col justify-center gap-8 px-8 py-6">
+    <div class="flex-1 flex flex-col justify-center gap-4 px-4 py-2">
       <!-- Opponent's battlefield row -->
       <BattlefieldRow
         creatures={gameState?.opponent.creatures ?? [null, null, null, null, null]}
@@ -194,12 +194,12 @@
       />
 
       <!-- Center turn indicator -->
-      <div class="flex items-center justify-center gap-4">
+      <div class="flex items-center justify-center gap-3">
         <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
-        <div class="px-8 py-3 rounded-full border border-gray-600 bg-ui-panel/80 flex items-center gap-4">
+        <div class="px-6 py-2 rounded-full border border-gray-600 bg-ui-panel/80 flex items-center gap-3">
           <span class="text-ui-text-dim text-base">Turn</span>
-          <span class="text-ui-text font-bold text-2xl">{gameState?.turn ?? 0}</span>
-          <div class="w-px h-6 bg-gray-600"></div>
+          <span class="text-ui-text font-bold text-xl">{gameState?.turn ?? 0}</span>
+          <div class="w-px h-5 bg-gray-600"></div>
           <span class="text-base font-semibold {isPlayerTurn ? 'text-health' : 'text-ui-action'}">
             {isPlayerTurn ? "Your Turn" : "Opponent's Turn"}
           </span>
@@ -221,7 +221,7 @@
     </div>
 
     <!-- Player hand (interactive, with fanning) -->
-    <div class="bg-gray-900/30 py-4">
+    <div class="bg-gray-900/30 py-2">
       <FanningHand
         cards={gameState?.player.hand ?? []}
         selectedCardIndex={gameStore.selectedCardIndex}
@@ -297,7 +297,7 @@
   <CollapsibleSidebar>
     <!-- AI Hint Panel (only when player's turn) -->
     {#if isPlayerTurn}
-      <div class="p-4 border-b border-gray-700">
+      <div class="p-3 border-b border-gray-700">
         <HintPanel
           hint={gameStore.currentHint}
           isLoading={gameStore.isHintLoading}
@@ -308,7 +308,7 @@
     {/if}
 
     <!-- Action Log -->
-    <div class="flex-1 p-4 overflow-hidden">
+    <div class="flex-1 p-3 overflow-hidden">
       <ActionLog actions={actionsForLog} />
     </div>
   </CollapsibleSidebar>

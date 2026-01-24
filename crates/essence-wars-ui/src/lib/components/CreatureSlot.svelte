@@ -140,20 +140,20 @@
       {/if}
 
       <!-- Name -->
-      <div class="text-sm font-semibold truncate w-full text-center text-ui-text leading-tight">
+      <div class="text-base font-semibold truncate w-full text-center text-ui-text leading-tight">
         {creature.name}
       </div>
 
       <!-- Keywords -->
       {#if creature.keywords.length > 0}
-        <div class="flex flex-wrap justify-center gap-1 my-2">
-          {#each creature.keywords.slice(0, 4) as keyword}
-            <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-900/60 text-ui-text-dim border border-gray-700">
+        <div class="flex flex-wrap justify-center gap-1 my-1">
+          {#each creature.keywords.slice(0, 3) as keyword}
+            <span class="text-xs px-1.5 py-0.5 rounded bg-gray-900/60 text-ui-text-dim border border-gray-700">
               {keyword}
             </span>
           {/each}
-          {#if creature.keywords.length > 4}
-            <span class="text-[10px] text-ui-text-dim">+{creature.keywords.length - 4}</span>
+          {#if creature.keywords.length > 3}
+            <span class="text-xs text-ui-text-dim">+{creature.keywords.length - 3}</span>
           {/if}
         </div>
       {:else}
@@ -161,19 +161,19 @@
       {/if}
 
       <!-- Stats -->
-      <div class="flex items-center gap-4 mt-auto">
+      <div class="flex items-center gap-3 mt-auto">
         <div class="flex flex-col items-center">
-          <span class="text-xl font-bold {isBuffed ? 'text-green-400' : 'text-damage'}">
+          <span class="text-2xl font-bold {isBuffed ? 'text-green-400' : 'text-damage'}">
             {creature.attack}
           </span>
-          <span class="text-[10px] text-ui-text-dim">ATK</span>
+          <span class="text-xs text-ui-text-dim">ATK</span>
         </div>
-        <div class="w-px h-8 bg-gray-600"></div>
+        <div class="w-px h-6 bg-gray-600"></div>
         <div class="flex flex-col items-center">
-          <span class="text-xl font-bold {isDamaged ? 'text-yellow-400' : 'text-health'}">
+          <span class="text-2xl font-bold {isDamaged ? 'text-yellow-400' : 'text-health'}">
             {creature.health}
           </span>
-          <span class="text-[10px] text-ui-text-dim">HP</span>
+          <span class="text-xs text-ui-text-dim">HP</span>
         </div>
       </div>
     {:else}
