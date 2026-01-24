@@ -61,6 +61,7 @@
 
 <div class="relative">
   <button
+    data-tutorial-id="hand-card-{index}"
     class="hand-card-btn rounded-lg border-2 transition-all duration-150 flex flex-col relative
            no-select overflow-hidden
            {isHidden ? 'bg-ui-panel border-gray-600' : getFactionBg(card.faction) + ' ' + getFactionBorder(card.faction)}

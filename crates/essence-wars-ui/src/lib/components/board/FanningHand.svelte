@@ -11,6 +11,7 @@
     compact = false,
     showKeyHints = false,
     previewPosition = "top",
+    tutorialId,
   }: {
     cards: CardDto[];
     selectedCardIndex?: number | null;
@@ -20,6 +21,7 @@
     compact?: boolean;
     showKeyHints?: boolean;
     previewPosition?: "top" | "bottom";
+    tutorialId?: string;
   } = $props();
 
   // Calculate rotation for fanning effect
@@ -41,7 +43,7 @@
   }
 </script>
 
-<div class="hand-container relative" class:py-2={!compact} class:py-1={compact}>
+<div class="hand-container relative" class:py-2={!compact} class:py-1={compact} data-tutorial-id={tutorialId}>
   {#if cards.length === 0}
     <span class="text-ui-text-dim text-sm">Empty hand</span>
   {:else}

@@ -92,6 +92,7 @@
       <FanningHand
         cards={gameState?.opponent.hand ?? []}
         previewPosition="bottom"
+        tutorialId="opponent-hand"
       />
     </div>
 
@@ -130,6 +131,7 @@
     <div class="bg-gray-900/30 py-2">
       <FanningHand
         cards={gameState?.player.hand ?? []}
+        tutorialId="player-hand"
       />
     </div>
 

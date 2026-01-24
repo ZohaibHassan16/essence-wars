@@ -157,9 +157,9 @@ impl GameManager {
         let deck1_cards = player_deck.to_card_ids();
         let deck2_cards = opponent_deck.to_card_ids();
 
-        // Start game with random seed
+        // Use provided seed or generate random
         let mut rng = rand::thread_rng();
-        let game_seed = rng.gen::<u64>();
+        let game_seed = config.seed.unwrap_or_else(|| rng.gen::<u64>());
         let bot_seed = rng.gen::<u64>();
 
         if player_first {

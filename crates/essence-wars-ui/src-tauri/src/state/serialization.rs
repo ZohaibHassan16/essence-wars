@@ -35,6 +35,8 @@ pub struct GameConfig {
     pub opponent_deck_id: String,
     pub opponent_bot_type: String,
     pub player_goes_first: Option<bool>,
+    /// Optional seed for reproducible games (e.g., tutorials)
+    pub seed: Option<u64>,
 }
 
 /// Full game state sent to the frontend

@@ -796,6 +796,15 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [ ] Players can play a game without having to read any rulebook
 - [ ] Researchers can watch Ai vs Ai without needing to undersand the rules
 
+### Phase 9.6 Final Art Asset Sprint 
+- [ ] Add Game Art to Main menu using local FLUX Stable-Diffusion.cpp (or gemini image / Nanon Banana 3 for Collages)
+- [ ] Create 20 to 30 rotating / random Backgrounds for the Main Menu
+- [ ] Source good Music for the Main Menu, Atmospheric Music for Battle Mode and Spectator Mode
+- [ ] Source high quality SFX to replace the current sound effects
+- [ ] Add Rules Submenu, that explains the rules, keywords etc (with custom artwork to make it snappy and visually interesting)
+- [ ] Remove MCP Sync View so that the menu item can be hidden / removed, while preserving the functionality
+- [ ] hide the console window that gets opened in release mode (keep for dev / debg mode)
+
 ### Phase 10: Release Prep
 - [ ] Build for Windows
 - [ ] Build for Linux

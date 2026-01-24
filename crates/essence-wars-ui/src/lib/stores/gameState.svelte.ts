@@ -79,7 +79,8 @@ class GameStore {
     playerDeckId: string,
     opponentDeckId: string,
     opponentBotType: string,
-    playerGoesFirst: boolean = true
+    playerGoesFirst: boolean = true,
+    seed?: number
   ) {
     this.isLoading = true;
     this.error = null;
@@ -89,6 +90,7 @@ class GameStore {
         opponentDeckId,
         opponentBotType,
         playerGoesFirst,
+        seed,
       });
       this.gameState = state;
       this.phase = "playing";

@@ -19,6 +19,7 @@ export interface GameConfig {
   opponentDeckId: string;
   opponentBotType: string;
   playerGoesFirst?: boolean;
+  seed?: number;
 }
 
 export interface CardDto {

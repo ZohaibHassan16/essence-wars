@@ -1,6 +1,7 @@
 <script lang="ts">
   import { gameStore } from "$lib/stores/gameState.svelte";
   import { gameSettings } from "$lib/stores/gameSettings.svelte";
+  import { tutorialStore } from "$lib/stores/tutorialState.svelte";
   import BattlefieldRow from "./board/BattlefieldRow.svelte";
   import FanningHand from "./board/FanningHand.svelte";
   import PlayerInfoWidget from "./board/PlayerInfoWidget.svelte";
@@ -8,6 +9,7 @@
   import ActionLog from "./ActionLog.svelte";
   import HintPanel from "./HintPanel.svelte";
   import TurnTransition from "./TurnTransition.svelte";
+  import TutorialOverlay from "./TutorialOverlay.svelte";
   import AudioControls from "./AudioControls.svelte";
   import { playSound } from "$lib/audio";
 
@@ -35,7 +37,12 @@
 
     const action = gameStore.getActionForTarget(slot);
     if (action) {
+      // Check tutorial restrictions
+      if (tutorialStore.isActive && !tutorialStore.isActionAllowed(action.index)) {
+        return;
+      }
       gameStore.applyAction(action.index);
+      tutorialStore.checkAdvanceCondition(action.actionType);
     } else if (gameStore.selectedCardIndex === null) {
       // Select creature for attack
       const creature = gameState?.player.creatures[slot];
@@ -49,7 +56,11 @@
     if (!isPlayerTurn) return;
     const action = gameStore.getActionForTarget(slot);
     if (action) {
+      if (tutorialStore.isActive && !tutorialStore.isActionAllowed(action.index)) {
+        return;
+      }
       gameStore.applyAction(action.index);
+      tutorialStore.checkAdvanceCondition(action.actionType);
     }
   }
 
@@ -58,7 +69,11 @@
 
     const action = gameStore.getActionForTarget(slot);
     if (action) {
+      if (tutorialStore.isActive && !tutorialStore.isActionAllowed(action.index)) {
+        return;
+      }
       gameStore.applyAction(action.index);
+      tutorialStore.checkAdvanceCondition(action.actionType);
     }
   }
 
@@ -180,6 +195,7 @@
         cards={gameState?.opponent.hand ?? []}
         compact={true}
         previewPosition="bottom"
+        tutorialId="opponent-hand"
       />
     </div>
 
@@ -230,6 +246,7 @@
         isPlayableCallback={isCardPlayable}
         onCardClick={handleCardClick}
         showKeyHints={isPlayerTurn}
+        tutorialId="player-hand"
       />
     </div>
 
@@ -261,12 +278,14 @@
             Undo
           </button>
           <button
+            data-tutorial-id="end-turn-btn"
             class="px-6 py-2 bg-ui-action text-white rounded-lg font-semibold
                    hover:bg-ui-action/80 active:scale-95 transition-all
                    disabled:opacity-50 disabled:cursor-not-allowed"
             onclick={() => {
               playSound('buttonClick');
               gameStore.endTurn();
+              tutorialStore.checkAdvanceCondition('end_turn');
             }}
             onmouseenter={() => playSound('buttonHover')}
             disabled={gameStore.isLoading}
@@ -314,3 +333,6 @@
     </div>
   </CollapsibleSidebar>
 </div>
+
+<!-- Tutorial overlay -->
+<TutorialOverlay />

@@ -72,6 +72,7 @@
   <button
     use:animatable
     data-animate-id={animationId}
+    data-tutorial-id="{isPlayerSide ? 'player' : 'opponent'}-slot-{slot}"
     class="creature-slot rounded-lg border-2 transition-all duration-150 flex flex-col items-center justify-between p-2
            no-select relative overflow-hidden
            {creature ? getFactionBorder(creature.faction) + ' ' + getFactionBg(creature.faction) : 'border-gray-600 border-dashed bg-ui-bg/30'}

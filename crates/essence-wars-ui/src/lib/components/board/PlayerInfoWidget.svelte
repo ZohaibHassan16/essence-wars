@@ -42,19 +42,22 @@
     <!-- Stats -->
     <div class="flex items-center gap-2">
       <!-- Life -->
-      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-{isPlayer ? 'health' : 'damage'}/20">
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-{isPlayer ? 'health' : 'damage'}/20"
+           data-tutorial-id="{isPlayer ? 'player' : 'opponent'}-life">
         <span class="font-bold text-lg {isPlayer ? 'text-health' : 'text-damage'}">{life}</span>
         <span class="{isPlayer ? 'text-health' : 'text-damage'}/60 text-sm font-medium">HP</span>
       </div>
 
       <!-- Essence -->
-      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-mana/20">
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-mana/20"
+           data-tutorial-id="{isPlayer ? 'player' : 'opponent'}-essence">
         <span class="text-mana font-bold text-lg">{essence}</span>
         <span class="text-mana/60 text-sm font-medium">/ {maxEssence}</span>
       </div>
 
       <!-- Action Points -->
-      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-gold/20">
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-gold/20"
+           data-tutorial-id="{isPlayer ? 'player' : 'opponent'}-ap">
         <span class="text-gold font-bold text-lg">{actionPoints}</span>
         <span class="text-gold/60 text-sm font-medium">AP</span>
       </div>
