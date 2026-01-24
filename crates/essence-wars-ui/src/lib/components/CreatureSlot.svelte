@@ -101,12 +101,12 @@
           <img
             src="/{creature.artPath}"
             alt=""
-            class="w-full h-full object-cover object-top opacity-30"
+            class="w-full h-full object-cover object-top opacity-70"
             loading="lazy"
             decoding="async"
             onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
-          <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/60"></div>
+          <div class="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40"></div>
         </div>
       {/if}
 
@@ -140,20 +140,21 @@
       {/if}
 
       <!-- Name -->
-      <div class="text-sm font-semibold truncate w-full text-center text-ui-text leading-tight drop-shadow-md">
+      <div class="text-sm font-semibold truncate w-full text-center text-ui-text leading-tight relative z-10"
+           style="text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.7);">
         {creature.name}
       </div>
 
       <!-- Keywords -->
       {#if creature.keywords.length > 0}
-        <div class="flex flex-wrap justify-center gap-0.5 my-0.5">
+        <div class="flex flex-wrap justify-center gap-0.5 my-0.5 relative z-10">
           {#each creature.keywords.slice(0, 2) as keyword}
-            <span class="text-xs px-1 py-0.5 rounded bg-gray-900/70 text-ui-text-dim border border-gray-700">
+            <span class="text-xs px-1 py-0.5 rounded bg-gray-900/80 text-ui-text-dim border border-gray-700">
               {keyword}
             </span>
           {/each}
           {#if creature.keywords.length > 2}
-            <span class="text-xs text-ui-text-dim">+{creature.keywords.length - 2}</span>
+            <span class="text-xs text-ui-text-dim" style="text-shadow: 0 1px 2px rgba(0,0,0,0.8);">+{creature.keywords.length - 2}</span>
           {/if}
         </div>
       {:else}
@@ -161,19 +162,21 @@
       {/if}
 
       <!-- Stats -->
-      <div class="flex items-center gap-2 mt-auto">
+      <div class="flex items-center gap-2 mt-auto relative z-10">
         <div class="flex flex-col items-center">
-          <span class="text-xl font-bold {isBuffed ? 'text-green-400' : 'text-damage'} drop-shadow-md">
+          <span class="text-xl font-bold {isBuffed ? 'text-green-400' : 'text-damage'}"
+                style="text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.6);">
             {creature.attack}
           </span>
-          <span class="text-xs text-ui-text-dim font-medium">ATK</span>
+          <span class="text-xs text-ui-text-dim font-medium" style="text-shadow: 0 1px 2px rgba(0,0,0,0.8);">ATK</span>
         </div>
-        <div class="w-px h-5 bg-gray-600"></div>
+        <div class="w-px h-5 bg-gray-600/80"></div>
         <div class="flex flex-col items-center">
-          <span class="text-xl font-bold {isDamaged ? 'text-yellow-400' : 'text-health'} drop-shadow-md">
+          <span class="text-xl font-bold {isDamaged ? 'text-yellow-400' : 'text-health'}"
+                style="text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.6);">
             {creature.health}
           </span>
-          <span class="text-xs text-ui-text-dim font-medium">HP</span>
+          <span class="text-xs text-ui-text-dim font-medium" style="text-shadow: 0 1px 2px rgba(0,0,0,0.8);">HP</span>
         </div>
       </div>
     {:else}

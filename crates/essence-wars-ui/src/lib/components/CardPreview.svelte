@@ -39,6 +39,28 @@
     }
   }
 
+  // Keyword descriptions for the preview
+  const keywordDescriptions: Record<string, string> = {
+    Rush: "Can attack immediately when played",
+    Ranged: "Can attack any enemy creature",
+    Piercing: "Excess damage hits the enemy player",
+    Guard: "Must be attacked before other creatures",
+    Lifesteal: "Heals your hero equal to damage dealt",
+    Lethal: "Destroys any creature it damages",
+    Shield: "Blocks the first damage taken",
+    Quick: "Can attack twice per turn",
+    Ephemeral: "Dies at end of turn",
+    Regenerate: "Heals 1 HP at start of your turn",
+    Stealth: "Cannot be targeted until it attacks",
+    Charge: "Gains +1 attack each turn",
+    Frenzy: "Gains +1 attack when damaged",
+    Volatile: "Deals damage to all when it dies",
+  };
+
+  function getKeywordDescription(keyword: string): string {
+    return keywordDescriptions[keyword] ?? "Unknown keyword";
+  }
+
   const positionClass = $derived({
     right: "left-full ml-4",
     left: "right-full mr-4",
@@ -67,12 +89,12 @@
     </div>
 
     <!-- Card Art -->
-    <div class="h-36 bg-gray-800/50 overflow-hidden border-b border-gray-700 relative">
+    <div class="h-48 bg-gray-800/50 overflow-hidden border-b border-gray-700 relative">
       {#if card.artPath}
         <img
           src="/{card.artPath}"
           alt={card.name}
-          class="w-full h-full object-cover object-top"
+          class="w-full h-full object-cover object-center"
           onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
         />
       {/if}
@@ -105,12 +127,18 @@
       </div>
     {/if}
 
-    <!-- Keywords -->
+    <!-- Keywords with descriptions -->
     {#if card.keywords && card.keywords.length > 0}
       <div class="px-4 py-3 border-b border-gray-700">
-        <div class="flex flex-wrap gap-1.5">
+        <div class="space-y-1.5">
           {#each card.keywords as keyword}
-            <KeywordIcon {keyword} size={14} />
+            <div class="flex items-start gap-2">
+              <KeywordIcon {keyword} size={14} showLabel={false} />
+              <div class="flex-1 min-w-0">
+                <span class="text-sm font-medium text-ui-text">{keyword}</span>
+                <p class="text-xs text-ui-text-dim leading-tight">{getKeywordDescription(keyword)}</p>
+              </div>
+            </div>
           {/each}
         </div>
       </div>

@@ -110,12 +110,12 @@
           <img
             src="/{card.artPath}"
             alt=""
-            class="w-full h-full object-cover object-top opacity-40"
+            class="w-full h-full object-cover object-top opacity-60"
             loading="lazy"
             decoding="async"
             onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
           />
-          <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/70"></div>
+          <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/50"></div>
         </div>
       {/if}
 
