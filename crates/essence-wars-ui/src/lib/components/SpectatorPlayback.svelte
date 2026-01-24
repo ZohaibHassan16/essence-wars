@@ -8,6 +8,8 @@
   import ActionLog from "./ActionLog.svelte";
   import AiThinkingPanel from "./AiThinkingPanel.svelte";
   import SpectatorControls from "./SpectatorControls.svelte";
+  import CommentaryPanel from "./CommentaryPanel.svelte";
+  import CommentaryOverlay from "./CommentaryOverlay.svelte";
 
   const gameState = $derived(spectatorStore.currentState);
   const match = $derived(spectatorStore.match);
@@ -205,11 +207,27 @@
     </div>
   </div>
 
-  <!-- Right sidebar: AI Thinking + Action Log -->
+  <!-- Right sidebar: AI Thinking + Commentary + Action Log -->
   <CollapsibleSidebar>
     <!-- AI Thinking Panel -->
     <div class="p-2 border-b border-gray-700">
       <AiThinkingPanel />
+    </div>
+
+    <!-- Commentary Panel -->
+    <div class="p-2 border-b border-gray-700">
+      <!-- Toggle button -->
+      <button
+        class="w-full text-xs px-2 py-1 mb-2 rounded transition-colors
+               {spectatorStore.commentaryEnabled
+                 ? 'bg-ui-action/20 text-ui-action border border-ui-action/50'
+                 : 'bg-gray-700 text-ui-text-dim border border-gray-600 hover:border-gray-500'}"
+        onclick={() => spectatorStore.setCommentaryEnabled(!spectatorStore.commentaryEnabled)}
+        title="Toggle AI Commentary"
+      >
+        📊 Commentary {spectatorStore.commentaryEnabled ? 'ON' : 'OFF'}
+      </button>
+      <CommentaryPanel />
     </div>
 
     <!-- Action Log -->
@@ -218,3 +236,6 @@
     </div>
   </CollapsibleSidebar>
 </div>
+
+<!-- Commentary overlay for key moments -->
+<CommentaryOverlay />

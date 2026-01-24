@@ -12,6 +12,7 @@
 
   // Options
   let watchLive = $state(false);
+  let enableCommentary = $state(true);
   let showAdvanced = $state(false);
   let customSeed = $state("");
 
@@ -66,6 +67,7 @@
     };
 
     spectatorStore.setWatchLive(watchLive);
+    spectatorStore.setCommentaryEnabled(enableCommentary);
     await spectatorStore.startMatch(config);
   }
 
@@ -218,6 +220,17 @@
           />
           <span class="text-ui-text">Watch Live</span>
           <span class="text-xs text-ui-text-dim">(hide outcome until end)</span>
+        </label>
+
+        <!-- AI Commentary Toggle -->
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            bind:checked={enableCommentary}
+            class="w-4 h-4 rounded border-gray-600 bg-ui-bg text-ui-action focus:ring-ui-action"
+          />
+          <span class="text-ui-text">AI Commentary</span>
+          <span class="text-xs text-ui-text-dim">(analytical insights)</span>
         </label>
 
         <!-- Advanced Options Toggle -->

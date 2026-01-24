@@ -17,6 +17,8 @@ import {
   triggerSpawn,
   triggerAttack,
 } from "$lib/animations/actions";
+import type { CommentaryEntry } from "$lib/commentary/types";
+import { generateCommentaryForAction, resetCommentaryState } from "$lib/commentary/generator";
 
 export type SpectatorPhase = "setup" | "computing" | "watching" | "finished" | "gameOver";
 
@@ -39,6 +41,12 @@ class SpectatorStore {
 
   // "Watch Live" mode - hides timeline and result until end
   watchLive = $state<boolean>(false);
+
+  // Commentary state
+  commentaryEnabled = $state<boolean>(false);
+  showCommentaryOverlay = $state<boolean>(false);
+  currentCommentary = $state<CommentaryEntry | null>(null);
+  commentaryHistory = $state<CommentaryEntry[]>([]);
 
   // Loading/error
   isComputing = $state<boolean>(false);
@@ -196,12 +204,20 @@ class SpectatorStore {
   private async stepForwardInternal(animate: boolean) {
     if (this.isAtEnd) return;
 
+    // Capture previous state for commentary
+    const prevState = this.currentState;
+
     this.currentActionIndex++;
     const action = this.currentAction;
 
     // Trigger animations if requested
     if (animate && action) {
       await this.processAnimations(action);
+    }
+
+    // Generate commentary for this action
+    if (action) {
+      this.generateCommentary(action, prevState);
     }
 
     // Check if we reached the end - go to game over screen
@@ -266,6 +282,45 @@ class SpectatorStore {
     this.watchLive = enabled;
   }
 
+  // ============================================================================
+  // Commentary Controls
+  // ============================================================================
+
+  /** Enable/disable commentary */
+  setCommentaryEnabled(enabled: boolean) {
+    this.commentaryEnabled = enabled;
+    if (!enabled) {
+      this.showCommentaryOverlay = false;
+    }
+  }
+
+  /** Generate commentary for an action */
+  private generateCommentary(action: SpectatorAction, prevState: GameStateDto | null) {
+    if (!this.commentaryEnabled) return;
+
+    const entry = generateCommentaryForAction(action, prevState);
+    this.currentCommentary = entry;
+    this.commentaryHistory = [...this.commentaryHistory, entry];
+
+    // Show overlay for key moments
+    if (entry.isKeyMoment) {
+      this.showCommentaryOverlay = true;
+    }
+  }
+
+  /** Dismiss the commentary overlay */
+  dismissCommentaryOverlay() {
+    this.showCommentaryOverlay = false;
+  }
+
+  /** Reset commentary state */
+  private resetCommentary() {
+    this.currentCommentary = null;
+    this.commentaryHistory = [];
+    this.showCommentaryOverlay = false;
+    resetCommentaryState();
+  }
+
   /** Reset to setup screen */
   reset() {
     this.pause();
@@ -275,6 +330,7 @@ class SpectatorStore {
     this.isPlaying = false;
     this.error = null;
     this.watchLive = false;
+    this.resetCommentary();
   }
 
   /** Go back to main menu */
@@ -285,6 +341,7 @@ class SpectatorStore {
     this.currentActionIndex = -1;
     this.isPlaying = false;
     this.error = null;
+    this.resetCommentary();
   }
 
   /** Show the game over screen with full results */
