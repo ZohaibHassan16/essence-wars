@@ -55,23 +55,23 @@
 </script>
 
 <div class="bg-ui-panel/80 rounded-lg border border-gray-700 overflow-hidden">
-  <div class="px-3 py-1.5 border-b border-gray-700 bg-gray-800/50">
-    <h3 class="text-base font-semibold text-ui-text">Action Log</h3>
+  <div class="px-2 py-1 border-b border-gray-700 bg-gray-800/50">
+    <h3 class="text-sm font-semibold text-ui-text">Action Log</h3>
   </div>
 
-  <div class="max-h-40 overflow-y-auto">
+  <div class="max-h-32 overflow-y-auto">
     {#if recentActions.length === 0}
-      <div class="px-3 py-3 text-ui-text-dim text-base text-center">
+      <div class="px-2 py-2 text-ui-text-dim text-sm text-center">
         No actions yet
       </div>
     {:else}
       <div class="divide-y divide-gray-700/50">
         {#each recentActions as action, i}
-          <div class="px-3 py-1.5 hover:bg-gray-700/30 transition-colors">
-            <div class="flex items-start gap-2">
-              <span class="text-base">{getActionIcon(action.actionType)}</span>
+          <div class="px-2 py-1 hover:bg-gray-700/30 transition-colors">
+            <div class="flex items-start gap-1.5">
+              <span class="text-sm">{getActionIcon(action.actionType)}</span>
               <div class="flex-1 min-w-0">
-                <div class="text-base text-ui-text truncate">
+                <div class="text-sm text-ui-text truncate">
                   {action.description}
                 </div>
                 <div class="text-xs text-ui-text-dim capitalize">

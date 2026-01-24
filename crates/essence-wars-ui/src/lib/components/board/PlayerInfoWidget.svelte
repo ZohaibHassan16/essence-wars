@@ -26,13 +26,14 @@
   } = $props();
 </script>
 
-<div class="h-12 bg-ui-panel flex items-center justify-between px-4 border-gray-700"
+<div class="bg-ui-panel flex items-center justify-between px-4 border-gray-700"
+     style="height: var(--info-bar-height);"
      class:border-t={isPlayer}
      class:border-b={!isPlayer}>
   <div class="flex items-center gap-3">
     <!-- Active indicator + Name -->
     <div class="flex items-center gap-2">
-      <div class="w-2.5 h-2.5 rounded-full transition-colors duration-300
+      <div class="w-3 h-3 rounded-full transition-colors duration-300
                   {isActive ? (isPlayer ? 'bg-health' : 'bg-ui-action') + ' animate-pulse' : 'bg-gray-600'}">
       </div>
       <span class="text-ui-text font-semibold text-base">{name}</span>
@@ -41,32 +42,32 @@
     <!-- Stats -->
     <div class="flex items-center gap-2">
       <!-- Life -->
-      <div class="flex items-center gap-1 px-2 py-0.5 rounded bg-{isPlayer ? 'health' : 'damage'}/20">
-        <span class="font-bold text-base {isPlayer ? 'text-health' : 'text-damage'}">{life}</span>
-        <span class="{isPlayer ? 'text-health' : 'text-damage'}/60 text-sm">HP</span>
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-{isPlayer ? 'health' : 'damage'}/20">
+        <span class="font-bold text-lg {isPlayer ? 'text-health' : 'text-damage'}">{life}</span>
+        <span class="{isPlayer ? 'text-health' : 'text-damage'}/60 text-sm font-medium">HP</span>
       </div>
 
       <!-- Essence -->
-      <div class="flex items-center gap-1 px-2 py-0.5 rounded bg-mana/20">
-        <span class="text-mana font-bold text-base">{essence}</span>
-        <span class="text-mana/60 text-sm">/ {maxEssence}</span>
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-mana/20">
+        <span class="text-mana font-bold text-lg">{essence}</span>
+        <span class="text-mana/60 text-sm font-medium">/ {maxEssence}</span>
       </div>
 
       <!-- Action Points -->
-      <div class="flex items-center gap-1 px-2 py-0.5 rounded bg-gold/20">
-        <span class="text-gold font-bold text-base">{actionPoints}</span>
-        <span class="text-gold/60 text-sm">AP</span>
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-gold/20">
+        <span class="text-gold font-bold text-lg">{actionPoints}</span>
+        <span class="text-gold/60 text-sm font-medium">AP</span>
       </div>
     </div>
 
     <!-- Deck count -->
-    <div class="text-base text-ui-text-dim">
+    <div class="text-base text-ui-text-dim font-medium">
       Deck: {deckCount}
     </div>
 
     <!-- Hand count (for opponent) -->
     {#if handCount !== undefined}
-      <div class="text-base text-ui-text-dim">
+      <div class="text-base text-ui-text-dim font-medium">
         Hand: {handCount}
       </div>
     {/if}

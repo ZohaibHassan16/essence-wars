@@ -53,8 +53,9 @@
   <!-- Main game area -->
   <div class="flex-1 flex flex-col min-w-0">
     <!-- Top header bar with match info -->
-    <div class="h-12 bg-ui-panel/80 flex items-center justify-between px-6 border-b border-gray-700">
-      <div class="flex items-center gap-4">
+    <div class="bg-ui-panel/80 flex items-center justify-between px-4 border-b border-gray-700"
+         style="height: var(--info-bar-height);">
+      <div class="flex items-center gap-3">
         <button
           class="text-ui-text-dim hover:text-ui-text transition-colors text-sm flex items-center gap-1"
           onclick={() => spectatorStore.backToMenu()}
@@ -64,11 +65,11 @@
           </svg>
           Back
         </button>
-        <div class="text-ui-text font-semibold">
+        <div class="text-ui-text font-semibold text-sm">
           {match?.player1DeckName ?? "Player 1"} vs {match?.player2DeckName ?? "Player 2"}
         </div>
       </div>
-      <div class="text-ui-text-dim text-sm">
+      <div class="text-ui-text-dim text-xs">
         {match?.player1BotName} vs {match?.player2BotName}
       </div>
     </div>
@@ -87,14 +88,14 @@
     />
 
     <!-- Player 2 hand (visible in spectator mode) -->
-    <div class="bg-gray-900/30 py-3">
+    <div class="bg-gray-900/30 py-1">
       <FanningHand
         cards={gameState?.opponent.hand ?? []}
       />
     </div>
 
     <!-- Main board area -->
-    <div class="flex-1 flex flex-col justify-center gap-8 px-8 py-6">
+    <div class="flex-1 flex flex-col justify-center gap-2 px-4 py-1">
       <!-- Player 2's battlefield row -->
       <BattlefieldRow
         creatures={gameState?.opponent.creatures ?? [null, null, null, null, null]}
@@ -103,13 +104,13 @@
       />
 
       <!-- Center turn indicator -->
-      <div class="flex items-center justify-center gap-4">
+      <div class="flex items-center justify-center gap-2">
         <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
-        <div class="px-8 py-3 rounded-full border border-gray-600 bg-ui-panel/80 flex items-center gap-4">
-          <span class="text-ui-text-dim text-base">Turn</span>
-          <span class="text-ui-text font-bold text-2xl">{gameState?.turn ?? 0}</span>
-          <div class="w-px h-6 bg-gray-600"></div>
-          <span class="text-base font-semibold {isP1Turn ? 'text-health' : 'text-damage'}">
+        <div class="px-4 py-1.5 rounded-full border border-gray-600 bg-ui-panel/80 flex items-center gap-2">
+          <span class="text-ui-text-dim text-sm">Turn</span>
+          <span class="text-ui-text font-bold text-lg">{gameState?.turn ?? 0}</span>
+          <div class="w-px h-4 bg-gray-600"></div>
+          <span class="text-sm font-semibold {isP1Turn ? 'text-health' : 'text-damage'}">
             {isP1Turn ? "P1 Turn" : "P2 Turn"}
           </span>
         </div>
@@ -125,7 +126,7 @@
     </div>
 
     <!-- Player 1 hand (visible in spectator mode) -->
-    <div class="bg-gray-900/30 py-3">
+    <div class="bg-gray-900/30 py-1">
       <FanningHand
         cards={gameState?.player.hand ?? []}
       />
@@ -204,13 +205,13 @@
   <!-- Right sidebar: AI Thinking + Action Log -->
   <CollapsibleSidebar>
     <!-- AI Thinking Panel -->
-    <div class="p-4 border-b border-gray-700">
+    <div class="p-2 border-b border-gray-700">
       <AiThinkingPanel />
     </div>
 
     <!-- Action Log -->
-    <div class="flex-1 p-4 overflow-hidden">
-      <ActionLog actions={actionsForLog} maxItems={15} />
+    <div class="flex-1 p-2 overflow-hidden">
+      <ActionLog actions={actionsForLog} maxItems={10} />
     </div>
   </CollapsibleSidebar>
 </div>

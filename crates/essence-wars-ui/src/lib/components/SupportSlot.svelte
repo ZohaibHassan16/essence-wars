@@ -44,7 +44,7 @@
 
 <div class="relative">
   <button
-    class="support-slot rounded-lg border-2 transition-all duration-150 flex flex-col items-center justify-between p-2
+    class="support-slot rounded-md border-2 transition-all duration-150 flex flex-col items-center justify-between p-1.5
            relative overflow-hidden
            {support ? getFactionColor(support.faction) : 'border-gray-600 border-dashed'}
            {isHighlighted ? 'glow-blue scale-105' : ''}
@@ -71,7 +71,7 @@
       {/if}
 
       <!-- Support name -->
-      <div class="relative z-10 text-sm font-semibold truncate w-full px-1 text-center mt-1">
+      <div class="relative z-10 text-xs font-semibold truncate w-full px-0.5 text-center mt-0.5 drop-shadow-md">
         {support.name}
       </div>
 
@@ -79,15 +79,15 @@
       <div class="flex-1"></div>
 
       <!-- Durability badge -->
-      <div class="relative z-10 flex items-center justify-center mb-1">
-        <div class="w-7 h-7 rounded-full bg-mana/30 border border-mana/50 flex items-center justify-center">
-          <span class="text-mana font-bold text-base">{support.durability}</span>
+      <div class="relative z-10 flex items-center justify-center mb-0.5">
+        <div class="w-6 h-6 rounded-full bg-mana/30 border border-mana/50 flex items-center justify-center">
+          <span class="text-mana font-bold text-sm">{support.durability}</span>
         </div>
       </div>
     {:else}
       <div class="flex-1 flex flex-col items-center justify-center">
-        <div class="w-7 h-7 rounded border border-gray-600 flex items-center justify-center mb-1">
-          <span class="text-ui-text-dim text-sm">S{slot + 1}</span>
+        <div class="w-6 h-6 rounded border border-gray-600 flex items-center justify-center mb-0.5">
+          <span class="text-ui-text-dim text-xs">S{slot + 1}</span>
         </div>
         <span class="text-gray-500 text-xs">Support</span>
       </div>

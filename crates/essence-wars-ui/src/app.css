@@ -32,25 +32,25 @@
   --color-mana: #3B82F6;
   --color-gold: #F59E0B;
 
-  /* Card Sizing - Default for large displays (2560+) */
-  /* Sized to fit comfortably on a 1440p display without scrolling */
-  --card-hand-width: 100px;
-  --card-hand-height: 140px;
-  --card-creature-width: 140px;
-  --card-creature-height: 180px;
-  --card-support-width: 90px;
-  --card-support-height: 115px;
-  --card-preview-width: 260px;
+  /* Card Sizing - Compact defaults that scale up on larger displays */
+  /* These defaults work well on 1080p and scale appropriately */
+  --card-hand-width: 80px;
+  --card-hand-height: 112px;
+  --card-creature-width: 110px;
+  --card-creature-height: 143px;
+  --card-support-width: 70px;
+  --card-support-height: 91px;
+  --card-preview-width: 220px;
 
   /* Board Layout */
-  --board-gap: 12px;
-  --hand-overlap: 28px;
-  --hand-hover-lift: 40px;
-  --sidebar-width: 260px;
-  --sidebar-collapsed-width: 48px;
+  --board-gap: 8px;
+  --hand-overlap: 22px;
+  --hand-hover-lift: 30px;
+  --sidebar-width: 220px;
+  --sidebar-collapsed-width: 40px;
 
-  /* Font scaling - base multiplier for readability */
-  --font-scale: 1;
+  /* Info bar height - compact for better vertical fitting */
+  --info-bar-height: 40px;
 }
 
 /* Base Styles */
@@ -188,84 +188,92 @@ body {
 }
 
 /* Responsive breakpoints - HEIGHT-based for proper vertical fitting */
-/* Use min-height to scale up only when there's vertical space */
+/* Scale UP on taller displays, use compact defaults otherwise */
 
-/* Extra tall displays (1440p+) - can use larger cards */
-@media (min-height: 1000px) {
+/* Very short displays (netbooks, heavily scaled Windows) - ultra compact */
+@media (max-height: 700px) {
   :root {
-    --card-hand-width: 120px;
-    --card-hand-height: 168px;
-    --card-creature-width: 160px;
-    --card-creature-height: 208px;
-    --card-support-width: 100px;
-    --card-support-height: 130px;
-    --card-preview-width: 280px;
-    --hand-overlap: 35px;
-    --hand-hover-lift: 50px;
-    --board-gap: 16px;
-    --sidebar-width: 280px;
+    --card-hand-width: 65px;
+    --card-hand-height: 91px;
+    --card-creature-width: 90px;
+    --card-creature-height: 117px;
+    --card-support-width: 58px;
+    --card-support-height: 75px;
+    --card-preview-width: 180px;
+    --hand-overlap: 18px;
+    --hand-hover-lift: 22px;
+    --board-gap: 6px;
+    --sidebar-width: 180px;
+    --info-bar-height: 36px;
   }
 }
 
-/* Width-based breakpoints for smaller displays */
-@media (max-width: 1600px) {
+/* Standard displays (1080p or scaled 1440p) - default sizes above work well */
+
+/* Tall displays (1200px+ viewport height) - slightly larger */
+@media (min-height: 850px) {
   :root {
-    --card-hand-width: 95px;
-    --card-hand-height: 133px;
-    --card-creature-width: 130px;
-    --card-creature-height: 168px;
-    --card-support-width: 82px;
-    --card-support-height: 106px;
+    --card-hand-width: 90px;
+    --card-hand-height: 126px;
+    --card-creature-width: 125px;
+    --card-creature-height: 162px;
+    --card-support-width: 80px;
+    --card-support-height: 104px;
     --card-preview-width: 240px;
     --hand-overlap: 26px;
-    --hand-hover-lift: 38px;
-  }
-}
-
-@media (max-width: 1280px) {
-  :root {
-    --card-hand-width: 85px;
-    --card-hand-height: 119px;
-    --card-creature-width: 115px;
-    --card-creature-height: 149px;
-    --card-support-width: 72px;
-    --card-support-height: 93px;
-    --card-preview-width: 220px;
-    --hand-overlap: 22px;
-    --hand-hover-lift: 32px;
-    --sidebar-width: 240px;
+    --hand-hover-lift: 35px;
     --board-gap: 10px;
+    --sidebar-width: 240px;
+    --info-bar-height: 44px;
   }
 }
 
-@media (max-width: 1024px) {
+/* Very tall displays (1440p native or 4K) - comfortable larger sizes */
+@media (min-height: 1000px) {
   :root {
-    --card-hand-width: 72px;
-    --card-hand-height: 100px;
-    --card-creature-width: 100px;
-    --card-creature-height: 130px;
-    --card-support-width: 62px;
-    --card-support-height: 80px;
-    --card-preview-width: 200px;
-    --hand-overlap: 18px;
-    --hand-hover-lift: 26px;
-    --sidebar-width: 220px;
-    --board-gap: 8px;
+    --card-hand-width: 100px;
+    --card-hand-height: 140px;
+    --card-creature-width: 140px;
+    --card-creature-height: 182px;
+    --card-support-width: 90px;
+    --card-support-height: 117px;
+    --card-preview-width: 260px;
+    --hand-overlap: 30px;
+    --hand-hover-lift: 40px;
+    --board-gap: 12px;
+    --sidebar-width: 260px;
+    --info-bar-height: 48px;
   }
 }
 
-@media (max-width: 768px) {
+/* 4K displays (1600px+ viewport height) - largest sizes */
+@media (min-height: 1200px) {
   :root {
-    --card-hand-width: 60px;
-    --card-hand-height: 84px;
-    --card-creature-width: 84px;
-    --card-creature-height: 109px;
-    --card-support-width: 52px;
-    --card-support-height: 67px;
-    --card-preview-width: 180px;
-    --hand-overlap: 14px;
-    --hand-hover-lift: 20px;
+    --card-hand-width: 110px;
+    --card-hand-height: 154px;
+    --card-creature-width: 150px;
+    --card-creature-height: 195px;
+    --card-support-width: 95px;
+    --card-support-height: 123px;
+    --card-preview-width: 280px;
+    --hand-overlap: 32px;
+    --hand-hover-lift: 45px;
+    --board-gap: 14px;
+    --sidebar-width: 280px;
+    --info-bar-height: 52px;
+  }
+}
+
+/* Width-based adjustments (for narrow windows on any height) */
+@media (max-width: 1200px) {
+  :root {
     --sidebar-width: 200px;
+  }
+}
+
+@media (max-width: 1000px) {
+  :root {
+    --sidebar-width: 180px;
     --board-gap: 6px;
   }
 }

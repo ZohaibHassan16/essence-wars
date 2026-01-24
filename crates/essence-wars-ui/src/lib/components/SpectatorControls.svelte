@@ -8,10 +8,10 @@
   }
 </script>
 
-<div class="bg-ui-panel px-4 py-3">
-  <div class="flex items-center justify-between gap-4">
+<div class="bg-ui-panel px-3 py-2">
+  <div class="flex items-center justify-between gap-3">
     <!-- Left: Turn/Action info -->
-    <div class="flex items-center gap-4 text-sm">
+    <div class="flex items-center gap-3 text-xs">
       <div class="text-ui-text-dim">
         Turn <span class="text-ui-text font-semibold">{spectatorStore.currentTurn}</span>
       </div>
@@ -32,7 +32,7 @@
     <div class="flex items-center gap-1">
       <!-- Jump to start -->
       <button
-        class="w-8 h-8 rounded bg-ui-bg border border-gray-600 text-ui-text text-sm
+        class="w-7 h-7 rounded bg-ui-bg border border-gray-600 text-ui-text text-xs
                hover:border-ui-action hover:text-ui-action transition-colors
                disabled:opacity-50 disabled:cursor-not-allowed"
         onclick={() => spectatorStore.jumpToStart()}
@@ -44,7 +44,7 @@
 
       <!-- Step backward -->
       <button
-        class="w-8 h-8 rounded bg-ui-bg border border-gray-600 text-ui-text text-sm
+        class="w-7 h-7 rounded bg-ui-bg border border-gray-600 text-ui-text text-xs
                hover:border-ui-action hover:text-ui-action transition-colors
                disabled:opacity-50 disabled:cursor-not-allowed"
         onclick={() => spectatorStore.stepBackward()}
@@ -56,7 +56,7 @@
 
       <!-- Play/Pause -->
       <button
-        class="w-10 h-10 rounded-lg bg-ui-action text-white text-lg
+        class="w-8 h-8 rounded-lg bg-ui-action text-white text-base
                hover:bg-ui-action/80 transition-colors
                disabled:opacity-50 disabled:cursor-not-allowed"
         onclick={() => spectatorStore.isPlaying ? spectatorStore.pause() : spectatorStore.play()}
@@ -72,7 +72,7 @@
 
       <!-- Step forward -->
       <button
-        class="w-8 h-8 rounded bg-ui-bg border border-gray-600 text-ui-text text-sm
+        class="w-7 h-7 rounded bg-ui-bg border border-gray-600 text-ui-text text-xs
                hover:border-ui-action hover:text-ui-action transition-colors
                disabled:opacity-50 disabled:cursor-not-allowed"
         onclick={() => spectatorStore.stepForward()}
@@ -84,7 +84,7 @@
 
       <!-- Jump to end -->
       <button
-        class="w-8 h-8 rounded bg-ui-bg border border-gray-600 text-ui-text text-sm
+        class="w-7 h-7 rounded bg-ui-bg border border-gray-600 text-ui-text text-xs
                hover:border-ui-action hover:text-ui-action transition-colors
                disabled:opacity-50 disabled:cursor-not-allowed"
         onclick={() => spectatorStore.jumpToEnd()}
@@ -96,13 +96,13 @@
     </div>
 
     <!-- Right: Speed controls + Timeline -->
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2">
       <!-- Speed buttons -->
-      <div class="flex items-center gap-1">
+      <div class="flex items-center gap-0.5">
         <span class="text-xs text-ui-text-dim mr-1">Speed:</span>
         {#each speeds as speed}
           <button
-            class="px-2 py-0.5 rounded text-xs font-semibold transition-colors
+            class="px-1.5 py-0.5 rounded text-xs font-semibold transition-colors
                    {spectatorStore.playbackSpeed === speed
                      ? 'bg-ui-action text-white'
                      : 'bg-ui-bg border border-gray-600 text-ui-text-dim hover:border-ui-action hover:text-ui-action'}"
@@ -121,7 +121,7 @@
           max={spectatorStore.totalActions - 1}
           value={spectatorStore.currentActionIndex}
           oninput={(e) => spectatorStore.jumpToAction(parseInt(e.currentTarget.value))}
-          class="w-32 h-1.5 bg-ui-bg rounded-lg appearance-none cursor-pointer
+          class="w-24 h-1.5 bg-ui-bg rounded-lg appearance-none cursor-pointer
                  [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3
                  [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-ui-action
                  [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:hover:bg-ui-action/80"

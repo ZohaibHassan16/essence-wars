@@ -72,7 +72,7 @@
   <button
     use:animatable
     data-animate-id={animationId}
-    class="creature-slot rounded-xl border-2 transition-all duration-150 flex flex-col items-center justify-between p-3
+    class="creature-slot rounded-lg border-2 transition-all duration-150 flex flex-col items-center justify-between p-2
            no-select relative overflow-hidden
            {creature ? getFactionBorder(creature.faction) + ' ' + getFactionBg(creature.faction) : 'border-gray-600 border-dashed bg-ui-bg/30'}
            {isHighlighted ? 'ring-2 ring-health animate-pulse' : ''}
@@ -140,20 +140,20 @@
       {/if}
 
       <!-- Name -->
-      <div class="text-base font-semibold truncate w-full text-center text-ui-text leading-tight">
+      <div class="text-sm font-semibold truncate w-full text-center text-ui-text leading-tight drop-shadow-md">
         {creature.name}
       </div>
 
       <!-- Keywords -->
       {#if creature.keywords.length > 0}
-        <div class="flex flex-wrap justify-center gap-1 my-1">
-          {#each creature.keywords.slice(0, 3) as keyword}
-            <span class="text-xs px-1.5 py-0.5 rounded bg-gray-900/60 text-ui-text-dim border border-gray-700">
+        <div class="flex flex-wrap justify-center gap-0.5 my-0.5">
+          {#each creature.keywords.slice(0, 2) as keyword}
+            <span class="text-xs px-1 py-0.5 rounded bg-gray-900/70 text-ui-text-dim border border-gray-700">
               {keyword}
             </span>
           {/each}
-          {#if creature.keywords.length > 3}
-            <span class="text-xs text-ui-text-dim">+{creature.keywords.length - 3}</span>
+          {#if creature.keywords.length > 2}
+            <span class="text-xs text-ui-text-dim">+{creature.keywords.length - 2}</span>
           {/if}
         </div>
       {:else}
@@ -161,26 +161,26 @@
       {/if}
 
       <!-- Stats -->
-      <div class="flex items-center gap-3 mt-auto">
+      <div class="flex items-center gap-2 mt-auto">
         <div class="flex flex-col items-center">
-          <span class="text-2xl font-bold {isBuffed ? 'text-green-400' : 'text-damage'}">
+          <span class="text-xl font-bold {isBuffed ? 'text-green-400' : 'text-damage'} drop-shadow-md">
             {creature.attack}
           </span>
-          <span class="text-xs text-ui-text-dim">ATK</span>
+          <span class="text-xs text-ui-text-dim font-medium">ATK</span>
         </div>
-        <div class="w-px h-6 bg-gray-600"></div>
+        <div class="w-px h-5 bg-gray-600"></div>
         <div class="flex flex-col items-center">
-          <span class="text-2xl font-bold {isDamaged ? 'text-yellow-400' : 'text-health'}">
+          <span class="text-xl font-bold {isDamaged ? 'text-yellow-400' : 'text-health'} drop-shadow-md">
             {creature.health}
           </span>
-          <span class="text-xs text-ui-text-dim">HP</span>
+          <span class="text-xs text-ui-text-dim font-medium">HP</span>
         </div>
       </div>
     {:else}
       <!-- Empty slot -->
       <div class="flex-1 flex flex-col items-center justify-center">
-        <div class="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center mb-2">
-          <span class="text-gray-500 text-base">{slot + 1}</span>
+        <div class="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center mb-1">
+          <span class="text-gray-500 text-sm">{slot + 1}</span>
         </div>
         <span class="text-gray-500 text-xs">Empty</span>
       </div>
