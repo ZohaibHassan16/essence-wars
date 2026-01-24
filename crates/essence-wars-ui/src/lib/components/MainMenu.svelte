@@ -7,11 +7,40 @@
   import { startTutorialGame } from "$lib/tutorial/tutorialGame";
   import { playSound } from "$lib/audio";
 
-  let { onOpenSettings }: { onOpenSettings?: () => void } = $props();
+  let { onOpenSettings, onOpenRules }: { onOpenSettings?: () => void; onOpenRules?: () => void } = $props();
 
   let isLoadingSpectator = $state(false);
   let isLoadingReplays = $state(false);
   let isLoadingTutorial = $state(false);
+
+  // Background images for random rotation
+  const menuBackgrounds = [
+    '/backgrounds/argentum_construct_hangar.webp',
+    '/backgrounds/argentum_essence_refinery.webp',
+    '/backgrounds/argentum_factory_interior.webp',
+    '/backgrounds/argentum_throne_room.webp',
+    '/backgrounds/symbiote_evolution_temple.webp',
+    '/backgrounds/symbiote_jungle_canopy.webp',
+    '/backgrounds/symbiote_spore_fields.webp',
+    '/backgrounds/symbiote_war_beast_pens.webp',
+    '/backgrounds/obsidion_blood_ritual_chamber.webp',
+    '/backgrounds/obsidion_library_archive.webp',
+    '/backgrounds/obsidion_necropolis.webp',
+    '/backgrounds/obsidion_vampire_court.webp',
+    '/backgrounds/neutral_battlefield_aftermath.webp',
+    '/backgrounds/neutral_caravan_road.webp',
+    '/backgrounds/neutral_essence_storm.webp',
+    '/backgrounds/neutral_giant_encampment.webp',
+    '/backgrounds/neutral_last_hope_city.webp',
+    '/backgrounds/neutral_trade_post.webp',
+    '/backgrounds/conflict_zone_skirmish.webp',
+    '/backgrounds/dawn_of_the_truce.webp',
+    '/backgrounds/essence_geode_cavern.webp',
+    '/backgrounds/omyra_world_map.webp',
+  ];
+
+  // Select random background on component creation
+  const currentBackground = menuBackgrounds[Math.floor(Math.random() * menuBackgrounds.length)];
 
   function handleButtonHover() {
     playSound('buttonHover');
@@ -56,10 +85,20 @@
   }
 </script>
 
-<div class="min-h-screen flex flex-col items-center justify-center p-8">
-  <div class="text-center">
-    <h1 class="text-6xl font-bold text-ui-text mb-4">Essence Wars</h1>
-    <p class="text-xl text-ui-text-dim mb-12">A Deterministic Card Game</p>
+<div
+  class="min-h-screen bg-cover bg-center bg-no-repeat"
+  style="background-image: url('{currentBackground}')"
+>
+  <!-- Dark overlay for readability -->
+  <div class="min-h-screen flex flex-col items-center justify-center p-8 bg-black/60 backdrop-blur-[2px]">
+    <div class="text-center">
+      <!-- Banner image -->
+      <img
+        src="/backgrounds/essence_wars_banner.webp"
+        alt="Essence Wars"
+        class="h-32 md:h-40 lg:h-48 mx-auto mb-2 drop-shadow-2xl"
+      />
+      <p class="text-xl text-ui-text-dim mb-12 drop-shadow-lg">A Deterministic Card Game</p>
 
     <div class="flex flex-col gap-4 items-center">
       <!-- Tutorial button - first for new players -->
@@ -121,6 +160,18 @@
         {/if}
       </button>
 
+      <button
+        class="w-64 px-8 py-4 bg-ui-panel text-ui-text rounded-lg font-bold text-lg
+               border border-gray-600 hover:border-mana hover:text-mana transition-all hover:scale-105"
+        onclick={() => {
+          handleButtonClick();
+          onOpenRules?.();
+        }}
+        onmouseenter={handleButtonHover}
+      >
+        Rules & Guide
+      </button>
+
       <div class="h-px w-48 bg-gray-700 my-2"></div>
 
       <button
@@ -135,15 +186,18 @@
         Settings
       </button>
 
-      <button
-        class="w-64 px-8 py-4 bg-ui-panel text-ui-text rounded-lg font-bold text-lg
-               border border-mana/50 hover:border-mana hover:text-mana transition-all hover:scale-105"
-        onclick={startMcpSync}
-        onmouseenter={handleButtonHover}
-        disabled={gameStore.isLoading || isLoadingSpectator || isLoadingReplays}
-      >
-        MCP Sync View
-      </button>
+      <!-- MCP Sync View - only visible in development mode -->
+      {#if import.meta.env.DEV}
+        <button
+          class="w-64 px-8 py-4 bg-ui-panel text-ui-text rounded-lg font-bold text-lg
+                 border border-mana/50 hover:border-mana hover:text-mana transition-all hover:scale-105"
+          onclick={startMcpSync}
+          onmouseenter={handleButtonHover}
+          disabled={gameStore.isLoading || isLoadingSpectator || isLoadingReplays}
+        >
+          MCP Sync View
+        </button>
+      {/if}
     </div>
 
     {#if gameStore.error}
@@ -152,8 +206,9 @@
       </div>
     {/if}
 
-    <div class="mt-16 text-ui-text-dim text-sm">
+    <div class="mt-16 text-ui-text-dim text-sm drop-shadow-lg">
       <p>v0.7.0 | Powered by Rust + Svelte + Tauri</p>
     </div>
+  </div>
   </div>
 </div>
