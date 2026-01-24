@@ -175,7 +175,7 @@
     />
 
     <!-- Opponent hand (hidden cards, compact) -->
-    <div class="bg-gray-900/30 py-0.5">
+    <div class="bg-gray-900/30 py-1">
       <FanningHand
         cards={gameState?.opponent.hand ?? []}
         compact={true}
@@ -183,7 +183,7 @@
     </div>
 
     <!-- Main board area -->
-    <div class="flex-1 flex flex-col justify-center gap-2 px-4 py-1">
+    <div class="flex-1 flex flex-col justify-center px-4 py-2" style="gap: var(--board-gap);">
       <!-- Opponent's battlefield row -->
       <BattlefieldRow
         creatures={gameState?.opponent.creatures ?? [null, null, null, null, null]}
@@ -221,7 +221,7 @@
     </div>
 
     <!-- Player hand (interactive, with fanning) -->
-    <div class="bg-gray-900/30 py-1">
+    <div class="bg-gray-900/30 py-2">
       <FanningHand
         cards={gameState?.player.hand ?? []}
         selectedCardIndex={gameStore.selectedCardIndex}

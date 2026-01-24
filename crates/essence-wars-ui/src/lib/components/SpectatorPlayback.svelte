@@ -95,7 +95,7 @@
     </div>
 
     <!-- Main board area -->
-    <div class="flex-1 flex flex-col justify-center gap-2 px-4 py-1">
+    <div class="flex-1 flex flex-col justify-center px-4 py-2" style="gap: var(--board-gap);">
       <!-- Player 2's battlefield row -->
       <BattlefieldRow
         creatures={gameState?.opponent.creatures ?? [null, null, null, null, null]}
@@ -126,7 +126,7 @@
     </div>
 
     <!-- Player 1 hand (visible in spectator mode) -->
-    <div class="bg-gray-900/30 py-1">
+    <div class="bg-gray-900/30 py-2">
       <FanningHand
         cards={gameState?.player.hand ?? []}
       />

@@ -791,10 +791,11 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 ### Phase 10: Release Prep
 - [ ] Build for Windows
 - [ ] Build for Linux
+- [ ] Create Github Releases as Github Actions
 - [ ] Installer/package creation
 - [ ] Final testing on both platforms
 - [ ] Documentation
-- [ ] Disuss Hosting Providers (itch.io, Google Drive, ...)
+- [ ] Disuss Hosting Providers (Github,itch.io, Google Drive, ...)
 
 ---
 
