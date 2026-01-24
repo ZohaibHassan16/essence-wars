@@ -1,7 +1,7 @@
 <script lang="ts">
   import { gameSettings } from "$lib/stores/gameSettings.svelte";
   import { audioSettings } from "$lib/stores/audioSettings.svelte";
-  import { playSound } from "$lib/audio";
+  import { playSound, setMusicVolume } from "$lib/audio";
 
   let { onBack }: { onBack: () => void } = $props();
 
@@ -90,7 +90,10 @@
           min="0"
           max="100"
           value={audioSettings.masterVolume * 100}
-          oninput={(e) => audioSettings.masterVolume = Number((e.target as HTMLInputElement).value) / 100}
+          oninput={(e) => {
+            audioSettings.masterVolume = Number((e.target as HTMLInputElement).value) / 100;
+            setMusicVolume(audioSettings.effectiveMusicVolume);
+          }}
           class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer
                  [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4
                  [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-ui-action"
@@ -115,6 +118,27 @@
         />
       </div>
 
+      <!-- Music Volume -->
+      <div class="mb-4">
+        <label for="music-volume" class="block text-sm text-ui-text-dim mb-2">
+          Music Volume: {Math.round(audioSettings.musicVolume * 100)}%
+        </label>
+        <input
+          id="music-volume"
+          type="range"
+          min="0"
+          max="100"
+          value={audioSettings.musicVolume * 100}
+          oninput={(e) => {
+            audioSettings.musicVolume = Number((e.target as HTMLInputElement).value) / 100;
+            setMusicVolume(audioSettings.effectiveMusicVolume);
+          }}
+          class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer
+                 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4
+                 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-ui-action"
+        />
+      </div>
+
       <!-- Mute Toggle -->
       <button
         class="px-4 py-2 rounded-lg font-semibold transition-all
@@ -124,6 +148,7 @@
         onclick={() => {
           handleButtonClick();
           audioSettings.toggleMute();
+          setMusicVolume(audioSettings.effectiveMusicVolume);
         }}
         onmouseenter={handleButtonHover}
       >

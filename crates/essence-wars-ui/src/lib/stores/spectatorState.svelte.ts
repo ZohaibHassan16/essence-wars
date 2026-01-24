@@ -17,6 +17,14 @@ import {
   triggerSpawn,
   triggerAttack,
 } from "$lib/animations/actions";
+import {
+  playSound,
+  playCardSound,
+  playFactionAttackSound,
+  playFactionDeathSound,
+  getFactionFromCardId,
+  type Faction,
+} from "$lib/audio";
 import type { CommentaryEntry } from "$lib/commentary/types";
 import { generateCommentaryForAction, resetCommentaryState } from "$lib/commentary/generator";
 
@@ -29,6 +37,9 @@ class SpectatorStore {
   // Setup data (shared with gameStore, loaded once)
   decks = $state<DeckInfo[]>([]);
   bots = $state<BotInfo[]>([]);
+
+  // SFX mute (separate from global audio settings, spectator-specific)
+  sfxMuted = $state<boolean>(false);
 
   // Match data (after computation)
   match = $state<SpectatorMatch | null>(null);
@@ -282,6 +293,16 @@ class SpectatorStore {
     this.watchLive = enabled;
   }
 
+  /** Toggle SFX mute */
+  toggleSfxMute() {
+    this.sfxMuted = !this.sfxMuted;
+  }
+
+  /** Set SFX mute state */
+  setSfxMuted(muted: boolean) {
+    this.sfxMuted = muted;
+  }
+
   // ============================================================================
   // Commentary Controls
   // ============================================================================
@@ -356,11 +377,49 @@ class SpectatorStore {
   }
 
   // ============================================================================
-  // Animation Processing
+  // Animation & Sound Processing
   // ============================================================================
 
-  /** Process animations for a spectator action */
+  /** Get faction from card ID in event data */
+  private getFactionFromEvent(data: Record<string, unknown>): Faction {
+    const cardId = (data.card_id as number) ?? (data.cardId as number);
+    if (cardId) {
+      return getFactionFromCardId(cardId);
+    }
+    return 'neutral';
+  }
+
+  /** Get creature faction from current state */
+  private getCreatureFaction(slot: number, isPlayer1: boolean): Faction {
+    const state = this.currentState;
+    // In spectator mode: player = P1, opponent = P2
+    const creatures = isPlayer1 ? state?.player.creatures : state?.opponent.creatures;
+    const creature = creatures?.[slot];
+    if (creature?.cardId) {
+      return getFactionFromCardId(creature.cardId);
+    }
+    return 'neutral';
+  }
+
+  /** Process animations and sounds for a spectator action */
   private async processAnimations(action: SpectatorAction): Promise<void> {
+    const playSfx = !this.sfxMuted;
+
+    // Play card sound for play_card actions
+    if (playSfx && action.action.actionType === "play_card") {
+      const hasCreatureSpawn = action.events.some(e => e.eventType === "creature_spawned");
+      const hasSupportPlayed = action.events.some(e => e.eventType === "support_played");
+      const cardFaction = action.action.cardId ? getFactionFromCardId(action.action.cardId) : undefined;
+
+      if (hasCreatureSpawn) {
+        playCardSound('creature', cardFaction);
+      } else if (hasSupportPlayed) {
+        playCardSound('support');
+      } else {
+        playCardSound('spell');
+      }
+    }
+
     for (const event of action.events) {
       const data = event.data as Record<string, unknown>;
 
@@ -379,12 +438,41 @@ class SpectatorStore {
           const player = data.player as number;
           const slot = data.slot as number;
           const elementId = `creature-${player === 1 ? "player" : "opponent"}-${slot}`;
+          if (playSfx) {
+            const faction = this.getFactionFromEvent(data);
+            playFactionDeathSound(faction);
+          }
           await triggerDeath(elementId);
           break;
         }
 
         case "life_changed": {
-          // Could add life change animations here
+          const oldLife = data.old as number;
+          const newLife = data.new as number;
+          const diff = newLife - oldLife;
+          if (playSfx) {
+            if (diff > 0) {
+              playSound('heal');
+            } else if (diff < 0) {
+              playSound('damage');
+            }
+          }
+          break;
+        }
+
+        case "damage_dealt": {
+          if (playSfx) {
+            const amount = (data.amount as number) || 1;
+            const attackerSlot = data.attacker_slot as number | undefined;
+            if (attackerSlot !== undefined) {
+              // Determine if attacker is P1 or P2
+              const isPlayer1 = action.player === 1;
+              const faction = this.getCreatureFaction(attackerSlot, isPlayer1);
+              playFactionAttackSound(amount, faction);
+            } else {
+              playFactionAttackSound(amount, 'neutral');
+            }
+          }
           break;
         }
       }
@@ -402,6 +490,12 @@ class SpectatorStore {
 
       const attackerId = `creature-${attackerSide}-${action.action.sourceSlot}`;
       const defenderId = `creature-${defenderSide}-${action.action.targetSlot}`;
+
+      // Play attack sound if no damage_dealt event was processed
+      if (playSfx && !action.events.some(e => e.eventType === "damage_dealt")) {
+        const faction = this.getCreatureFaction(action.action.sourceSlot, action.player === 1);
+        playFactionAttackSound(2, faction);
+      }
 
       await triggerAttack(attackerId, defenderId, () => {
         triggerDamage(defenderId, 1);

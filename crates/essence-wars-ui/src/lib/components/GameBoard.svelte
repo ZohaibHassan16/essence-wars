@@ -11,7 +11,12 @@
   import TurnTransition from "./TurnTransition.svelte";
   import TutorialOverlay from "./TutorialOverlay.svelte";
   import AudioControls from "./AudioControls.svelte";
-  import { playSound } from "$lib/audio";
+  import { playSound, playMusic } from "$lib/audio";
+
+  // Play battle music when component mounts
+  $effect(() => {
+    playMusic('battle');
+  });
 
   const gameState = $derived(gameStore.gameState);
   const isPlayerTurn = $derived(gameStore.isPlayerTurn);

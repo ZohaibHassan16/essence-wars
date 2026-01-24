@@ -5,7 +5,7 @@
   import { mcpSyncStore } from "$lib/stores/mcpSyncState.svelte";
   import { tutorialStore } from "$lib/stores/tutorialState.svelte";
   import { startTutorialGame } from "$lib/tutorial/tutorialGame";
-  import { playSound } from "$lib/audio";
+  import { playSound, playMusic } from "$lib/audio";
 
   let { onOpenSettings, onOpenRules }: { onOpenSettings?: () => void; onOpenRules?: () => void } = $props();
 
@@ -41,6 +41,11 @@
 
   // Select random background on component creation
   const currentBackground = menuBackgrounds[Math.floor(Math.random() * menuBackgrounds.length)];
+
+  // Play menu music when component mounts
+  $effect(() => {
+    playMusic('menu');
+  });
 
   function handleButtonHover() {
     playSound('buttonHover');

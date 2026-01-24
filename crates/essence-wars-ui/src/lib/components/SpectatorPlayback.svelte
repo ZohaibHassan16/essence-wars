@@ -10,6 +10,12 @@
   import SpectatorControls from "./SpectatorControls.svelte";
   import CommentaryPanel from "./CommentaryPanel.svelte";
   import CommentaryOverlay from "./CommentaryOverlay.svelte";
+  import { playMusic } from "$lib/audio";
+
+  // Play spectator music when component mounts
+  $effect(() => {
+    playMusic('spectator');
+  });
 
   const gameState = $derived(spectatorStore.currentState);
   const match = $derived(spectatorStore.match);

@@ -3,7 +3,16 @@
 import type { GameStateDto, ActionInfo, DeckInfo, BotInfo, GameEventDto, AiHintResponse } from "$lib/api/types";
 import * as api from "$lib/api/game";
 import { triggerDamage, triggerHeal, triggerDeath, triggerSpawn, triggerAttack } from "$lib/animations/actions";
-import { playSound, playAttackSound, playCardSound } from "$lib/audio";
+import {
+  playSound,
+  playAttackSound,
+  playCardSound,
+  playFactionAttackSound,
+  playFactionDeathSound,
+  playFactionSummonSound,
+  getFactionFromCardId,
+  type Faction,
+} from "$lib/audio";
 import { gameSettings } from "./gameSettings.svelte";
 
 // Game state type for our reactive store
@@ -393,16 +402,40 @@ class GameStore {
   }
 
   /**
+   * Get faction from card ID or event data
+   */
+  private getFactionFromEvent(data: Record<string, unknown>, fallbackCardId?: number): Faction {
+    const cardId = (data.card_id as number) ?? (data.cardId as number) ?? fallbackCardId;
+    if (cardId) {
+      return getFactionFromCardId(cardId);
+    }
+    return 'neutral';
+  }
+
+  /**
+   * Get attacker faction from current game state
+   */
+  private getAttackerFaction(slot: number, isPlayer: boolean): Faction {
+    const creatures = isPlayer ? this.gameState?.player.creatures : this.gameState?.opponent.creatures;
+    const creature = creatures?.[slot];
+    if (creature?.cardId) {
+      return getFactionFromCardId(creature.cardId);
+    }
+    return 'neutral';
+  }
+
+  /**
    * Process game events and trigger animations + sounds
    */
   async processEventsForAnimations(events: GameEventDto[], lastAction?: ActionInfo): Promise<void> {
-    // Determine card type from events for sound
+    // Determine card type and faction from events for sound
     const hasCreatureSpawn = events.some(e => e.eventType === "creature_spawned");
     const hasSupportPlayed = events.some(e => e.eventType === "support_played");
+    const cardFaction = lastAction?.cardId ? getFactionFromCardId(lastAction.cardId) : undefined;
 
     if (lastAction?.actionType === "play_card") {
       if (hasCreatureSpawn) {
-        playCardSound('creature');
+        playCardSound('creature', cardFaction);
       } else if (hasSupportPlayed) {
         playCardSound('support');
       } else {
@@ -429,13 +462,13 @@ class GameStore {
           const player = data.player as number;
           const slot = data.slot as number;
           const elementId = `creature-${player === 1 ? "player" : "opponent"}-${slot}`;
-          playSound('creatureDeath');
+          const faction = this.getFactionFromEvent(data);
+          playFactionDeathSound(faction);
           await triggerDeath(elementId);
           break;
         }
 
         case "life_changed": {
-          const player = data.player as number;
           const oldLife = data.old as number;
           const newLife = data.new as number;
           const diff = newLife - oldLife;
@@ -450,7 +483,14 @@ class GameStore {
 
         case "damage_dealt": {
           const amount = (data.amount as number) || 1;
-          playAttackSound(amount);
+          // Get attacker faction if available
+          const attackerSlot = data.attacker_slot as number | undefined;
+          if (attackerSlot !== undefined) {
+            const faction = this.getAttackerFaction(attackerSlot, true);
+            playFactionAttackSound(amount, faction);
+          } else {
+            playAttackSound(amount);
+          }
           break;
         }
       }
@@ -460,10 +500,11 @@ class GameStore {
     if (lastAction?.actionType === "attack" && lastAction.sourceSlot !== undefined && lastAction.targetSlot !== undefined) {
       const attackerId = `creature-player-${lastAction.sourceSlot}`;
       const defenderId = `creature-opponent-${lastAction.targetSlot}`;
+      const attackerFaction = this.getAttackerFaction(lastAction.sourceSlot, true);
 
       // Play attack sound if no damage_dealt event was processed
       if (!events.some(e => e.eventType === "damage_dealt")) {
-        playAttackSound(2); // Default medium attack
+        playFactionAttackSound(2, attackerFaction);
       }
 
       await triggerAttack(attackerId, defenderId, () => {
@@ -476,13 +517,14 @@ class GameStore {
    * Process game events for AI actions (swapped sides) + sounds
    */
   async processEventsForAnimationsAi(events: GameEventDto[], lastAction?: ActionInfo): Promise<void> {
-    // Determine card type from events for sound
+    // Determine card type and faction from events for sound
     const hasCreatureSpawn = events.some(e => e.eventType === "creature_spawned");
     const hasSupportPlayed = events.some(e => e.eventType === "support_played");
+    const cardFaction = lastAction?.cardId ? getFactionFromCardId(lastAction.cardId) : undefined;
 
     if (lastAction?.actionType === "play_card") {
       if (hasCreatureSpawn) {
-        playCardSound('creature');
+        playCardSound('creature', cardFaction);
       } else if (hasSupportPlayed) {
         playCardSound('support');
       } else {
@@ -509,7 +551,8 @@ class GameStore {
           const player = data.player as number;
           const slot = data.slot as number;
           const elementId = `creature-${player === 2 ? "opponent" : "player"}-${slot}`;
-          playSound('creatureDeath');
+          const faction = this.getFactionFromEvent(data);
+          playFactionDeathSound(faction);
           await triggerDeath(elementId);
           break;
         }
@@ -529,7 +572,14 @@ class GameStore {
 
         case "damage_dealt": {
           const amount = (data.amount as number) || 1;
-          playAttackSound(amount);
+          // Get attacker faction if available (AI is opponent, so isPlayer=false)
+          const attackerSlot = data.attacker_slot as number | undefined;
+          if (attackerSlot !== undefined) {
+            const faction = this.getAttackerFaction(attackerSlot, false);
+            playFactionAttackSound(amount, faction);
+          } else {
+            playAttackSound(amount);
+          }
           break;
         }
       }
@@ -539,10 +589,11 @@ class GameStore {
     if (lastAction?.actionType === "attack" && lastAction.sourceSlot !== undefined && lastAction.targetSlot !== undefined) {
       const attackerId = `creature-opponent-${lastAction.sourceSlot}`;
       const defenderId = `creature-player-${lastAction.targetSlot}`;
+      const attackerFaction = this.getAttackerFaction(lastAction.sourceSlot, false);
 
       // Play attack sound if no damage_dealt event was processed
       if (!events.some(e => e.eventType === "damage_dealt")) {
-        playAttackSound(2); // Default medium attack
+        playFactionAttackSound(2, attackerFaction);
       }
 
       await triggerAttack(attackerId, defenderId, () => {

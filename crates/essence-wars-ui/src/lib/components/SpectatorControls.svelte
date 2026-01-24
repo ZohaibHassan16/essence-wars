@@ -113,6 +113,20 @@
         {/each}
       </div>
 
+      <!-- SFX Mute toggle -->
+      <button
+        class="w-7 h-7 rounded bg-ui-bg border border-gray-600 text-ui-text text-xs
+               hover:border-ui-action hover:text-ui-action transition-colors"
+        onclick={() => spectatorStore.toggleSfxMute()}
+        title={spectatorStore.sfxMuted ? "Unmute SFX" : "Mute SFX"}
+      >
+        {#if spectatorStore.sfxMuted}
+          🔇
+        {:else}
+          🔊
+        {/if}
+      </button>
+
       <!-- Timeline scrubber (only when allowed) -->
       {#if spectatorStore.canShowTimeline}
         <input

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { playSting } from "$lib/audio";
+
   interface PlayerInfo {
     name: string;
     life: number;
@@ -39,6 +41,13 @@
   const didWin = $derived(isPlayerMode && winner === 1);
   const didLose = $derived(isPlayerMode && winner === 2);
   const isDraw = $derived(winner === null);
+
+  // Play victory/defeat sting on mount (only for player mode)
+  $effect(() => {
+    if (isPlayerMode && !isDraw) {
+      playSting(didWin ? 'victory' : 'defeat');
+    }
+  });
 
   // Save state (internal to component)
   let isSaving = $state(false);
