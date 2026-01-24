@@ -210,10 +210,10 @@ export function triggerDeath(elementOrId: HTMLElement | string): Promise<void> {
     const tl = gsap.timeline({
       onComplete: () => {
         overlay.remove();
-        // CRITICAL: Reset all GSAP-applied inline styles so the slot is visible
-        // when Svelte re-renders it as empty. Without this, the slot remains
-        // invisible (opacity: 0, scale: 0.5, y: 15) after the creature dies.
-        gsap.set(element, { clearProps: "all" });
+        // CRITICAL: Reset only the GSAP-applied properties so the slot is visible
+        // when Svelte re-renders it as empty. We must NOT use clearProps: "all"
+        // because that would also clear the CSS variable dimensions (width/height).
+        gsap.set(element, { clearProps: "opacity,scale,x,y,transform" });
         resolve();
       },
     });
