@@ -12,6 +12,7 @@
 # Build
 cargo build --release                    # Full workspace
 cargo build --release -p cardgame        # Core engine only
+./scripts/build-windows.sh --sign        # Windows installer (from WSL2)
 
 # Test
 cargo nextest run --status-level=fail    # ~629 tests (recommended)
@@ -344,3 +345,69 @@ curl http://127.0.0.1:9999/health
 | `crates/essence-wars-mcp/` | MCP server crate |
 | `crates/essence-wars-ui/` | Tauri desktop app |
 | `.mcp.json` | Claude Code MCP configuration |
+
+## Tauri Desktop App
+
+The desktop UI is built with Tauri 2 (Rust backend + Svelte frontend).
+
+### Development
+
+```bash
+cd crates/essence-wars-ui
+pnpm install                    # Install dependencies (first time)
+pnpm tauri:dev                  # Run in dev mode with hot reload
+```
+
+### Building for Linux
+
+```bash
+cd crates/essence-wars-ui
+pnpm tauri:build                # Creates .deb, .rpm, .AppImage
+```
+
+Output: `target/release/bundle/{deb,rpm,appimage}/`
+
+### Building for Windows (from WSL2)
+
+Cross-compilation to Windows is fully supported from WSL2/Linux.
+
+```bash
+# Build unsigned (quick testing)
+./scripts/build-windows.sh
+
+# Build signed (for distribution)
+./scripts/build-windows.sh --sign
+
+# Or via pnpm
+cd crates/essence-wars-ui
+pnpm tauri:build:windows        # Unsigned
+pnpm tauri:build:windows:signed # Signed
+```
+
+Output:
+- `target/x86_64-pc-windows-gnu/release/essence-wars-ui.exe` (54MB)
+- `target/x86_64-pc-windows-gnu/release/bundle/nsis/essence-wars-ui_0.1.0_x64-setup.exe` (36MB)
+
+### Windows Code Signing
+
+Self-signed certificate for Windows builds (reduces SmartScreen warnings):
+
+```bash
+# One-time setup: generate certificate
+./scripts/build-windows.sh --setup-cert
+```
+
+Certificate location: `.certs/codesign.pfx` (gitignored, valid 10 years)
+
+**Prerequisites for Windows builds:**
+- `rustup target add x86_64-pc-windows-gnu`
+- `sudo apt install mingw-w64 nsis osslsigncode`
+
+### Build Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/build-windows.sh` | Windows cross-compile from WSL2 |
+| `scripts/build-windows.sh --sign` | Build + sign with certificate |
+| `scripts/build-windows.sh --setup-cert` | Generate self-signed cert |
+| `scripts/launch-ui.sh` | Launch Linux UI in dev mode |

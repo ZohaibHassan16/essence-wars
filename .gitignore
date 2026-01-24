@@ -109,3 +109,5 @@ assets/
 !data/datasets/sample_1k.jsonl.gz
 .archive/
 test_shots/
+# Code signing certificates
+.certs/
