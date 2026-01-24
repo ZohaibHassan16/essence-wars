@@ -179,6 +179,7 @@
       <FanningHand
         cards={gameState?.opponent.hand ?? []}
         compact={true}
+        previewPosition="bottom"
       />
     </div>
 

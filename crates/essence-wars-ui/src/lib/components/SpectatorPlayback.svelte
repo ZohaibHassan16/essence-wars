@@ -91,6 +91,7 @@
     <div class="bg-gray-900/30 py-1">
       <FanningHand
         cards={gameState?.opponent.hand ?? []}
+        previewPosition="bottom"
       />
     </div>
 

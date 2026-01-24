@@ -10,6 +10,7 @@
     onCardClick,
     compact = false,
     showKeyHints = false,
+    previewPosition = "top",
   }: {
     cards: CardDto[];
     selectedCardIndex?: number | null;
@@ -18,6 +19,7 @@
     onCardClick?: (index: number) => void;
     compact?: boolean;
     showKeyHints?: boolean;
+    previewPosition?: "top" | "bottom";
   } = $props();
 
   // Calculate rotation for fanning effect
@@ -62,6 +64,7 @@
           {isPlayable}
           onClick={isInteractive && onCardClick ? () => onCardClick(i) : undefined}
           showKeyHint={showKeyHints}
+          {previewPosition}
         />
       </div>
     {/each}

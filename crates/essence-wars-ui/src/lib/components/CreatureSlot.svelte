@@ -145,24 +145,27 @@
         {creature.name}
       </div>
 
-      <!-- Keywords -->
-      {#if creature.keywords.length > 0}
-        <div class="flex flex-wrap justify-center gap-0.5 my-0.5 relative z-10">
-          {#each creature.keywords.slice(0, 2) as keyword}
-            <span class="text-xs px-1 py-0.5 rounded bg-gray-900/80 text-ui-text-dim border border-gray-700">
-              {keyword}
-            </span>
-          {/each}
-          {#if creature.keywords.length > 2}
-            <span class="text-xs text-ui-text-dim" style="text-shadow: 0 1px 2px rgba(0,0,0,0.8);">+{creature.keywords.length - 2}</span>
-          {/if}
-        </div>
-      {:else}
-        <div class="flex-1"></div>
-      {/if}
+      <!-- Spacer to push stats to bottom -->
+      <div class="flex-1"></div>
 
-      <!-- Stats -->
-      <div class="flex items-center gap-2 mt-auto relative z-10">
+      <!-- Stats with Keywords -->
+      <div class="flex items-center justify-center gap-1.5 mt-auto relative z-10">
+        <!-- Keywords (left side) -->
+        {#if creature.keywords.length > 0}
+          <div class="flex flex-col gap-0.5">
+            {#each creature.keywords.slice(0, 2) as keyword}
+              <span class="text-xs px-1 py-0.5 rounded bg-gray-900/80 text-ui-text-dim border border-gray-700 leading-tight"
+                    style="text-shadow: 0 1px 2px rgba(0,0,0,0.8);">
+                {keyword}
+              </span>
+            {/each}
+            {#if creature.keywords.length > 2}
+              <span class="text-xs text-ui-text-dim text-center" style="text-shadow: 0 1px 2px rgba(0,0,0,0.8);">+{creature.keywords.length - 2}</span>
+            {/if}
+          </div>
+        {/if}
+
+        <!-- ATK stat -->
         <div class="flex flex-col items-center">
           <span class="text-xl font-bold {isBuffed ? 'text-green-400' : 'text-damage'}"
                 style="text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.6);">
@@ -171,6 +174,7 @@
           <span class="text-xs text-ui-text-dim font-medium" style="text-shadow: 0 1px 2px rgba(0,0,0,0.8);">ATK</span>
         </div>
         <div class="w-px h-5 bg-gray-600/80"></div>
+        <!-- HP stat -->
         <div class="flex flex-col items-center">
           <span class="text-xl font-bold {isDamaged ? 'text-yellow-400' : 'text-health'}"
                 style="text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.6);">

@@ -788,6 +788,14 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] Performance optimization
 - [x] Bug fixing
 
+### Phase 9.5 Tutorial and Onboarding
+- [ ] Create Ingame Tutorials (Using Highlighting and Focus to show the Player/User where to look and click, like Unity Editor Pathway Tutorial in the Editor works):
+  - [ ] Human vs AI Mode
+    - Explaining the Rules, how the game works, turns, etc 
+  - [ ] AI vs AI Mode
+- [ ] Players can play a game without having to read any rulebook
+- [ ] Researchers can watch Ai vs Ai without needing to undersand the rules
+
 ### Phase 10: Release Prep
 - [ ] Build for Windows
 - [ ] Build for Linux

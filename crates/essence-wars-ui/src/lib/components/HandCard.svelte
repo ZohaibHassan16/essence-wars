@@ -12,6 +12,7 @@
     isPlayable = false,
     onClick,
     showKeyHint = false,
+    previewPosition = "top",
   }: {
     card: CardDto;
     index: number;
@@ -19,6 +20,7 @@
     isPlayable?: boolean;
     onClick?: () => void;
     showKeyHint?: boolean;
+    previewPosition?: "top" | "bottom";
   } = $props();
 
   // Keyboard hint keys for positions 0-6
@@ -192,6 +194,6 @@
 
   <!-- Card preview on hover -->
   {#if showPreview}
-    <CardPreview {card} position="top" />
+    <CardPreview {card} position={previewPosition} />
   {/if}
 </div>
