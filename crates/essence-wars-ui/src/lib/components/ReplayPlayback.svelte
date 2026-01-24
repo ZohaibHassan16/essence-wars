@@ -5,10 +5,17 @@
   import HandCard from "./HandCard.svelte";
   import ActionLog from "./ActionLog.svelte";
   import ReplayControls from "./ReplayControls.svelte";
+  import { padCreatures, padSupports } from "$lib/utils/arrays";
 
   const gameState = $derived(replayStore.currentState);
   const match = $derived(replayStore.match);
   const isP1Turn = $derived(gameState?.activePlayer === 1);
+
+  // Ensure arrays always have exactly the expected number of elements
+  const opponentCreatures = $derived(padCreatures(gameState?.opponent.creatures));
+  const opponentSupports = $derived(padSupports(gameState?.opponent.supports));
+  const playerCreatures = $derived(padCreatures(gameState?.player.creatures));
+  const playerSupports = $derived(padSupports(gameState?.player.supports));
 
   // Convert replay actions to ActionInfo format for the log
   const actionsForLog = $derived(
@@ -93,14 +100,14 @@
       <div class="flex items-center justify-center gap-4">
         <!-- Player 2 supports -->
         <div class="flex flex-col gap-2">
-          {#each gameState?.opponent.supports ?? [null, null] as support, i}
+          {#each opponentSupports as support, i}
             <SupportSlot {support} slot={i} />
           {/each}
         </div>
 
         <!-- Player 2 creatures -->
         <div class="flex gap-2">
-          {#each gameState?.opponent.creatures ?? [null, null, null, null, null] as creature, i}
+          {#each opponentCreatures as creature, i}
             <div id="creature-opponent-{i}">
               <CreatureSlot
                 {creature}
@@ -130,14 +137,14 @@
       <div class="flex items-center justify-center gap-4">
         <!-- Player 1 supports -->
         <div class="flex flex-col gap-2">
-          {#each gameState?.player.supports ?? [null, null] as support, i}
+          {#each playerSupports as support, i}
             <SupportSlot {support} slot={i} />
           {/each}
         </div>
 
         <!-- Player 1 creatures -->
         <div class="flex gap-2">
-          {#each gameState?.player.creatures ?? [null, null, null, null, null] as creature, i}
+          {#each playerCreatures as creature, i}
             <div id="creature-player-{i}">
               <CreatureSlot
                 {creature}

@@ -7,7 +7,7 @@
   import { startTutorialGame } from "$lib/tutorial/tutorialGame";
   import { playSound, playMusic } from "$lib/audio";
 
-  let { onOpenSettings, onOpenRules }: { onOpenSettings?: () => void; onOpenRules?: () => void } = $props();
+  let { onOpenSettings, onOpenRules, onOpenLore }: { onOpenSettings?: () => void; onOpenRules?: () => void; onOpenLore?: () => void } = $props();
 
   let isLoadingSpectator = $state(false);
   let isLoadingReplays = $state(false);
@@ -175,6 +175,18 @@
         onmouseenter={handleButtonHover}
       >
         Rules & Guide
+      </button>
+
+      <button
+        class="w-64 px-8 py-4 bg-ui-panel text-ui-text rounded-lg font-bold text-lg
+               border border-gray-600 hover:border-gold hover:text-gold transition-all hover:scale-105"
+        onclick={() => {
+          handleButtonClick();
+          onOpenLore?.();
+        }}
+        onmouseenter={handleButtonHover}
+      >
+        Lore & World
       </button>
 
       <div class="h-px w-48 bg-gray-700 my-2"></div>

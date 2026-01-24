@@ -18,11 +18,13 @@
   import McpSyncView from "$lib/components/McpSyncView.svelte";
   import SettingsScreen from "$lib/components/SettingsScreen.svelte";
   import RulesScreen from "$lib/components/RulesScreen.svelte";
+  import LoreScreen from "$lib/components/LoreScreen.svelte";
   import { audioSettings } from "$lib/stores/audioSettings.svelte";
 
   // Overlay screen states
   let showSettings = $state(false);
   let showRules = $state(false);
+  let showLore = $state(false);
 
   // Global keyboard handler
   function handleKeydown(event: KeyboardEvent) {
@@ -193,11 +195,13 @@
   }
 </script>
 
-<!-- Overlay screens (Settings and Rules) -->
+<!-- Overlay screens (Settings, Rules, and Lore) -->
 {#if showSettings}
   <SettingsScreen onBack={() => showSettings = false} />
 {:else if showRules}
   <RulesScreen onBack={() => showRules = false} />
+{:else if showLore}
+  <LoreScreen onBack={() => showLore = false} />
 <!-- MCP Sync mode takes top precedence when active -->
 {:else if mcpSyncStore.phase === "watching" || mcpSyncStore.phase === "disconnected"}
   <McpSyncView />
@@ -219,7 +223,7 @@
   <GameOverScreen {...getSpectatorGameOverProps()} />
 <!-- Game mode -->
 {:else if gameStore.phase === "menu"}
-  <MainMenu onOpenSettings={() => showSettings = true} onOpenRules={() => showRules = true} />
+  <MainMenu onOpenSettings={() => showSettings = true} onOpenRules={() => showRules = true} onOpenLore={() => showLore = true} />
 {:else if gameStore.phase === "setup"}
   <SetupScreen />
 {:else if gameStore.phase === "playing"}

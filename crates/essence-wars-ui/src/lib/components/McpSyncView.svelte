@@ -4,9 +4,16 @@
   import CreatureSlot from "./CreatureSlot.svelte";
   import SupportSlot from "./SupportSlot.svelte";
   import HandCard from "./HandCard.svelte";
+  import { padCreatures, padSupports } from "$lib/utils/arrays";
 
   const gameState = $derived(mcpSyncStore.gameState);
   const isP1Turn = $derived(gameState?.activePlayer === 1);
+
+  // Ensure arrays always have exactly the expected number of elements
+  const opponentCreatures = $derived(padCreatures(gameState?.opponent.creatures));
+  const opponentSupports = $derived(padSupports(gameState?.opponent.supports));
+  const playerCreatures = $derived(padCreatures(gameState?.player.creatures));
+  const playerSupports = $derived(padSupports(gameState?.player.supports));
 
   // Start polling when component mounts
   onMount(() => {
@@ -94,14 +101,14 @@
         <div class="flex items-center justify-center gap-4">
           <!-- Player 2 supports -->
           <div class="flex flex-col gap-2">
-            {#each gameState.opponent.supports as support, i}
+            {#each opponentSupports as support, i}
               <SupportSlot {support} slot={i} />
             {/each}
           </div>
 
           <!-- Player 2 creatures -->
           <div class="flex gap-2">
-            {#each gameState.opponent.creatures as creature, i}
+            {#each opponentCreatures as creature, i}
               <div id="creature-opponent-{i}">
                 <CreatureSlot
                   {creature}
@@ -143,14 +150,14 @@
         <div class="flex items-center justify-center gap-4">
           <!-- Player 1 supports -->
           <div class="flex flex-col gap-2">
-            {#each gameState.player.supports as support, i}
+            {#each playerSupports as support, i}
               <SupportSlot {support} slot={i} />
             {/each}
           </div>
 
           <!-- Player 1 creatures -->
           <div class="flex gap-2">
-            {#each gameState.player.creatures as creature, i}
+            {#each playerCreatures as creature, i}
               <div id="creature-player-{i}">
                 <CreatureSlot
                   {creature}

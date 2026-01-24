@@ -800,7 +800,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] Add Game Art to Main menu using local FLUX Stable-Diffusion.cpp (Chris can use gemini image / Nanon Banana 3 for Collages for the Big 2560x Background images, Claude can provide guidance and prompts)
 - [x] Create 20 to 30 rotating / random Backgrounds for the Main Menu
 - [x] Source good Music for the Main Menu, Atmospheric Music for Battle Mode and Spectator Mode
-- [ ] Source high quality SFX to replace the current sound effects
+- [x] Source high quality SFX to replace the current sound effects
 - [x] Add Rules Submenu, that explains the rules, keywords etc (with custom artwork to make it snappy and visually interesting)
 - [x] Remove MCP Sync View so that the menu item can be hidden / removed, while preserving the functionality
 - [x] hide the console window that gets opened in release mode (keep for dev / debg mode)
