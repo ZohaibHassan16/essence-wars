@@ -792,20 +792,20 @@ cards:
           health_bonus: 1
     # Flavor: "The Combine doesn't build soldiers. We manufacture victory."
 
-  # --- Iron Colossus Prime (Guard/Wall archetype) ---
+  # --- The Sanctum Healer (Regenerate/Healing archetype) ---
   - id: 1057
-    name: "Iron Colossus Prime"
-    cost: 7
+    name: "The Sanctum Healer"
+    cost: 6
     card_type: creature
-    attack: 4
-    health: 8
-    keywords: [Guard, Fortify]
+    attack: 2
+    health: 7
+    keywords: [Regenerate]
     rarity: Legendary
     tags: [Commander, Construct]
     passive_effects:
       - modifier:
-          grant_keyword: Guard
-    # Flavor: "Behind it, we are safe. Beyond it, nothing survives."
+          grant_keyword: Regenerate
+    # Flavor: "Where gears mend flesh and essence restores steel."
 
   # --- Siege Marshal Vex (Piercing/Aggro archetype) ---
   - id: 1058

@@ -1347,7 +1347,7 @@ Each faction has **4 Legendary Commanders** designed to be deck-building centerp
 | ID | Name | Cost | Stats | Keywords | Ability |
 |----|------|------|-------|----------|---------|
 | 1056 | The High Artificer | 6 | 3/5 | — | OnPlay: Summon two 2/2 Construct tokens |
-| 1057 | Iron Colossus Prime | 7 | 2/10 | Guard | All friendly creatures have +0/+2 |
+| 1057 | The Sanctum Healer | 6 | 2/7 | Regenerate | All friendly creatures have Regenerate |
 | 1058 | Siege Marshal Vex | 6 | 5/4 | Piercing | OnAttack: Deal 2 damage to enemy player |
 | 1059 | The Grand Architect | 6 | 3/6 | Fortify | All friendly creatures have Fortify |
 
@@ -1404,10 +1404,10 @@ The New Horizons Edition features **12 pre-built Commander Decks** — each buil
 |-----------|-----------|----------|
 | Token Swarm | Assembly Line, Construct tokens | Build wide board, overwhelm with numbers |
 
-### 🏰 Iron Colossus Prime — Guard/Wall
+### 💚 The Sanctum Healer — Regenerate/Healing
 
 **Deck ID:** `colossus_wall`
-**Commander:** Iron Colossus Prime (1057) — 7-cost 2/10 Guard, All allies +0/+2
+**Commander:** The Sanctum Healer (1057) — 6-cost 2/7 Regenerate, All allies have Regenerate
 **Strategy:** Create an impenetrable wall of high-HP Guards
 
 | Archetype | Key Cards | Gameplan |

@@ -643,6 +643,25 @@ cards:
     lora: "rutkowski:0.4, classical-painting:0.7"
     negative: "organic, soft, natural, blurry, low quality"
 
+  - id: 1057
+    name: "The Sanctum Healer"
+    card_type: creature
+    is_commander: true
+    tags: [Commander, Construct]
+    prompt: >
+      A graceful female healing artificer in elegant white robes with gold geometric
+      Art Deco patterns and brass medical equipment on her shoulders and arms,
+      beautiful compassionate face with warm intelligent eyes radiating wisdom and
+      care, brass circlet with healing crystal on forehead, multiple delicate brass
+      mechanical healing arms extending from ornate backpack - one dispensing golden
+      healing mist, another holding glowing essence vials, her natural hands in a
+      healing gesture with golden regeneration magic flowing from her palms, surrounded
+      by floating medical holograms, standing in a pristine Argentum hospital ward
+      with healing chambers, warm golden light creating soft ethereal healing aura,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "organic, soft, natural, blurry, low quality, dark, aggressive"
+
   - id: 1058
     name: "Siege Marshal Vex"
     card_type: creature

@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essence Wars - Art Review Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-btn, .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .filter-btn.active {
+            background: #4CAF50;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-btn {
+            background: #ff9800;
+            color: white;
+            font-size: 16px;
+        }
+
+        .action-btn:hover {
+            background: #e68900;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .stats {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .stats span {
+            margin: 0 15px;
+            font-weight: bold;
+        }
+
+        .marked {
+            color: #ff5722;
+        }
+
+        .search-box {
+            width: 300px;
+            padding: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            font-size: 14px;
+        }
+
+        .search-box::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .card.marked {
+            border-color: #ff5722;
+            box-shadow: 0 0 20px rgba(255, 87, 34, 0.5);
+        }
+
+        .card-image-container {
+            position: relative;
+            width: 100%;
+            padding-top: 140%; /* 7:10 aspect ratio for card art */
+            background: #000;
+            overflow: hidden;
+        }
+
+        .card-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .card:hover .card-image {
+            transform: scale(1.05);
+        }
+
+        .card-title {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 10px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            z-index: 1;
+        }
+
+        .card-id {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.7);
+            font-size: 12px;
+            font-family: monospace;
+        }
+
+        .card-info {
+            padding: 15px;
+        }
+
+        .card-faction {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .faction-argentum { background: #b8860b; }
+        .faction-symbiote { background: #2e7d32; }
+        .faction-obsidion { background: #8e24aa; }
+        .faction-neutral { background: #757575; }
+
+        .mark-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .mark-btn.unmarked {
+            background: #f44336;
+            color: white;
+        }
+
+        .mark-btn.marked {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .mark-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 24px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1e3c72;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+        }
+
+        .modal-content pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 5px;
+            text-align: left;
+            overflow: auto;
+            max-height: 300px;
+        }
+
+        .close-modal {
+            margin-top: 20px;
+            padding: 10px 30px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Essence Wars - Art Review Tool</h1>
+        <p>Click cards to mark them for regeneration</p>
+    </div>
+
+    <div class="stats">
+        <span>Total Cards: <span id="total-count">0</span></span>
+        <span class="marked">Marked for Regeneration: <span id="marked-count">0</span></span>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="search" class="search-box" placeholder="Search by name or ID...">
+        
+        <div class="filter-group">
+            <button class="filter-btn active" data-faction="all">All Factions</button>
+            <button class="filter-btn" data-faction="argentum">Argentum</button>
+            <button class="filter-btn" data-faction="symbiote">Symbiote</button>
+            <button class="filter-btn" data-faction="obsidion">Obsidion</button>
+            <button class="filter-btn" data-faction="neutral">Neutral</button>
+        </div>
+
+        <div class="filter-group">
+            <button class="filter-btn" data-filter="marked">Show Marked Only</button>
+            <button class="filter-btn" data-filter="unmarked">Show Unmarked Only</button>
+        </div>
+
+        <button class="action-btn" id="export-btn">📥 Export Marked Cards</button>
+        <button class="action-btn" id="clear-btn">🗑️ Clear All Marks</button>
+    </div>
+
+    <div id="grid" class="grid">
+        <div class="loading">Loading cards...</div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h2>Export Complete!</h2>
+            <p>Marked cards have been exported to JSON.</p>
+            <pre id="export-preview"></pre>
+            <button class="close-modal" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

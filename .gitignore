@@ -111,3 +111,5 @@ assets/
 test_shots/
 # Code signing certificates
 .certs/
+
+screenshots/
