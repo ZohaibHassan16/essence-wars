@@ -60,6 +60,7 @@
     {@const isSelected = selectedFaction === faction.id}
     <button
       class="faction-tab relative flex flex-col items-center px-6 py-3 rounded-lg border-2 transition-all duration-200
+             focus:outline-none focus:ring-2 focus:ring-ui-action focus:ring-offset-2 focus:ring-offset-ui-bg
              {isSelected
                ? `${faction.bgColor} ${faction.borderColor} ${faction.textColor}`
                : 'bg-ui-panel/50 border-gray-600 text-ui-text-dim hover:border-gray-500 hover:text-ui-text'}"

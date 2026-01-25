@@ -76,6 +76,34 @@
   // Direction for animation
   let slideDirection = $state<"left" | "right">("left");
 
+  // Keyboard navigation
+  function handleKeyDown(event: KeyboardEvent) {
+    // Don't intercept if user is typing in an input
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      return;
+    }
+
+    switch (event.key) {
+      case "Escape":
+        event.preventDefault();
+        prevStep();
+        break;
+      case "Enter":
+        // Only proceed if not already on a button/input (those handle their own Enter)
+        if (!(event.target instanceof HTMLButtonElement)) {
+          event.preventDefault();
+          if (currentStep === 1 && canProceedStep1) {
+            nextStep();
+          } else if (currentStep === 2 && canProceedStep2) {
+            nextStep();
+          } else if (currentStep === 3 && canStart) {
+            handleStart();
+          }
+        }
+        break;
+    }
+  }
+
   // Derived values
   const selectedPlayerDeck = $derived(
     decks.find((d) => d.id === selectedPlayerDeckId) ?? null
@@ -94,7 +122,7 @@
   // Navigation functions
   function nextStep() {
     if (currentStep < totalSteps) {
-      playSound("buttonClick");
+      playSound("menuOpen");
       slideDirection = "left";
       currentStep++;
     }
@@ -102,10 +130,11 @@
 
   function prevStep() {
     if (currentStep > 1) {
-      playSound("buttonClick");
+      playSound("menuClose");
       slideDirection = "right";
       currentStep--;
     } else {
+      playSound("menuClose");
       onBack?.();
     }
   }
@@ -113,7 +142,7 @@
   function handleStart() {
     if (!selectedPlayerDeckId || !selectedOpponentDeckId) return;
 
-    playSound("buttonClick");
+    playSound("cardSelect"); // Use cardSelect for satisfying confirmation sound
 
     const config: WizardConfig = {
       playerDeckId: selectedPlayerDeckId,
@@ -160,6 +189,8 @@
   }
 </script>
 
+<svelte:window onkeydown={handleKeyDown} />
+
 <div class="deck-selection-wizard w-full h-full bg-ui-bg overflow-hidden">
   {#if currentStep === 1}
     <!-- Step 1: Player/P1 Deck Selection -->
@@ -202,7 +233,9 @@
           <div class="flex justify-between items-center">
             <button
               class="px-6 py-3 bg-ui-bg text-ui-text-dim rounded-lg font-semibold
-                     border border-gray-600 hover:border-gray-500 hover:text-ui-text transition-all"
+                     border border-gray-600 hover:border-gray-500 hover:text-ui-text transition-all
+                     focus:outline-none focus:ring-2 focus:ring-ui-action focus:ring-offset-2 focus:ring-offset-ui-panel
+                     shadow-md hover:shadow-lg active:shadow-sm"
               onclick={prevStep}
               onmouseenter={() => playSound("buttonHover")}
             >
@@ -216,7 +249,9 @@
 
             <button
               class="px-8 py-3 bg-ui-action text-white rounded-lg font-bold text-lg
-                     hover:bg-ui-action/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                     hover:bg-ui-action/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed
+                     focus:outline-none focus:ring-2 focus:ring-ui-action focus:ring-offset-2 focus:ring-offset-ui-panel
+                     shadow-lg shadow-ui-action/30 hover:shadow-xl hover:shadow-ui-action/40 active:shadow-md"
               onclick={nextStep}
               onmouseenter={() => playSound("buttonHover")}
               disabled={!canProceedStep1}
@@ -286,7 +321,9 @@
           <div class="flex justify-between items-center">
             <button
               class="px-6 py-3 bg-ui-bg text-ui-text-dim rounded-lg font-semibold
-                     border border-gray-600 hover:border-gray-500 hover:text-ui-text transition-all"
+                     border border-gray-600 hover:border-gray-500 hover:text-ui-text transition-all
+                     focus:outline-none focus:ring-2 focus:ring-ui-action focus:ring-offset-2 focus:ring-offset-ui-panel
+                     shadow-md hover:shadow-lg active:shadow-sm"
               onclick={prevStep}
               onmouseenter={() => playSound("buttonHover")}
             >
@@ -300,7 +337,9 @@
 
             <button
               class="px-8 py-3 bg-ui-action text-white rounded-lg font-bold text-lg
-                     hover:bg-ui-action/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                     hover:bg-ui-action/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed
+                     focus:outline-none focus:ring-2 focus:ring-ui-action focus:ring-offset-2 focus:ring-offset-ui-panel
+                     shadow-lg shadow-ui-action/30 hover:shadow-xl hover:shadow-ui-action/40 active:shadow-md"
               onclick={nextStep}
               onmouseenter={() => playSound("buttonHover")}
               disabled={!canProceedStep2}
@@ -384,6 +423,7 @@
                   {#each bots as bot}
                     <button
                       class="p-3 rounded-lg border-2 text-left transition-all
+                             focus:outline-none focus:ring-2 focus:ring-health focus:ring-offset-1 focus:ring-offset-ui-bg
                              {selectedPlayerBot === bot.id
                                ? 'border-health bg-health/10 text-ui-text'
                                : 'border-gray-600 bg-ui-bg/50 text-ui-text-dim hover:border-gray-500'}"
@@ -404,6 +444,7 @@
                   {#each bots as bot}
                     <button
                       class="p-3 rounded-lg border-2 text-left transition-all
+                             focus:outline-none focus:ring-2 focus:ring-damage focus:ring-offset-1 focus:ring-offset-ui-bg
                              {selectedOpponentBot === bot.id
                                ? 'border-damage bg-damage/10 text-ui-text'
                                : 'border-gray-600 bg-ui-bg/50 text-ui-text-dim hover:border-gray-500'}"
@@ -422,6 +463,7 @@
                 {#each bots as bot}
                   <button
                     class="p-4 rounded-lg border-2 text-left transition-all
+                           focus:outline-none focus:ring-2 focus:ring-ui-action focus:ring-offset-1 focus:ring-offset-ui-bg
                            {selectedOpponentBot === bot.id
                              ? 'border-ui-action bg-ui-action/10 text-ui-text'
                              : 'border-gray-600 bg-ui-bg/50 text-ui-text-dim hover:border-gray-500'}"
@@ -443,6 +485,7 @@
               <div class="flex gap-4">
                 <button
                   class="flex-1 p-4 rounded-lg border-2 transition-all text-center
+                         focus:outline-none focus:ring-2 focus:ring-health focus:ring-offset-1 focus:ring-offset-ui-bg
                          {playerGoesFirst
                            ? 'border-health bg-health/10 text-ui-text'
                            : 'border-gray-600 bg-ui-bg/50 text-ui-text-dim hover:border-gray-500'}"
@@ -454,6 +497,7 @@
                 </button>
                 <button
                   class="flex-1 p-4 rounded-lg border-2 transition-all text-center
+                         focus:outline-none focus:ring-2 focus:ring-damage focus:ring-offset-1 focus:ring-offset-ui-bg
                          {!playerGoesFirst
                            ? 'border-damage bg-damage/10 text-ui-text'
                            : 'border-gray-600 bg-ui-bg/50 text-ui-text-dim hover:border-gray-500'}"
@@ -568,7 +612,9 @@
           <div class="flex justify-between items-center">
             <button
               class="px-6 py-3 bg-ui-bg text-ui-text-dim rounded-lg font-semibold
-                     border border-gray-600 hover:border-gray-500 hover:text-ui-text transition-all"
+                     border border-gray-600 hover:border-gray-500 hover:text-ui-text transition-all
+                     focus:outline-none focus:ring-2 focus:ring-ui-action focus:ring-offset-2 focus:ring-offset-ui-panel
+                     shadow-md hover:shadow-lg active:shadow-sm"
               onclick={prevStep}
               onmouseenter={() => playSound("buttonHover")}
             >
@@ -583,7 +629,8 @@
             <button
               class="px-10 py-4 bg-ui-action text-white rounded-lg font-bold text-xl
                      hover:bg-ui-action/80 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed
-                     shadow-lg shadow-ui-action/30"
+                     focus:outline-none focus:ring-2 focus:ring-ui-action focus:ring-offset-2 focus:ring-offset-ui-panel
+                     shadow-lg shadow-ui-action/30 hover:shadow-xl hover:shadow-ui-action/40 active:shadow-md"
               onclick={handleStart}
               onmouseenter={() => playSound("buttonHover")}
               disabled={!canStart}
@@ -600,6 +647,7 @@
 <style>
   .step-container {
     height: 100%;
+    will-change: transform, opacity;
   }
 
   .slide-in-left {
@@ -629,6 +677,26 @@
     to {
       opacity: 1;
       transform: translateX(0);
+    }
+  }
+
+  /* Responsive adjustments for narrower screens */
+  @media (max-width: 1200px) {
+    :global(.deck-selection-wizard .w-\[340px\]) {
+      width: 280px;
+    }
+  }
+
+  @media (max-width: 1000px) {
+    :global(.deck-selection-wizard .w-\[340px\]) {
+      width: 240px;
+    }
+  }
+
+  /* On very narrow screens, hide the preview panel */
+  @media (max-width: 800px) {
+    :global(.deck-selection-wizard .w-\[340px\]) {
+      display: none;
     }
   }
 </style>

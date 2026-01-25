@@ -68,6 +68,7 @@
           alt={deck.commander.name}
           class="w-full h-full object-cover object-top"
           style="object-position: center 20%;"
+          loading="lazy"
         />
       {:else}
         <div class="w-full h-full flex items-center justify-center bg-gray-800">

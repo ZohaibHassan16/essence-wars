@@ -55,12 +55,19 @@
   });
 
   function handleClick() {
-    playSound("buttonClick");
+    playSound("cardSelect");
     onSelect?.();
   }
 
   function handleMouseEnter() {
-    playSound("buttonHover");
+    playSound("cardHover");
+  }
+
+  function handleKeyDown(event: KeyboardEvent) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleClick();
+    }
   }
 </script>
 
@@ -68,10 +75,11 @@
   class="deck-card relative flex flex-col rounded-xl border-2 overflow-hidden transition-all duration-300
          bg-gradient-to-b {factionStyles().gradient} bg-ui-panel/90
          {isSelected ? factionStyles().border + ' ' + factionStyles().glow : 'border-gray-600 ' + factionStyles().borderHover}
-         hover:scale-[1.02] active:scale-[0.98]"
-  style="width: 180px;"
+         hover:scale-[1.02] active:scale-[0.98]
+         focus:outline-none focus:ring-2 focus:ring-ui-action focus:ring-offset-2 focus:ring-offset-ui-bg"
   onclick={handleClick}
   onmouseenter={handleMouseEnter}
+  onkeydown={handleKeyDown}
 >
   <!-- Commander Portrait -->
   <div class="relative w-full aspect-[4/3] overflow-hidden bg-gray-900">
@@ -81,6 +89,7 @@
         alt={deck.commander.name}
         class="w-full h-full object-cover object-top transition-transform duration-300"
         style="object-position: center 20%;"
+        loading="lazy"
       />
     {:else}
       <div class="w-full h-full flex items-center justify-center bg-gray-800">
@@ -145,9 +154,34 @@
 <style>
   .deck-card {
     cursor: pointer;
+    width: 180px;
+    will-change: transform;
   }
 
   .deck-card:hover img {
     transform: scale(1.05);
+  }
+
+  .deck-card img {
+    will-change: transform;
+  }
+
+  /* Responsive: smaller cards on narrow screens */
+  @media (max-width: 1200px) {
+    .deck-card {
+      width: 160px;
+    }
+  }
+
+  @media (max-width: 1000px) {
+    .deck-card {
+      width: 140px;
+    }
+  }
+
+  @media (max-width: 800px) {
+    .deck-card {
+      width: 160px; /* More room when preview panel is hidden */
+    }
   }
 </style>
