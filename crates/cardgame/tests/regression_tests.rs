@@ -45,8 +45,8 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
         deck1_id: "broodmother_swarm",
         deck2_id: "broodmother_swarm",
         expected_winner: Some(1), // P2 wins
-        expected_turns: 12,       // Updated for deck rebuild v0.5.1
-        expected_action_count: 55,
+        expected_turns: 12,       // Updated for v0.8.0 commander system refactor
+        expected_action_count: 54,
     },
     GoldenTestCase {
         name: "greedy_mirror_seed_200",
@@ -54,17 +54,17 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
         deck1_id: "broodmother_swarm",
         deck2_id: "broodmother_swarm",
         expected_winner: Some(1), // P2 wins (changed from P1)
-        expected_turns: 16,       // Updated for deck rebuild v0.5.1
-        expected_action_count: 68,
+        expected_turns: 14,       // Updated for v0.8.0 commander system refactor
+        expected_action_count: 62,
     },
     GoldenTestCase {
         name: "greedy_mirror_seed_600",
         seed: 600,
         deck1_id: "broodmother_swarm",
         deck2_id: "broodmother_swarm",
-        expected_winner: Some(1), // P2 wins (updated v0.6.0 - fixed UseAbility bug)
-        expected_turns: 16,
-        expected_action_count: 69,
+        expected_winner: Some(1), // P2 wins (updated v0.8.0 - commander system refactor)
+        expected_turns: 18,
+        expected_action_count: 74,
     },
 ];
 

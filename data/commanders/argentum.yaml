@@ -1,8 +1,9 @@
 # Argentum Combine Commanders
 # 4 commanders defining the defensive, construct-focused faction
+# ID range: 5000-5003
 
 commanders:
-  - id: 1056
+  - id: 5000
     name: "The High Artificer"
     card_type: commander
     faction: Argentum
@@ -19,7 +20,7 @@ commanders:
             keywords: []
     flavor: "The Combine doesn't build soldiers. We manufacture victory."
 
-  - id: 1057
+  - id: 5001
     name: "The Sanctum Healer"
     card_type: commander
     faction: Argentum
@@ -31,7 +32,7 @@ commanders:
         keyword: Regenerate
     flavor: "Where gears mend flesh and essence restores steel."
 
-  - id: 1058
+  - id: 5002
     name: "Siege Marshal Vex"
     card_type: commander
     faction: Argentum
@@ -44,7 +45,7 @@ commanders:
         health: 0
     flavor: "A wall is just a door that hasn't been opened hard enough."
 
-  - id: 1059
+  - id: 5003
     name: "The Grand Architect"
     card_type: commander
     faction: Argentum

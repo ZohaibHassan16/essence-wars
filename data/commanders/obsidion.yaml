@@ -1,8 +1,9 @@
 # Obsidion Syndicate Commanders
 # 4 commanders defining the burst damage, shadow-focused faction
+# ID range: 5008-5011
 
 commanders:
-  - id: 3055
+  - id: 5008
     name: "The Blood Sovereign"
     card_type: commander
     faction: Obsidion
@@ -14,7 +15,7 @@ commanders:
         keyword: Lifesteal
     flavor: "Blood is such an inefficient fuel. Let me show you how to refine it."
 
-  - id: 3056
+  - id: 5009
     name: "Shadow Emperor Kael"
     card_type: commander
     faction: Obsidion
@@ -27,7 +28,7 @@ commanders:
           count: 1
     flavor: "You never see him twice. Once is enough."
 
-  - id: 3057
+  - id: 5010
     name: "The Shadow Weaver"
     card_type: commander
     faction: Obsidion
@@ -39,7 +40,7 @@ commanders:
         keyword: Stealth
     flavor: "Shadows don't lie. They simply don't tell the whole truth."
 
-  - id: 3058
+  - id: 5011
     name: "Void Archon"
     card_type: commander
     faction: Obsidion

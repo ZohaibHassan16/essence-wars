@@ -1,8 +1,9 @@
 # Symbiote Circles Commanders
 # 4 commanders defining the aggressive, swarm-focused faction
+# ID range: 5004-5007
 
 commanders:
-  - id: 2060
+  - id: 5004
     name: "The Broodmother"
     card_type: commander
     faction: Symbiote
@@ -21,7 +22,7 @@ commanders:
             keywords: [Rush]
     flavor: "Where she commands, the swarm follows."
 
-  - id: 2061
+  - id: 5005
     name: "Plague Sovereign"
     card_type: commander
     faction: Symbiote
@@ -35,7 +36,7 @@ commanders:
           target: EnemyCommander
     flavor: "Every death feeds the plague."
 
-  - id: 2062
+  - id: 5006
     name: "Alpha of the Hunt"
     card_type: commander
     faction: Symbiote
@@ -48,7 +49,7 @@ commanders:
         health: 0
     flavor: "The pack hunts as one. The Alpha strikes first."
 
-  - id: 2063
+  - id: 5007
     name: "The Eternal Grove"
     card_type: commander
     faction: Symbiote

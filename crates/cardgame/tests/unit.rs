@@ -54,3 +54,5 @@ mod game_mode_tests;
 mod serialization_tests;
 #[path = "unit/client_api_tests.rs"]
 mod client_api_tests;
+#[path = "unit/commander_tests.rs"]
+mod commander_tests;

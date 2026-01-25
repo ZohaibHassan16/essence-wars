@@ -17,7 +17,7 @@ const NEUTRAL_CARDS_YAML: &str = include_str!("../../../data/cards/core_set/neut
 // Embed deck TOML files at compile time
 // Argentum decks
 const ARGENTUM_ARCHITECT_TOML: &str = include_str!("../../../data/decks/argentum/architect_fortify.toml");
-const ARGENTUM_COLOSSUS_TOML: &str = include_str!("../../../data/decks/argentum/colossus_wall.toml");
+const ARGENTUM_SANCTUM_HEALER_TOML: &str = include_str!("../../../data/decks/argentum/sanctum_healer.toml");
 const ARGENTUM_VEX_TOML: &str = include_str!("../../../data/decks/argentum/vex_piercing.toml");
 const ARGENTUM_ARTIFICER_TOML: &str = include_str!("../../../data/decks/argentum/artificer_tokens.toml");
 
@@ -94,7 +94,7 @@ pub fn load_embedded_decks() -> Result<DeckRegistry, String> {
     let deck_tomls = [
         // Argentum
         ("architect_fortify", ARGENTUM_ARCHITECT_TOML),
-        ("colossus_wall", ARGENTUM_COLOSSUS_TOML),
+        ("sanctum_healer", ARGENTUM_SANCTUM_HEALER_TOML),
         ("vex_piercing", ARGENTUM_VEX_TOML),
         ("artificer_tokens", ARGENTUM_ARTIFICER_TOML),
         // Symbiote
@@ -139,7 +139,7 @@ pub fn get_embedded_deck_ids() -> &'static [&'static str] {
     &[
         // Argentum
         "architect_fortify",
-        "colossus_wall",
+        "sanctum_healer",
         "vex_piercing",
         "artificer_tokens",
         // Symbiote
@@ -158,13 +158,13 @@ pub fn get_embedded_deck_ids() -> &'static [&'static str] {
 /// Get the MVP deck IDs (one per faction) for the vertical slice.
 ///
 /// Returns the three decks chosen for the Phase 5A MVP:
-/// - Iron Colossus Prime (Argentum - defensive)
+/// - The Sanctum Healer (Argentum - defensive)
 /// - The Broodmother (Symbiote - aggressive)
 /// - The Blood Sovereign (Obsidion - sustain)
 pub fn get_mvp_deck_ids() -> &'static [&'static str] {
     &[
-        "colossus_wall",      // Iron Colossus Prime
-        "broodmother_swarm",  // The Broodmother
+        "sanctum_healer",      // The Sanctum Healer
+        "broodmother_swarm",   // The Broodmother
         "sovereign_lifesteal", // The Blood Sovereign
     ]
 }

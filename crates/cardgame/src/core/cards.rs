@@ -162,6 +162,147 @@ pub enum CardType {
     },
 }
 
+// =============================================================================
+// COMMANDER TYPES
+// =============================================================================
+
+/// Faction for commanders and cards
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum Faction {
+    Argentum,
+    Symbiote,
+    Obsidion,
+    Neutral,
+}
+
+/// Effect type for commander passive abilities
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum CommanderPassiveEffect {
+    /// Grant a keyword to all friendly creatures
+    GrantKeyword { keyword: String },
+    /// Buff stats of all friendly creatures
+    BuffStats { attack: i8, health: i8 },
+}
+
+/// Commander passive ability (always active)
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct CommanderPassiveAbility {
+    pub description: String,
+    pub effect: CommanderPassiveEffect,
+}
+
+/// Trigger condition for commander triggered abilities
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub struct CommanderTriggerCondition {
+    /// Creature must have this keyword
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub has_keyword: Option<String>,
+}
+
+/// Commander trigger types (some are new, some reuse existing)
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "PascalCase")]
+pub enum CommanderTrigger {
+    /// At the start of owner's turn
+    StartOfTurn,
+    /// When owner plays a creature
+    OnCreaturePlayed,
+    /// When a friendly creature dies
+    OnAllyDeath,
+    /// When an enemy creature dies
+    OnEnemyDeath,
+}
+
+/// Commander triggered ability
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct CommanderTriggeredAbility {
+    pub trigger: CommanderTrigger,
+    pub description: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub condition: Option<CommanderTriggerCondition>,
+    pub effects: Vec<EffectDefinition>,
+}
+
+/// Commander ability - either passive or triggered
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(untagged)]
+pub enum CommanderAbility {
+    Passive { passive_ability: CommanderPassiveAbility },
+    Triggered { triggered_ability: CommanderTriggeredAbility },
+}
+
+impl CommanderAbility {
+    /// Get the passive ability if this is a passive commander
+    pub fn passive(&self) -> Option<&CommanderPassiveAbility> {
+        match self {
+            CommanderAbility::Passive { passive_ability } => Some(passive_ability),
+            CommanderAbility::Triggered { .. } => None,
+        }
+    }
+
+    /// Get the triggered ability if this is a triggered commander
+    pub fn triggered(&self) -> Option<&CommanderTriggeredAbility> {
+        match self {
+            CommanderAbility::Triggered { triggered_ability } => Some(triggered_ability),
+            CommanderAbility::Passive { .. } => None,
+        }
+    }
+
+    /// Check if this is a passive ability
+    pub fn is_passive(&self) -> bool {
+        matches!(self, CommanderAbility::Passive { .. })
+    }
+
+    /// Check if this is a triggered ability
+    pub fn is_triggered(&self) -> bool {
+        matches!(self, CommanderAbility::Triggered { .. })
+    }
+}
+
+/// Complete definition of a commander
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct CommanderDefinition {
+    pub id: u16,
+    pub name: String,
+    pub faction: Faction,
+    #[serde(default)]
+    pub rarity: Rarity,
+    #[serde(flatten)]
+    pub ability: CommanderAbility,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub flavor: Option<String>,
+}
+
+impl CommanderDefinition {
+    /// Get the passive ability if this commander has one
+    pub fn passive_ability(&self) -> Option<&CommanderPassiveAbility> {
+        self.ability.passive()
+    }
+
+    /// Get the triggered ability if this commander has one
+    pub fn triggered_ability(&self) -> Option<&CommanderTriggeredAbility> {
+        self.ability.triggered()
+    }
+
+    /// Check if this commander has a passive ability
+    pub fn has_passive(&self) -> bool {
+        self.ability.is_passive()
+    }
+
+    /// Check if this commander has a triggered ability
+    pub fn has_triggered(&self) -> bool {
+        self.ability.is_triggered()
+    }
+}
+
+/// Commander set loaded from YAML (container for multiple commanders)
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct CommanderSet {
+    pub commanders: Vec<CommanderDefinition>,
+}
+
 /// Complete definition of a card
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct CardDefinition {
@@ -273,23 +414,43 @@ pub struct CardDatabase {
     cards: Arc<Vec<CardDefinition>>,
     /// Lookup table: card ID -> index in cards vec
     id_to_index: Arc<Vec<Option<usize>>>,
+    /// Commander definitions (loaded separately from data/commanders/)
+    commanders: Arc<Vec<CommanderDefinition>>,
+    /// Lookup table: commander ID -> index in commanders vec
+    commander_to_index: Arc<Vec<Option<usize>>>,
 }
 
 impl CardDatabase {
-    /// Create a new database from a list of cards
+    /// Create a new database from a list of cards (without commanders)
     pub fn new(cards: Vec<CardDefinition>) -> Self {
-        // Find max ID to size the lookup table
-        let max_id = cards.iter().map(|c| c.id).max().unwrap_or(0) as usize;
+        Self::new_with_commanders(cards, Vec::new())
+    }
 
-        // Build lookup table
-        let mut id_to_index = vec![None; max_id + 1];
+    /// Create a new database from cards and commanders
+    pub fn new_with_commanders(cards: Vec<CardDefinition>, commanders: Vec<CommanderDefinition>) -> Self {
+        // Find max card ID to size the lookup table
+        let max_card_id = cards.iter().map(|c| c.id).max().unwrap_or(0) as usize;
+
+        // Build card lookup table
+        let mut id_to_index = vec![None; max_card_id + 1];
         for (index, card) in cards.iter().enumerate() {
             id_to_index[card.id as usize] = Some(index);
+        }
+
+        // Find max commander ID to size the lookup table
+        let max_commander_id = commanders.iter().map(|c| c.id).max().unwrap_or(0) as usize;
+
+        // Build commander lookup table
+        let mut commander_to_index = vec![None; max_commander_id + 1];
+        for (index, commander) in commanders.iter().enumerate() {
+            commander_to_index[commander.id as usize] = Some(index);
         }
 
         Self {
             cards: Arc::new(cards),
             id_to_index: Arc::new(id_to_index),
+            commanders: Arc::new(commanders),
+            commander_to_index: Arc::new(commander_to_index),
         }
     }
 
@@ -298,6 +459,8 @@ impl CardDatabase {
         Self {
             cards: Arc::new(Vec::new()),
             id_to_index: Arc::new(Vec::new()),
+            commanders: Arc::new(Vec::new()),
+            commander_to_index: Arc::new(Vec::new()),
         }
     }
 
@@ -311,12 +474,27 @@ impl CardDatabase {
         }
     }
 
+    /// Get a commander by ID (O(1) lookup)
+    pub fn get_commander(&self, id: CardId) -> Option<&CommanderDefinition> {
+        let idx = id.0 as usize;
+        if idx < self.commander_to_index.len() {
+            self.commander_to_index[idx].map(|i| &self.commanders[i])
+        } else {
+            None
+        }
+    }
+
     /// Get total number of cards
     pub fn len(&self) -> usize {
         self.cards.len()
     }
 
-    /// Check if database is empty
+    /// Get total number of commanders
+    pub fn commander_count(&self) -> usize {
+        self.commanders.len()
+    }
+
+    /// Check if database is empty (no cards)
     pub fn is_empty(&self) -> bool {
         self.cards.is_empty()
     }
@@ -326,9 +504,19 @@ impl CardDatabase {
         self.cards.iter()
     }
 
+    /// Iterate over all commanders
+    pub fn iter_commanders(&self) -> impl Iterator<Item = &CommanderDefinition> {
+        self.commanders.iter()
+    }
+
     /// Get all card IDs
     pub fn card_ids(&self) -> impl Iterator<Item = CardId> + '_ {
         self.cards.iter().map(|c| CardId(c.id))
+    }
+
+    /// Get all commander IDs
+    pub fn commander_ids(&self) -> impl Iterator<Item = CardId> + '_ {
+        self.commanders.iter().map(|c| CardId(c.id))
     }
 }
 
@@ -336,6 +524,7 @@ impl std::fmt::Debug for CardDatabase {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("CardDatabase")
             .field("num_cards", &self.cards.len())
+            .field("num_commanders", &self.commanders.len())
             .finish()
     }
 }
@@ -562,5 +751,113 @@ impl CardDatabase {
         }
 
         Ok(Self::new(card_set.cards))
+    }
+
+    /// Load commanders from a directory containing YAML files.
+    ///
+    /// The directory should contain `.yaml` or `.yml` files with commander definitions.
+    /// For example, if your commanders are in `data/commanders/`, pass that full path.
+    ///
+    /// # Returns
+    /// A vector of commander definitions (not a CardDatabase - use `with_commanders` to add them).
+    ///
+    /// # Errors
+    /// Returns an error if:
+    /// - The directory doesn't exist
+    /// - Duplicate commander IDs are found
+    /// - YAML parsing fails
+    pub fn load_commanders_from_directory<P: AsRef<Path>>(path: P) -> Result<Vec<CommanderDefinition>, CardLoadError> {
+        let dir_path = path.as_ref();
+
+        if !dir_path.exists() {
+            return Err(CardLoadError::Validation(format!(
+                "Commander directory does not exist: {}",
+                dir_path.display()
+            )));
+        }
+
+        if !dir_path.is_dir() {
+            return Err(CardLoadError::Validation(format!(
+                "Path is not a directory: {}",
+                dir_path.display()
+            )));
+        }
+
+        let mut all_commanders = Vec::new();
+
+        for entry in fs::read_dir(dir_path)? {
+            let entry = entry?;
+            let file_path = entry.path();
+
+            if file_path.extension().is_some_and(|ext| ext == "yaml" || ext == "yml") {
+                let yaml_content = fs::read_to_string(&file_path)?;
+                let commander_set: CommanderSet = serde_yaml::from_str(&yaml_content)?;
+                all_commanders.extend(commander_set.commanders);
+            }
+        }
+
+        // Validate no duplicate IDs
+        let mut seen_ids = std::collections::HashSet::new();
+        for commander in &all_commanders {
+            if !seen_ids.insert(commander.id) {
+                return Err(CardLoadError::Validation(format!(
+                    "Duplicate commander ID: {}",
+                    commander.id
+                )));
+            }
+        }
+
+        Ok(all_commanders)
+    }
+
+    /// Add commanders to this database, returning a new database with both cards and commanders.
+    ///
+    /// # Example
+    /// ```ignore
+    /// let card_db = CardDatabase::load_from_directory("data/cards/core_set")?;
+    /// let commanders = CardDatabase::load_commanders_from_directory("data/commanders")?;
+    /// let full_db = card_db.with_commanders(commanders);
+    /// ```
+    pub fn with_commanders(self, commanders: Vec<CommanderDefinition>) -> Self {
+        // Extract the cards from Arc
+        let cards: Vec<CardDefinition> = (*self.cards).clone();
+        Self::new_with_commanders(cards, commanders)
+    }
+
+    /// Load both cards and commanders from their respective directories.
+    ///
+    /// This is a convenience method that combines `load_from_directory` and
+    /// `load_commanders_from_directory`.
+    ///
+    /// # Arguments
+    /// * `cards_path` - Path to card definitions (e.g., "data/cards/core_set")
+    /// * `commanders_path` - Path to commander definitions (e.g., "data/commanders")
+    ///
+    /// # Errors
+    /// Returns an error if either directory fails to load.
+    pub fn load_with_commanders<P1: AsRef<Path>, P2: AsRef<Path>>(
+        cards_path: P1,
+        commanders_path: P2,
+    ) -> Result<Self, CardLoadError> {
+        let card_db = Self::load_from_directory(cards_path)?;
+        let commanders = Self::load_commanders_from_directory(commanders_path)?;
+        Ok(card_db.with_commanders(commanders))
+    }
+
+    /// Load commanders from a single YAML string (useful for testing)
+    pub fn load_commanders_from_yaml(yaml: &str) -> Result<Vec<CommanderDefinition>, CardLoadError> {
+        let commander_set: CommanderSet = serde_yaml::from_str(yaml)?;
+
+        // Validate no duplicate IDs
+        let mut seen_ids = std::collections::HashSet::new();
+        for commander in &commander_set.commanders {
+            if !seen_ids.insert(commander.id) {
+                return Err(CardLoadError::Validation(
+                    format!("Duplicate commander ID: {}", commander.id)
+                ));
+            }
+        }
+
+        Ok(commander_set.commanders)
     }
 }

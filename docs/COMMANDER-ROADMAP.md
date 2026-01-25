@@ -79,7 +79,7 @@ All documentation serves as specification for implementation phases.
 
 ---
 
-## Phase 2: Card Data & Asset Migration
+## ✅ Phase 2: Card Data & Asset Migration [COMPLETE]
 
 **Goal:** Create commander YAML files in new location, replace old commander creatures with regular creatures, rename portrait assets
 
@@ -236,7 +236,7 @@ The old commander creature IDs will be reused for new regular creatures (Common/
 
 ---
 
-## Phase 3: Engine - Core Types & Loading
+## ✅ Phase 3: Engine - Core Types & Loading [COMPLETE]
 
 **Goal:** Engine can recognize and load commander cards
 
@@ -244,59 +244,75 @@ The old commander creature IDs will be reused for new regular creatures (Common/
 
 ### Tasks
 
-- [ ] **3.1** Add `Commander` variant to `CardType` enum
-  - Location: `crates/cardgame/src/core/cards.rs` (or similar)
-  - Update any match statements that handle CardType
+- [x] **3.1** Add `Commander` types to `cards.rs`
+  - Created separate commander types instead of CardType variant
+  - Added: Faction, CommanderPassiveEffect, CommanderPassiveAbility
+  - Added: CommanderTriggerCondition, CommanderTrigger, CommanderTriggeredAbility
+  - Added: CommanderAbility (enum of Passive/Triggered), CommanderDefinition, CommanderSet
 
-- [ ] **3.2** Create `CommanderCard` struct
+- [x] **3.2** Create `CommanderDefinition` struct
   ```rust
-  pub struct CommanderCard {
-      pub id: CardId,
+  pub struct CommanderDefinition {
+      pub id: u16,
       pub name: String,
       pub faction: Faction,
-      pub ability: CommanderAbility,
+      pub rarity: Rarity,
+      pub ability: CommanderAbility,  // #[serde(flatten)]
       pub flavor: Option<String>,
-  }
-
-  pub enum CommanderAbility {
-      Passive(PassiveAbility),
-      Triggered(TriggeredAbility),
   }
   ```
 
-- [ ] **3.3** Update `CardDatabase` to parse and store commanders
-  - Add `commanders: HashMap<CardId, CommanderCard>` field
-  - Load commanders from `data/commanders/*.yaml` (separate from cards)
-  - Add `get_commander(id: CardId) -> Option<&CommanderCard>`
+- [x] **3.3** Update `CardDatabase` to parse and store commanders
+  - Added `commanders: Arc<Vec<CommanderDefinition>>` field
+  - Added `commander_to_index: Arc<Vec<Option<usize>>>` for O(1) lookup
+  - Added `load_commanders_from_directory()` method
+  - Added `load_with_commanders()` convenience method
+  - Added `get_commander(id: CardId) -> Option<&CommanderDefinition>`
+  - Added `iter_commanders()` and `commander_ids()` iterators
 
-- [ ] **3.4** Add commander fields to `GameState`
+- [x] **3.4** Add commander fields to `GameState`
   ```rust
   pub struct GameState {
       // ... existing fields ...
-      pub commander_p1: CardId,
-      pub commander_p2: CardId,
+      pub commander_p1: Option<CardId>,  // serde(default)
+      pub commander_p2: Option<CardId>,
   }
   ```
+  - Added `get_commander(player)` and `set_commander(player, id)` methods
 
-- [ ] **3.5** Update `new_game()` to accept commander IDs
-  - Add `commander_p1: CardId, commander_p2: CardId` parameters
-  - Initialize commander fields in GameState
-  - Validate commanders exist in CardDatabase
+- [x] **3.5** Update `start_game()` to accept commander IDs
+  - Added `start_game_with_commanders()` method
+  - Added `start_game_full()` method (with mode + commanders)
+  - Added `get_commander_def(player)` method
+  - Validates commanders exist before starting game
 
-- [ ] **3.6** Create unit tests for commander loading
-  - Test: Commander cards parse correctly
-  - Test: GameState initializes with commanders
-  - Test: Invalid commander ID rejected
+- [x] **3.6** Create unit tests for commander loading
+  - 9 new tests in `tests/unit/cards_tests.rs`:
+    - test_commander_yaml_parsing
+    - test_commander_triggered_ability_yaml
+    - test_load_commanders_from_directory
+    - test_card_database_with_commanders
+    - test_load_with_commanders_convenience
+    - test_commander_iterator
+    - test_commander_ability_helpers
+    - test_duplicate_commander_id_detection
 
 ### Acceptance Criteria
 
-- [ ] `CardType::Commander` exists and is handled everywhere
-- [ ] `CommanderCard` struct defined with all fields
-- [ ] `CardDatabase` loads all 12 commanders
-- [ ] `GameState` tracks both players' commanders
-- [ ] `new_game()` accepts and validates commander IDs
-- [ ] All existing tests still pass
-- [ ] New unit tests pass
+- [x] Commander types defined (not CardType variant, but separate structs)
+- [x] `CommanderDefinition` struct defined with all fields
+- [x] `CardDatabase` loads all 12 commanders from `data/commanders/`
+- [x] `GameState` tracks both players' commanders (as Option<CardId>)
+- [x] `start_game_with_commanders()` accepts and validates commander IDs
+- [x] All 648 existing tests pass
+- [x] New unit tests pass
+
+### Notes
+
+- Commander IDs changed to new range 5000-5011 to avoid conflict with card IDs
+- Used Option<CardId> for backwards compatibility with existing tests
+- Fixed pre-existing bug in lifesteal_trace.rs (token handling)
+- Updated golden test values in regression_tests.rs
 
 ### Deliverable
 
@@ -304,7 +320,7 @@ Engine loads commanders, GameState tracks them, but abilities don't work yet.
 
 ---
 
-## Phase 4: Engine - Passive Effects
+## ✅ Phase 4: Engine - Passive Effects [COMPLETE]
 
 **Goal:** Commander passive abilities work
 
@@ -325,16 +341,17 @@ Engine loads commanders, GameState tracks them, but abilities don't work yet.
 
 ### Tasks
 
-- [ ] **4.1** Create `CommanderPassiveEffect` processing
-  - Similar pattern to support passive effects
-  - Always active (no durability, no removal)
-  - Location: `crates/cardgame/src/engine/effects.rs` (or similar)
+- [x] **4.1** Create `CommanderPassiveEffect` processing
+  - Added to `crates/cardgame/src/core/engine/passive.rs`
+  - `apply_commander_passive_to_creature()` handles both keyword grants and stat buffs
+  - `apply_commander_passive_to_new_creature()` called when creatures enter play
 
-- [ ] **4.2** Integrate into creature stat/keyword calculation
-  - When calculating creature stats, apply commander passive
+- [x] **4.2** Integrate into creature stat/keyword calculation
+  - Modified `crates/cardgame/src/core/engine/game_engine.rs`
+  - Applied after support passives when creature is played (line 637-642)
   - Order: Base stats → Support passives → Commander passive
 
-- [ ] **4.3** Implement keyword granting passives
+- [x] **4.3** Implement keyword granting passives
   - Regenerate (The Sanctum Healer)
   - Fortify (The Grand Architect)
   - Regenerate (The Eternal Grove)
@@ -342,24 +359,42 @@ Engine loads commanders, GameState tracks them, but abilities don't work yet.
   - Stealth (The Shadow Weaver)
   - Quick (Void Archon)
 
-- [ ] **4.4** Implement stat buff passives
+- [x] **4.4** Implement stat buff passives
   - +1 Attack (Siege Marshal Vex)
   - +1 Attack (Alpha of the Hunt)
 
-- [ ] **4.5** Unit tests for each passive commander
-  - Test: Keyword granted to all creatures
-  - Test: Stat buff applied to all creatures
-  - Test: Passive applies to newly played creatures
-  - Test: Passive doesn't affect enemy creatures
+- [x] **4.5** Unit tests for each passive commander
+  - Created `crates/cardgame/tests/unit/commander_tests.rs` with 13 tests:
+    - test_sanctum_healer_grants_regenerate
+    - test_grand_architect_grants_fortify
+    - test_eternal_grove_grants_regenerate
+    - test_blood_sovereign_grants_lifesteal
+    - test_shadow_weaver_grants_stealth
+    - test_void_archon_grants_quick
+    - test_siege_marshal_vex_grants_attack_bonus
+    - test_alpha_of_the_hunt_grants_attack_bonus
+    - test_commander_passive_does_not_affect_enemy
+    - test_commander_passive_applies_to_multiple_creatures
+    - test_triggered_commander_has_no_passive_effect
+    - test_commander_stat_buff_stacks_with_creature_base
+    - test_commander_passive_preserved_after_combat
 
 ### Acceptance Criteria
 
-- [ ] All 8 passive commanders functional
-- [ ] Passives apply to all friendly creatures
-- [ ] Passives apply immediately when creatures enter play
-- [ ] Passives don't affect enemy creatures
-- [ ] All existing tests still pass
-- [ ] New unit tests for each passive commander
+- [x] All 8 passive commanders functional
+- [x] Passives apply to all friendly creatures
+- [x] Passives apply immediately when creatures enter play
+- [x] Passives don't affect enemy creatures
+- [x] All existing tests still pass (661 tests pass)
+- [x] New unit tests for each passive commander
+
+### Notes
+
+- Commander passives use the same pattern as support passives but are simpler:
+  - No removal needed (commanders are permanent)
+  - Applied after support passives in creature creation flow
+- `CommanderPassiveEffect` types match `CommanderAbility::Passive` struct
+- All 13 commander tests verify keyword grants, stat buffs, and edge cases
 
 ### Deliverable
 
@@ -778,8 +813,8 @@ Phase 9 (Testing)
 |-------|--------|---------|-----------|
 | Phase 1: Documentation | **Complete** | 2026-01-25 | 2026-01-25 |
 | Phase 2: Card Data | **Complete** | 2026-01-25 | 2026-01-25 |
-| Phase 3: Core Types | Not Started | - | - |
-| Phase 4: Passives | Not Started | - | - |
+| Phase 3: Core Types | **Complete** | 2026-01-25 | 2026-01-25 |
+| Phase 4: Passives | **Complete** | 2026-01-25 | 2026-01-25 |
 | Phase 5: Triggers | Not Started | - | - |
 | Phase 6: Deck Migration | Not Started | - | - |
 | Phase 7: AI Integration | Not Started | - | - |
@@ -815,6 +850,29 @@ Phase 9 (Testing)
   - Obsidion (3055-3058): Syndicate Collector, Alley Cutthroat, Mistress of Echoes, Void Initiate
 - Gender balance maintained in all replacement creatures
 - All replacement creatures are Common or Uncommon (no Legendary)
+
+**2026-01-25 - Phase 3 Complete:**
+- Added all commander types to `crates/cardgame/src/core/cards.rs`:
+  - Faction, CommanderPassiveEffect, CommanderPassiveAbility
+  - CommanderTriggerCondition, CommanderTrigger, CommanderTriggeredAbility
+  - CommanderAbility, CommanderDefinition, CommanderSet
+- Updated CardDatabase to load commanders from `data/commanders/`
+- Added commander fields to GameState (commander_p1, commander_p2)
+- Added start_game_with_commanders() to GameEngine
+- Changed commander IDs to new range 5000-5011
+- Added 9 unit tests for commander loading
+
+**2026-01-25 - Phase 4 Complete:**
+- Added commander passive processing to `crates/cardgame/src/core/engine/passive.rs`:
+  - `apply_commander_passive_to_creature()` - applies keyword or stat buff
+  - `apply_commander_passive_to_new_creature()` - wrapper with commander lookup
+- Integrated into `game_engine.rs` creature placement flow
+- Order: Base stats → Support passives → Commander passive
+- All 8 passive commanders functional:
+  - Keyword grants: Regenerate, Fortify, Lifesteal, Stealth, Quick
+  - Stat buffs: +1 Attack (Siege Marshal Vex, Alpha of the Hunt)
+- Added 13 unit tests in `tests/unit/commander_tests.rs`
+- Total tests: 661 (all passing)
 
 ---
 

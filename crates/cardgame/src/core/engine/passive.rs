@@ -1,10 +1,14 @@
-//! Support passive effect helpers.
+//! Passive effect helpers for supports and commanders.
 //!
 //! This module contains helper functions for applying and removing passive
-//! effects from supports to creatures. Supports can grant attack bonuses,
-//! health bonuses, or keywords to friendly creatures while they are in play.
+//! effects from supports and commanders to creatures. Supports can grant attack
+//! bonuses, health bonuses, or keywords to friendly creatures while they are in
+//! play. Commander passives are always active and cannot be removed.
 
-use crate::core::cards::{AbilityDefinition, CardDatabase, CardType, EffectDefinition, PassiveModifier};
+use crate::core::cards::{
+    AbilityDefinition, CardDatabase, CardType, CommanderAbility, CommanderPassiveEffect,
+    EffectDefinition, PassiveModifier,
+};
 use crate::core::effects::{Effect, EffectTarget, TargetingRule};
 use crate::core::keywords::Keywords;
 use crate::core::state::{Creature, Support};
@@ -185,5 +189,70 @@ pub fn support_effect_def_to_effect(
         }
         EffectDefinition::Transform { .. } => None, // Needs specific targeting
         EffectDefinition::Copy => None, // Needs specific targeting
+    }
+}
+
+// =============================================================================
+// COMMANDER PASSIVE EFFECTS
+// =============================================================================
+
+/// Apply a commander's passive effect to a creature.
+///
+/// Commander passives work like support passives but are always active and
+/// cannot be removed. They affect all friendly creatures.
+pub(super) fn apply_commander_passive_to_creature(
+    creature: &mut Creature,
+    effect: &CommanderPassiveEffect,
+) {
+    match effect {
+        CommanderPassiveEffect::GrantKeyword { keyword } => {
+            let kw = Keywords::from_names(&[keyword.as_str()]);
+            creature.keywords.add(kw.0);
+        }
+        CommanderPassiveEffect::BuffStats { attack, health } => {
+            creature.attack = creature.attack.saturating_add(*attack);
+            if *health != 0 {
+                creature.current_health = creature.current_health.saturating_add(*health);
+                creature.max_health = creature.max_health.saturating_add(*health);
+            }
+        }
+    }
+}
+
+/// Apply a player's commander passive to a newly placed creature.
+///
+/// Called when a creature enters play. Looks up the player's commander
+/// and applies its passive ability if it has one.
+pub(super) fn apply_commander_passive_to_new_creature(
+    creature: &mut Creature,
+    commander_id: Option<CardId>,
+    card_db: &CardDatabase,
+) {
+    if let Some(cmd_id) = commander_id {
+        if let Some(commander) = card_db.get_commander(cmd_id) {
+            if let CommanderAbility::Passive { passive_ability } = &commander.ability {
+                apply_commander_passive_to_creature(creature, &passive_ability.effect);
+            }
+        }
+    }
+}
+
+/// Apply a commander's passive effect to all existing creatures.
+///
+/// Called at game start to apply commander passives to any creatures
+/// that may already exist (though typically the board is empty at start).
+pub(super) fn apply_commander_passive_to_all_creatures(
+    commander_id: Option<CardId>,
+    creatures: &mut [Creature],
+    card_db: &CardDatabase,
+) {
+    if let Some(cmd_id) = commander_id {
+        if let Some(commander) = card_db.get_commander(cmd_id) {
+            if let CommanderAbility::Passive { passive_ability } = &commander.ability {
+                for creature in creatures {
+                    apply_commander_passive_to_creature(creature, &passive_ability.effect);
+                }
+            }
+        }
     }
 }

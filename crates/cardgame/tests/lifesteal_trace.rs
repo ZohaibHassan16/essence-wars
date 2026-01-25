@@ -40,8 +40,12 @@ fn trace_single_game_detailed() {
         // Get state info
         let p1_creatures: Vec<_> = engine.state.players[0].creatures.iter()
             .map(|c| {
-                let card = card_db.get(c.card_id).unwrap();
-                (c.slot.0, card.name.as_str(), card.keywords().to_names())
+                // Handle tokens/copies (CardId(0)) which don't exist in card database
+                if let Some(card) = card_db.get(c.card_id) {
+                    (c.slot.0, card.name.as_str(), card.keywords().to_names())
+                } else {
+                    (c.slot.0, "Token/Copy", c.keywords.to_names())
+                }
             })
             .collect();
 

@@ -217,6 +217,12 @@ pub struct GameState {
     pub rng_state: u64,
     pub result: Option<GameResult>,
     pub game_mode: GameMode,
+    /// Commander for player 1 (None for legacy games without commanders)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub commander_p1: Option<CardId>,
+    /// Commander for player 2 (None for legacy games without commanders)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub commander_p2: Option<CardId>,
 }
 
 impl GameState {
@@ -231,6 +237,26 @@ impl GameState {
             rng_state: 0,
             result: None,
             game_mode: GameMode::default(),
+            commander_p1: None,
+            commander_p2: None,
+        }
+    }
+
+    /// Get commander for a player
+    pub fn get_commander(&self, player: PlayerId) -> Option<CardId> {
+        match player {
+            PlayerId::PLAYER_ONE => self.commander_p1,
+            PlayerId::PLAYER_TWO => self.commander_p2,
+            _ => None,
+        }
+    }
+
+    /// Set commander for a player
+    pub fn set_commander(&mut self, player: PlayerId, commander_id: CardId) {
+        match player {
+            PlayerId::PLAYER_ONE => self.commander_p1 = Some(commander_id),
+            PlayerId::PLAYER_TWO => self.commander_p2 = Some(commander_id),
+            _ => {}
         }
     }
 

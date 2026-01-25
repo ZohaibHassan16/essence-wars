@@ -18,6 +18,7 @@ use super::effect_queue::EffectQueue;
 use super::effect_convert::{resolve_spell_target, effect_def_to_effect_with_target, effect_def_to_triggered_effect};
 use super::passive::{
     apply_all_support_passives_to_creature,
+    apply_commander_passive_to_new_creature,
     apply_support_passives_to_all_creatures,
     remove_support_passives_from_all_creatures,
     support_effect_def_to_effect,
@@ -107,6 +108,60 @@ impl<'a> GameEngine<'a> {
     ) {
         self.start_game(deck1, deck2, seed);
         self.state.game_mode = mode;
+    }
+
+    /// Initialize a new game with the given decks and commanders.
+    /// Commanders are validated against the card database before the game starts.
+    ///
+    /// # Panics
+    /// Panics if either commander ID is not found in the card database.
+    pub fn start_game_with_commanders(
+        &mut self,
+        deck1: Vec<CardId>,
+        deck2: Vec<CardId>,
+        commander1: CardId,
+        commander2: CardId,
+        seed: u64,
+    ) {
+        // Validate commanders exist in database
+        if self.card_db.get_commander(commander1).is_none() {
+            panic!("Commander {} not found in card database", commander1.0);
+        }
+        if self.card_db.get_commander(commander2).is_none() {
+            panic!("Commander {} not found in card database", commander2.0);
+        }
+
+        // Start the game normally
+        self.start_game(deck1, deck2, seed);
+
+        // Set commanders
+        self.state.commander_p1 = Some(commander1);
+        self.state.commander_p2 = Some(commander2);
+    }
+
+    /// Initialize a new game with decks, commanders, and game mode.
+    /// Combines `start_game_with_commanders` and `start_game_with_mode`.
+    ///
+    /// # Panics
+    /// Panics if either commander ID is not found in the card database.
+    pub fn start_game_full(
+        &mut self,
+        deck1: Vec<CardId>,
+        deck2: Vec<CardId>,
+        commander1: CardId,
+        commander2: CardId,
+        seed: u64,
+        mode: GameMode,
+    ) {
+        self.start_game_with_commanders(deck1, deck2, commander1, commander2, seed);
+        self.state.game_mode = mode;
+    }
+
+    /// Get the commander definition for a player.
+    /// Returns None if the player has no commander set or if the commander isn't found.
+    pub fn get_commander_def(&self, player: PlayerId) -> Option<&crate::core::cards::CommanderDefinition> {
+        let commander_id = self.state.get_commander(player)?;
+        self.card_db.get_commander(commander_id)
     }
 
     /// Draw a card for the specified player.
@@ -577,6 +632,13 @@ impl<'a> GameEngine<'a> {
                 if let Some(new_creature) = self.state.players[current_player.index()]
                     .get_creature_mut(slot) {
                     apply_all_support_passives_to_creature(new_creature, &supports, self.card_db);
+                }
+
+                // Apply commander passive effects to the new creature
+                let commander_id = self.state.get_commander(current_player);
+                if let Some(new_creature) = self.state.players[current_player.index()]
+                    .get_creature_mut(slot) {
+                    apply_commander_passive_to_new_creature(new_creature, commander_id, self.card_db);
                 }
 
                 // Queue OnPlay triggered effects

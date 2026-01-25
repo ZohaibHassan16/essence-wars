@@ -2,7 +2,7 @@
 
 use cardgame::cards::{
     CardDatabase, CardDefinition, CardLoadError, CardType, EffectDefinition, PassiveEffectDefinition,
-    PassiveModifier,
+    PassiveModifier, Faction,
 };
 use cardgame::effects::{CreatureFilter, TargetingRule};
 use cardgame::types::{CardId, Rarity};
@@ -307,4 +307,222 @@ fn test_load_from_directory_file_not_directory() {
         "Error should mention path is not a directory: {}",
         err
     );
+}
+
+// =============================================================================
+// COMMANDER TESTS
+// =============================================================================
+
+#[test]
+fn test_commander_yaml_parsing() {
+    let yaml = r#"
+commanders:
+  - id: 5000
+    name: "Test Commander"
+    faction: Argentum
+    rarity: Legendary
+    passive_ability:
+      description: "Your creatures have +1 Attack"
+      effect:
+        type: buff_stats
+        attack: 1
+        health: 0
+    flavor: "Test flavor text"
+"#;
+
+    let commanders = CardDatabase::load_commanders_from_yaml(yaml)
+        .expect("Failed to parse commander YAML");
+
+    assert_eq!(commanders.len(), 1);
+    let commander = &commanders[0];
+    assert_eq!(commander.id, 5000);
+    assert_eq!(commander.name, "Test Commander");
+    assert_eq!(commander.faction, Faction::Argentum);
+    assert!(commander.has_passive());
+    assert!(!commander.has_triggered());
+}
+
+#[test]
+fn test_commander_triggered_ability_yaml() {
+    let yaml = r#"
+commanders:
+  - id: 5001
+    name: "Token Summoner"
+    faction: Symbiote
+    rarity: Legendary
+    triggered_ability:
+      trigger: StartOfTurn
+      description: "At the start of your turn, summon a 1/1 token"
+      effects:
+        - type: summon_token
+          token:
+            name: "Spawn"
+            attack: 1
+            health: 1
+            keywords: []
+"#;
+
+    let commanders = CardDatabase::load_commanders_from_yaml(yaml)
+        .expect("Failed to parse commander YAML");
+
+    assert_eq!(commanders.len(), 1);
+    let commander = &commanders[0];
+    assert!(!commander.has_passive());
+    assert!(commander.has_triggered());
+}
+
+#[test]
+fn test_load_commanders_from_directory() {
+    let commanders = CardDatabase::load_commanders_from_directory(
+        cardgame::data_dir().join("commanders")
+    ).expect("Failed to load commanders from directory");
+
+    // We should have 12 commanders (4 per faction)
+    assert_eq!(commanders.len(), 12, "Expected 12 commanders, got {}", commanders.len());
+
+    // Verify commanders by faction
+    let argentum_count = commanders.iter().filter(|c| c.faction == Faction::Argentum).count();
+    let symbiote_count = commanders.iter().filter(|c| c.faction == Faction::Symbiote).count();
+    let obsidion_count = commanders.iter().filter(|c| c.faction == Faction::Obsidion).count();
+
+    assert_eq!(argentum_count, 4, "Expected 4 Argentum commanders");
+    assert_eq!(symbiote_count, 4, "Expected 4 Symbiote commanders");
+    assert_eq!(obsidion_count, 4, "Expected 4 Obsidion commanders");
+}
+
+#[test]
+fn test_card_database_with_commanders() {
+    // Load cards and commanders
+    let card_db = CardDatabase::load_from_directory(
+        cardgame::data_dir().join("cards/core_set")
+    ).expect("Failed to load cards");
+
+    let commanders = CardDatabase::load_commanders_from_directory(
+        cardgame::data_dir().join("commanders")
+    ).expect("Failed to load commanders");
+
+    let full_db = card_db.with_commanders(commanders);
+
+    // Verify cards
+    assert_eq!(full_db.len(), 300);
+
+    // Verify commanders
+    assert_eq!(full_db.commander_count(), 12);
+
+    // Verify commander lookup (using new ID range 5000+)
+    let high_artificer = full_db.get_commander(CardId(5000));
+    assert!(high_artificer.is_some(), "High Artificer (5000) not found");
+    assert_eq!(high_artificer.unwrap().name, "The High Artificer");
+
+    // Verify card ID and commander ID don't conflict
+    // Card 1000 is Brass Sentinel
+    let card_1000 = full_db.get(CardId(1000));
+    assert!(card_1000.is_some());
+    assert_eq!(card_1000.unwrap().name, "Brass Sentinel");
+
+    // Commander 5000 is The High Artificer
+    let commander_5000 = full_db.get_commander(CardId(5000));
+    assert!(commander_5000.is_some());
+    assert_eq!(commander_5000.unwrap().name, "The High Artificer");
+}
+
+#[test]
+fn test_load_with_commanders_convenience() {
+    let full_db = CardDatabase::load_with_commanders(
+        cardgame::data_dir().join("cards/core_set"),
+        cardgame::data_dir().join("commanders"),
+    ).expect("Failed to load cards and commanders");
+
+    assert_eq!(full_db.len(), 300);
+    assert_eq!(full_db.commander_count(), 12);
+}
+
+#[test]
+fn test_commander_iterator() {
+    let commanders = CardDatabase::load_commanders_from_directory(
+        cardgame::data_dir().join("commanders")
+    ).expect("Failed to load commanders");
+
+    let db = CardDatabase::empty().with_commanders(commanders);
+
+    let commander_ids: Vec<u16> = db.commander_ids().map(|id| id.0).collect();
+    assert_eq!(commander_ids.len(), 12);
+
+    // All IDs should be in the 5000 range
+    for id in commander_ids {
+        assert!(id >= 5000 && id <= 5011, "Commander ID {} out of expected range 5000-5011", id);
+    }
+}
+
+#[test]
+fn test_commander_ability_helpers() {
+    let yaml = r#"
+commanders:
+  - id: 5100
+    name: "Passive Commander"
+    faction: Argentum
+    rarity: Legendary
+    passive_ability:
+      description: "Your creatures have Guard"
+      effect:
+        type: grant_keyword
+        keyword: Guard
+  - id: 5101
+    name: "Triggered Commander"
+    faction: Obsidion
+    rarity: Legendary
+    triggered_ability:
+      trigger: OnEnemyDeath
+      description: "Draw a card when an enemy dies"
+      effects:
+        - type: draw
+          count: 1
+"#;
+
+    let commanders = CardDatabase::load_commanders_from_yaml(yaml)
+        .expect("Failed to parse commander YAML");
+
+    // Test passive commander
+    let passive_cmd = &commanders[0];
+    assert!(passive_cmd.has_passive());
+    assert!(!passive_cmd.has_triggered());
+    assert!(passive_cmd.passive_ability().is_some());
+    assert!(passive_cmd.triggered_ability().is_none());
+
+    // Test triggered commander
+    let triggered_cmd = &commanders[1];
+    assert!(!triggered_cmd.has_passive());
+    assert!(triggered_cmd.has_triggered());
+    assert!(triggered_cmd.passive_ability().is_none());
+    assert!(triggered_cmd.triggered_ability().is_some());
+}
+
+#[test]
+fn test_duplicate_commander_id_detection() {
+    let yaml = r#"
+commanders:
+  - id: 5000
+    name: "Commander One"
+    faction: Argentum
+    rarity: Legendary
+    passive_ability:
+      description: "Ability one"
+      effect:
+        type: grant_keyword
+        keyword: Guard
+  - id: 5000
+    name: "Commander Duplicate"
+    faction: Argentum
+    rarity: Legendary
+    passive_ability:
+      description: "Ability two"
+      effect:
+        type: grant_keyword
+        keyword: Shield
+"#;
+
+    let result = CardDatabase::load_commanders_from_yaml(yaml);
+    assert!(result.is_err());
+    let err = result.unwrap_err();
+    assert!(matches!(err, CardLoadError::Validation(_)));
 }
