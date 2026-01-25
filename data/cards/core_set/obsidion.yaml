@@ -706,90 +706,58 @@ cards:
     rarity: Rare
 
   # =============================================================================
-  # PHASE 8A: LEGENDARY COMMANDERS (+4 cards)
-  # Each commander defines an archetype for Commander Decks
+  # PHASE 8A: REGULAR CREATURES (IDs 3055-3058)
+  # Note: Commanders moved to data/commanders/obsidion.yaml
+  # These IDs now hold regular creatures to fill the card pool
   # =============================================================================
 
-  # --- The Blood Sovereign (Lifesteal/Sustain archetype) ---
+  # --- Syndicate Collector (Ambiguous, Noble) ---
   - id: 3055
-    name: "The Blood Sovereign"
-    cost: 6
-    card_type: creature
-    attack: 4
-    health: 5
-    keywords: [Lifesteal]
-    rarity: Legendary
-    tags: [Commander, Noble]
-    passive_effects:
-      - modifier:
-          grant_keyword: Lifesteal
-    # Flavor: "Blood is such an inefficient fuel. Let me show you how to refine it."
-
-  # --- Shadow Emperor Kael (Stealth/Assassin archetype) ---
-  - id: 3056
-    name: "Shadow Emperor Kael"
-    cost: 6
-    card_type: creature
-    attack: 5
-    health: 4
-    keywords: [Stealth, Quick]
-    rarity: Legendary
-    tags: [Commander, Assassin]
-    abilities:
-      - trigger: OnKill
-        targeting: NoTarget
-        effects:
-          - type: bounce
-    # Returns to hand on kill - hit and run assassin
-    # Flavor: "You never see him twice. Once is enough."
-
-  # --- The Shadow Weaver (Shadow Clone archetype) ---
-  - id: 3057
-    name: "The Shadow Weaver"
-    cost: 6
+    name: "Syndicate Collector"
+    cost: 4
     card_type: creature
     attack: 3
     health: 4
-    keywords: [Stealth]
-    rarity: Legendary
-    tags: [Commander, Shapeshifter]
-    abilities:
-      - trigger: OnPlay
-        targeting: NoTarget
-        effects:
-          - type: summon_token
-            token:
-              name: "Shadow Clone"
-              attack: 2
-              health: 2
-              keywords: [Ephemeral, Stealth]
-          - type: summon_token
-            token:
-              name: "Shadow Clone"
-              attack: 2
-              health: 2
-              keywords: [Ephemeral, Stealth]
-    # Summons shadow clones that strike from the darkness
-    # Flavor: "From one shadow, many emerge."
+    keywords: [Lifesteal]
+    rarity: Uncommon
+    tags: [Noble]
+    # Extracts payment in blood from the Syndicate's debtors
 
-  # --- Void Archon (Quick/Burst archetype) ---
-  - id: 3058
-    name: "Void Archon"
-    cost: 5
+  # --- Alley Cutthroat (Male, Assassin) ---
+  - id: 3056
+    name: "Alley Cutthroat"
+    cost: 4
     card_type: creature
     attack: 4
     health: 3
     keywords: [Quick]
-    rarity: Legendary
-    tags: [Commander, Mage]
-    abilities:
-      - trigger: OnPlay
-        targeting: NoTarget
-        effects:
-          - type: grant_keyword
-            keyword: Quick
-    # Grants Quick to all ally creatures on play
-    # Flavor: "Time is just another resource to exploit."
+    rarity: Uncommon
+    tags: [Assassin]
+    # Strikes before the target knows they're marked
+
+  # --- Mistress of Echoes (Female, Shapeshifter) ---
+  - id: 3057
+    name: "Mistress of Echoes"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: [Stealth]
+    rarity: Common
+    tags: [Shapeshifter]
+    # Her form shifts like smoke in moonlight
+
+  # --- Void Initiate (Ambiguous, Mage) ---
+  - id: 3058
+    name: "Void Initiate"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: [Quick]
+    rarity: Common
+    tags: [Mage]
+    # A student of forbidden temporal magic
 
   # =============================================================================
   # Phase 8B: Commander Support Cards (IDs 3059-3074)

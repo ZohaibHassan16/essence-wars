@@ -763,83 +763,68 @@ cards:
     rarity: Rare
 
   # =============================================================================
-  # PHASE 8A: LEGENDARY COMMANDERS (+4 cards)
-  # Each commander defines an archetype for Commander Decks
+  # PHASE 8A: REGULAR CREATURES (IDs 1056-1059)
+  # Note: Commanders moved to data/commanders/argentum.yaml
+  # These IDs now hold regular creatures to fill the card pool
   # =============================================================================
 
-  # --- The High Artificer (Construct/Token archetype) ---
+  # --- Cogwheel Engineer (Male, Construct) ---
   - id: 1056
-    name: "The High Artificer"
-    cost: 6
+    name: "Cogwheel Engineer"
+    cost: 4
     card_type: creature
     attack: 3
-    health: 5
-    keywords: []
-    rarity: Legendary
-    tags: [Commander, Construct]
-    abilities:
-      - trigger: StartOfTurn
-        targeting: NoTarget
-        effects:
-          - type: summon_token
-            token:
-              name: "Brass Cog"
-              attack: 1
-              health: 1
-              keywords: []
-    passive_effects:
-      - modifier:
-          health_bonus: 1
-    # Flavor: "The Combine doesn't build soldiers. We manufacture victory."
-
-  # --- The Sanctum Healer (Regenerate/Healing archetype) ---
-  - id: 1057
-    name: "The Sanctum Healer"
-    cost: 6
-    card_type: creature
-    attack: 2
-    health: 7
-    keywords: [Regenerate]
-    rarity: Legendary
-    tags: [Commander, Construct]
-    passive_effects:
-      - modifier:
-          grant_keyword: Regenerate
-    # Flavor: "Where gears mend flesh and essence restores steel."
-
-  # --- Siege Marshal Vex (Piercing/Aggro archetype) ---
-  - id: 1058
-    name: "Siege Marshal Vex"
-    cost: 5
-    card_type: creature
-    attack: 4
     health: 4
-    keywords: [Piercing]
-    rarity: Legendary
-    tags: [Commander, Soldier]
-    passive_effects:
-      - modifier:
-          attack_bonus: 1
-    # Note: Attack bonus applies to all creatures (Piercing synergy)
-    # Flavor: "A wall is just a door that hasn't been opened hard enough."
-
-  # --- The Grand Architect (Fortify/Control archetype) ---
-  - id: 1059
-    name: "The Grand Architect"
-    cost: 6
-    card_type: creature
-    attack: 2
-    health: 6
-    keywords: [Fortify]
-    rarity: Legendary
-    tags: [Commander, Construct]
+    keywords: []
+    rarity: Uncommon
+    tags: [Construct, Engineer]
     abilities:
       - trigger: OnPlay
         targeting: NoTarget
         effects:
-          - type: grant_keyword
-            keyword: Fortify
-    # Flavor: "Every bolt placed with purpose. Every gear turning in harmony."
+          - type: summon_token
+            token:
+              name: "Repair Drone"
+              attack: 0
+              health: 2
+              keywords: []
+    # A skilled technician who deploys maintenance drones
+
+  # --- Field Medic Vera (Female, Medic) ---
+  - id: 1057
+    name: "Field Medic Vera"
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 5
+    keywords: [Regenerate]
+    rarity: Uncommon
+    tags: [Medic, Soldier]
+    # A battlefield healer who keeps the line holding
+
+  # --- Gatehouse Sentry (Male, Soldier) ---
+  - id: 1058
+    name: "Gatehouse Sentry"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: [Guard]
+    rarity: Common
+    tags: [Soldier]
+    # Stalwart defender of the Combine's gates
+
+  # --- Workshop Forewoman (Female, Engineer) ---
+  - id: 1059
+    name: "Workshop Forewoman"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: [Fortify]
+    rarity: Common
+    tags: [Construct, Engineer]
+    # Oversees the construction of Argentum's war machines
 
   # =============================================================================
   # Phase 8B: Commander Support Cards (IDs 1060-1074)

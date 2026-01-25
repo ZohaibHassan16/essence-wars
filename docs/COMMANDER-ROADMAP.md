@@ -39,7 +39,7 @@ This document outlines the implementation plan for the Commander System Rework, 
 
 ---
 
-## Phase 1: Documentation & Schema Definition
+## ✅ Phase 1: Documentation & Schema Definition [COMPLETE]
 
 **Goal:** Establish the contract before writing code
 
@@ -47,31 +47,31 @@ This document outlines the implementation plan for the Commander System Rework, 
 
 ### Tasks
 
-- [ ] **1.1** Update `docs/design-engine.md` with new commander rules
+- [x] **1.1** Update `docs/design-engine.md` with new commander rules
   - Add Section 8.4: Commander Cards
   - Update Section 3.1: Game Setup (commander selection)
   - Update Section 10: Win Conditions (commander retreat terminology)
   - Add Command Zone to board layout diagram
 
-- [ ] **1.2** Define commander YAML schema formally
+- [x] **1.2** Define commander YAML schema formally
   - Document in design-commanders.md (already done)
   - Create example entries for reference
 
-- [ ] **1.3** Update `CLAUDE.md` with new commander information
+- [x] **1.3** Update `CLAUDE.md` with new commander information
   - Update Card System section
   - Update Deck System section
   - Add Commander System section
   - Update State Tensor section (preview of changes)
 
-- [ ] **1.4** Document state tensor changes for AI
+- [x] **1.4** Document state tensor changes for AI
   - Define new tensor layout with commander fields
   - Document in design-engine.md Section 11.1
 
 ### Acceptance Criteria
 
-- [ ] All documentation reflects the new commander design
-- [ ] Schema is formally defined and documented
-- [ ] CLAUDE.md is up to date for AI assistant context
+- [x] All documentation reflects the new commander design
+- [x] Schema is formally defined and documented
+- [x] CLAUDE.md is up to date for AI assistant context
 
 ### Deliverable
 
@@ -777,7 +777,7 @@ Phase 9 (Testing)
 | Phase | Status | Started | Completed |
 |-------|--------|---------|-----------|
 | Phase 1: Documentation | **Complete** | 2026-01-25 | 2026-01-25 |
-| Phase 2: Card Data | Not Started | - | - |
+| Phase 2: Card Data | **Complete** | 2026-01-25 | 2026-01-25 |
 | Phase 3: Core Types | Not Started | - | - |
 | Phase 4: Passives | Not Started | - | - |
 | Phase 5: Triggers | Not Started | - | - |
@@ -803,6 +803,18 @@ Phase 9 (Testing)
 - Commander YAML schema formally defined in design-engine.md Section 8.4.4
 - Portrait files renamed from IDs to snake_case names
 - Deck file `colossus_wall.toml` renamed to `sanctum_healer.toml`
+
+**2026-01-25 - Phase 2 Complete:**
+- Created `data/commanders/` folder with 3 YAML files:
+  - `argentum.yaml` (4 commanders: High Artificer, Sanctum Healer, Siege Marshal Vex, Grand Architect)
+  - `symbiote.yaml` (4 commanders: Broodmother, Plague Sovereign, Alpha of the Hunt, Eternal Grove)
+  - `obsidion.yaml` (4 commanders: Blood Sovereign, Shadow Emperor Kael, Shadow Weaver, Void Archon)
+- Replaced old commander creatures with new regular creatures:
+  - Argentum (1056-1059): Cogwheel Engineer, Field Medic Vera, Gatehouse Sentry, Workshop Forewoman
+  - Symbiote (2060-2063): Hive Tender, Blight Carrier, Pack Runner, Thornwood Sapling
+  - Obsidion (3055-3058): Syndicate Collector, Alley Cutthroat, Mistress of Echoes, Void Initiate
+- Gender balance maintained in all replacement creatures
+- All replacement creatures are Common or Uncommon (no Legendary)
 
 ---
 

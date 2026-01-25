@@ -1,0 +1,52 @@
+# Obsidion Syndicate Commanders
+# 4 commanders defining the burst damage, shadow-focused faction
+
+commanders:
+  - id: 3055
+    name: "The Blood Sovereign"
+    card_type: commander
+    faction: Obsidion
+    rarity: Legendary
+    passive_ability:
+      description: "Your creatures have Lifesteal"
+      effect:
+        type: grant_keyword
+        keyword: Lifesteal
+    flavor: "Blood is such an inefficient fuel. Let me show you how to refine it."
+
+  - id: 3056
+    name: "Shadow Emperor Kael"
+    card_type: commander
+    faction: Obsidion
+    rarity: Legendary
+    triggered_ability:
+      trigger: OnEnemyDeath
+      description: "When an enemy creature dies, draw a card"
+      effects:
+        - type: draw
+          count: 1
+    flavor: "You never see him twice. Once is enough."
+
+  - id: 3057
+    name: "The Shadow Weaver"
+    card_type: commander
+    faction: Obsidion
+    rarity: Legendary
+    passive_ability:
+      description: "Your creatures have Stealth"
+      effect:
+        type: grant_keyword
+        keyword: Stealth
+    flavor: "Shadows don't lie. They simply don't tell the whole truth."
+
+  - id: 3058
+    name: "Void Archon"
+    card_type: commander
+    faction: Obsidion
+    rarity: Legendary
+    passive_ability:
+      description: "Your creatures have Quick"
+      effect:
+        type: grant_keyword
+        keyword: Quick
+    flavor: "Time is just another resource to exploit."

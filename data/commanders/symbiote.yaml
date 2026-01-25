@@ -1,0 +1,61 @@
+# Symbiote Circles Commanders
+# 4 commanders defining the aggressive, swarm-focused faction
+
+commanders:
+  - id: 2060
+    name: "The Broodmother"
+    card_type: commander
+    faction: Symbiote
+    rarity: Legendary
+    triggered_ability:
+      trigger: OnCreaturePlayed
+      description: "When you play a creature with Rush, summon a 1/1 Broodling with Rush"
+      condition:
+        has_keyword: Rush
+      effects:
+        - type: summon_token
+          token:
+            name: "Broodling"
+            attack: 1
+            health: 1
+            keywords: [Rush]
+    flavor: "Where she commands, the swarm follows."
+
+  - id: 2061
+    name: "Plague Sovereign"
+    card_type: commander
+    faction: Symbiote
+    rarity: Legendary
+    triggered_ability:
+      trigger: OnAllyDeath
+      description: "When one of your creatures dies, deal 1 damage to the enemy commander"
+      effects:
+        - type: damage
+          amount: 1
+          target: EnemyCommander
+    flavor: "Every death feeds the plague."
+
+  - id: 2062
+    name: "Alpha of the Hunt"
+    card_type: commander
+    faction: Symbiote
+    rarity: Legendary
+    passive_ability:
+      description: "Your creatures have +1 Attack"
+      effect:
+        type: buff_stats
+        attack: 1
+        health: 0
+    flavor: "The pack hunts as one. The Alpha strikes first."
+
+  - id: 2063
+    name: "The Eternal Grove"
+    card_type: commander
+    faction: Symbiote
+    rarity: Legendary
+    passive_ability:
+      description: "Your creatures have Regenerate"
+      effect:
+        type: grant_keyword
+        keyword: Regenerate
+    flavor: "The forest remembers. The forest endures."

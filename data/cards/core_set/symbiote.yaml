@@ -753,80 +753,68 @@ cards:
     # Grants Rush to all ally creatures on play - swarm finisher
 
   # =============================================================================
-  # PHASE 8A: LEGENDARY COMMANDERS (+4 cards)
-  # Each commander defines an archetype for Commander Decks
+  # PHASE 8A: REGULAR CREATURES (IDs 2060-2063)
+  # Note: Commanders moved to data/commanders/symbiote.yaml
+  # These IDs now hold regular creatures to fill the card pool
   # =============================================================================
 
-  # --- The Broodmother (Rush/Swarm archetype) ---
+  # --- Hive Tender (Female, Beast) ---
   - id: 2060
-    name: "The Broodmother"
-    cost: 6
+    name: "Hive Tender"
+    cost: 4
     card_type: creature
     attack: 3
-    health: 5
+    health: 4
     keywords: [Rush]
-    rarity: Legendary
-    tags: [Commander, Beast]
+    rarity: Uncommon
+    tags: [Beast]
     abilities:
-      - trigger: OnAttack
+      - trigger: OnPlay
         targeting: NoTarget
         effects:
           - type: summon_token
             token:
-              name: "Broodling"
+              name: "Hiveling"
               attack: 1
               health: 1
-              keywords: [Rush]
-    # Flavor: "Where she walks, the swarm follows."
+              keywords: []
+    # She nurtures the next generation of the swarm
 
-  # --- Plague Sovereign (Volatile/Death archetype) ---
+  # --- Blight Carrier (Ambiguous, Parasite) ---
   - id: 2061
-    name: "Plague Sovereign"
-    cost: 6
-    card_type: creature
-    attack: 4
-    health: 4
-    keywords: [Volatile]
-    rarity: Legendary
-    tags: [Commander, Parasite]
-    abilities:
-      - trigger: OnAllyDeath
-        targeting: NoTarget
-        effects:
-          - type: damage
-            amount: 1
-    # Deals 1 damage to all enemies on any ally death
-    # Flavor: "Every death feeds the plague."
-
-  # --- Alpha of the Hunt (Frenzy/Aggro archetype) ---
-  - id: 2062
-    name: "Alpha of the Hunt"
-    cost: 5
-    card_type: creature
-    attack: 4
-    health: 3
-    keywords: [Frenzy]
-    rarity: Legendary
-    tags: [Commander, Beast]
-    passive_effects:
-      - modifier:
-          attack_bonus: 1
-    # Flavor: "The pack hunts as one. The Alpha strikes first."
-
-  # --- The Eternal Grove (Regenerate/Midrange archetype) ---
-  - id: 2063
-    name: "The Eternal Grove"
-    cost: 7
+    name: "Blight Carrier"
+    cost: 4
     card_type: creature
     attack: 3
-    health: 7
+    health: 3
+    keywords: [Volatile]
+    rarity: Uncommon
+    tags: [Parasite]
+    # A walking plague, spreading corruption in death
+
+  # --- Pack Runner (Male, Beast) ---
+  - id: 2062
+    name: "Pack Runner"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords: [Rush]
+    rarity: Common
+    tags: [Beast]
+    # Swift hunter that strikes before prey can react
+
+  # --- Thornwood Sapling (Non-gendered, Structure) ---
+  - id: 2063
+    name: "Thornwood Sapling"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 4
     keywords: [Regenerate]
-    rarity: Legendary
-    tags: [Commander, Structure]
-    passive_effects:
-      - modifier:
-          grant_keyword: Regenerate
-    # Flavor: "The forest remembers. The forest endures."
+    rarity: Common
+    tags: [Structure]
+    # A young tree with remarkable healing properties
 
   # =============================================================================
   # Phase 8B: Commander Support Cards (IDs 2064-2074)

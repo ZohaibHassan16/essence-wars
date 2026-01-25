@@ -1,0 +1,57 @@
+# Argentum Combine Commanders
+# 4 commanders defining the defensive, construct-focused faction
+
+commanders:
+  - id: 1056
+    name: "The High Artificer"
+    card_type: commander
+    faction: Argentum
+    rarity: Legendary
+    triggered_ability:
+      trigger: StartOfTurn
+      description: "At the start of your turn, summon a 1/1 Brass Cog"
+      effects:
+        - type: summon_token
+          token:
+            name: "Brass Cog"
+            attack: 1
+            health: 1
+            keywords: []
+    flavor: "The Combine doesn't build soldiers. We manufacture victory."
+
+  - id: 1057
+    name: "The Sanctum Healer"
+    card_type: commander
+    faction: Argentum
+    rarity: Legendary
+    passive_ability:
+      description: "Your creatures have Regenerate"
+      effect:
+        type: grant_keyword
+        keyword: Regenerate
+    flavor: "Where gears mend flesh and essence restores steel."
+
+  - id: 1058
+    name: "Siege Marshal Vex"
+    card_type: commander
+    faction: Argentum
+    rarity: Legendary
+    passive_ability:
+      description: "Your creatures have +1 Attack"
+      effect:
+        type: buff_stats
+        attack: 1
+        health: 0
+    flavor: "A wall is just a door that hasn't been opened hard enough."
+
+  - id: 1059
+    name: "The Grand Architect"
+    card_type: commander
+    faction: Argentum
+    rarity: Legendary
+    passive_ability:
+      description: "Your creatures have Fortify"
+      effect:
+        type: grant_keyword
+        keyword: Fortify
+    flavor: "Every bolt placed with purpose. Every gear turning in harmony."
