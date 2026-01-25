@@ -354,6 +354,11 @@ class SpectatorStore {
     this.resetCommentary();
   }
 
+  /** Clear current error */
+  clearError() {
+    this.error = null;
+  }
+
   /** Go back to main menu */
   backToMenu() {
     this.pause();

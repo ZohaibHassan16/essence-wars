@@ -8,6 +8,8 @@ export interface DeckInfo {
   playstyle: string;
   faction: string;
   cardCount: number;
+  /** Commander information for this deck */
+  commander: CommanderDto | null;
 }
 
 export interface BotInfo {

@@ -20,6 +20,8 @@ pub struct DeckInfo {
     pub playstyle: String,
     pub faction: String,
     pub card_count: usize,
+    /// Commander information for this deck
+    pub commander: Option<CommanderDto>,
 }
 
 /// Bot information for selection

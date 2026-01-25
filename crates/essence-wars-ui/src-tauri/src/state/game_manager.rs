@@ -95,6 +95,11 @@ impl GameManager {
                     .map(|f| faction_to_string(f).to_string())
                     .unwrap_or_else(|| "neutral".to_string());
 
+                // Look up commander information
+                let commander = self.card_db
+                    .get_commander(deck.commander_id())
+                    .map(CommanderDto::from_commander_def);
+
                 DeckInfo {
                     id: deck.id.clone(),
                     name: deck.name.clone(),
@@ -102,6 +107,7 @@ impl GameManager {
                     playstyle: deck.playstyle.clone(),
                     faction,
                     card_count: deck.cards.len(),
+                    commander,
                 }
             })
             .collect()
