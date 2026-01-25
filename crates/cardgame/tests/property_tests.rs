@@ -455,8 +455,8 @@ proptest! {
         for _ in 0..30 {
             let tensor = engine.get_state_tensor();
 
-            // Correct size
-            prop_assert_eq!(tensor.len(), 326, "Tensor should have 326 elements");
+            // Correct size (328 floats including commander IDs at indices 326-327)
+            prop_assert_eq!(tensor.len(), 328, "Tensor should have 328 elements");
 
             // All values should be finite
             for (i, &val) in tensor.iter().enumerate() {

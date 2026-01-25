@@ -202,7 +202,7 @@ pub struct CommanderTriggerCondition {
 }
 
 /// Commander trigger types (some are new, some reuse existing)
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub enum CommanderTrigger {
     /// At the start of owner's turn
@@ -258,6 +258,16 @@ impl CommanderAbility {
     /// Check if this is a triggered ability
     pub fn is_triggered(&self) -> bool {
         matches!(self, CommanderAbility::Triggered { .. })
+    }
+
+    /// Get the description of the ability
+    pub fn description(&self) -> String {
+        match self {
+            CommanderAbility::Passive { passive_ability } => passive_ability.description.clone(),
+            CommanderAbility::Triggered { triggered_ability } => {
+                triggered_ability.description.clone()
+            }
+        }
     }
 }
 

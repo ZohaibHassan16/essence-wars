@@ -11,6 +11,8 @@ use crate::core::state::{CardInstance, Creature, GameResult, GameState, WinReaso
 use crate::core::tracing::EffectTracer;
 use crate::core::types::{CardId, PlayerId, Slot};
 
+use super::passive::{collect_commander_ally_death_effects, collect_commander_enemy_death_effects};
+
 /// Effect queue for processing game effects in FIFO order.
 ///
 /// When an effect triggers another effect, the new effect goes to the back
@@ -150,6 +152,7 @@ impl EffectQueue {
             EffectSource::Card(_) => state.active_player,
             EffectSource::Creature { owner, .. } => owner,
             EffectSource::Support { owner, .. } => owner,
+            EffectSource::Commander { owner } => owner,
             EffectSource::System => state.active_player,
         };
 
@@ -1307,6 +1310,17 @@ impl EffectQueue {
                             }
                         }
                     }
+                }
+
+                // Queue OnAllyDeath commander trigger (e.g., Plague Sovereign)
+                for (effect, source) in collect_commander_ally_death_effects(state, owner, card_db) {
+                    self.push(effect, source);
+                }
+
+                // Queue OnEnemyDeath commander trigger (e.g., Shadow Emperor Kael)
+                // This triggers for the opponent when one of your creatures dies
+                for (effect, source) in collect_commander_enemy_death_effects(state, owner, card_db) {
+                    self.push(effect, source);
                 }
 
                 // Remove the creature from the board

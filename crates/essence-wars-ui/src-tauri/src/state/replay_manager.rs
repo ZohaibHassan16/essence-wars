@@ -458,6 +458,7 @@ impl ReplayManager {
                         hand: Vec::new(),
                         creatures: vec![None; 5],
                         supports: vec![None; 2],
+                        commander: None,
                     },
                     opponent: PlayerStateDto {
                         life: 0,
@@ -469,6 +470,7 @@ impl ReplayManager {
                         hand: Vec::new(),
                         creatures: vec![None; 5],
                         supports: vec![None; 2],
+                        commander: None,
                     },
                     is_game_over: false,
                     winner: None,
@@ -537,6 +539,7 @@ impl ReplayManager {
                 hand: player1_hand,
                 creatures: player1_creatures,
                 supports: player1_supports,
+                commander: None, // TODO: Load commander from game state
             },
             opponent: PlayerStateDto {
                 life: player2_state.life,
@@ -548,6 +551,7 @@ impl ReplayManager {
                 hand: player2_hand,
                 creatures: player2_creatures,
                 supports: player2_supports,
+                commander: None, // TODO: Load commander from game state
             },
             is_game_over: client.is_game_over(),
             winner,

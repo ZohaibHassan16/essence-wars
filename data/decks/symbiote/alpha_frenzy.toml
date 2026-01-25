@@ -1,49 +1,43 @@
 id = "alpha_frenzy"
 name = "Alpha of the Hunt"
-description = "Frenzy aggression - attack buffs and relentless pressure"
+description = "Attack with primal fury. Frenzy creatures strike twice each combat, and the Alpha's aura transforms every minion into a relentless, bloodthirsty predator."
+playstyle = "Frenzy Aggro"
 tags = ["commander", "symbiote"]
+commander = 5006
 
 cards = [
-    # Commander
-    2062,  # Alpha of the Hunt (5) 4/3 Frenzy, +1 attack to all
-
     # Frenzy Creatures (double attack synergy)
-    2017,  # Feral Stalker (Frenzy creature)
-    2021,  # Rabid Hunter (Frenzy)
-    2022,  # Frenzied Beast (Frenzy)
-    2032,  # Savage Predator (Frenzy)
+    2017,              # Feral Stalker
+    2021,              # Rabid Hunter
+    2022,              # Frenzied Beast
+    2032,              # Savage Predator
 
     # High Attack Creatures (benefit from +1 aura)
-    2003,  # Broodling (1) 2/2 Rush - becomes 3/2
-    2003,  # Broodling x2
-    2005,  # Pack Hunter (2) 2/3 Rush - becomes 3/3
-    2005,  # Pack Hunter x2
-    2001,  # Venom Fang (2) 2/3 Lethal - becomes 3/3 Lethal!
-    2001,  # Venom Fang x2
+    2003, 2003, 2003,  # Broodling x3
+    2005, 2005, 2005,  # Pack Hunter x3
+    2001, 2001,        # Venom Fang x2
 
     # Regenerate for Sustain (keep attackers alive)
-    2002,  # Regenerating Ooze (3) 3/4 Regenerate
-    2004,  # Hive Guardian (4) 3/6 Guard, Regenerate
-    2019,  # Swarm Leader
+    2002,              # Regenerating Ooze
+    2004,              # Hive Guardian
+    2019,              # Swarm Leader
 
     # Attack Buff Spells (stack with aura)
-    2010,  # Overgrowth (buff)
-    2012,  # Feral Rage (attack buff)
-    2012,  # Feral Rage x2
-    2014,  # Predator's Mark (buff)
+    2010,              # Overgrowth
+    2012, 2012,        # Feral Rage x2
+    2014,              # Predator's Mark
 
     # Board Presence
-    2000,  # Spore Crawler (1) 1/3
-    2000,  # Spore Crawler x2
-    2006,  # Parasitic Larva (1) 1/2 Lethal
+    2000, 2000, 2000,  # Spore Crawler x3
+    2006,              # Parasitic Larva
 
     # Utility
-    2016,  # Regeneration (heal)
-    2059,  # Brood Overlord (6) grants Rush
+    2016,              # Regeneration
+    2059,              # Brood Overlord
 
     # Neutral Support
-    4000,  # Wandering Merchant (2) 2/3
-    4001,  # Road Warden (3) 3/3 Guard
-    4003,  # Hedge Wizard (3) 2/2 draw
-    4010,  # Supply Cache (2) draw
+    4000,              # Wandering Merchant
+    4001,              # Road Warden
+    4003,              # Hedge Wizard
+    4010,              # Supply Cache
 ]

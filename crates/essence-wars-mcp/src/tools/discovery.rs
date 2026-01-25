@@ -4,12 +4,22 @@ use crate::session::SessionManager;
 use cardgame::Faction;
 use std::collections::BTreeMap;
 
+/// Deck info for display.
+struct DeckInfo {
+    id: String,
+    name: String,
+    description: String,
+    playstyle: String,
+    commander_name: String,
+}
+
 /// List all available decks grouped by faction.
 pub fn list_decks(manager: &SessionManager) -> String {
     let registry = manager.deck_registry();
+    let card_db = manager.card_db();
 
     // Group decks by faction
-    let mut by_faction: BTreeMap<String, Vec<(String, String, String)>> = BTreeMap::new();
+    let mut by_faction: BTreeMap<String, Vec<DeckInfo>> = BTreeMap::new();
 
     for deck in registry.decks() {
         let faction_name = deck
@@ -17,14 +27,19 @@ pub fn list_decks(manager: &SessionManager) -> String {
             .map(faction_display_name)
             .unwrap_or_else(|| "Neutral".to_string());
 
-        by_faction
-            .entry(faction_name)
-            .or_default()
-            .push((
-                deck.id.clone(),
-                deck.name.clone(),
-                deck.description.clone(),
-            ));
+        // Get commander name
+        let commander_name = card_db
+            .get_commander(deck.commander_id())
+            .map(|c| c.name.clone())
+            .unwrap_or_else(|| "Unknown".to_string());
+
+        by_faction.entry(faction_name).or_default().push(DeckInfo {
+            id: deck.id.clone(),
+            name: deck.name.clone(),
+            description: deck.description.clone(),
+            playstyle: deck.playstyle.clone(),
+            commander_name,
+        });
     }
 
     let mut output = String::new();
@@ -33,10 +48,16 @@ pub fn list_decks(manager: &SessionManager) -> String {
     for (faction, decks) in by_faction {
         output.push_str(&format!("## {} ({})\n\n", faction, decks.len()));
 
-        for (id, name, desc) in decks {
-            output.push_str(&format!("- **{}** (`{}`)", name, id));
-            if !desc.is_empty() {
-                output.push_str(&format!(": {}", desc));
+        for deck in decks {
+            output.push_str(&format!(
+                "- **{}** (`{}`) - Commander: **{}**",
+                deck.name, deck.id, deck.commander_name
+            ));
+            if !deck.playstyle.is_empty() {
+                output.push_str(&format!(" [{}]", deck.playstyle));
+            }
+            if !deck.description.is_empty() {
+                output.push_str(&format!("\n  {}", deck.description));
             }
             output.push('\n');
         }

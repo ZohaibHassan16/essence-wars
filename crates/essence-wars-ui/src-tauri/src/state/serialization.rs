@@ -1,10 +1,12 @@
 //! Data Transfer Objects for serializing game state to the frontend.
 
 use cardgame::{
-    Action, CardDefinition, CardType, Creature, Faction, Keywords, Support, Target,
+    Action, CardDatabase, CardDefinition, CardType, Creature, Faction, Keywords, Support, Target,
 };
+use cardgame::cards::CommanderDefinition;
 use cardgame::client_api::GameEvent;
 use cardgame::core::state::GameResult;
+use cardgame::types::CardId;
 use serde::{Deserialize, Serialize};
 
 /// Deck information for selection screen
@@ -14,6 +16,8 @@ pub struct DeckInfo {
     pub id: String,
     pub name: String,
     pub description: String,
+    /// Short playstyle tag (e.g., "Token Swarm", "Aggressive Piercing")
+    pub playstyle: String,
     pub faction: String,
     pub card_count: usize,
 }
@@ -70,6 +74,21 @@ pub struct PlayerStateDto {
     pub hand: Vec<CardDto>,
     pub creatures: Vec<Option<CreatureDto>>,
     pub supports: Vec<Option<SupportDto>>,
+
+    /// Commander information (always present in a game)
+    pub commander: Option<CommanderDto>,
+}
+
+/// Commander information for display
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CommanderDto {
+    pub id: u16,
+    pub name: String,
+    pub faction: String,
+    pub ability_description: String,
+    /// Portrait path (relative to static folder)
+    pub portrait_path: String,
 }
 
 /// Card in hand
@@ -211,6 +230,41 @@ pub fn faction_to_string(faction: Faction) -> &'static str {
         Faction::Symbiote => "symbiote",
         Faction::Obsidion => "obsidion",
         Faction::Neutral => "neutral",
+    }
+}
+
+/// Convert a commander ID to a CommanderDto, looking up the definition in the database
+pub fn commander_to_dto(commander_id: Option<CardId>, card_db: &CardDatabase) -> Option<CommanderDto> {
+    let id = commander_id?;
+    let commander = card_db.get_commander(id)?;
+    Some(CommanderDto::from_commander_def(commander))
+}
+
+impl CommanderDto {
+    /// Create a CommanderDto from a CommanderDefinition
+    pub fn from_commander_def(commander: &CommanderDefinition) -> Self {
+        // Convert commander faction to string (using core::cards::Faction, not decks::Faction)
+        let faction = match commander.faction {
+            cardgame::core::cards::Faction::Argentum => "argentum",
+            cardgame::core::cards::Faction::Symbiote => "symbiote",
+            cardgame::core::cards::Faction::Obsidion => "obsidion",
+            cardgame::core::cards::Faction::Neutral => "neutral",
+        };
+
+        // Get ability description from the commander's ability
+        let ability_description = commander.ability.description();
+
+        // Portrait path uses snake_case name (matching the renamed portrait files)
+        let portrait_name = commander.name.to_lowercase().replace(' ', "_");
+        let portrait_path = format!("portrait/{}.webp", portrait_name);
+
+        Self {
+            id: commander.id,
+            name: commander.name.clone(),
+            faction: faction.to_string(),
+            ability_description,
+            portrait_path,
+        }
     }
 }
 

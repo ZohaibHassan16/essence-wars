@@ -153,6 +153,59 @@ impl GameClient {
         self.pre_action_snapshot = Some(snapshot);
     }
 
+    /// Start a new game with commanders.
+    ///
+    /// This initializes the game with decks and commanders.
+    ///
+    /// # Panics
+    /// Panics if either commander ID is not found in the card database.
+    pub fn start_game_with_commanders(
+        &mut self,
+        deck1: Vec<CardId>,
+        deck2: Vec<CardId>,
+        commander1: CardId,
+        commander2: CardId,
+        seed: u64,
+    ) {
+        // Clear previous state
+        self.event_buffer.clear();
+        self.event_history.clear();
+
+        // We need to leak the Arc to get a 'static reference
+        // This is safe because the GameClient owns the Arc and will keep it alive
+        let db_ref: &'static CardDatabase = unsafe {
+            &*Arc::as_ptr(&self.card_db)
+        };
+
+        // Create and initialize engine with commanders
+        let mut engine = GameEngine::new(db_ref);
+        engine.start_game_with_commanders(deck1.clone(), deck2.clone(), commander1, commander2, seed);
+
+        // Take initial snapshot
+        let snapshot = StateSnapshot::from_state(&engine.state);
+
+        // Emit GameStarted event
+        self.emit_event(GameEvent::GameStarted {
+            seed,
+            mode: GameMode::default(),
+            player1_deck_size: deck1.len(),
+            player2_deck_size: deck2.len(),
+        });
+
+        // Emit TurnStarted for the first turn
+        let active = engine.state.active_player;
+        let player_state = &engine.state.players[active.index()];
+        self.emit_event(GameEvent::TurnStarted {
+            player: active,
+            turn_number: engine.state.current_turn,
+            max_essence: player_state.max_essence,
+            action_points: player_state.action_points,
+        });
+
+        self.engine = Some(engine);
+        self.pre_action_snapshot = Some(snapshot);
+    }
+
     /// Apply an action to the game.
     ///
     /// This applies the action and emits events for all state changes.

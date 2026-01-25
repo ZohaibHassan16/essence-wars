@@ -1,43 +1,38 @@
 id = "vex_piercing"
 name = "Siege Marshal Vex"
-description = "Aggressive Piercing damage - punch through enemy defenses"
+description = "No defense can stand against the Combine's siege engines. Piercing strikes cleave through guards, shattering enemy formations with overwhelming force."
+playstyle = "Aggressive Piercing"
 tags = ["commander", "argentum"]
+commander = 5002
 
 cards = [
-    # Commander
-    1058,  # Siege Marshal Vex (5) 4/4 Piercing, +1 atk aura
-
     # Core Piercing Creatures
-    1001,  # Steam Knight (3) 3/4 Piercing
-    1001,  # Steam Knight x2
-    1005,  # Pressure Trooper (3) 3/2 Piercing
-    1005,  # Pressure Trooper x2
-    1067,  # Siege Cannon (4) 3/2 Piercing, Ranged
-    1067,  # Siege Cannon x2
-    1068,  # Battering Ram (5) 5/3 Piercing
-    1032,  # Siege Breaker (5) 4/4 Piercing, OnPlay dmg
-    1008,  # Siege Engine (6) 4/6 Guard, Piercing
-    1069,  # Clockwork Dragon (6) 5/5 Piercing, Charge
+    1001, 1001, 1001,  # Steam Knight x3
+    1005, 1005, 1005,  # Pressure Trooper x3
+    1067, 1067,        # Siege Cannon x2
+    1068,              # Battering Ram
+    1032,              # Siege Breaker
+    1008,              # Siege Engine
+    1069,              # Clockwork Dragon
 
     # Support Creatures
-    1000,  # Brass Sentinel (2) 2/5 Guard
-    1006,  # Shield Bearer (2) 2/4 Shield
-    1002,  # Cogwork Defender (3) 3/5 Guard
-    1004,  # Iron Colossus (5) 3/7 Guard
+    1000, 1000,        # Brass Sentinel x2
+    1006,              # Shield Bearer
+    1002,              # Cogwork Defender
+    1004,              # Iron Colossus
 
     # Combat Spells
-    1070,  # Precision Strike (2) - 3 damage
-    1070,  # Precision Strike x2
-    1010,  # Reinforce (2) - +0/+3
-    1074,  # Breaching Charge (3) - 4 dmg to Guard
+    1070, 1070,        # Precision Strike x2
+    1010,              # Reinforce
+    1074,              # Breaching Charge
 
     # Neutral Creatures
-    4000,  # Wandering Merchant (2) 2/3
-    4001,  # Road Warden (3) 3/3 Guard
-    4003,  # Hedge Wizard (3) 2/2 draw
-    4005,  # Caravan Guard (2) 2/3
+    4000,              # Wandering Merchant
+    4001, 4001,        # Road Warden x2
+    4003, 4003,        # Hedge Wizard x2
+    4005,              # Caravan Guard
 
     # Neutral Utility
-    4010,  # Supply Cache (2) draw
-    4012,  # Wayfarer's Blessing (2) +1/+1
+    4010,              # Supply Cache
+    4012,              # Wayfarer's Blessing
 ]

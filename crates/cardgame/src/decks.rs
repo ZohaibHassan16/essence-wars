@@ -127,7 +127,12 @@ pub struct DeckDefinition {
     /// Optional description of the deck's strategy
     #[serde(default)]
     pub description: String,
-    /// Card IDs in the deck (may have duplicates)
+    /// Short playstyle tag (e.g., "Token Swarm", "Control", "Aggro")
+    #[serde(default)]
+    pub playstyle: String,
+    /// Commander card ID (must be a commander card)
+    pub commander: u16,
+    /// Card IDs in the deck (30 cards, excluding commander)
     pub cards: Vec<u16>,
     /// Tags for categorization (e.g., "aggro", "control", "midrange")
     #[serde(default)]
@@ -135,13 +140,42 @@ pub struct DeckDefinition {
 }
 
 impl DeckDefinition {
-    /// Convert to a vector of CardIds.
+    /// Convert to a vector of CardIds (excluding commander).
     pub fn to_card_ids(&self) -> Vec<CardId> {
         self.cards.iter().map(|&id| CardId(id)).collect()
     }
 
-    /// Validate that all cards exist in the database.
+    /// Get the commander's CardId.
+    pub fn commander_id(&self) -> CardId {
+        CardId(self.commander)
+    }
+
+    /// Validate deck structure and all cards exist in the database.
+    ///
+    /// Validates:
+    /// - Deck has exactly 29 cards (excluding commander, 30 total)
+    /// - Commander exists and is a commander card
+    /// - All cards exist in the database
     pub fn validate(&self, card_db: &CardDatabase) -> Result<(), DeckError> {
+        // Validate deck size (29 cards + commander = 30 total)
+        if self.cards.len() != 29 {
+            return Err(DeckError::InvalidDeckSize {
+                deck_id: self.id.clone(),
+                expected: 29,
+                actual: self.cards.len(),
+            });
+        }
+
+        // Validate commander exists and is a commander
+        if card_db.get_commander(CardId(self.commander)).is_none() {
+            return Err(DeckError::InvalidCommander {
+                deck_id: self.id.clone(),
+                card_id: self.commander,
+                reason: "Commander not found in database".to_string(),
+            });
+        }
+
+        // Validate all deck cards exist
         for &card_id in &self.cards {
             if card_db.get(CardId(card_id)).is_none() {
                 return Err(DeckError::InvalidCard {
@@ -357,6 +391,10 @@ pub enum DeckError {
     DuplicateId(String),
     /// Card not found in database
     InvalidCard { deck_id: String, card_id: u16 },
+    /// Invalid deck size
+    InvalidDeckSize { deck_id: String, expected: usize, actual: usize },
+    /// Invalid commander
+    InvalidCommander { deck_id: String, card_id: u16, reason: String },
 }
 
 impl std::fmt::Display for DeckError {
@@ -370,6 +408,12 @@ impl std::fmt::Display for DeckError {
             DeckError::DuplicateId(id) => write!(f, "Duplicate deck ID: {}", id),
             DeckError::InvalidCard { deck_id, card_id } => {
                 write!(f, "Card {} not found (deck: {})", card_id, deck_id)
+            }
+            DeckError::InvalidDeckSize { deck_id, expected, actual } => {
+                write!(f, "Deck '{}' has {} cards (excluding commander), expected {}", deck_id, actual, expected)
+            }
+            DeckError::InvalidCommander { deck_id, card_id, reason } => {
+                write!(f, "Invalid commander {} in deck '{}': {}", card_id, deck_id, reason)
             }
         }
     }

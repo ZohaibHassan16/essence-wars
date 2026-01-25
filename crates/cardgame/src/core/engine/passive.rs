@@ -1,17 +1,20 @@
-//! Passive effect helpers for supports and commanders.
+//! Passive and triggered effect helpers for supports and commanders.
 //!
 //! This module contains helper functions for applying and removing passive
 //! effects from supports and commanders to creatures. Supports can grant attack
 //! bonuses, health bonuses, or keywords to friendly creatures while they are in
 //! play. Commander passives are always active and cannot be removed.
+//!
+//! This module also handles commander triggered abilities (StartOfTurn,
+//! OnCreaturePlayed, OnAllyDeath, OnEnemyDeath).
 
 use crate::core::cards::{
     AbilityDefinition, CardDatabase, CardType, CommanderAbility, CommanderPassiveEffect,
-    EffectDefinition, PassiveModifier,
+    CommanderTrigger, EffectDefinition, PassiveModifier,
 };
-use crate::core::effects::{Effect, EffectTarget, TargetingRule};
+use crate::core::effects::{Effect, EffectSource, EffectTarget, TargetingRule};
 use crate::core::keywords::Keywords;
-use crate::core::state::{Creature, Support};
+use crate::core::state::{Creature, GameState, Support};
 use crate::core::types::{CardId, PlayerId};
 
 /// Apply a single passive modifier to a creature.
@@ -241,6 +244,7 @@ pub(super) fn apply_commander_passive_to_new_creature(
 ///
 /// Called at game start to apply commander passives to any creatures
 /// that may already exist (though typically the board is empty at start).
+#[allow(dead_code)]
 pub(super) fn apply_commander_passive_to_all_creatures(
     commander_id: Option<CardId>,
     creatures: &mut [Creature],
@@ -254,5 +258,202 @@ pub(super) fn apply_commander_passive_to_all_creatures(
                 }
             }
         }
+    }
+}
+
+// =============================================================================
+// COMMANDER TRIGGERED ABILITIES
+// =============================================================================
+
+/// Convert a commander's effect definition to an Effect.
+///
+/// This handles the targeting logic for commander abilities which typically
+/// target all friendly or all enemy creatures, or the enemy player.
+fn commander_effect_def_to_effect(
+    def: &EffectDefinition,
+    source_owner: PlayerId,
+) -> Option<Effect> {
+    match def {
+        EffectDefinition::Damage { amount, filter } => {
+            // Commander damage effects target the enemy player (commander)
+            Some(Effect::Damage {
+                target: EffectTarget::Player(source_owner.opponent()),
+                amount: *amount,
+                filter: filter.clone(),
+            })
+        }
+        EffectDefinition::Heal { amount, filter } => {
+            Some(Effect::Heal {
+                target: EffectTarget::Player(source_owner),
+                amount: *amount,
+                filter: filter.clone(),
+            })
+        }
+        EffectDefinition::Draw { count } => {
+            Some(Effect::Draw {
+                player: source_owner,
+                count: *count,
+            })
+        }
+        EffectDefinition::BuffStats { attack, health, filter } => {
+            Some(Effect::BuffStats {
+                target: EffectTarget::AllAllyCreatures(source_owner),
+                attack: *attack,
+                health: *health,
+                filter: filter.clone(),
+            })
+        }
+        EffectDefinition::SummonToken { token } => {
+            Some(Effect::SummonToken {
+                owner: source_owner,
+                token: token.to_token_definition(),
+                slot: None,
+            })
+        }
+        EffectDefinition::GrantKeyword { keyword, filter } => {
+            let kw = Keywords::from_names(&[keyword.as_str()]);
+            Some(Effect::GrantKeyword {
+                target: EffectTarget::AllAllyCreatures(source_owner),
+                keyword: kw.0,
+                filter: filter.clone(),
+            })
+        }
+        EffectDefinition::GainEssence { amount } => {
+            Some(Effect::GainEssence {
+                player: source_owner,
+                amount: *amount,
+            })
+        }
+        // Effects that need specific targeting aren't supported for commanders yet
+        _ => None,
+    }
+}
+
+/// Check if a creature's keywords satisfy the commander's trigger condition.
+fn check_commander_condition(
+    condition: &Option<crate::core::cards::CommanderTriggerCondition>,
+    creature_keywords: Keywords,
+) -> bool {
+    match condition {
+        None => true, // No condition means always trigger
+        Some(cond) => {
+            if let Some(keyword_name) = &cond.has_keyword {
+                let required_kw = Keywords::from_names(&[keyword_name.as_str()]);
+                creature_keywords.has(required_kw.0)
+            } else {
+                true
+            }
+        }
+    }
+}
+
+/// Collect effects from a commander's triggered ability.
+///
+/// Returns a vector of (Effect, EffectSource) pairs to be pushed to the queue.
+pub fn collect_commander_trigger_effects(
+    commander_id: CardId,
+    owner: PlayerId,
+    trigger: CommanderTrigger,
+    card_db: &CardDatabase,
+    condition_check: impl Fn(&Option<crate::core::cards::CommanderTriggerCondition>) -> bool,
+) -> Vec<(Effect, EffectSource)> {
+    let mut effects = Vec::new();
+
+    if let Some(commander) = card_db.get_commander(commander_id) {
+        if let Some(triggered) = commander.triggered_ability() {
+            if triggered.trigger == trigger && condition_check(&triggered.condition) {
+                let source = EffectSource::Commander { owner };
+                for effect_def in &triggered.effects {
+                    if let Some(effect) = commander_effect_def_to_effect(effect_def, owner) {
+                        effects.push((effect, source));
+                    }
+                }
+            }
+        }
+    }
+
+    effects
+}
+
+/// Collect StartOfTurn trigger effects for a player's commander.
+pub fn collect_commander_start_of_turn_effects(
+    state: &GameState,
+    player: PlayerId,
+    card_db: &CardDatabase,
+) -> Vec<(Effect, EffectSource)> {
+    if let Some(commander_id) = state.get_commander(player) {
+        collect_commander_trigger_effects(
+            commander_id,
+            player,
+            CommanderTrigger::StartOfTurn,
+            card_db,
+            |_| true, // No condition for StartOfTurn
+        )
+    } else {
+        Vec::new()
+    }
+}
+
+/// Collect OnCreaturePlayed trigger effects for a player's commander.
+///
+/// The `creature_keywords` parameter is used to check conditions (e.g., Rush for Broodmother).
+pub fn collect_commander_creature_played_effects(
+    state: &GameState,
+    player: PlayerId,
+    creature_keywords: Keywords,
+    card_db: &CardDatabase,
+) -> Vec<(Effect, EffectSource)> {
+    if let Some(commander_id) = state.get_commander(player) {
+        collect_commander_trigger_effects(
+            commander_id,
+            player,
+            CommanderTrigger::OnCreaturePlayed,
+            card_db,
+            |condition| check_commander_condition(condition, creature_keywords),
+        )
+    } else {
+        Vec::new()
+    }
+}
+
+/// Collect OnAllyDeath trigger effects for a player's commander.
+pub fn collect_commander_ally_death_effects(
+    state: &GameState,
+    player: PlayerId,
+    card_db: &CardDatabase,
+) -> Vec<(Effect, EffectSource)> {
+    if let Some(commander_id) = state.get_commander(player) {
+        collect_commander_trigger_effects(
+            commander_id,
+            player,
+            CommanderTrigger::OnAllyDeath,
+            card_db,
+            |_| true, // No condition for OnAllyDeath
+        )
+    } else {
+        Vec::new()
+    }
+}
+
+/// Collect OnEnemyDeath trigger effects for a player's commander.
+///
+/// Called when an enemy creature dies - check the opponent's commander.
+pub fn collect_commander_enemy_death_effects(
+    state: &GameState,
+    dying_creature_owner: PlayerId,
+    card_db: &CardDatabase,
+) -> Vec<(Effect, EffectSource)> {
+    // When a creature dies, check the OPPONENT's commander for OnEnemyDeath triggers
+    let opponent = dying_creature_owner.opponent();
+    if let Some(commander_id) = state.get_commander(opponent) {
+        collect_commander_trigger_effects(
+            commander_id,
+            opponent,
+            CommanderTrigger::OnEnemyDeath,
+            card_db,
+            |_| true, // No condition for OnEnemyDeath
+        )
+    } else {
+        Vec::new()
     }
 }

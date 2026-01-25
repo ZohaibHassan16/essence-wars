@@ -20,6 +20,8 @@ use super::passive::{
     apply_all_support_passives_to_creature,
     apply_commander_passive_to_new_creature,
     apply_support_passives_to_all_creatures,
+    collect_commander_creature_played_effects,
+    collect_commander_start_of_turn_effects,
     remove_support_passives_from_all_creatures,
     support_effect_def_to_effect,
 };
@@ -225,6 +227,9 @@ impl<'a> GameEngine<'a> {
 
         // Process StartOfTurn triggered effects for supports
         self.process_support_start_of_turn_triggers(current_player);
+
+        // Process StartOfTurn triggered effects for commander
+        self.process_commander_start_of_turn_triggers(current_player);
     }
 
     /// Process StartOfTurn triggered effects for a player's supports.
@@ -258,6 +263,18 @@ impl<'a> GameEngine<'a> {
                     }
                 }
             }
+        }
+
+        // Process all queued effects
+        effect_queue.process_all(&mut self.state, self.card_db);
+    }
+
+    /// Process StartOfTurn triggered effects for a player's commander.
+    fn process_commander_start_of_turn_triggers(&mut self, player: PlayerId) {
+        let mut effect_queue = EffectQueue::new();
+
+        for (effect, source) in collect_commander_start_of_turn_effects(&self.state, player, self.card_db) {
+            effect_queue.push(effect, source);
         }
 
         // Process all queued effects
@@ -689,6 +706,16 @@ impl<'a> GameEngine<'a> {
                             }
                         }
                     }
+                }
+
+                // Check for OnCreaturePlayed commander trigger (e.g., The Broodmother)
+                for (effect, source) in collect_commander_creature_played_effects(
+                    &self.state,
+                    current_player,
+                    keywords,
+                    self.card_db,
+                ) {
+                    effect_queue.push(effect, source);
                 }
             }
             CardType::Spell { targeting, effects, conditional_effects } => {

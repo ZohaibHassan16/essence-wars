@@ -4,6 +4,8 @@ export interface DeckInfo {
   id: string;
   name: string;
   description: string;
+  /** Short playstyle tag (e.g., "Token Swarm", "Aggressive Piercing") */
+  playstyle: string;
   faction: string;
   cardCount: number;
 }
@@ -60,6 +62,15 @@ export interface SupportDto {
   artPath?: string;
 }
 
+export interface CommanderDto {
+  id: number;
+  name: string;
+  faction: string;
+  abilityDescription: string;
+  /** Portrait path relative to static folder (e.g., "portrait/the_grand_architect.webp") */
+  portraitPath: string;
+}
+
 export interface PlayerStateDto {
   life: number;
   maxLife: number;
@@ -70,6 +81,8 @@ export interface PlayerStateDto {
   hand: CardDto[];
   creatures: (CreatureDto | null)[];
   supports: (SupportDto | null)[];
+  /** Commander information (always present in a game) */
+  commander: CommanderDto | null;
 }
 
 export interface GameStateDto {

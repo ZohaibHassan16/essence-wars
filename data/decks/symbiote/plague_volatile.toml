@@ -1,51 +1,46 @@
 id = "plague_volatile"
 name = "Plague Sovereign"
-description = "Death triggers and Volatile damage - win through attrition"
+description = "Turn death itself into a weapon. Volatile creatures explode on destruction, and every loss becomes devastating damage against your foes. Win through attrition."
+playstyle = "Attrition"
 tags = ["commander", "symbiote"]
+commander = 5005
 
 cards = [
-    # Commander
-    2061,  # Plague Sovereign (6) 4/4 Volatile, deals 1 dmg on ally death
-
     # Volatile Creatures (deal damage on death)
-    2026,  # Volatile Spore (creature with Volatile)
-    2026,  # Volatile Spore x2
-    2027,  # Plague Carrier (Volatile creature)
-    2028,  # Infectious Growth (Volatile)
+    2026, 2026, 2026,  # Volatile Spore x3
+    2027,              # Plague Carrier
+    2028,              # Infectious Growth
 
     # Regenerate Creatures (hard to kill, good value)
-    2002,  # Regenerating Ooze (3) 3/4 Regenerate
-    2004,  # Hive Guardian (4) 3/6 Guard, Regenerate
-    2062,  # Grove Warden (Regenerate)
+    2002,              # Regenerating Ooze
+    2004,              # Hive Guardian
+    2063,              # Grove Warden (Eternal Grove commander but usable as creature)
 
     # Rush Creatures (aggressive trades)
-    2003,  # Broodling (1) 2/2 Rush
-    2003,  # Broodling x2
-    2005,  # Pack Hunter (2) 2/3 Rush
-    2005,  # Pack Hunter x2
-    2019,  # Swarm Leader (Rush synergy)
+    2003, 2003, 2003,  # Broodling x3
+    2005, 2005,        # Pack Hunter x2
+    2019,              # Swarm Leader
 
     # Token Generators (more death triggers)
-    2038,  # Spawn Nest (token generator)
-    2042,  # Brood Pit (token generator)
-    2049,  # Hive Spawner (creature)
+    2038,              # Spawn Nest
+    2042,              # Brood Pit
+    2049,              # Hive Spawner
 
     # Lethal Creatures (trade efficiently)
-    2001,  # Venom Fang (2) 2/3 Lethal
-    2006,  # Parasitic Larva (1) 1/2 Lethal
+    2001, 2001,        # Venom Fang x2
+    2006,              # Parasitic Larva
 
     # Board Presence
-    2000,  # Spore Crawler (1) 1/3
-    2000,  # Spore Crawler x2
+    2000, 2000,        # Spore Crawler x2
 
     # Spells
-    2010,  # Overgrowth (buff spell)
-    2013,  # Nature's Wrath (spell)
-    2016,  # Regeneration (heal spell)
+    2010,              # Overgrowth
+    2013,              # Nature's Wrath
+    2016,              # Regeneration
 
     # Neutral Support
-    4000,  # Wandering Merchant (2) 2/3
-    4001,  # Road Warden (3) 3/3 Guard
-    4003,  # Hedge Wizard (3) 2/2 draw
-    4010,  # Supply Cache (2) draw
+    4000,              # Wandering Merchant
+    4001,              # Road Warden
+    4003,              # Hedge Wizard
+    4010,              # Supply Cache
 ]

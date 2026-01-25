@@ -1,13 +1,15 @@
 id = "sanctum_healer"
 name = "The Sanctum Healer"
-description = "Regenerate and sustain your forces"
+description = "Outlast your enemies through divine restoration. Your forces heal faster than they fall, grinding opponents into submission through inevitability."
+playstyle = "Sustain Control"
 tags = ["commander", "argentum"]
+commander = 5001
 
 cards = [
-    1057, 1027, 1035, 1031, 1037,
-    1042, 1038, 1044, 1009, 1001,
-    1003, 1046, 1015, 1043, 1069,
-    1053, 1072, 1006, 1010, 1023,
-    1025, 1045, 1052, 4024, 4032,
-    4033, 4034, 4045, 4046, 4051,
+    1027, 1035, 1031, 1037, 1042,
+    1038, 1044, 1009, 1001, 1003,
+    1046, 1015, 1043, 1069, 1053,
+    1072, 1006, 1010, 1023, 1025,
+    1045, 1052, 4024, 4032, 4033,
+    4034, 4045, 4046, 4051,
 ]

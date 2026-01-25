@@ -29,7 +29,7 @@ use crate::tensor::STATE_TENSOR_SIZE;
 /// Trait for bot implementations.
 ///
 /// Bots receive the same information a neural network would:
-/// - State tensor (326 floats)
+/// - State tensor (328 floats, including commander IDs at indices 326-327)
 /// - Legal action mask (256 floats)
 /// - List of legal actions (for convenience)
 ///
@@ -41,7 +41,7 @@ pub trait Bot: Send {
     /// Select an action given the current game state.
     ///
     /// # Arguments
-    /// * `state_tensor` - 326-float representation of game state
+    /// * `state_tensor` - 328-float representation of game state
     /// * `legal_mask` - 256-float mask (1.0 = legal, 0.0 = illegal)
     /// * `legal_actions` - List of legal actions (convenience, derived from mask)
     ///

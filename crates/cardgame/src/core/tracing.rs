@@ -657,6 +657,9 @@ fn format_source(source: &EffectSource) -> String {
         EffectSource::Support { owner, slot } => {
             format!("Support(P{}, Slot{})", owner.index() + 1, slot.0)
         }
+        EffectSource::Commander { owner } => {
+            format!("Commander(P{})", owner.index() + 1)
+        }
         EffectSource::System => "System".to_string(),
     }
 }

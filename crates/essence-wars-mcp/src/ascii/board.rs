@@ -16,18 +16,23 @@ pub fn render_board(state: &GameState, card_db: &CardDatabase, player_id: Player
 
     let mut output = String::new();
 
+    // Get commander names
+    let opponent_commander = get_commander_name(state, opponent_id, card_db);
+    let player_commander = get_commander_name(state, player_id, card_db);
+
     // Header
     output.push_str(&"=".repeat(92));
     output.push('\n');
 
     // Opponent info line
     output.push_str(&format!(
-        "  OPPONENT   Life: {}/30  Essence: {}/{}  AP: {}  Deck: {}\n",
+        "  OPPONENT   Life: {}/30  Essence: {}/{}  AP: {}  Deck: {}  [{}]\n",
         opponent_state.life,
         opponent_state.current_essence,
         opponent_state.max_essence,
         opponent_state.action_points,
-        opponent_state.deck.len()
+        opponent_state.deck.len(),
+        opponent_commander
     ));
 
     // Opponent creatures row (slots 0-4)
@@ -70,12 +75,13 @@ pub fn render_board(state: &GameState, card_db: &CardDatabase, player_id: Player
 
     // Player info line
     output.push_str(&format!(
-        "  YOU        Life: {}/30  Essence: {}/{}  AP: {}  Deck: {}\n",
+        "  YOU        Life: {}/30  Essence: {}/{}  AP: {}  Deck: {}  [{}]\n",
         player_state.life,
         player_state.current_essence,
         player_state.max_essence,
         player_state.action_points,
-        player_state.deck.len()
+        player_state.deck.len(),
+        player_commander
     ));
 
     // Footer
@@ -146,4 +152,13 @@ fn pad_to_width(s: &str, width: usize) -> String {
     } else {
         format!("{}{}", s, " ".repeat(width - s.len()))
     }
+}
+
+/// Get the commander name for a player, or "No Commander" if not set.
+fn get_commander_name(state: &GameState, player: PlayerId, card_db: &CardDatabase) -> String {
+    state
+        .get_commander(player)
+        .and_then(|id| card_db.get_commander(id))
+        .map(|cmd| cmd.name.clone())
+        .unwrap_or_else(|| "No Commander".to_string())
 }

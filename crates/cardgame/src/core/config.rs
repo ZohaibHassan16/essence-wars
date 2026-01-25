@@ -82,7 +82,9 @@ pub mod actions {
 /// Tensor constants for neural network interface
 pub mod tensor {
     /// Size of the state tensor
-    pub const STATE_TENSOR_SIZE: usize = 326;
+    /// Layout: Global(6) + Player1(75) + Player2(75) + CardEmbeddings(168) + Commanders(2) = 326
+    /// v0.8.0: Added commander IDs at indices 326-327
+    pub const STATE_TENSOR_SIZE: usize = 328;
 
     /// Action mask size
     pub const ACTION_MASK_SIZE: usize = 256;

@@ -3,7 +3,7 @@
   import * as api from "$lib/api/game";
   import BattlefieldRow from "./board/BattlefieldRow.svelte";
   import FanningHand from "./board/FanningHand.svelte";
-  import PlayerInfoWidget from "./board/PlayerInfoWidget.svelte";
+  import CommanderCardLarge from "./board/CommanderCardLarge.svelte";
   import CollapsibleSidebar from "./board/CollapsibleSidebar.svelte";
   import ActionLog from "./ActionLog.svelte";
   import AiThinkingPanel from "./AiThinkingPanel.svelte";
@@ -55,10 +55,100 @@
       cardId: a.action.cardId,
     })) ?? []
   );
+
+  // Derive player 1 faction from first available card
+  const player1Faction = $derived(() => {
+    const state = gameState;
+    if (!state) return "default";
+
+    // Check hand first
+    for (const card of state.player.hand) {
+      if (card.faction && card.faction !== "unknown") {
+        return card.faction;
+      }
+    }
+    // Check creatures
+    for (const creature of state.player.creatures) {
+      if (creature?.faction && creature.faction !== "neutral") {
+        return creature.faction;
+      }
+    }
+    return "default";
+  });
+
+  const boardBgClass = $derived(`board-bg-${player1Faction()}`);
 </script>
 
-<div class="w-full h-full flex bg-ui-bg">
-  <!-- Main game area -->
+<div class="w-full h-full flex {boardBgClass}">
+  <!-- LEFT COLUMN: Commander Cards -->
+  <div class="flex flex-col justify-between p-2 bg-ui-panel/30 border-r border-gray-700/50"
+       style="width: var(--commander-card-width, 250px);">
+    <!-- P2 Commander (top) -->
+    <div class="flex flex-col items-center">
+      <CommanderCardLarge
+        commander={gameState?.opponent.commander ?? null}
+        life={gameState?.opponent.life ?? 0}
+        maxLife={gameState?.opponent.maxLife ?? 30}
+        essence={gameState?.opponent.essence ?? 0}
+        maxEssence={gameState?.opponent.maxEssence ?? 0}
+        isActive={!isP1Turn}
+        isPlayer={false}
+      />
+      <!-- P2 compact stats below commander -->
+      <div class="mt-2 flex items-center gap-3 text-xs text-ui-text-dim">
+        <span title="Cards in hand">
+          <svg class="w-3.5 h-3.5 inline mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          {gameState?.opponent.hand.length ?? 0}
+        </span>
+        <span title="Cards in deck">
+          <svg class="w-3.5 h-3.5 inline mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          {gameState?.opponent.deckCount ?? 0}
+        </span>
+        <span title="Action Points" class="text-gold">
+          AP: {gameState?.opponent.actionPoints ?? 0}
+        </span>
+      </div>
+      <!-- P2 label -->
+      <div class="mt-1 text-xs text-ui-text-dim truncate max-w-full px-2">
+        P2 - {match?.player2DeckName ?? "Player 2"}
+      </div>
+    </div>
+
+    <!-- P1 Commander (bottom) -->
+    <div class="flex flex-col items-center">
+      <!-- P1 label -->
+      <div class="mb-1 text-xs text-ui-text-dim truncate max-w-full px-2">
+        P1 - {match?.player1DeckName ?? "Player 1"}
+      </div>
+      <!-- P1 compact stats above commander -->
+      <div class="mb-2 flex items-center gap-3 text-xs text-ui-text-dim">
+        <span title="Cards in deck">
+          <svg class="w-3.5 h-3.5 inline mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          {gameState?.player.deckCount ?? 0}
+        </span>
+        <span title="Action Points" class="text-gold">
+          AP: {gameState?.player.actionPoints ?? 0}
+        </span>
+      </div>
+      <CommanderCardLarge
+        commander={gameState?.player.commander ?? null}
+        life={gameState?.player.life ?? 0}
+        maxLife={gameState?.player.maxLife ?? 30}
+        essence={gameState?.player.essence ?? 0}
+        maxEssence={gameState?.player.maxEssence ?? 0}
+        isActive={isP1Turn}
+        isPlayer={true}
+      />
+    </div>
+  </div>
+
+  <!-- CENTER COLUMN: Main Game Area -->
   <div class="flex-1 flex flex-col min-w-0">
     <!-- Top header bar with match info -->
     <div class="bg-ui-panel/80 flex items-center justify-between px-4 border-b border-gray-700"
@@ -82,21 +172,8 @@
       </div>
     </div>
 
-    <!-- Player 2 (opponent) info bar -->
-    <PlayerInfoWidget
-      name="P2 - {match?.player2DeckName ?? 'Player 2'}"
-      life={gameState?.opponent.life ?? 0}
-      essence={gameState?.opponent.essence ?? 0}
-      maxEssence={gameState?.opponent.maxEssence ?? 0}
-      actionPoints={gameState?.opponent.actionPoints ?? 0}
-      deckCount={gameState?.opponent.deckCount ?? 0}
-      handCount={gameState?.opponent.hand.length ?? 0}
-      isActive={!isP1Turn}
-      isPlayer={false}
-    />
-
-    <!-- Player 2 hand (visible in spectator mode) -->
-    <div class="bg-gray-900/30 py-1">
+    <!-- P2 hand (visible in spectator mode) -->
+    <div class="bg-gray-900/30 py-1 border-b border-gray-700/30">
       <FanningHand
         cards={gameState?.opponent.hand ?? []}
         previewPosition="bottom"
@@ -106,7 +183,7 @@
 
     <!-- Main board area -->
     <div class="flex-1 flex flex-col justify-center px-4 py-2" style="gap: var(--board-gap);">
-      <!-- Player 2's battlefield row -->
+      <!-- P2's battlefield row -->
       <BattlefieldRow
         creatures={gameState?.opponent.creatures ?? [null, null, null, null, null]}
         supports={gameState?.opponent.supports ?? [null, null]}
@@ -127,7 +204,7 @@
         <div class="h-px flex-1 bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
       </div>
 
-      <!-- Player 1's battlefield row -->
+      <!-- P1's battlefield row -->
       <BattlefieldRow
         creatures={gameState?.player.creatures ?? [null, null, null, null, null]}
         supports={gameState?.player.supports ?? [null, null]}
@@ -135,77 +212,71 @@
       />
     </div>
 
-    <!-- Player 1 hand (visible in spectator mode) -->
-    <div class="bg-gray-900/30 py-2">
+    <!-- P1 hand (visible in spectator mode) -->
+    <div class="bg-gray-900/30 py-2 border-t border-gray-700/30">
       <FanningHand
         cards={gameState?.player.hand ?? []}
         tutorialId="player-hand"
       />
     </div>
 
-    <!-- Player 1 info bar with result badge -->
-    <PlayerInfoWidget
-      name="P1 - {match?.player1DeckName ?? 'Player 1'}"
-      life={gameState?.player.life ?? 0}
-      essence={gameState?.player.essence ?? 0}
-      maxEssence={gameState?.player.maxEssence ?? 0}
-      actionPoints={gameState?.player.actionPoints ?? 0}
-      deckCount={gameState?.player.deckCount ?? 0}
-      isActive={isP1Turn}
-      isPlayer={true}
-    >
-      {#snippet actions()}
-        <!-- Result badge and buttons when game is finished -->
-        {#if spectatorStore.phase === "finished" && spectatorStore.canShowResult}
-          {#if match?.result.winner === 1}
-            <span class="px-4 py-2 bg-health/20 text-health rounded-full font-semibold">
-              P1 Wins!
-            </span>
-          {:else if match?.result.winner === 2}
-            <span class="px-4 py-2 bg-damage/20 text-damage rounded-full font-semibold">
-              P2 Wins!
-            </span>
-          {:else}
-            <span class="px-4 py-2 bg-gray-600/50 text-ui-text rounded-full font-semibold">
-              Draw
-            </span>
-          {/if}
-
-          <!-- View Results button -->
-          <button
-            class="px-4 py-2 bg-ui-action/20 text-ui-action rounded-lg font-semibold
-                   border border-ui-action/50 hover:bg-ui-action hover:text-white transition-all"
-            onclick={() => spectatorStore.showGameOver()}
-          >
-            View Summary
-          </button>
-
-          <!-- Save Replay button -->
-          <div class="flex items-center gap-2">
-            {#if saveSuccess}
-              <span class="text-health text-xs">Saved!</span>
-            {:else if saveError}
-              <span class="text-damage text-xs" title={saveError}>Error</span>
-            {/if}
-            <button
-              class="px-4 py-2 bg-ui-bg text-ui-text-dim rounded-lg font-semibold
-                     border border-gray-600 hover:border-ui-action hover:text-ui-action transition-all
-                     disabled:opacity-50 disabled:cursor-not-allowed"
-              onclick={handleSaveReplay}
-              disabled={isSaving || saveSuccess}
-            >
-              {#if isSaving}
-                Saving...
-              {:else if saveSuccess}
-                Saved
-              {:else}
-                Save Replay
-              {/if}
-            </button>
-          </div>
+    <!-- Action bar with result badges -->
+    <div class="flex items-center justify-center gap-3 px-4 py-2 bg-ui-panel/50 border-t border-gray-700">
+      {#if spectatorStore.phase === "finished" && spectatorStore.canShowResult}
+        <!-- Result badge -->
+        {#if match?.result.winner === 1}
+          <span class="px-4 py-2 bg-health/20 text-health rounded-full font-semibold">
+            P1 Wins!
+          </span>
+        {:else if match?.result.winner === 2}
+          <span class="px-4 py-2 bg-damage/20 text-damage rounded-full font-semibold">
+            P2 Wins!
+          </span>
+        {:else}
+          <span class="px-4 py-2 bg-gray-600/50 text-ui-text rounded-full font-semibold">
+            Draw
+          </span>
         {/if}
-      {/snippet}
-    </PlayerInfoWidget>
+
+        <!-- View Results button -->
+        <button
+          class="px-4 py-2 bg-ui-action/20 text-ui-action rounded-lg font-semibold
+                 border border-ui-action/50 hover:bg-ui-action hover:text-white transition-all"
+          onclick={() => spectatorStore.showGameOver()}
+        >
+          View Summary
+        </button>
+
+        <!-- Save Replay button -->
+        <div class="flex items-center gap-2">
+          {#if saveSuccess}
+            <span class="text-health text-xs">Saved!</span>
+          {:else if saveError}
+            <span class="text-damage text-xs" title={saveError}>Error</span>
+          {/if}
+          <button
+            class="px-4 py-2 bg-gray-700 text-ui-text rounded-lg font-semibold
+                   hover:bg-gray-600 transition-colors
+                   disabled:opacity-50 disabled:cursor-not-allowed"
+            onclick={handleSaveReplay}
+            disabled={isSaving || saveSuccess}
+          >
+            {#if isSaving}
+              Saving...
+            {:else if saveSuccess}
+              Saved
+            {:else}
+              Save Replay
+            {/if}
+          </button>
+        </div>
+      {:else}
+        <!-- Empty state when game not finished -->
+        <div class="text-ui-text-dim text-sm">
+          Watching replay...
+        </div>
+      {/if}
+    </div>
 
     <!-- Playback controls -->
     <div class="border-t border-gray-700">
@@ -213,7 +284,7 @@
     </div>
   </div>
 
-  <!-- Right sidebar: AI Thinking + Commentary + Action Log -->
+  <!-- RIGHT COLUMN: Sidebar -->
   <CollapsibleSidebar>
     <!-- AI Thinking Panel -->
     <div class="p-2 border-b border-gray-700">

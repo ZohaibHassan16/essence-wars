@@ -18,6 +18,7 @@
 
 use crate::core::cards::CardDatabase;
 use crate::core::effects::{EffectSource, Trigger};
+use crate::core::engine::{collect_commander_ally_death_effects, collect_commander_enemy_death_effects};
 use crate::core::engine::EffectQueue;
 use crate::core::keywords::Keywords;
 use crate::core::state::GameState;
@@ -871,6 +872,17 @@ fn process_creature_death(
                 }
             }
         }
+    }
+
+    // Trigger OnAllyDeath commander trigger (e.g., Plague Sovereign)
+    for (effect, source) in collect_commander_ally_death_effects(state, player, card_db) {
+        effect_queue.push(effect, source);
+    }
+
+    // Trigger OnEnemyDeath commander trigger (e.g., Shadow Emperor Kael)
+    // When a creature dies, the opponent's commander may have OnEnemyDeath trigger
+    for (effect, source) in collect_commander_enemy_death_effects(state, player, card_db) {
+        effect_queue.push(effect, source);
     }
 
     // Remove the dead creature from the board

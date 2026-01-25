@@ -1,47 +1,43 @@
 id = "sovereign_lifesteal"
 name = "The Blood Sovereign"
-description = "Lifesteal sustain - outlast opponents through life gain"
+description = "Drain the essence from your enemies with every strike. Your creatures heal as they wound, creating an unstoppable tide of dark vitality that outlasts all opposition."
+playstyle = "Lifesteal Sustain"
 tags = ["commander", "obsidion"]
+commander = 5008
 
 cards = [
-    # Commander
-    3055,  # The Blood Sovereign (6) 4/5 Lifesteal, grants Lifesteal to all
-
     # Core Lifesteal Creatures (benefit from commander aura)
-    3002,  # Blood Acolyte (2) 2/3 Quick, Lifesteal
-    3002,  # Blood Acolyte x2
-    3004,  # Hemomancer (4) 4/4 Lifesteal
-    3017,  # Blood Seeker (3) 3/3 Quick, Lifesteal
-    3019,  # Nightstalker (4) 3/4 Stealth, Lifesteal, Regenerate
-    3020,  # Soul Reaver (5) 4/4 Lifesteal
-    3007,  # The Eternal One (7) 7/7 Lifesteal, Regenerate
+    3002, 3002, 3002,  # Blood Acolyte x3
+    3004,              # Hemomancer
+    3017,              # Blood Seeker
+    3019,              # Nightstalker
+    3020,              # Soul Reaver
+    3007,              # The Eternal One
 
     # High Attack Creatures (great with granted Lifesteal)
-    3006,  # Ritual Master (4) 4/4 OnPlay effects
-    3003,  # Void Walker (3) 3/3 Ephemeral, Rush
-    3058,  # Void Archon (5) 4/4 Quick
-    3001,  # Shadow Blade (2) 3/2 Stealth, Lethal
+    3006,              # Ritual Master
+    3003,              # Void Walker
+    3058,              # Void Archon
+    3001, 3001,        # Shadow Blade x2
 
     # Sustain/Healing Spells
-    3010,  # Soul Drain (3) damage + heal
-    3010,  # Soul Drain x2
-    3008,  # Life Tap (2) damage + draw
-    3015,  # Blood Pact (spell)
+    3010, 3010,        # Soul Drain x2
+    3008,              # Life Tap
+    3015,              # Blood Pact
 
     # Board Presence
-    3000,  # Soul Fragment (1) 2/2 Ephemeral
-    3000,  # Soul Fragment x2
-    3047,  # Crimson Acolyte (creature)
-    3059,  # Blood Ritualist (creature)
+    3000, 3000, 3000,  # Soul Fragment x3
+    3047,              # Crimson Acolyte
+    3059,              # Blood Ritualist
 
     # Removal
-    3025,  # Shadow Strike (spell)
-    3016,  # Corruption (spell)
+    3025,              # Shadow Strike
+    3016,              # Corruption
 
     # Neutral Support
-    4000,  # Wandering Merchant (2) 2/3
-    4001,  # Road Warden (3) 3/3 Guard
-    4003,  # Hedge Wizard (3) 2/2 draw
-    4005,  # Caravan Guard (2) 2/3
-    4010,  # Supply Cache (2) draw
+    4000,              # Wandering Merchant
+    4001,              # Road Warden
+    4003,              # Hedge Wizard
+    4005,              # Caravan Guard
+    4010,              # Supply Cache
 ]

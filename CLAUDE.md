@@ -129,7 +129,7 @@ cargo run --release --bin arena -- --bot1 alphabeta --bot2 mcts \
 
 ```rust
 pub trait Bot: Send {
-    fn select_action(&mut self, state_tensor: &[f32; 326],
+    fn select_action(&mut self, state_tensor: &[f32; 328],
                      legal_mask: &[f32; 256], legal_actions: &[Action]) -> Action;
     fn name(&self) -> &str;
     fn reset(&mut self);
@@ -266,16 +266,25 @@ Commanders are the player's persona in battle. They define deck identity and pro
 - Spells/abilities cannot target commanders
 - See `docs/design-commanders.md` for full design doc
 
-## State Tensor (~330 floats)
+## State Tensor (328 floats)
 
-| Section | Size |
-|---------|------|
-| Global (turn, phase, etc.) | 10 |
-| Player 1/2 creatures | 60 each (5 slots × 12) |
-| Player 1/2 supports | 8 each (2 slots × 4) |
-| Player 1/2 hands | 60 each (20 cards × 3) |
-| Player 1/2 decks | 30 each |
-| Commander IDs | 4 (2 per player + reserved) |
+| Section | Indices | Size | Description |
+|---------|---------|------|-------------|
+| Global state | 0-5 | 6 | Turn number, current player, game state |
+| Player 1 state | 6-80 | 75 | Life, essence, AP, deck/hand info, board |
+| Player 2 state | 81-155 | 75 | Same as P1 |
+| Card embeddings | 156-325 | 170 | Card IDs from hands/boards (normalized) |
+| Commander IDs | 326-327 | 2 | P1 commander (326), P2 commander (327) |
+
+**Player state breakdown (75 floats each):**
+- Base stats: 5 (life, essence, AP, deck size, hand size)
+- Hand cards: 10 (normalized card IDs)
+- Creatures: 50 (5 slots × 10 floats)
+- Supports: 10 (2 slots × 5 floats)
+
+**Normalization:**
+- Card IDs: Divided by 6000.0 (handles cards up to 4074, commanders up to 5011)
+- Commander IDs at indices 326-327: Also divided by 6000.0
 
 ## Action Space (256 indices)
 
@@ -290,7 +299,7 @@ Commanders are the player's persona in battle. They define deck identity and pro
 
 ```rust
 trait GameEnvironment {
-    fn get_state_tensor(&self) -> [f32; 326];
+    fn get_state_tensor(&self) -> [f32; 328];
     fn get_legal_action_mask(&self) -> [f32; 256];
     fn apply_action_by_index(&mut self, index: u8);
     fn get_reward(&self, player: PlayerId) -> f32;  // -1.0, 0.0, or 1.0

@@ -50,6 +50,10 @@
 
   /* Info bar height */
   --info-bar-height: 44px;
+
+  /* Commander Card (large, left-side display) */
+  --commander-card-width: 250px;
+  --commander-portrait-height: 150px;
 }
 
 /* Base Styles */
@@ -206,6 +210,8 @@ html, body {
     --board-gap: 6px;
     --sidebar-width: 180px;
     --info-bar-height: 36px;
+    --commander-card-width: 180px;
+    --commander-portrait-height: 100px;
   }
 }
 
@@ -224,6 +230,8 @@ html, body {
     --board-gap: 8px;
     --sidebar-width: 220px;
     --info-bar-height: 40px;
+    --commander-card-width: 200px;
+    --commander-portrait-height: 120px;
   }
 }
 
@@ -244,6 +252,8 @@ html, body {
     --board-gap: 12px;
     --sidebar-width: 260px;
     --info-bar-height: 48px;
+    --commander-card-width: 260px;
+    --commander-portrait-height: 160px;
   }
 }
 
@@ -262,6 +272,8 @@ html, body {
     --board-gap: 14px;
     --sidebar-width: 280px;
     --info-bar-height: 52px;
+    --commander-card-width: 280px;
+    --commander-portrait-height: 170px;
   }
 }
 
@@ -280,6 +292,8 @@ html, body {
     --board-gap: 16px;
     --sidebar-width: 300px;
     --info-bar-height: 56px;
+    --commander-card-width: 300px;
+    --commander-portrait-height: 190px;
   }
 }
 

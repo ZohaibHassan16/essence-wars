@@ -1,45 +1,39 @@
 id = "broodmother_swarm"
 name = "The Broodmother"
-description = "Rush swarm - overwhelm with speed and numbers"
+description = "Unleash the hive's fury before enemies can react. Rush creatures flood the board in waves, overwhelming defenses through sheer numbers and relentless aggression."
+playstyle = "Rush Swarm"
 tags = ["commander", "symbiote"]
+commander = 5004
 
 cards = [
-    # Commander
-    2060,  # The Broodmother (6) 3/5 Rush, summons Broodling on attack
-
     # Core Rush Creatures (immediate pressure)
-    2003,  # Broodling (1) 2/2 Rush
-    2003,  # Broodling x2
-    2003,  # Broodling x3
-    2005,  # Pack Hunter (2) 2/3 Rush
-    2005,  # Pack Hunter x2
-    2005,  # Pack Hunter x3
-    2019,  # Swarm Leader (Rush synergy)
+    2003, 2003, 2003,  # Broodling x3
+    2005, 2005, 2005,  # Pack Hunter x3
+    2019,              # Swarm Leader
 
     # Token Generators (more bodies)
-    2038,  # Spawn Nest (token generator)
-    2042,  # Brood Pit (token generator)
-    2049,  # Hive Spawner
+    2038,              # Spawn Nest
+    2042,              # Brood Pit
+    2049,              # Hive Spawner
 
     # Cheap Creatures (board flood)
-    2000,  # Spore Crawler (1) 1/3
-    2000,  # Spore Crawler x2
-    2006,  # Parasitic Larva (1) 1/2 Lethal
-    2001,  # Venom Fang (2) 2/3 Lethal
+    2000, 2000, 2000,  # Spore Crawler x3
+    2006, 2006,        # Parasitic Larva x2
+    2001, 2001,        # Venom Fang x2
 
     # Buff Spells (make swarm dangerous)
-    2010,  # Overgrowth (buff)
-    2010,  # Overgrowth x2
-    2012,  # Feral Rage (attack buff)
-    2014,  # Predator's Mark (buff)
+    2010, 2010,        # Overgrowth x2
+    2012,              # Feral Rage
+    2014,              # Predator's Mark
 
     # Utility
-    2016,  # Regeneration (sustain)
-    2059,  # Brood Overlord (6) 5/6 grants Rush to all
+    2016,              # Regeneration
+    2059,              # Brood Overlord
 
     # Neutral Support
-    4000,  # Wandering Merchant (2) 2/3
-    4005,  # Caravan Guard (2) 2/3
-    4010,  # Supply Cache (2) draw
-    4012,  # Wayfarer's Blessing (2) +1/+1
+    4000, 4000,        # Wandering Merchant x2
+    4001,              # Road Warden
+    4005,              # Caravan Guard
+    4010,              # Supply Cache
+    4012,              # Wayfarer's Blessing
 ]

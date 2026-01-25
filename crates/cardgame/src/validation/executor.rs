@@ -357,7 +357,12 @@ mod tests {
 
     fn test_card_db() -> CardDatabase {
         let cards_path = crate::data_dir().join("cards/core_set");
-        CardDatabase::load_from_directory(cards_path).unwrap()
+        let commanders_path = crate::data_dir().join("commanders");
+        CardDatabase::load_from_directory(cards_path)
+            .unwrap()
+            .with_commanders(
+                CardDatabase::load_commanders_from_directory(commanders_path).unwrap(),
+            )
     }
 
     fn test_deck_registry() -> crate::decks::DeckRegistry {

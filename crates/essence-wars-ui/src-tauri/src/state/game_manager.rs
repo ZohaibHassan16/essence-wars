@@ -52,8 +52,13 @@ impl GameManager {
 
         // Load card database from directory
         let cards_path = data_dir.join("cards/core_set");
+        let commanders_path = data_dir.join("commanders");
         let card_db = CardDatabase::load_from_directory(&cards_path)
-            .map_err(|e| format!("Failed to load card database: {}", e))?;
+            .map_err(|e| format!("Failed to load card database: {}", e))?
+            .with_commanders(
+                CardDatabase::load_commanders_from_directory(&commanders_path)
+                    .map_err(|e| format!("Failed to load commanders: {}", e))?,
+            );
 
         // Load deck registry - takes only a path
         let deck_registry = DeckRegistry::load_from_directory(data_dir.join("decks"))
@@ -94,6 +99,7 @@ impl GameManager {
                     id: deck.id.clone(),
                     name: deck.name.clone(),
                     description: deck.description.clone(),
+                    playstyle: deck.playstyle.clone(),
                     faction,
                     card_count: deck.cards.len(),
                 }
@@ -157,15 +163,31 @@ impl GameManager {
         let deck1_cards = player_deck.to_card_ids();
         let deck2_cards = opponent_deck.to_card_ids();
 
+        // Get commander IDs from decks
+        let player_commander = player_deck.commander_id();
+        let opponent_commander = opponent_deck.commander_id();
+
         // Use provided seed or generate random
         let mut rng = rand::thread_rng();
         let game_seed = config.seed.unwrap_or_else(|| rng.gen::<u64>());
         let bot_seed = rng.gen::<u64>();
 
         if player_first {
-            client.start_game(deck1_cards, deck2_cards, game_seed);
+            client.start_game_with_commanders(
+                deck1_cards,
+                deck2_cards,
+                player_commander,
+                opponent_commander,
+                game_seed,
+            );
         } else {
-            client.start_game(deck2_cards, deck1_cards, game_seed);
+            client.start_game_with_commanders(
+                deck2_cards,
+                deck1_cards,
+                opponent_commander,
+                player_commander,
+                game_seed,
+            );
         }
 
         let game_id = Uuid::new_v4().to_string();
@@ -626,6 +648,7 @@ impl GameManager {
                         hand: Vec::new(),
                         creatures: vec![None; 5],
                         supports: vec![None; 2],
+                        commander: None,
                     },
                     opponent: PlayerStateDto {
                         life: 0,
@@ -637,6 +660,7 @@ impl GameManager {
                         hand: Vec::new(),
                         creatures: vec![None; 5],
                         supports: vec![None; 2],
+                        commander: None,
                     },
                     is_game_over: false,
                     winner: None,
@@ -647,6 +671,10 @@ impl GameManager {
 
         let player1_state = &state.players[0];
         let player2_state = &state.players[1];
+
+        // Get commander DTOs
+        let player1_commander = commander_to_dto(state.get_commander(PlayerId::PLAYER_ONE), &self.card_db);
+        let player2_commander = commander_to_dto(state.get_commander(PlayerId::PLAYER_TWO), &self.card_db);
 
         // Convert both hands (visible in spectator mode)
         let player1_hand: Vec<CardDto> = player1_state
@@ -705,6 +733,7 @@ impl GameManager {
                 hand: player1_hand,
                 creatures: player1_creatures,
                 supports: player1_supports,
+                commander: player1_commander,
             },
             opponent: PlayerStateDto {
                 life: player2_state.life,
@@ -716,6 +745,7 @@ impl GameManager {
                 hand: player2_hand,
                 creatures: player2_creatures,
                 supports: player2_supports,
+                commander: player2_commander,
             },
             is_game_over: client.is_game_over(),
             winner,
@@ -743,6 +773,7 @@ impl GameManager {
                         hand: Vec::new(),
                         creatures: vec![None; 5],
                         supports: vec![None; 2],
+                        commander: None,
                     },
                     opponent: PlayerStateDto {
                         life: 0,
@@ -754,6 +785,7 @@ impl GameManager {
                         hand: Vec::new(),
                         creatures: vec![None; 5],
                         supports: vec![None; 2],
+                        commander: None,
                     },
                     is_game_over: false,
                     winner: None,
@@ -764,6 +796,10 @@ impl GameManager {
 
         let player_state = &state.players[player_id.index()];
         let opponent_state = &state.players[player_id.opponent().index()];
+
+        // Get commander DTOs
+        let player_commander = commander_to_dto(state.get_commander(player_id), &self.card_db);
+        let opponent_commander = commander_to_dto(state.get_commander(player_id.opponent()), &self.card_db);
 
         // Convert player hand (visible)
         let player_hand: Vec<CardDto> = player_state
@@ -827,6 +863,7 @@ impl GameManager {
                 hand: player_hand,
                 creatures: player_creatures,
                 supports: player_supports,
+                commander: player_commander,
             },
             opponent: PlayerStateDto {
                 life: opponent_state.life,
@@ -838,6 +875,7 @@ impl GameManager {
                 hand: opponent_hand,
                 creatures: opponent_creatures,
                 supports: opponent_supports,
+                commander: opponent_commander,
             },
             is_game_over: client.is_game_over(),
             winner,
@@ -1103,6 +1141,7 @@ impl SpectatorComputer {
                         hand: Vec::new(),
                         creatures: vec![None; 5],
                         supports: vec![None; 2],
+                        commander: None,
                     },
                     opponent: PlayerStateDto {
                         life: 0,
@@ -1114,6 +1153,7 @@ impl SpectatorComputer {
                         hand: Vec::new(),
                         creatures: vec![None; 5],
                         supports: vec![None; 2],
+                        commander: None,
                     },
                     is_game_over: false,
                     winner: None,
@@ -1124,6 +1164,10 @@ impl SpectatorComputer {
 
         let player1_state = &state.players[0];
         let player2_state = &state.players[1];
+
+        // Get commander DTOs
+        let player1_commander = commander_to_dto(state.get_commander(PlayerId::PLAYER_ONE), &self.card_db);
+        let player2_commander = commander_to_dto(state.get_commander(PlayerId::PLAYER_TWO), &self.card_db);
 
         // Convert both hands (visible in spectator mode)
         let player1_hand: Vec<CardDto> = player1_state
@@ -1182,6 +1226,7 @@ impl SpectatorComputer {
                 hand: player1_hand,
                 creatures: player1_creatures,
                 supports: player1_supports,
+                commander: player1_commander,
             },
             opponent: PlayerStateDto {
                 life: player2_state.life,
@@ -1193,6 +1238,7 @@ impl SpectatorComputer {
                 hand: player2_hand,
                 creatures: player2_creatures,
                 supports: player2_supports,
+                commander: player2_commander,
             },
             is_game_over: client.is_game_over(),
             winner,

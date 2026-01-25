@@ -17,9 +17,10 @@ const CREATURE_SLOT_SIZE: usize = 10;
 /// Number of floats per support slot encoding
 const SUPPORT_SLOT_SIZE: usize = 5;
 
-/// Normalization constant for card IDs (max card ID is ~4074, use 5000 for safety)
+/// Normalization constant for card IDs (max card ID is ~4074, commanders go up to ~5011)
+/// Use 6000 for safety to handle all current and near-future card/commander IDs.
 /// This prevents feature explosion in neural networks when card IDs are used as inputs.
-const CARD_ID_NORMALIZER: f32 = 5000.0;
+const CARD_ID_NORMALIZER: f32 = 6000.0;
 
 /// Convert a GameState to a neural network input tensor
 pub fn state_to_tensor(state: &GameState) -> [f32; STATE_TENSOR_SIZE] {
@@ -59,6 +60,11 @@ pub fn state_to_tensor(state: &GameState) -> [f32; STATE_TENSOR_SIZE] {
     // The remaining space is filled with card IDs from hands and boards
     // This provides the neural network with card identity information
     encode_card_embeddings(state, &mut tensor, &mut idx);
+
+    // Commander IDs (2 floats at indices 326-327)
+    // Normalized by CARD_ID_NORMALIZER (6000.0)
+    // These are placed at fixed positions at the end of the tensor
+    encode_commander_ids(state, &mut tensor);
 
     tensor
 }
@@ -201,11 +207,13 @@ fn encode_support_slot(support: Option<&Support>, tensor: &mut [f32], idx: &mut 
 fn encode_card_embeddings(state: &GameState, tensor: &mut [f32], idx: &mut usize) {
     // Fill the remaining tensor space with normalized card IDs for embedding lookup
     // This allows the neural network to learn card-specific behaviors
+    // Note: Stop at index 326 to leave room for commander IDs at 326-327
+    let max_embedding_idx = STATE_TENSOR_SIZE - 2;
 
     for player in &state.players {
         // Hand card IDs (normalized)
         for card in &player.hand {
-            if *idx >= STATE_TENSOR_SIZE {
+            if *idx >= max_embedding_idx {
                 break;
             }
             tensor[*idx] = card.card_id.0 as f32 / CARD_ID_NORMALIZER;
@@ -214,7 +222,7 @@ fn encode_card_embeddings(state: &GameState, tensor: &mut [f32], idx: &mut usize
 
         // Board creature card IDs (normalized)
         for creature in &player.creatures {
-            if *idx >= STATE_TENSOR_SIZE {
+            if *idx >= max_embedding_idx {
                 break;
             }
             tensor[*idx] = creature.card_id.0 as f32 / CARD_ID_NORMALIZER;
@@ -223,13 +231,30 @@ fn encode_card_embeddings(state: &GameState, tensor: &mut [f32], idx: &mut usize
 
         // Board support card IDs (normalized)
         for support in &player.supports {
-            if *idx >= STATE_TENSOR_SIZE {
+            if *idx >= max_embedding_idx {
                 break;
             }
             tensor[*idx] = support.card_id.0 as f32 / CARD_ID_NORMALIZER;
             *idx += 1;
         }
     }
+}
+
+/// Encode commander IDs at fixed positions (indices 326-327)
+fn encode_commander_ids(state: &GameState, tensor: &mut [f32; STATE_TENSOR_SIZE]) {
+    use crate::types::PlayerId;
+
+    // Index 326: Player 1 commander ID (normalized)
+    tensor[326] = state
+        .get_commander(PlayerId::PLAYER_ONE)
+        .map(|id| id.0 as f32 / CARD_ID_NORMALIZER)
+        .unwrap_or(0.0);
+
+    // Index 327: Player 2 commander ID (normalized)
+    tensor[327] = state
+        .get_commander(PlayerId::PLAYER_TWO)
+        .map(|id| id.0 as f32 / CARD_ID_NORMALIZER)
+        .unwrap_or(0.0);
 }
 
 /// Convert legal action mask to tensor format
@@ -258,4 +283,10 @@ pub const fn creature_slot_offset(player_idx: usize, slot_idx: usize) -> usize {
 /// Get the tensor index offset for support slot within player state
 pub const fn support_slot_offset(player_idx: usize, slot_idx: usize) -> usize {
     player_state_offset(player_idx) + 65 + slot_idx * SUPPORT_SLOT_SIZE
+}
+
+/// Get the tensor index offset for commander ID
+/// Player 0 (P1) commander is at index 326, Player 1 (P2) is at index 327
+pub const fn commander_offset(player_idx: usize) -> usize {
+    STATE_TENSOR_SIZE - 2 + player_idx
 }

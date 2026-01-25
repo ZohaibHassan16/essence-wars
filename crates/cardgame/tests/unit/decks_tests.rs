@@ -10,6 +10,8 @@ fn test_deck_definition() {
         id: "test".to_string(),
         name: "Test Deck".to_string(),
         description: "A test deck".to_string(),
+        playstyle: String::new(),
+        commander: 5001, // Sanctum Healer
         cards: vec![1, 1, 2, 2, 3],
         tags: vec!["aggro".to_string()],
     };
@@ -22,32 +24,77 @@ fn test_deck_definition() {
     let card_ids = deck.to_card_ids();
     assert_eq!(card_ids.len(), 5);
     assert_eq!(card_ids[0], CardId(1));
+    assert_eq!(deck.commander_id(), CardId(5001));
 }
 
 #[test]
 fn test_deck_validation() {
     let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+        .expect("Failed to load cards")
+        .with_commanders(
+            CardDatabase::load_commanders_from_directory(cardgame::data_dir().join("commanders"))
+                .expect("Failed to load commanders"),
+        );
 
-    // Valid deck (using Argentum card IDs)
+    // Valid deck (using Argentum commander + 29 cards)
     let valid_deck = DeckDefinition {
         id: "valid".to_string(),
         name: "Valid".to_string(),
         description: String::new(),
-        cards: vec![1000, 1000, 1001, 1001, 1002, 1002],
+        playstyle: String::new(),
+        commander: 5001, // Sanctum Healer
+        cards: vec![
+            1000, 1000, 1001, 1001, 1002, 1002, 1003, 1003, 1004, 1004,
+            1005, 1005, 1006, 1006, 1007, 1007, 1008, 1009, 1010, 1011,
+            1012, 1013, 1014, 1015, 1016, 1017, 1018, 1019, 1020,
+        ],
         tags: vec![],
     };
     assert!(valid_deck.validate(&card_db).is_ok());
 
     // Invalid deck (card 9999 doesn't exist)
-    let invalid_deck = DeckDefinition {
-        id: "invalid".to_string(),
-        name: "Invalid".to_string(),
+    let invalid_card_deck = DeckDefinition {
+        id: "invalid_card".to_string(),
+        name: "Invalid Card".to_string(),
         description: String::new(),
-        cards: vec![1000, 1000, 9999],
+        playstyle: String::new(),
+        commander: 5001,
+        cards: vec![
+            9999, 1000, 1001, 1001, 1002, 1002, 1003, 1003, 1004, 1004,
+            1005, 1005, 1006, 1006, 1007, 1007, 1008, 1009, 1010, 1011,
+            1012, 1013, 1014, 1015, 1016, 1017, 1018, 1019, 1020,
+        ],
         tags: vec![],
     };
-    assert!(invalid_deck.validate(&card_db).is_err());
+    assert!(invalid_card_deck.validate(&card_db).is_err());
+
+    // Invalid deck (commander doesn't exist)
+    let invalid_commander_deck = DeckDefinition {
+        id: "invalid_commander".to_string(),
+        name: "Invalid Commander".to_string(),
+        description: String::new(),
+        playstyle: String::new(),
+        commander: 9999, // Invalid commander
+        cards: vec![
+            1000, 1000, 1001, 1001, 1002, 1002, 1003, 1003, 1004, 1004,
+            1005, 1005, 1006, 1006, 1007, 1007, 1008, 1009, 1010, 1011,
+            1012, 1013, 1014, 1015, 1016, 1017, 1018, 1019, 1020,
+        ],
+        tags: vec![],
+    };
+    assert!(invalid_commander_deck.validate(&card_db).is_err());
+
+    // Invalid deck (wrong number of cards)
+    let wrong_size_deck = DeckDefinition {
+        id: "wrong_size".to_string(),
+        name: "Wrong Size".to_string(),
+        description: String::new(),
+        playstyle: String::new(),
+        commander: 5001,
+        cards: vec![1000, 1001, 1002], // Only 3 cards
+        tags: vec![],
+    };
+    assert!(wrong_size_deck.validate(&card_db).is_err());
 }
 
 #[test]
@@ -58,6 +105,8 @@ fn test_deck_registry() {
         id: "deck1".to_string(),
         name: "Deck 1".to_string(),
         description: String::new(),
+        playstyle: String::new(),
+        commander: 5001,
         cards: vec![1, 2, 3],
         tags: vec!["aggro".to_string()],
     };
@@ -66,6 +115,8 @@ fn test_deck_registry() {
         id: "deck2".to_string(),
         name: "Deck 2".to_string(),
         description: String::new(),
+        playstyle: String::new(),
+        commander: 5002,
         cards: vec![4, 5, 6],
         tags: vec!["control".to_string()],
     };
@@ -91,6 +142,8 @@ fn test_duplicate_id_rejected() {
         id: "same".to_string(),
         name: "Deck 1".to_string(),
         description: String::new(),
+        playstyle: String::new(),
+        commander: 5001,
         cards: vec![1],
         tags: vec![],
     };
@@ -99,6 +152,8 @@ fn test_duplicate_id_rejected() {
         id: "same".to_string(),
         name: "Deck 2".to_string(),
         description: String::new(),
+        playstyle: String::new(),
+        commander: 5002,
         cards: vec![2],
         tags: vec![],
     };
@@ -167,6 +222,8 @@ fn test_deck_faction_detection() {
         id: "argentum_test".to_string(),
         name: "Argentum Test".to_string(),
         description: String::new(),
+        playstyle: String::new(),
+        commander: 5001,
         cards: vec![1000, 1001, 1002],
         tags: vec!["control".to_string(), "argentum".to_string()],
     };
@@ -180,6 +237,8 @@ fn test_deck_faction_detection() {
         id: "symbiote_test".to_string(),
         name: "Symbiote Test".to_string(),
         description: String::new(),
+        playstyle: String::new(),
+        commander: 5004,
         cards: vec![2003, 2004, 2005],
         tags: vec!["aggro".to_string(), "symbiote".to_string()],
     };
@@ -191,6 +250,8 @@ fn test_deck_faction_detection() {
         id: "mixed_test".to_string(),
         name: "Mixed Test".to_string(),
         description: String::new(),
+        playstyle: String::new(),
+        commander: 5001, // Neutral commander
         cards: vec![4000, 4001, 4002],
         tags: vec!["aggro".to_string()],
     };
@@ -204,6 +265,8 @@ fn test_deck_specialist_compatibility() {
         id: "architect_fortify".to_string(),
         name: "Argentum Control".to_string(),
         description: String::new(),
+        playstyle: String::new(),
+        commander: 5003, // The Grand Architect
         cards: vec![1000, 1001, 1002],
         tags: vec!["argentum".to_string()],
     };
@@ -226,6 +289,8 @@ fn test_registry_faction_filtering() {
         id: "argentum1".to_string(),
         name: "Argentum 1".to_string(),
         description: String::new(),
+        playstyle: String::new(),
+        commander: 5001,
         cards: vec![1000],
         tags: vec!["argentum".to_string()],
     };
@@ -234,6 +299,8 @@ fn test_registry_faction_filtering() {
         id: "symbiote1".to_string(),
         name: "Symbiote 1".to_string(),
         description: String::new(),
+        playstyle: String::new(),
+        commander: 5004,
         cards: vec![2003],
         tags: vec!["symbiote".to_string()],
     };
@@ -242,6 +309,8 @@ fn test_registry_faction_filtering() {
         id: "neutral1".to_string(),
         name: "Neutral 1".to_string(),
         description: String::new(),
+        playstyle: String::new(),
+        commander: 5001,
         cards: vec![4000],
         tags: vec!["aggro".to_string()],
     };
@@ -285,17 +354,20 @@ fn test_real_deck_factions() {
     if let Some(deck) = registry.get("architect_fortify") {
         assert_eq!(deck.faction(), Some(Faction::Argentum));
         assert!(deck.is_compatible_with_specialist(Faction::Argentum));
+        assert_eq!(deck.commander, 5003); // The Grand Architect
     }
 
     // Check broodmother_swarm exists and has correct faction
     if let Some(deck) = registry.get("broodmother_swarm") {
         assert_eq!(deck.faction(), Some(Faction::Symbiote));
         assert!(deck.is_compatible_with_specialist(Faction::Symbiote));
+        assert_eq!(deck.commander, 5004); // The Broodmother
     }
 
     // Check archon_burst exists and has correct faction
     if let Some(deck) = registry.get("archon_burst") {
         assert_eq!(deck.faction(), Some(Faction::Obsidion));
         assert!(deck.is_compatible_with_specialist(Faction::Obsidion));
+        assert_eq!(deck.commander, 5011); // Void Archon
     }
 }

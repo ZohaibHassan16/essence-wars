@@ -32,6 +32,10 @@ pub enum Trigger {
     OnAllyPlayed,
     /// When another friendly creature dies
     OnAllyDeath,
+    /// When an enemy creature dies (for commanders like Shadow Emperor Kael)
+    OnEnemyDeath,
+    /// When owner plays a creature (for commanders like The Broodmother)
+    OnCreaturePlayed,
 }
 
 /// What an effect targets
@@ -144,6 +148,8 @@ pub enum EffectSource {
     Creature { owner: PlayerId, slot: Slot },
     /// Effect from a support card
     Support { owner: PlayerId, slot: Slot },
+    /// Effect from a commander's triggered ability
+    Commander { owner: PlayerId },
     /// Effect from game rules (start of turn draw, etc.)
     System,
 }
