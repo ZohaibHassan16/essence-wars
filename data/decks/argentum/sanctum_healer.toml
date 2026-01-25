@@ -1,6 +1,6 @@
-id = "colossus_wall"
-name = "Iron Colossus Prime"
-description = "Impenetrable Guard defenses"
+id = "sanctum_healer"
+name = "The Sanctum Healer"
+description = "Regenerate and sustain your forces"
 tags = ["commander", "argentum"]
 
 cards = [

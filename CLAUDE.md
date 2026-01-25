@@ -4,7 +4,7 @@
 
 **Essence Wars** is a deterministic, perfect-information card game engine. Written in Rust with focus on performance and correctness.
 
-**Current Version:** 0.7.0 | **Author:** Christian Wissmann (Chris), Best Friends with Claude
+**Current Version:** 0.8.0 (Commander Edition) | **Author:** Christian Wissmann (Chris), Best Friends with Claude
 
 ## Quick Commands
 
@@ -65,6 +65,7 @@ modal run modal_tune.py::main
 - `python/essence_wars/data/` - Dataset loaders (MCTSDataset, ChunkedMCTSDataset)
 - `python/scripts/` - Training scripts (train_ppo.py, train_alphazero.py, etc.)
 - `data/cards/core_set/` - 300 cards in 4 YAML files (by faction)
+- `data/commanders/` - 12 commanders in 3 YAML files (by faction)
 - `data/decks/{argentum,symbiote,obsidion}/` - 12 commander decks
 - `data/datasets/` - MCTS game datasets (JSONL.gz)
 - `data/weights/` - Tuned bot weights (generalist + specialists)
@@ -142,10 +143,15 @@ Life, creature stats, board state, resources, keywords (guard/lethal/lifesteal/r
 
 ## Game Rules
 
+- **Commander System**: Each player has a Commander in the Command Zone (not on battlefield)
+  - Commander Life = Player Life (30)
+  - Commanders provide persistent Passive or Triggered abilities
+  - Commanders cannot be targeted by attacks or spells
+  - When Commander Life reaches 0, they "retreat" (you lose)
 - 5 creature slots, 2 support slots per player
 - 3 Action Points per turn
 - 30 turn limit with life-based tiebreaker
-- 14 keywords: Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick, Ephemeral, Regenerate, Stealth, Charge, Frenzy, Volatile
+- 16 keywords: Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick, Ephemeral, Regenerate, Stealth, Charge, Frenzy, Volatile, Fortify, Ward
 
 ## Faction System
 
@@ -161,8 +167,10 @@ Life, creature stats, board state, resources, keywords (guard/lethal/lifesteal/r
 ## Card System
 
 - **300 cards** total (75 per faction)
+- **12 commanders** (4 per faction, no neutral commanders)
 - **ID ranges**: Argentum 1000-1074, Symbiote 2000-2074, Obsidion 3000-3074, Neutral 4000-4074
-- **Files**: `data/cards/core_set/{argentum,symbiote,obsidion,neutral}.yaml`
+- **Card files**: `data/cards/core_set/{argentum,symbiote,obsidion,neutral}.yaml`
+- **Commander files**: `data/commanders/{argentum,symbiote,obsidion}.yaml`
 
 ### YAML Schema
 
@@ -200,6 +208,20 @@ Life, creature stats, board state, resources, keywords (guard/lethal/lifesteal/r
       effects:
         - type: heal
           amount: 2
+
+# Commander (in data/commanders/*.yaml)
+- id: 1058
+  name: "Siege Marshal Vex"
+  card_type: commander
+  faction: Argentum
+  rarity: Legendary
+  passive_ability:
+    description: "Your creatures have +1 Attack"
+    effect:
+      type: buff_stats
+      attack: 1
+      health: 0
+  flavor: "A wall is just a door that hasn't been opened hard enough."
 ```
 
 **Advanced features**: filters (`max_health`, `has_keyword`), conditional effects (`target_died`), bounce. See `docs/cards-new-horizons.md`.
@@ -212,11 +234,39 @@ Life, creature stats, board state, resources, keywords (guard/lethal/lifesteal/r
 ```toml
 id = "architect_fortify"
 name = "Architect's Bastion"
-commander = 1060
-cards = [1060, 1001, 1002, ...]  # 30 total
+commander = 1059               # Commander ID (separate from cards)
+cards = [1001, 1002, ...]      # 30 cards (commander NOT included)
 ```
 
-## State Tensor (326 floats)
+**Note:** Commanders are NOT in the deck. The deck has 30 cards + 1 commander (defined separately).
+
+## Commander System
+
+Commanders are the player's persona in battle. They define deck identity and provide persistent abilities.
+
+| Commander | Faction | Ability Type | Ability |
+|-----------|---------|--------------|---------|
+| The High Artificer | Argentum | Triggered | StartOfTurn: Summon 1/1 Brass Cog |
+| The Sanctum Healer | Argentum | Passive | Creatures have Regenerate |
+| Siege Marshal Vex | Argentum | Passive | Creatures have +1 Attack |
+| The Grand Architect | Argentum | Passive | Creatures have Fortify |
+| The Broodmother | Symbiote | Triggered | OnCreaturePlayed (Rush): Summon 1/1 Rush Broodling |
+| Plague Sovereign | Symbiote | Triggered | OnAllyDeath: 1 damage to enemy commander |
+| Alpha of the Hunt | Symbiote | Passive | Creatures have +1 Attack |
+| The Eternal Grove | Symbiote | Passive | Creatures have Regenerate |
+| The Blood Sovereign | Obsidion | Passive | Creatures have Lifesteal |
+| Shadow Emperor Kael | Obsidion | Triggered | OnEnemyDeath: Draw a card |
+| The Shadow Weaver | Obsidion | Passive | Creatures have Stealth |
+| Void Archon | Obsidion | Passive | Creatures have Quick |
+
+**Key Rules:**
+- Commanders are in Command Zone (not on battlefield)
+- Commander Life = Player Life (30)
+- Face attacks damage the commander
+- Spells/abilities cannot target commanders
+- See `docs/design-commanders.md` for full design doc
+
+## State Tensor (~330 floats)
 
 | Section | Size |
 |---------|------|
@@ -225,6 +275,7 @@ cards = [1060, 1001, 1002, ...]  # 30 total
 | Player 1/2 supports | 8 each (2 slots × 4) |
 | Player 1/2 hands | 60 each (20 cards × 3) |
 | Player 1/2 decks | 30 each |
+| Commander IDs | 4 (2 per player + reserved) |
 
 ## Action Space (256 indices)
 

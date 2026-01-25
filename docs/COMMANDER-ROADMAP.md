@@ -25,11 +25,13 @@ This document outlines the implementation plan for the Commander System Rework, 
 
 | System | Location | Changes Required |
 |--------|----------|------------------|
-| **Card Schema** | `data/cards/core_set/*.yaml` | New commander card type |
+| **Commander Data** | `data/commanders/*.yaml` | NEW: Commander definitions |
+| **Card Data** | `data/cards/core_set/*.yaml` | Replace commander creatures with regular creatures |
 | **Deck Format** | `data/decks/**/*.toml` | Separate commander field |
+| **Portrait Assets** | `crates/essence-wars-ui/static/portrait/` | Rename from IDs to names |
 | **Core Engine** | `crates/cardgame/src/core/` | CardType, GameState, effects |
 | **Effect System** | `crates/cardgame/src/engine/` | Commander passives & triggers |
-| **Card Loading** | `crates/cardgame/src/cards/` | Load commander type |
+| **Card Loading** | `crates/cardgame/src/cards/` | Load commander type from new location |
 | **AI Interface** | `crates/cardgame/src/bots/` | State tensor, evaluation |
 | **MCP Server** | `crates/essence-wars-mcp/` | Display commander in state |
 | **Tauri UI** | `crates/essence-wars-ui/` | Command Zone component |
@@ -77,48 +79,160 @@ All documentation serves as specification for implementation phases.
 
 ---
 
-## Phase 2: Card Data Migration
+## Phase 2: Card Data & Asset Migration
 
-**Goal:** Convert commander cards to new format in YAML
+**Goal:** Create commander YAML files in new location, replace old commander creatures with regular creatures, rename portrait assets
 
-**Estimated Scope:** 4 YAML files, 12 commander cards
+**Estimated Scope:** 3 new YAML files, 12 commander definitions, 12 replacement creatures, 12 portrait renames
+
+### New File Structure
+
+```
+data/
+├── cards/
+│   └── core_set/
+│       ├── argentum.yaml    # IDs 1056-1059 become regular creatures
+│       ├── symbiote.yaml    # IDs 2060-2063 become regular creatures
+│       ├── obsidion.yaml    # IDs 3055-3058 become regular creatures
+│       └── neutral.yaml
+└── commanders/              # NEW FOLDER
+    ├── argentum.yaml        # 4 Argentum commanders
+    ├── symbiote.yaml        # 4 Symbiote commanders
+    └── obsidion.yaml        # 4 Obsidion commanders
+
+crates/essence-wars-ui/static/portrait/
+├── the_high_artificer.webp      # Renamed from 1056.webp
+├── the_sanctum_healer.webp      # Renamed from 1057.webp
+├── siege_marshal_vex.webp       # Renamed from 1058.webp
+├── the_grand_architect.webp     # Renamed from 1059.webp
+├── the_broodmother.webp         # Renamed from 2060.webp
+├── plague_sovereign.webp        # Renamed from 2061.webp
+├── alpha_of_the_hunt.webp       # Renamed from 2062.webp
+├── the_eternal_grove.webp       # Renamed from 2063.webp
+├── the_blood_sovereign.webp     # Renamed from 3055.webp
+├── shadow_emperor_kael.webp     # Renamed from 3056.webp
+├── the_shadow_weaver.webp       # Renamed from 3057.webp
+└── void_archon.webp             # Renamed from 3058.webp
+```
 
 ### Tasks
 
-- [ ] **2.1** Add commander card type support to YAML structure
-  - Commanders go in same faction files but with `card_type: commander`
+#### 2A: Create Commander YAML Files
 
-- [ ] **2.2** Create new commander entries in `data/cards/core_set/argentum.yaml`
-  - The High Artificer (1056)
-  - The Sanctum Healer (1057)
-  - Siege Marshal Vex (1058)
-  - The Grand Architect (1059)
+- [ ] **2.1** Create `data/commanders/` folder
 
-- [ ] **2.3** Create new commander entries in `data/cards/core_set/symbiote.yaml`
+- [ ] **2.2** Create `data/commanders/argentum.yaml`
+  ```yaml
+  commanders:
+    - id: 1056
+      name: "The High Artificer"
+      card_type: commander
+      faction: Argentum
+      rarity: Legendary
+      triggered_ability:
+        trigger: StartOfTurn
+        description: "At the start of your turn, summon a 1/1 Brass Cog"
+        effects:
+          - type: summon_token
+            token: { name: "Brass Cog", attack: 1, health: 1, keywords: [] }
+      flavor: "The Combine doesn't build soldiers. We manufacture victory."
+
+    - id: 1057
+      name: "The Sanctum Healer"
+      # ... (see design-commanders.md for full definitions)
+
+    - id: 1058
+      name: "Siege Marshal Vex"
+      # ...
+
+    - id: 1059
+      name: "The Grand Architect"
+      # ...
+  ```
+
+- [ ] **2.3** Create `data/commanders/symbiote.yaml`
   - The Broodmother (2060)
   - Plague Sovereign (2061)
   - Alpha of the Hunt (2062)
   - The Eternal Grove (2063)
 
-- [ ] **2.4** Create new commander entries in `data/cards/core_set/obsidion.yaml`
+- [ ] **2.4** Create `data/commanders/obsidion.yaml`
   - The Blood Sovereign (3055)
   - Shadow Emperor Kael (3056)
   - The Shadow Weaver (3057)
   - Void Archon (3058)
 
-- [ ] **2.5** Keep old creature commander entries temporarily
-  - Comment out but preserve for reference during engine transition
-  - Will be removed in Phase 6
+#### 2B: Replace Commander Creatures with Regular Creatures
+
+The old commander creature IDs will be reused for new regular creatures (Common/Uncommon), maintaining gender balance.
+
+- [ ] **2.5** Replace Argentum commander creatures (1056-1059)
+
+  | Old ID | Old Name | Gender | New Creature Name | Rarity | Stats | Notes |
+  |--------|----------|--------|-------------------|--------|-------|-------|
+  | 1056 | The High Artificer | Male | TBD | Uncommon | ~4-5 cost | Male, Construct tag |
+  | 1057 | The Sanctum Healer | Female | TBD | Uncommon | ~4-5 cost | Female, Medic tag |
+  | 1058 | Siege Marshal Vex | Male | TBD | Common | ~3-4 cost | Male, Soldier tag |
+  | 1059 | The Grand Architect | Female | TBD | Common | ~3-4 cost | Female, Engineer tag |
+
+- [ ] **2.6** Replace Symbiote commander creatures (2060-2063)
+
+  | Old ID | Old Name | Gender | New Creature Name | Rarity | Stats | Notes |
+  |--------|----------|--------|-------------------|--------|-------|-------|
+  | 2060 | The Broodmother | Female | TBD | Uncommon | ~4-5 cost | Female, Beast tag |
+  | 2061 | Plague Sovereign | Ambiguous | TBD | Uncommon | ~4-5 cost | Ambiguous, Parasite tag |
+  | 2062 | Alpha of the Hunt | Male | TBD | Common | ~3-4 cost | Male, Beast tag |
+  | 2063 | The Eternal Grove | Non-gendered | TBD | Common | ~3-4 cost | Structure tag |
+
+- [ ] **2.7** Replace Obsidion commander creatures (3055-3058)
+
+  | Old ID | Old Name | Gender | New Creature Name | Rarity | Stats | Notes |
+  |--------|----------|--------|-------------------|--------|-------|-------|
+  | 3055 | The Blood Sovereign | Ambiguous | TBD | Uncommon | ~4-5 cost | Ambiguous, Noble tag |
+  | 3056 | Shadow Emperor Kael | Male | TBD | Uncommon | ~4-5 cost | Male, Assassin tag |
+  | 3057 | The Shadow Weaver | Female | TBD | Common | ~3-4 cost | Female, Mage tag |
+  | 3058 | Void Archon | Ambiguous | TBD | Common | ~3-4 cost | Ambiguous, Mage tag |
+
+#### 2C: Rename Portrait Assets
+
+- [ ] **2.8** Rename portrait files to use commander names (snake_case)
+  ```bash
+  cd crates/essence-wars-ui/static/portrait/
+  mv 1056.webp the_high_artificer.webp
+  mv 1057.webp the_sanctum_healer.webp
+  mv 1058.webp siege_marshal_vex.webp
+  mv 1059.webp the_grand_architect.webp
+  mv 2060.webp the_broodmother.webp
+  mv 2061.webp plague_sovereign.webp
+  mv 2062.webp alpha_of_the_hunt.webp
+  mv 2063.webp the_eternal_grove.webp
+  mv 3055.webp the_blood_sovereign.webp
+  mv 3056.webp shadow_emperor_kael.webp
+  mv 3057.webp the_shadow_weaver.webp
+  mv 3058.webp void_archon.webp
+  ```
+
+#### 2D: Update Deck Files
+
+- [ ] **2.9** Rename `data/decks/argentum/colossus_wall.toml` to `sanctum_healer.toml`
+  - Update deck name and description for The Sanctum Healer
 
 ### Acceptance Criteria
 
-- [ ] All 12 commanders defined in new YAML format
+- [ ] `data/commanders/` folder exists with 3 YAML files
+- [ ] All 12 commanders defined in new format
+- [ ] All 12 old commander IDs replaced with new regular creatures
+- [ ] Gender balance maintained in replacement creatures
+- [ ] All 12 portrait files renamed to use commander names
+- [ ] Deck file renamed from colossus_wall to sanctum_healer
 - [ ] YAML files parse without errors
-- [ ] Old creature entries preserved (commented) for transition
 
 ### Deliverable
 
-Commander cards ready in YAML format (engine can't load them yet).
+- Commander data in new location (`data/commanders/`)
+- Old IDs repurposed as regular creatures
+- Portrait assets renamed and ready for UI
+- Engine can't load new format yet (that's Phase 3)
 
 ---
 
@@ -152,7 +266,7 @@ Commander cards ready in YAML format (engine can't load them yet).
 
 - [ ] **3.3** Update `CardDatabase` to parse and store commanders
   - Add `commanders: HashMap<CardId, CommanderCard>` field
-  - Update YAML parsing to handle `card_type: commander`
+  - Load commanders from `data/commanders/*.yaml` (separate from cards)
   - Add `get_commander(id: CardId) -> Option<&CommanderCard>`
 
 - [ ] **3.4** Add commander fields to `GameState`
@@ -380,16 +494,12 @@ cards = [1030, 1040, ...]         # 30 cards, no commander
   - `data/decks/obsidion/shadow_weaver.toml`
   - `data/decks/obsidion/archon_burst.toml`
 
-- [ ] **6.7** Remove old commander creature cards from YAML
-  - Delete commented creature versions from Phase 2
-  - Clean up any references
-
-- [ ] **6.8** Update arena CLI
+- [ ] **6.7** Update arena CLI
   - Handle new deck format in `--list-decks`
   - Display commander info in deck listing
   - Pass commander to game initialization
 
-- [ ] **6.9** Update any other deck consumers
+- [ ] **6.8** Update any other deck consumers
   - Tune binary
   - Validate binary
   - Any other binaries that load decks
@@ -400,14 +510,13 @@ cards = [1030, 1040, ...]         # 30 cards, no commander
 - [ ] Deck loading handles new format
 - [ ] Deck validation enforces new rules
 - [ ] All 12 deck files migrated
-- [ ] Old creature commanders removed from YAML
 - [ ] Arena CLI works with new format
 - [ ] All binaries work with new format
 - [ ] All tests pass
 
 ### Deliverable
 
-All decks use new format, clean codebase with no legacy commander creatures.
+All decks use new format with separate commander field.
 
 ---
 
@@ -667,7 +776,7 @@ Phase 9 (Testing)
 
 | Phase | Status | Started | Completed |
 |-------|--------|---------|-----------|
-| Phase 1: Documentation | Not Started | - | - |
+| Phase 1: Documentation | **Complete** | 2026-01-25 | 2026-01-25 |
 | Phase 2: Card Data | Not Started | - | - |
 | Phase 3: Core Types | Not Started | - | - |
 | Phase 4: Passives | Not Started | - | - |
@@ -679,7 +788,21 @@ Phase 9 (Testing)
 
 ### Notes
 
-_Use this section to track blockers, decisions, and learnings during implementation._
+**2026-01-25 - Phase 1 Complete:**
+- Updated `docs/design-engine.md` v1.4 (Commander Edition):
+  - Added Section 8.4: Commander Cards (full specification)
+  - Updated Section 3.1: Game Setup (commander selection)
+  - Updated Section 4.1: Board Layout (Command Zone)
+  - Updated Section 10: Win Conditions (commander retreat)
+  - Updated Section 11.1: State Tensor (commander encoding)
+- Updated `CLAUDE.md`:
+  - Added Commander System section with all 12 commanders
+  - Updated Card System with commander YAML schema
+  - Updated Deck System with new format
+  - Updated State Tensor to ~330 floats
+- Commander YAML schema formally defined in design-engine.md Section 8.4.4
+- Portrait files renamed from IDs to snake_case names
+- Deck file `colossus_wall.toml` renamed to `sanctum_healer.toml`
 
 ---
 
@@ -689,7 +812,28 @@ _Use this section to track blockers, decisions, and learnings during implementat
 
 | File | Phase | Description |
 |------|-------|-------------|
-| (none - all modifications to existing files) | | |
+| `data/commanders/argentum.yaml` | 2 | Argentum commander definitions |
+| `data/commanders/symbiote.yaml` | 2 | Symbiote commander definitions |
+| `data/commanders/obsidion.yaml` | 2 | Obsidion commander definitions |
+| `data/decks/argentum/sanctum_healer.toml` | 2 | Renamed from colossus_wall.toml |
+
+### Files to Rename (Phase 2)
+
+| Old Name | New Name |
+|----------|----------|
+| `static/portrait/1056.webp` | `static/portrait/the_high_artificer.webp` |
+| `static/portrait/1057.webp` | `static/portrait/the_sanctum_healer.webp` |
+| `static/portrait/1058.webp` | `static/portrait/siege_marshal_vex.webp` |
+| `static/portrait/1059.webp` | `static/portrait/the_grand_architect.webp` |
+| `static/portrait/2060.webp` | `static/portrait/the_broodmother.webp` |
+| `static/portrait/2061.webp` | `static/portrait/plague_sovereign.webp` |
+| `static/portrait/2062.webp` | `static/portrait/alpha_of_the_hunt.webp` |
+| `static/portrait/2063.webp` | `static/portrait/the_eternal_grove.webp` |
+| `static/portrait/3055.webp` | `static/portrait/the_blood_sovereign.webp` |
+| `static/portrait/3056.webp` | `static/portrait/shadow_emperor_kael.webp` |
+| `static/portrait/3057.webp` | `static/portrait/the_shadow_weaver.webp` |
+| `static/portrait/3058.webp` | `static/portrait/void_archon.webp` |
+| `data/decks/argentum/colossus_wall.toml` | (deleted, replaced by sanctum_healer.toml) |
 
 ### Files to Modify
 
@@ -697,17 +841,17 @@ _Use this section to track blockers, decisions, and learnings during implementat
 |------|-------|---------|
 | `docs/design-engine.md` | 1 | Add commander rules |
 | `docs/CLAUDE.md` | 1 | Update context |
-| `data/cards/core_set/argentum.yaml` | 2, 6 | Add commanders, remove old |
-| `data/cards/core_set/symbiote.yaml` | 2, 6 | Add commanders, remove old |
-| `data/cards/core_set/obsidion.yaml` | 2, 6 | Add commanders, remove old |
+| `data/cards/core_set/argentum.yaml` | 2 | Replace commander creatures (1056-1059) with regular creatures |
+| `data/cards/core_set/symbiote.yaml` | 2 | Replace commander creatures (2060-2063) with regular creatures |
+| `data/cards/core_set/obsidion.yaml` | 2 | Replace commander creatures (3055-3058) with regular creatures |
 | `crates/cardgame/src/core/cards.rs` | 3 | CardType::Commander |
 | `crates/cardgame/src/core/state.rs` | 3 | Commander fields |
-| `crates/cardgame/src/cards/database.rs` | 3 | Load commanders |
+| `crates/cardgame/src/cards/database.rs` | 3 | Load commanders from data/commanders/ |
 | `crates/cardgame/src/engine/effects.rs` | 4, 5 | Commander effects |
 | `crates/cardgame/src/engine/triggers.rs` | 5 | New triggers |
-| `data/decks/argentum/*.toml` | 6 | New format |
-| `data/decks/symbiote/*.toml` | 6 | New format |
-| `data/decks/obsidion/*.toml` | 6 | New format |
+| `data/decks/argentum/*.toml` | 6 | Add commander field, adjust card lists |
+| `data/decks/symbiote/*.toml` | 6 | Add commander field, adjust card lists |
+| `data/decks/obsidion/*.toml` | 6 | Add commander field, adjust card lists |
 | `crates/cardgame/src/bin/arena.rs` | 6 | Handle new decks |
 | `crates/cardgame/src/ai/tensor.rs` | 7 | Commander in tensor |
 | `crates/essence-wars-mcp/src/tools.rs` | 7 | Show commanders |

@@ -83,15 +83,15 @@ art, gritty painted fantasy illustration with dynamic brushwork.
    **WAIST-UP PORTRAIT PROMPT:**
 Three-quarter view waist-up portrait of an elegant female architect commander,
 showing from head to waist in regal composition. Flowing white robes with gold
-geometric Art Deco patterns cascading over her shoulders and body, belt at waist
-holding architectural tools and essence vials. Beautiful composed face with serene
-confidence, high cheekbones, gentle knowing smile radiating wisdom. Multiple brass
-mechanical limbs extending gracefully from her back like elegant wings - some
-holding holographic blueprints that float in Art Deco frames, others gesturing
-in the act of directing construction. Her natural hands positioned gracefully,
-one extended in a commanding gesture of creation, the other tracing geometric
-patterns in the air. Composed, visionary stance showing her mastery over design
-and construction. Divine soft golden light streaming from above, creating an
+geometric Art Deco patterns cascading over her shoulders and body, ornate brass
+circlet on her forehead with glowing crystal. Beautiful composed face with serene
+confidence, high cheekbones, gentle knowing smile radiating wisdom. Her hands
+positioned gracefully - one raised with golden magical energy flowing from her
+fingernails commanding floating holographic blueprints that orbit around her,
+the other hand holding an ornate brass compass and drafting tool. Multiple
+Art Deco framed blueprint holograms float in the air around her, glowing with
+golden light. Composed, visionary stance showing her mastery over design and
+construction. Divine soft golden light streaming from above, creating an
 almost ethereal glow around her entire form. White marble fortress construction
 with floating blueprint holograms softly blurred in background. Wise, peaceful
 expression radiating authority and vision. 90s Magic the Gathering card art,

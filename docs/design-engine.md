@@ -1,8 +1,8 @@
 # Card Game Engine Design Document
 
-> **Version:** 1.3 (New Horizons Edition)
-> **Last Updated:** 2026-01-17
-> **Status:** Implementation Complete - 300 cards, 16 keywords
+> **Version:** 1.4 (Commander Edition)
+> **Last Updated:** 2026-01-25
+> **Status:** Implementation In Progress - Commander System Rework
 
 This document is the single source of truth for all game rules, parameters, and engine specifications.
 
@@ -120,20 +120,27 @@ Keywords cost approximately:
 │                              GAME SETUP                                      │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  1. DECK PREPARATION                                                        │
-│     • Both players submit their decks (20 or 30 cards)                     │
+│  1. COMMANDER SELECTION                                                     │
+│     • Each player selects a Commander (defines deck identity)              │
+│     • Commander is placed in Command Zone (visible from start)             │
+│     • Commander abilities are ACTIVE from turn 1                           │
+│     • Commander Life = Player Life (30)                                    │
+│                                                                             │
+│  2. DECK PREPARATION                                                        │
+│     • Both players submit their decks (30 cards, commander NOT included)  │
 │     • Decks are arranged using the Fair Order Algorithm (see 3.2)          │
 │     • Alternatively: Decks shuffled with shared seed (for random mode)     │
 │                                                                             │
-│  2. STARTING HANDS                                                          │
+│  3. STARTING HANDS                                                          │
 │     • Each player draws 4 cards from the top of their deck                 │
 │                                                                             │
-│  3. STARTING RESOURCES                                                      │
-│     • Both players: 30 life, 1 max essence, 1 current essence              │
+│  4. STARTING RESOURCES                                                      │
+│     • Both players: 30 life (= commander life), 1 max essence, 1 essence   │
 │     • Player 1: Goes first, but SKIPS first turn card draw                 │
 │     • Player 2: Goes second, draws normally on their first turn            │
 │                                                                             │
-│  4. GAME BEGINS                                                             │
+│  5. GAME BEGINS                                                             │
+│     • Both commanders visible in Command Zones                             │
 │     • Player 1 starts Turn 1                                               │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -189,10 +196,12 @@ Example 20-card deck distribution:
 │    4. Refresh all creatures (clear "exhausted" status)                     │
 │    5. Draw 1 card (EXCEPTION: Player 1 skips on Turn 1)                    │
 │    6. Tick down support durability by 1, remove if 0                       │
-│    7. Trigger all "Start of Turn" effects                                  │
+│    7. Trigger all "Start of Turn" effects (supports AND commander)     ★   │
 │                                                                             │
 │  MAIN PHASE (Player Decisions)                                              │
 │  ─────────────────────────────                                              │
+│    • Commander passive abilities ALWAYS active                         ★   │
+│    • Commander triggered abilities fire on relevant events             ★   │
 │    While action_points > 0 AND player chooses to act:                      │
 │      • Play a Card (costs 1 AP + essence cost)                             │
 │      • Attack with a Creature (costs 1 AP)                                 │
@@ -201,11 +210,13 @@ Example 20-card deck distribution:
 │                                                                             │
 │  END OF TURN (Automatic)                                                    │
 │  ──────────────────────────                                                 │
-│    1. Trigger all "End of Turn" effects                                    │
+│    1. Trigger all "End of Turn" effects (supports AND commander)       ★   │
 │    2. Pass turn to opponent                                                │
 │                                                                             │
 │  NOTE: There is NO separate "combat phase" — attacks are individual        │
 │        actions that can be interleaved with playing cards.                 │
+│                                                                             │
+│  ★ = Commander-related (see Section 8.4)                                   │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -231,6 +242,9 @@ Hand: 4 cards               Hand: 5 cards               Hand: 5 cards
 ```
                          PLAYER TWO'S SIDE
     ┌─────────────────────────────────────────────────────┐
+    │                   COMMAND ZONE                       │
+    │  [Commander]  Life: 30  Ability: "Your creatures.." │
+    ├─────────────────────────────────────────────────────┤
     │                   SUPPORT ZONE                       │
     │              [Slot A]     [Slot B]                  │
     ├─────────────────────────────────────────────────────┤
@@ -248,9 +262,16 @@ Hand: 4 cards               Hand: 5 cards               Hand: 5 cards
     ├─────────────────────────────────────────────────────┤
     │                   SUPPORT ZONE                       │
     │              [Slot A]     [Slot B]                  │
+    ├─────────────────────────────────────────────────────┤
+    │                   COMMAND ZONE                       │
+    │  [Commander]  Life: 30  Ability: "Your creatures.." │
     └─────────────────────────────────────────────────────┘
                          PLAYER ONE'S SIDE
 ```
+
+**Command Zone:** Displays the commander (name, portrait, ability text) and commander life
+(which equals player life). The Command Zone is NOT a targetable slot—commanders cannot
+be attacked directly or targeted by spells. See Section 8.4 for full commander rules.
 
 ### 4.2 Lane Adjacency Rules
 
@@ -790,6 +811,126 @@ Example Passive Effects:
   • "Your creatures have +2 Health"
 ```
 
+### 8.4 Commanders
+
+```
+COMMANDER CARD
+──────────────
+Properties:
+  • Name: Display name
+  • Faction: Argentum, Symbiote, Obsidion (no neutral commanders)
+  • Ability: Either a Passive OR Triggered ability (not both)
+  • Flavor: Optional flavor text
+
+NOT Properties (unlike creatures):
+  • No cost (commanders are not played from hand)
+  • No attack/health (commanders don't fight)
+  • No keywords (commanders are not creatures)
+
+Behavior:
+  • Placed in Command Zone at game start
+  • NEVER enters hand, deck, or creature slots
+  • Cannot be targeted by attacks or spells
+  • Ability persists for the entire game
+  • Commander Life = Player Life (30)
+  • When Commander Life reaches 0, commander "retreats" (player loses)
+```
+
+#### 8.4.1 Commander Ability Types
+
+Commanders have exactly ONE ability, which is either Passive or Triggered:
+
+**Passive Abilities:**
+- Apply continuously to all friendly creatures
+- Examples: "Your creatures have +1 Attack", "Your creatures have Guard"
+
+**Triggered Abilities:**
+- Fire when specific game events occur
+- Available triggers: `StartOfTurn`, `EndOfTurn`, `OnCreaturePlayed`, `OnAllyDeath`, `OnEnemyDeath`
+- Example: "At the start of your turn, summon a 1/1 Brass Cog"
+
+#### 8.4.2 Commander Targeting Rules
+
+| Source | Can Target Commander? |
+|--------|----------------------|
+| Creature face attacks | YES (when direct lane empty) |
+| Damage spells | NO |
+| Targeted abilities | NO |
+| AoE damage effects | NO |
+| Lifesteal healing | YES (heals your commander) |
+| Direct healing spells | YES (if targeting "player") |
+
+#### 8.4.3 Commander Data Location
+
+Commanders are stored separately from regular cards:
+
+```
+data/
+├── cards/
+│   └── core_set/          # Regular cards (creatures, spells, supports)
+│       ├── argentum.yaml
+│       ├── symbiote.yaml
+│       ├── obsidion.yaml
+│       └── neutral.yaml
+└── commanders/            # Commander definitions (separate)
+    ├── argentum.yaml      # 4 Argentum commanders
+    ├── symbiote.yaml      # 4 Symbiote commanders
+    └── obsidion.yaml      # 4 Obsidion commanders
+```
+
+#### 8.4.4 Commander YAML Schema
+
+```yaml
+# Example commander definition
+commanders:
+  - id: 1056
+    name: "The High Artificer"
+    card_type: commander
+    faction: Argentum
+    rarity: Legendary
+    triggered_ability:
+      trigger: StartOfTurn
+      description: "At the start of your turn, summon a 1/1 Brass Cog"
+      effects:
+        - type: summon_token
+          token:
+            name: "Brass Cog"
+            attack: 1
+            health: 1
+            keywords: []
+    flavor: "The Combine doesn't build soldiers. We manufacture victory."
+
+  - id: 1058
+    name: "Siege Marshal Vex"
+    card_type: commander
+    faction: Argentum
+    rarity: Legendary
+    passive_ability:
+      description: "Your creatures have +1 Attack"
+      effect:
+        type: buff_stats
+        attack: 1
+        health: 0
+    flavor: "A wall is just a door that hasn't been opened hard enough."
+```
+
+#### 8.4.5 Current Commanders (12 total)
+
+| ID | Name | Faction | Ability Type | Ability |
+|----|------|---------|--------------|---------|
+| 1056 | The High Artificer | Argentum | Triggered | StartOfTurn: Summon 1/1 Brass Cog |
+| 1057 | The Sanctum Healer | Argentum | Passive | Creatures have Regenerate |
+| 1058 | Siege Marshal Vex | Argentum | Passive | Creatures have +1 Attack |
+| 1059 | The Grand Architect | Argentum | Passive | Creatures have Fortify |
+| 2060 | The Broodmother | Symbiote | Triggered | OnCreaturePlayed (Rush): Summon 1/1 Rush Broodling |
+| 2061 | Plague Sovereign | Symbiote | Triggered | OnAllyDeath: 1 damage to enemy commander |
+| 2062 | Alpha of the Hunt | Symbiote | Passive | Creatures have +1 Attack |
+| 2063 | The Eternal Grove | Symbiote | Passive | Creatures have Regenerate |
+| 3055 | The Blood Sovereign | Obsidion | Passive | Creatures have Lifesteal |
+| 3056 | Shadow Emperor Kael | Obsidion | Triggered | OnEnemyDeath: Draw a card |
+| 3057 | The Shadow Weaver | Obsidion | Passive | Creatures have Stealth |
+| 3058 | Void Archon | Obsidion | Passive | Creatures have Quick |
+
 ---
 
 ## 9. Effects
@@ -1002,11 +1143,13 @@ USE CASES
 ### 10.1 Primary Win Condition
 
 ```
-LIFE TOTAL VICTORY
-──────────────────
-A player wins immediately when their opponent's life total reaches 0 or below.
+COMMANDER RETREAT (Life Total Victory)
+──────────────────────────────────────
+A player wins immediately when their opponent's commander life reaches 0 or below.
+(Commander life = Player life. When the commander's life is depleted, they "retreat"
+and the battle is lost.)
 
-If both players reach 0 or below simultaneously:
+If both commanders reach 0 life simultaneously:
   → Game is a DRAW
 ```
 
@@ -1048,7 +1191,7 @@ pub enum GameResult {
 }
 
 pub enum WinReason {
-    LifeReachedZero,
+    CommanderRetreated,    // Commander life reached 0
     TurnLimitHigherLife,
     VictoryPointsReached,  // Future
     Concession,
@@ -1118,7 +1261,16 @@ The game state must be convertible to a fixed-size tensor for neural network inp
 │    [0]  occupied                      (0.0 or 1.0)                         │
 │    [1]  card_id / MAX_CARDS           (normalized)                         │
 │                                                                             │
-│  TOTAL: ~326 floats (round up to 512 for padding)                          │
+│  COMMANDER ENCODING (2 commanders × 2 features = 4 floats)             ★   │
+│  ─────────────────────────────────────────────────────────────────         │
+│    [0]  player1_commander_id / MAX_COMMANDERS  (normalized)                │
+│    [1]  player2_commander_id / MAX_COMMANDERS  (normalized)                │
+│    [2]  reserved                                                           │
+│    [3]  reserved                                                           │
+│                                                                             │
+│  TOTAL: ~330 floats (round up to 512 for padding)                          │
+│                                                                             │
+│  ★ = New for Commander Edition (v1.4)                                      │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -1667,6 +1819,7 @@ See `docs/cards-new-horizons.md` for the complete card database reference.
 | 1.1 | 2026-01-13 | Phase 1.5 keywords (Ephemeral, Regenerate, Stealth, Charge) |
 | 1.2 | 2026-01-16 | Phase 4 engine enhancements: Creature Filters, Conditional Triggers, Bounce Effect, Frenzy/Volatile keywords |
 | 1.3 | 2026-01-17 | **New Horizons Edition**: 300 cards, 16 keywords (added Fortify, Ward), 12 Commander Decks |
+| 1.4 | 2026-01-25 | **Commander Edition**: Commander system rework - commanders are now player personas in Command Zone with persistent abilities, not battlefield creatures. See Section 8.4 for details. |
 
 ---
 
