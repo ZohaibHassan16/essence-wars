@@ -5,8 +5,9 @@
 #![allow(dead_code)]
 
 use cardgame::cards::{
-    AbilityDefinition, CardDatabase, CardDefinition, CardType, EffectDefinition,
-    PassiveEffectDefinition, PassiveModifier,
+    AbilityDefinition, CardDatabase, CardDefinition, CardType, CommanderAbility,
+    CommanderDefinition, CommanderPassiveAbility, CommanderPassiveEffect, EffectDefinition,
+    Faction, PassiveEffectDefinition, PassiveModifier,
 };
 use cardgame::decks::{DeckDefinition, DeckRegistry};
 use cardgame::effects::{TargetingRule, Trigger};
@@ -17,6 +18,24 @@ use cardgame::types::{CardId, PlayerId, Rarity, Slot};
 /// Default commander for tests (The High Artificer).
 /// Used when tests don't need a specific commander.
 pub const DEFAULT_COMMANDER: CardId = CardId(5000);
+
+/// Create a mock commander for test databases that don't load from YAML.
+/// This commander has a +0/+0 passive (effectively no effect).
+pub fn mock_commander() -> CommanderDefinition {
+    CommanderDefinition {
+        id: DEFAULT_COMMANDER.0,
+        name: "Mock Commander".to_string(),
+        faction: Faction::Argentum,
+        rarity: Rarity::Legendary,
+        ability: CommanderAbility::Passive {
+            passive_ability: CommanderPassiveAbility {
+                description: "No effect".to_string(),
+                effect: CommanderPassiveEffect::BuffStats { attack: 0, health: 0 },
+            },
+        },
+        flavor: None,
+    }
+}
 
 /// Create a test DeckDefinition from a Vec<CardId>.
 /// Uses the default commander (The High Artificer).
@@ -62,7 +81,7 @@ pub fn load_real_deck_registry() -> DeckRegistry {
         .expect("Failed to load deck registry")
 }
 
-/// Create a test card database with basic cards
+/// Create a test card database with basic cards and mock commander.
 pub fn test_card_db() -> CardDatabase {
     let cards = vec![
         CardDefinition {
@@ -105,7 +124,7 @@ pub fn test_card_db() -> CardDatabase {
             tags: vec![],
         },
     ];
-    CardDatabase::new(cards)
+    CardDatabase::new_with_commanders(cards, vec![mock_commander()])
 }
 
 /// Create a simple deck of card IDs (30 cards: 10 each of IDs 1, 2, 3)
@@ -355,7 +374,7 @@ pub fn card_playing_test_db() -> CardDatabase {
             tags: vec![],
         },
     ];
-    CardDatabase::new(cards)
+    CardDatabase::new_with_commanders(cards, vec![mock_commander()])
 }
 
 /// Create a valid deck for integration tests using Core Set card IDs.

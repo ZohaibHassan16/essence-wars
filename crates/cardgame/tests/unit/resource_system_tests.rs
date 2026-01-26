@@ -7,7 +7,10 @@
 //! These tests ensure the resource system works exactly as designed and prevent regression.
 
 use cardgame::actions::Action;
-use cardgame::cards::{CardDatabase, CardDefinition, CardType};
+use cardgame::cards::{
+    CardDatabase, CardDefinition, CardType, CommanderAbility, CommanderDefinition,
+    CommanderPassiveAbility, CommanderPassiveEffect, Faction,
+};
 use cardgame::config::player;
 use cardgame::effects::TargetingRule;
 use cardgame::engine::GameEngine;
@@ -17,6 +20,23 @@ use cardgame::types::{CardId, PlayerId, Rarity, Slot};
 
 /// Default commander for tests (The High Artificer).
 const DEFAULT_COMMANDER: CardId = CardId(5000);
+
+/// Create a mock commander for the test database.
+fn mock_commander() -> CommanderDefinition {
+    CommanderDefinition {
+        id: DEFAULT_COMMANDER.0,
+        name: "Mock Commander".to_string(),
+        faction: Faction::Argentum,
+        rarity: Rarity::Legendary,
+        ability: CommanderAbility::Passive {
+            passive_ability: CommanderPassiveAbility {
+                description: "No effect".to_string(),
+                effect: CommanderPassiveEffect::BuffStats { attack: 0, health: 0 },
+            },
+        },
+        flavor: None,
+    }
+}
 
 // =============================================================================
 // TEST FIXTURES
@@ -108,7 +128,7 @@ fn resource_test_db() -> CardDatabase {
             tags: vec![],
         },
     ];
-    CardDatabase::new(cards)
+    CardDatabase::new_with_commanders(cards, vec![mock_commander()])
 }
 
 /// Create a simple deck for testing

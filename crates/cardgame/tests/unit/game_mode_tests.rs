@@ -10,8 +10,11 @@ use cardgame::types::CardId;
 const DEFAULT_COMMANDER: CardId = CardId(5000);
 
 fn load_test_db() -> CardDatabase {
-    CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load card database")
+    CardDatabase::load_with_commanders(
+        cardgame::data_dir().join("cards/core_set"),
+        cardgame::data_dir().join("commanders"),
+    )
+    .expect("Failed to load card database with commanders")
 }
 
 fn get_test_deck() -> Vec<CardId> {

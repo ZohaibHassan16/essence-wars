@@ -3,6 +3,8 @@
 //! These tests specifically target edge cases and corner cases that could
 //! potentially have bugs in the engine implementation.
 
+mod common;
+
 use cardgame::actions::Action;
 use cardgame::cards::{CardDatabase, CardDefinition, CardType};
 use cardgame::engine::GameEngine;
@@ -10,11 +12,13 @@ use cardgame::keywords::Keywords;
 use cardgame::state::GameMode;
 use cardgame::types::{CardId, PlayerId, Slot};
 
+use common::load_real_card_db;
+
 /// Default commander for tests (The High Artificer).
 const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000);
 
 fn create_test_db() -> CardDatabase {
-    CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set")).expect("Failed to load cards")
+    load_real_card_db()
 }
 
 /// Find a card with specific criteria

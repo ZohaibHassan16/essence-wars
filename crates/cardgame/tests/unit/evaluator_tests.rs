@@ -6,8 +6,11 @@ use cardgame::tuning::{CandidateType, Evaluator, EvaluatorConfig, TuningMode};
 
 #[test]
 fn test_evaluate_vs_random() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = CardDatabase::load_with_commanders(
+        cardgame::data_dir().join("cards/core_set"),
+        cardgame::data_dir().join("commanders"),
+    )
+    .expect("Failed to load cards with commanders");
 
     let config = EvaluatorConfig {
         games_per_eval: 10,
@@ -32,8 +35,11 @@ fn test_evaluate_vs_random() {
 
 #[test]
 fn test_evaluate_vs_greedy() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = CardDatabase::load_with_commanders(
+        cardgame::data_dir().join("cards/core_set"),
+        cardgame::data_dir().join("commanders"),
+    )
+    .expect("Failed to load cards with commanders");
 
     let config = EvaluatorConfig {
         games_per_eval: 10,
@@ -59,8 +65,11 @@ fn test_evaluate_vs_greedy() {
 
 #[test]
 fn test_bad_weights_lose() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = CardDatabase::load_with_commanders(
+        cardgame::data_dir().join("cards/core_set"),
+        cardgame::data_dir().join("commanders"),
+    )
+    .expect("Failed to load cards with commanders");
 
     let config = EvaluatorConfig {
         games_per_eval: 10,

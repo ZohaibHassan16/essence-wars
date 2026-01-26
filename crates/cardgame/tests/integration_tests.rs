@@ -18,8 +18,7 @@ const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000)
 #[test]
 fn test_complete_game_simulation() {
     // Load card database from YAML files
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards from YAML");
+    let card_db = load_real_card_db();
 
     // Create engine
     let mut engine = GameEngine::new(&card_db);
@@ -62,8 +61,7 @@ fn test_complete_game_simulation() {
 /// Test neural network interface end-to-end with YAML-loaded cards
 #[test]
 fn test_neural_network_interface() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let mut engine = GameEngine::new(&card_db);
 
     let deck1 = valid_yaml_deck();
@@ -116,8 +114,7 @@ fn test_neural_network_interface() {
 /// Test MCTS-style tree search scenario with forking
 #[test]
 fn test_mcts_tree_search_scenario() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let mut engine = GameEngine::new(&card_db);
 
     let deck1 = valid_yaml_deck();
@@ -174,8 +171,7 @@ fn test_mcts_tree_search_scenario() {
 /// Test game determinism with same seed
 #[test]
 fn test_game_determinism() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     // Play same game twice with same seed
     let mut results = Vec::new();
@@ -203,8 +199,7 @@ fn test_game_determinism() {
 /// Test that games with different seeds produce different outcomes
 #[test]
 fn test_different_seeds_different_games() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     // Play games with different seeds
     let mut results = Vec::new();
@@ -229,8 +224,7 @@ fn test_different_seeds_different_games() {
 /// Test full game plays to completion without panics
 #[test]
 fn test_multiple_games_no_panics() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     // Play multiple games with different seeds
     for seed in [1u64, 42, 12345, 99999, 314159] {
@@ -264,8 +258,7 @@ fn test_multiple_games_no_panics() {
 /// Test reward values throughout a game
 #[test]
 fn test_rewards_during_gameplay() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let mut engine = GameEngine::new(&card_db);
 
     let deck1 = valid_yaml_deck();
@@ -320,8 +313,7 @@ fn test_rewards_during_gameplay() {
 /// Test that tensor output remains valid throughout gameplay
 #[test]
 fn test_tensor_validity_throughout_game() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let mut engine = GameEngine::new(&card_db);
 
     let deck1 = valid_yaml_deck();
@@ -360,8 +352,7 @@ fn test_tensor_validity_throughout_game() {
 /// Test keywords are correctly applied during combat in a real game
 #[test]
 fn test_keyword_combat_in_game() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let mut engine = GameEngine::new(&card_db);
 
     // Use a seed that gives us creatures early

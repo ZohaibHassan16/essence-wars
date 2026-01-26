@@ -494,9 +494,29 @@ fn test_game_over_no_more_actions() {
 // =============================================================================
 
 use cardgame::actions::Target;
-use cardgame::cards::{AbilityDefinition, CardDefinition, CardType, EffectDefinition};
+use cardgame::cards::{
+    AbilityDefinition, CardDefinition, CardType, CommanderAbility, CommanderDefinition,
+    CommanderPassiveAbility, CommanderPassiveEffect, EffectDefinition, Faction,
+};
 use cardgame::effects::{TargetingRule, Trigger};
 use cardgame::types::Rarity;
+
+/// Create a mock commander for local test databases.
+fn local_mock_commander() -> CommanderDefinition {
+    CommanderDefinition {
+        id: DEFAULT_COMMANDER.0,
+        name: "Mock Commander".to_string(),
+        faction: Faction::Argentum,
+        rarity: Rarity::Legendary,
+        ability: CommanderAbility::Passive {
+            passive_ability: CommanderPassiveAbility {
+                description: "No effect".to_string(),
+                effect: CommanderPassiveEffect::BuffStats { attack: 0, health: 0 },
+            },
+        },
+        flavor: None,
+    }
+}
 
 /// Create a card database with a creature that has an activated ability (damage effect)
 fn ability_test_db() -> cardgame::cards::CardDatabase {
@@ -554,7 +574,7 @@ fn ability_test_db() -> cardgame::cards::CardDatabase {
             tags: vec![],
         },
     ];
-    cardgame::cards::CardDatabase::new(cards)
+    cardgame::cards::CardDatabase::new_with_commanders(cards, vec![local_mock_commander()])
 }
 
 /// Create a deck for ability tests
@@ -855,7 +875,7 @@ fn conditional_card_db() -> cardgame::cards::CardDatabase {
             tags: vec![],
         },
     ];
-    cardgame::cards::CardDatabase::new(cards)
+    cardgame::cards::CardDatabase::new_with_commanders(cards, vec![local_mock_commander()])
 }
 
 /// Create a deck for conditional spell tests
