@@ -75,11 +75,18 @@ impl<'a> ValidationExecutor<'a> {
         games_per_matchup: usize,
         base_seed: u64,
     ) -> Vec<MatchupResult> {
-        use std::sync::Mutex;
-        
-        // Track completion for progress reporting
-        let completed = Mutex::new(0usize);
-        let total = matchups.len();
+        // Set up progress reporting for matchups
+        let progress = if self.show_progress {
+            Some(
+                ProgressReporter::new(matchups.len())
+                    .with_style(ProgressStyle::Simple)
+                    .start(),
+            )
+        } else {
+            None
+        };
+
+        let counter = progress.as_ref().map(|p| p.counter());
         
         // Run matchups in parallel
         let mut results: Vec<(usize, MatchupResult)> = matchups
@@ -90,25 +97,19 @@ impl<'a> ValidationExecutor<'a> {
                 
                 let result = self.run_matchup(matchup, faction_weights, games_per_matchup, matchup_seed);
                 
-                // Thread-safe progress reporting
-                let mut count = completed.lock().unwrap();
-                *count += 1;
-                let current = *count;
-                drop(count); // Release lock before printing
-                
-                // Print progress with matchup info
-                println!(
-                    "[{}/{}] {} vs {} - {:.1}% F1 win rate",
-                    current,
-                    total,
-                    matchup.faction1.display_name(),
-                    matchup.faction2.display_name(),
-                    result.faction1_win_rate * 100.0
-                );
+                // Increment progress counter
+                if let Some(ref c) = counter {
+                    c.fetch_add(1, Ordering::Relaxed);
+                }
                 
                 (matchup_idx, result)
             })
             .collect();
+        
+        // Finish progress reporting
+        if let Some(p) = progress {
+            p.finish();
+        }
         
         // Sort by original index to maintain deterministic order
         results.sort_by_key(|(idx, _)| *idx);
