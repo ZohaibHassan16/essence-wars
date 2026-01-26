@@ -107,8 +107,8 @@ fn main() {
         }).count();
 
         // Prefer 2-3 creatures and 1-2 spells
-        if creature_count >= 2 && creature_count <= 3 { score += 1; }
-        if spell_count >= 1 && spell_count <= 2 { score += 1; }
+        if (2..=3).contains(&creature_count) { score += 1; }
+        if (1..=2).contains(&spell_count) { score += 1; }
 
         // Check total mana curve (want some playable cards early)
         let playable_turn2 = hand.iter().filter(|c| {

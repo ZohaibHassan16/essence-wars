@@ -54,9 +54,10 @@ impl SessionManager {
         // Get the data directory
         let data_dir = cardgame::data_dir();
 
-        // Load card database from directory
+        // Load card database with commanders
         let cards_path = data_dir.join("cards/core_set");
-        let card_db = CardDatabase::load_from_directory(&cards_path)
+        let commanders_path = data_dir.join("commanders");
+        let card_db = CardDatabase::load_with_commanders(&cards_path, &commanders_path)
             .map_err(|e| anyhow::anyhow!("Failed to load card database: {}", e))?;
 
         // Load deck registry
@@ -136,8 +137,12 @@ impl SessionManager {
         let game_seed = seed.unwrap_or_else(|| rng.gen::<u64>());
         let bot_seed = rng.gen::<u64>();
 
-        // Start game (player is always Player 1)
-        client.start_game(deck1_cards, deck2_cards, game_seed);
+        // Get commander IDs from decks
+        let commander1 = player_deck.commander_id();
+        let commander2 = opponent_deck.commander_id();
+
+        // Start game with commanders (player is always Player 1)
+        client.start_game_with_commanders(deck1_cards, deck2_cards, commander1, commander2, game_seed);
 
         // Generate unique game ID
         let game_id = uuid::Uuid::new_v4().to_string();

@@ -995,14 +995,18 @@ impl SpectatorComputer {
         let deck1_cards = deck1.to_card_ids();
         let deck2_cards = deck2.to_card_ids();
 
+        // Get commander IDs from decks
+        let commander1 = deck1.commander_id();
+        let commander2 = deck2.commander_id();
+
         // Use provided seed or generate random
         let mut rng = rand::thread_rng();
         let game_seed = config.seed.unwrap_or_else(|| rng.gen::<u64>());
         let bot1_seed = rng.gen::<u64>();
         let bot2_seed = rng.gen::<u64>();
 
-        // Start game (player 1 always goes first in spectator mode)
-        client.start_game(deck1_cards, deck2_cards, game_seed);
+        // Start game with commanders (player 1 always goes first in spectator mode)
+        client.start_game_with_commanders(deck1_cards, deck2_cards, commander1, commander2, game_seed);
 
         let match_id = Uuid::new_v4().to_string();
 

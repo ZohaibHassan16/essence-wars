@@ -180,10 +180,10 @@
 
 <div class="w-full h-full flex {boardBgClass}">
   <!-- LEFT COLUMN: Commander Cards -->
-  <div class="flex flex-col justify-between p-2 bg-ui-panel/30 border-r border-gray-700/50"
+  <div class="flex flex-col justify-between p-2 bg-ui-panel/30 border-r border-gray-700/50 overflow-visible"
        style="width: var(--commander-card-width, 250px);">
     <!-- Opponent Commander (top) -->
-    <div class="flex flex-col items-center">
+    <div class="flex flex-col items-center overflow-visible">
       <CommanderCardLarge
         commander={gameState?.opponent.commander ?? null}
         life={gameState?.opponent.life ?? 0}
@@ -214,7 +214,7 @@
     </div>
 
     <!-- Player Commander (bottom) -->
-    <div class="flex flex-col items-center">
+    <div class="flex flex-col items-center overflow-visible">
       <!-- Player compact stats above commander -->
       <div class="mb-2 flex items-center gap-3 text-xs text-ui-text-dim">
         <span title="Cards in deck">

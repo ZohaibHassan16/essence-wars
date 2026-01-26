@@ -773,11 +773,6 @@ Command Zone integrated into Tauri UI with faction-specific styling. Face attack
   - `crates/cardgame/src/version.rs`: Update test
   - Verify with `cargo test`
 
-- [ ] **9.9** Final documentation review
-  - All docs accurate and complete
-  - CHANGELOG updated
-  - README updated if needed
-
 ### Acceptance Criteria
 
 - [ ] All tests pass

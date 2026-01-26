@@ -81,10 +81,10 @@
 
 <div class="w-full h-full flex {boardBgClass}">
   <!-- LEFT COLUMN: Commander Cards -->
-  <div class="flex flex-col justify-between p-2 bg-ui-panel/30 border-r border-gray-700/50"
+  <div class="flex flex-col justify-between p-2 bg-ui-panel/30 border-r border-gray-700/50 overflow-visible"
        style="width: var(--commander-card-width, 250px);">
     <!-- P2 Commander (top) -->
-    <div class="flex flex-col items-center">
+    <div class="flex flex-col items-center overflow-visible">
       <CommanderCardLarge
         commander={gameState?.opponent.commander ?? null}
         life={gameState?.opponent.life ?? 0}
@@ -119,7 +119,7 @@
     </div>
 
     <!-- P1 Commander (bottom) -->
-    <div class="flex flex-col items-center">
+    <div class="flex flex-col items-center overflow-visible">
       <!-- P1 label -->
       <div class="mb-1 text-xs text-ui-text-dim truncate max-w-full px-2">
         P1 - {match?.player1DeckName ?? "Player 1"}

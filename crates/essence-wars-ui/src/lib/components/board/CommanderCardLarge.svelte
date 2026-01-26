@@ -140,11 +140,11 @@
 </script>
 
 <div
-  class="commander-card relative flex flex-col rounded-xl border-2 bg-gradient-to-b overflow-hidden transition-all duration-300
+  class="commander-card relative flex flex-col rounded-xl border-2 bg-gradient-to-b transition-all duration-300
          {factionColors().gradient} {factionColors().border} {factionColors().glow}"
   class:opacity-60={!commander}
   class:active-pulse={isActive}
-  style="width: var(--commander-card-width, 250px);"
+  style="width: var(--commander-card-width, 250px); overflow: visible;"
   onmouseenter={() => showPopup = true}
   onmouseleave={() => showPopup = false}
   role="region"
@@ -152,7 +152,7 @@
 >
   {#if commander}
     <!-- Portrait Section -->
-    <div class="relative" style="height: var(--commander-portrait-height, 150px);">
+    <div class="relative overflow-hidden rounded-t-lg" style="height: var(--commander-portrait-height, 150px);">
       <img
         src={`/${commander.portraitPath}`}
         alt={commander.name}

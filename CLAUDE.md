@@ -12,17 +12,14 @@
 # Build
 cargo build --release                    # Full workspace
 cargo build --release -p cardgame        # Core engine only
-./scripts/build-windows.sh --sign        # Windows installer (from WSL2)
 
 # Test
-cargo nextest run --status-level=fail    # ~629 tests (recommended)
-cargo test                               # Alternative
+cargo nextest run --status-level=fail    # ~668 tests (recommended)
 
 # Lint
 ./scripts/run-clippy.sh                  # Recommended: lib + binaries
 
 # Stress tests by tier
-./scripts/run-tests.sh                   # Standard only
 ./scripts/run-tests.sh quick|medium|long|overnight
 
 # Arena matches
@@ -34,15 +31,11 @@ cargo run --release --bin tune -- --mode generalist --tag my_run --generations 5
 cargo run --release --bin tune -- --mode faction-specialist --faction argentum --tag argentum_v1
 
 # Analysis & validation
-./scripts/analyze-tuning.sh --latest
 cargo run --release --bin validate -- --games 100
 cargo run --release --bin diagnose -- 200
 
 # Benchmarks
 cargo bench -p cardgame
-
-# Modal cloud (setup: uv tool install modal && modal token new)
-modal run modal_tune.py::main
 ```
 
 ## Project Structure
@@ -82,16 +75,6 @@ modal run modal_tune.py::main
 - **Shared utilities**: `crates/cardgame/tests/common/mod.rs`
 
 When adding tests, create in `tests/unit/` and add module to `tests/unit.rs`.
-
-### Test Tiers
-
-| Tier | Duration | When |
-|------|----------|------|
-| Standard | ~2 min | Every commit |
-| tier_quick | ~2 min | PRs |
-| tier_medium | ~10 min | Nightly |
-| tier_long | ~30 min | Nightly |
-| tier_overnight | ~2 hours | Weekly |
 
 ## Bot System
 
@@ -210,7 +193,7 @@ Life, creature stats, board state, resources, keywords (guard/lethal/lifesteal/r
           amount: 2
 
 # Commander (in data/commanders/*.yaml)
-- id: 1058
+- id: 5002
   name: "Siege Marshal Vex"
   card_type: commander
   faction: Argentum
@@ -445,8 +428,8 @@ pnpm tauri:build:windows:signed # Signed
 ```
 
 Output:
-- `target/x86_64-pc-windows-gnu/release/essence-wars-ui.exe` (54MB)
-- `target/x86_64-pc-windows-gnu/release/bundle/nsis/essence-wars-ui_0.1.0_x64-setup.exe` (36MB)
+- `target/x86_64-pc-windows-gnu/release/essence-wars-ui.exe`
+- `target/x86_64-pc-windows-gnu/release/bundle/nsis/essence-wars-ui_0.1.0_x64-setup.exe`
 
 ### Windows Code Signing
 
@@ -471,3 +454,91 @@ Certificate location: `.certs/codesign.pfx` (gitignored, valid 10 years)
 | `scripts/build-windows.sh --sign` | Build + sign with certificate |
 | `scripts/build-windows.sh --setup-cert` | Generate self-signed cert |
 | `scripts/launch-ui.sh` | Launch Linux UI in dev mode |
+
+### UI Architecture
+
+The UI is built with **Svelte 5** (using runes: `$state`, `$derived`, `$effect`, `$props`) and **Tailwind CSS v4**.
+
+#### Game Modes
+
+| Mode | Description |
+|------|-------------|
+| **Human vs AI** | Play against an AI opponent |
+| **AI vs AI (Spectator)** | Watch two AI players battle |
+
+#### Setup Flow (Deck Selection Wizard)
+
+Both game modes use a 3-step wizard for game setup:
+
+```
+Step 1: Choose Your Commander (or Player 1)
+  ├── Faction tabs (Argentum, Symbiote, Obsidion)
+  ├── Deck grid (4 decks per faction)
+  └── Deck preview panel
+
+Step 2: Choose Your Opponent (or Player 2)
+  └── Same UI as Step 1
+
+Step 3: Game Options
+  ├── Bot selection (opponent AI for Human vs AI, both AIs for spectator)
+  ├── Turn order (Human vs AI only)
+  └── Advanced options (AI vs AI only):
+      ├── Watch Live toggle
+      ├── AI Commentary toggle
+      ├── MCTS simulations preset
+      ├── Alpha-Beta depth preset
+      └── Custom seed input
+```
+
+#### Key UI Components
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `DeckSelectionWizard` | `src/lib/components/menu/` | 3-step setup wizard |
+| `WizardStep` | `src/lib/components/menu/` | Step wrapper with progress indicator |
+| `DeckCard` | `src/lib/components/menu/` | Deck selection card with commander portrait |
+| `DeckGrid` | `src/lib/components/menu/` | Grid of deck cards filtered by faction |
+| `DeckPreview` | `src/lib/components/menu/` | Large preview panel for selected deck |
+| `FactionTabs` | `src/lib/components/menu/` | Faction filter tabs |
+| `CommanderCardLarge` | `src/lib/components/board/` | Commander display during gameplay |
+| `GameBoard` | `src/lib/components/board/` | Main gameplay board |
+| `SetupScreen` | `src/lib/components/` | Human vs AI setup (uses wizard) |
+| `SpectatorSetup` | `src/lib/components/` | AI vs AI setup (uses wizard) |
+
+#### Faction Theming
+
+Each faction has distinct colors defined in `src/app.css`:
+
+| Faction | Primary | Accent |
+|---------|---------|--------|
+| Argentum | `#F5F5F5` | `#D4AF37` (gold) |
+| Symbiote | `#1A472A` | `#7FFF00` (lime) |
+| Obsidion | `#8B0000` | `#00FFFF` (cyan) |
+| Neutral | `#8B4513` | `#B87333` (copper) |
+
+#### Keyboard Navigation
+
+| Key | Action |
+|-----|--------|
+| `Tab` | Navigate between interactive elements |
+| `Enter` / `Space` | Select/activate focused element |
+| `Escape` | Go back to previous step |
+
+#### Audio System
+
+Sound effects and music are managed in `src/lib/audio/`:
+
+| Module | Purpose |
+|--------|---------|
+| `manager.ts` | Sound effects (UI, cards, combat) |
+| `music.ts` | Background music and victory/defeat stings |
+
+Key sounds: `buttonClick`, `buttonHover`, `cardSelect`, `cardHover`, `menuOpen`, `menuClose`
+
+### Documentation
+
+| Document | Purpose |
+|----------|---------|
+| `docs/design-commanders.md` | Commander system design |
+| `docs/cards-new-horizons.md` | Card effect system |
+| `docs/tuning-pipeline.md` | Bot weight tuning guide |
