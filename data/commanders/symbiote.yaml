@@ -10,9 +10,7 @@ commanders:
     rarity: Legendary
     triggered_ability:
       trigger: OnCreaturePlayed
-      description: "When you play a creature with Rush, summon a 1/1 Broodling with Rush"
-      condition:
-        has_keyword: Rush
+      description: "When you play a creature, summon a 1/1 Broodling with Rush"
       effects:
         - type: summon_token
           token:
@@ -55,8 +53,10 @@ commanders:
     faction: Symbiote
     rarity: Legendary
     passive_ability:
-      description: "Your creatures have Regenerate"
+      description: "Your creatures have Regenerate and +0/+1"
       effect:
-        type: grant_keyword
+        type: grant_keyword_and_buff
         keyword: Regenerate
+        attack: 0
+        health: 1
     flavor: "The forest remembers. The forest endures."

@@ -183,6 +183,12 @@ pub enum CommanderPassiveEffect {
     GrantKeyword { keyword: String },
     /// Buff stats of all friendly creatures
     BuffStats { attack: i8, health: i8 },
+    /// Grant a keyword AND buff stats (combined effect)
+    GrantKeywordAndBuff {
+        keyword: String,
+        attack: i8,
+        health: i8,
+    },
 }
 
 /// Commander passive ability (always active)
