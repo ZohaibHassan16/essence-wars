@@ -6,10 +6,44 @@ tags = ["commander", "argentum"]
 commander = 5000
 
 cards = [
-    1000, 1021, 1041, 1060, 1002,
-    1007, 1022, 1050, 1051, 1063,
-    1020, 1061, 1064, 1067, 1004,
-    1017, 1032, 1036, 1047, 1068,
-    1008, 1016, 4000, 4002, 4007,
-    4011, 4016, 4018, 4019,
+    # 1-cost creatures (new early game)
+    1075, 1075,        # Brass Scout x2 (1c 1/2)
+
+    # 2-cost creatures
+    1000, 1000,        # Brass Sentinel x2 (2c 2/5 Guard)
+    1021,              # Bronze Gatekeeper (2c 2/4 Guard)
+    1041,              # Fortified Sentinel (2c 2/3 Fortify)
+    1060,              # Cog Assembler (2c 2/3, summons token)
+    4007,              # Reckless Charger (2c 4/1 Charge+Rush)
+
+    # 3-cost creatures
+    1002,              # Cogwork Defender (3c 3/5 Guard)
+    1007,              # Clockwork Medic (3c 2/4, heals)
+    1022,              # Armored Sentinel (3c 3/5 Guard+Shield)
+    1050,              # Interceptor (3c 2/4 Guard)
+    1063,              # Bulwark Sentinel (3c 2/4 Guard)
+
+    # 4-cost creatures
+    1020,              # Ironclad Bulwark (4c 2/8 Guard)
+    1061,              # Forge Overseer (4c 2/4, +1 ATK passive)
+    1064,              # Iron Bastion (4c 2/6 Guard+Fortify)
+    1067,              # Siege Cannon (4c 3/2 Piercing+Ranged)
+
+    # 5-cost creatures
+    1004,              # Iron Colossus (5c 3/7 Guard)
+    1017,              # Artillery Tower (5c 2/6, AoE)
+    1032,              # Siege Breaker (5c 4/4 Piercing)
+    1036,              # Armored Titan (5c 4/7 Fortify)
+    1047,              # Factory Heart (5c 2/5, summons tokens)
+    1068,              # Battering Ram (5c 5/3 Piercing)
+
+    # 6-cost creatures
+    1008,              # Siege Engine (6c 4/6 Guard+Piercing)
+    1016,              # Steam Cannon (6c 3/7 Guard, AoE)
+
+    # Neutral utility
+    4000,              # Bounty Hunter (2c 2/2 Ranged)
+    4002,              # Wasteland Scout (2c 2/3 Ranged)
+    4019,              # Scavenger (2c 2/2, draws on ally death)
+    4012,              # Supply Depot (3c heal support)
 ]

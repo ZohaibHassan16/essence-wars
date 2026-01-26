@@ -7,7 +7,7 @@ use std::time::Instant;
 
 use rayon::prelude::*;
 
-use crate::bots::{create_bot, BotType, MctsConfig};
+use crate::bots::{create_bot, AlphaBetaConfig, BotType, MctsConfig};
 use crate::cards::CardDatabase;
 use crate::engine::GameEngine;
 use crate::execution::{GameSeeds, ProgressReporter, ProgressStyle};
@@ -22,15 +22,20 @@ use super::types::{
 /// Executor for running validation matchups.
 pub struct ValidationExecutor<'a> {
     card_db: &'a CardDatabase,
+    bot_type: BotType,
     mcts_config: MctsConfig,
+    alphabeta_config: AlphaBetaConfig,
     show_progress: bool,
 }
 
 impl<'a> ValidationExecutor<'a> {
     /// Create a new validation executor.
+    /// Default bot type is AlphaBeta (depth 6) for faster validation.
+    /// Use `with_bot_type(BotType::Mcts)` for MCTS-based validation.
     pub fn new(card_db: &'a CardDatabase, mcts_sims: u32) -> Self {
         Self {
             card_db,
+            bot_type: BotType::AlphaBeta, // Default to AlphaBeta for speed
             mcts_config: MctsConfig {
                 simulations: mcts_sims,
                 exploration: 1.414,
@@ -38,8 +43,21 @@ impl<'a> ValidationExecutor<'a> {
                 parallel_trees: 1,
                 leaf_rollouts: 1,
             },
+            alphabeta_config: AlphaBetaConfig::with_depth(6),
             show_progress: false,
         }
+    }
+
+    /// Set the bot type for validation.
+    pub fn with_bot_type(mut self, bot_type: BotType) -> Self {
+        self.bot_type = bot_type;
+        self
+    }
+
+    /// Set the alpha-beta search depth.
+    pub fn with_alphabeta_depth(mut self, depth: u32) -> Self {
+        self.alphabeta_config = AlphaBetaConfig::with_depth(depth);
+        self
     }
 
     /// Enable or disable progress display.
@@ -274,7 +292,7 @@ impl<'a> ValidationExecutor<'a> {
         }
     }
 
-    /// Run a single game between two MCTS bots with diagnostic collection.
+    /// Run a single game between two bots with diagnostic collection.
     fn run_single_game_with_diagnostics(
         &self,
         deck1: &[crate::types::CardId],
@@ -283,22 +301,21 @@ impl<'a> ValidationExecutor<'a> {
         weights2: Option<&crate::bots::BotWeights>,
         seeds: GameSeeds,
     ) -> (Option<PlayerId>, u32, GameDiagnosticData) {
-        // Create MCTS bots using the factory
-        let alphabeta_config = crate::bots::AlphaBetaConfig::default();
+        // Create bots using the factory with configured bot type
         let mut bot1 = create_bot(
             self.card_db,
-            &BotType::Mcts,
+            &self.bot_type,
             weights1,
             &self.mcts_config,
-            &alphabeta_config,
+            &self.alphabeta_config,
             seeds.bot1,
         );
         let mut bot2 = create_bot(
             self.card_db,
-            &BotType::Mcts,
+            &self.bot_type,
             weights2,
             &self.mcts_config,
-            &alphabeta_config,
+            &self.alphabeta_config,
             seeds.bot2,
         );
 

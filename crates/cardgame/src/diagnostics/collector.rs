@@ -2,7 +2,7 @@
 //!
 //! Captures per-turn snapshots and game events for P1/P2 asymmetry analysis.
 
-use crate::bots::{create_bot, BotType, MctsConfig};
+use crate::bots::{create_bot, AlphaBetaConfig, BotType, MctsConfig};
 use crate::cards::CardDatabase;
 use crate::engine::GameEngine;
 use crate::execution::GameSeeds;
@@ -127,6 +127,8 @@ pub struct DiagnosticConfig {
     pub show_progress: bool,
     /// MCTS configuration (if using MCTS bots).
     pub mcts_config: MctsConfig,
+    /// Alpha-Beta configuration (if using AlphaBeta bots).
+    pub alphabeta_config: AlphaBetaConfig,
 }
 
 impl DiagnosticConfig {
@@ -141,6 +143,7 @@ impl DiagnosticConfig {
             base_seed: 42,
             show_progress: false,
             mcts_config: MctsConfig::default(),
+            alphabeta_config: AlphaBetaConfig::with_depth(6),
         }
     }
 
@@ -167,6 +170,18 @@ impl DiagnosticConfig {
     /// Enable progress display.
     pub fn with_progress(mut self, show: bool) -> Self {
         self.show_progress = show;
+        self
+    }
+
+    /// Set MCTS configuration.
+    pub fn with_mcts_config(mut self, config: MctsConfig) -> Self {
+        self.mcts_config = config;
+        self
+    }
+
+    /// Set Alpha-Beta configuration.
+    pub fn with_alphabeta_config(mut self, config: AlphaBetaConfig) -> Self {
+        self.alphabeta_config = config;
         self
     }
 }
@@ -215,13 +230,12 @@ impl<'a> DiagnosticRunner<'a> {
 
     /// Run a single diagnostic game with full data collection.
     fn run_diagnostic_game(&self, config: &DiagnosticConfig, seeds: GameSeeds) -> GameDiagnostics {
-        let alphabeta_config = crate::bots::AlphaBetaConfig::default();
         let mut bot1 = create_bot(
             self.card_db,
             &config.bot1_type,
             None,
             &config.mcts_config,
-            &alphabeta_config,
+            &config.alphabeta_config,
             seeds.bot1,
         );
         let mut bot2 = create_bot(
@@ -229,7 +243,7 @@ impl<'a> DiagnosticRunner<'a> {
             &config.bot2_type,
             None,
             &config.mcts_config,
-            &alphabeta_config,
+            &config.alphabeta_config,
             seeds.bot2,
         );
 

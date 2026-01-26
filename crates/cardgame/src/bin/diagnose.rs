@@ -3,11 +3,13 @@
 //! Collects detailed per-turn statistics to analyze why P1 has a lower win rate.
 //! Outputs data for analysis of resource curves, tempo, and game progression.
 //!
+//! Default bot is Greedy for speed. Use --bot alphabeta or --bot mcts for accurate analysis.
+//!
 //! Usage:
-//!   cargo run --release --bin diagnose [games]
-//!   cargo run --release --bin diagnose 500
-//!   cargo run --release --bin diagnose 500 --export csv --output ./diagnostics
-//!   cargo run --release --bin diagnose 500 --export json --output ./diagnostics/results.json
+//!   cargo run --release --bin diagnose -- -n 200                   # Fast with Greedy
+//!   cargo run --release --bin diagnose -- -n 200 --bot alphabeta   # Accurate with Alpha-Beta
+//!   cargo run --release --bin diagnose -- -n 200 --bot mcts        # Use MCTS
+//!   cargo run --release --bin diagnose -- -n 200 --export csv -o ./diagnostics
 
 use std::io::Write;
 use std::path::PathBuf;
@@ -15,6 +17,7 @@ use std::process;
 
 use clap::Parser;
 
+use cardgame::bots::{AlphaBetaConfig, BotType, MctsConfig};
 use cardgame::cards::CardDatabase;
 use cardgame::decks::DeckRegistry;
 use cardgame::diagnostics::{
@@ -28,9 +31,25 @@ use cardgame::types::CardId;
 #[command(name = "diagnose")]
 #[command(about = "Analyze P1/P2 asymmetry in card game matches")]
 struct Args {
-    /// Number of games to run
+    /// Number of games to run (positional, deprecated - use -n instead)
     #[arg(default_value = "200")]
-    games: usize,
+    games_positional: usize,
+
+    /// Number of games to run
+    #[arg(long, short = 'n')]
+    games: Option<usize>,
+
+    /// Bot type (greedy for quick tests, alphabeta/mcts for accurate analysis)
+    #[arg(long, default_value = "greedy")]
+    bot: String,
+
+    /// Alpha-beta search depth (only used with --bot alphabeta)
+    #[arg(long, default_value = "6")]
+    ab_depth: u32,
+
+    /// MCTS simulations per move (only used with --bot mcts)
+    #[arg(long, default_value = "100")]
+    mcts_sims: u32,
 
     /// Export format (csv, json, or all)
     #[arg(long, short = 'e')]
@@ -44,8 +63,8 @@ struct Args {
     #[arg(long)]
     include_turns: bool,
 
-    /// Deck ID to use (default: symbiote_aggro)
-    #[arg(long, default_value = "symbiote_aggro")]
+    /// Deck ID to use
+    #[arg(long, default_value = "broodmother_swarm")]
     deck: String,
 
     /// Random seed for reproducibility
@@ -60,11 +79,43 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
+    // Handle deprecated positional argument
+    let num_games = if let Some(n) = args.games {
+        n
+    } else {
+        // If positional arg was explicitly provided (not default), warn about deprecation
+        if args.games_positional != 200 {
+            eprintln!("Warning: positional games argument is deprecated, use -n/--games instead");
+        }
+        args.games_positional
+    };
+
+    // Parse bot type
+    let bot_type: BotType = args.bot.parse().unwrap_or_else(|_| {
+        eprintln!(
+            "Error: Invalid bot type '{}'. Valid options: greedy, alphabeta, mcts, random",
+            args.bot
+        );
+        process::exit(1);
+    });
+
+    // Warn about using non-competitive bots for serious analysis
+    if !bot_type.is_competitive() {
+        eprintln!("Note: Using {} bot. For accurate analysis, use --bot alphabeta or --bot mcts", args.bot);
+    }
+
+    // Build bot configuration string for display
+    let bot_config_str = match bot_type {
+        BotType::AlphaBeta => format!("Alpha-Beta depth {}", args.ab_depth),
+        BotType::Mcts => format!("MCTS {} sims", args.mcts_sims),
+        _ => format!("{:?}", bot_type),
+    };
+
     println!("P1/P2 Asymmetry Diagnostic Tool");
     println!("================================");
     println!(
-        "Running {} games with GreedyBot vs GreedyBot...\n",
-        args.games
+        "Running {} games with {} vs {}...\n",
+        num_games, bot_config_str, bot_config_str
     );
 
     // Load card database with commanders
@@ -102,8 +153,21 @@ fn main() {
     };
     let deck_cards: Vec<CardId> = deck.cards.iter().map(|&id| CardId(id)).collect();
 
+    // Build MCTS and Alpha-Beta configs
+    let mcts_config = MctsConfig {
+        simulations: args.mcts_sims,
+        exploration: 1.414,
+        max_rollout_depth: 100,
+        parallel_trees: 1,
+        leaf_rollouts: 1,
+    };
+    let alphabeta_config = AlphaBetaConfig::with_depth(args.ab_depth);
+
     // Configure diagnostics
-    let config = DiagnosticConfig::new(deck_cards, args.games)
+    let config = DiagnosticConfig::new(deck_cards, num_games)
+        .with_bots(bot_type.clone(), bot_type)
+        .with_mcts_config(mcts_config)
+        .with_alphabeta_config(alphabeta_config)
         .with_seed(args.seed)
         .with_progress(args.progress);
 
@@ -112,9 +176,9 @@ fn main() {
 
     // Simple progress indicator (if not using built-in progress)
     if !args.progress {
-        for i in 0..args.games {
+        for i in 0..num_games {
             if i % 50 == 0 {
-                eprint!("\rProgress: {}/{}", i, args.games);
+                eprint!("\rProgress: {}/{}", i, num_games);
                 std::io::stderr().flush().unwrap();
             }
         }
@@ -123,7 +187,7 @@ fn main() {
     let diagnostics = runner.run(&config);
 
     if !args.progress {
-        eprintln!("\rProgress: {}/{}", args.games, args.games);
+        eprintln!("\rProgress: {}/{}", num_games, num_games);
     }
 
     // Analyze and report

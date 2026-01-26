@@ -1,44 +1,34 @@
 id = "shadow_weaver"
 name = "The Shadow Weaver"
-description = "Multiply your deadliest threats with dark magic. Shadow clones duplicate your strongest creatures, creating an army of phantasmal nightmares that strike and fade."
-playstyle = "Clone Tactics"
+description = "Your creatures gain Stealth, making non-Stealth creatures deadly assassins. Lifesteal creatures heal while striking unseen, creating an unstoppable shadow army."
+playstyle = "Stealth Aggro"
 tags = ["commander", "obsidion"]
 commander = 5010
 
 cards = [
-    # Stealth Creatures
-    3001, 3001, 3001,  # Shadow Blade x3
-    3005,              # Silent Assassin
-    3018,              # Spectral Assassin
-    3019,              # Nightstalker
+    # Low-cost Quick creatures (amazing with granted Stealth)
+    3015, 3015, 3015,  # Phantom Striker x3 (1c 2/3 Quick)
 
-    # Quick/Burst Creatures
-    3002, 3002, 3002,  # Blood Acolyte x3
-    3058,              # Void Archon
-    3003, 3003,        # Void Walker x2
+    # Lifesteal creatures (heal while striking from stealth)
+    3002, 3002, 3002,  # Blood Acolyte x3 (2c 2/3 Quick+Lifesteal)
+    3047, 3047, 3047,  # Blood Cultist x3 (2c 2/3 Lifesteal)
+    3038, 3038,        # Soul Collector x2 (3c 3/3 Lifesteal)
+    3017, 3017,        # Blood Seeker x2 (3c 3/3 Lifesteal)
 
-    # Token/Clone Support
-    3041,              # Shadow Spawn
-    3044,              # Void Rift
-    3068,              # Shadowstep
+    # Mid-range threats
+    3023, 3023,        # Blood Ritualist x2 (3c 3/4)
+    3004,              # Hemomancer (4c 4/4 Lifesteal)
+    3020,              # Soul Reaver (5c 4/4 Quick+Lifesteal+Regenerate)
 
-    # Sustain
-    3004,              # Hemomancer
-    3017,              # Blood Seeker
-    3020,              # Soul Reaver
+    # Removal spells
+    3010, 3010,        # Shadow Strike x2
+    3008, 3008,        # Soul Drain x2
+    3025,              # Life Tap
 
-    # Removal/Control
-    3010,              # Soul Drain
-    3008,              # Life Tap
-    3025,              # Shadow Strike
-
-    # Utility Creatures
-    3000, 3000, 3000,  # Soul Fragment x3
-    3006,              # Ritual Master
-
-    # Neutral Support
-    4000,              # Wandering Merchant
-    4003,              # Hedge Wizard
-    4010,              # Supply Cache
-    4012,              # Wayfarer's Blessing
+    # Neutral - Aggressive creatures (gain Stealth)
+    4007, 4007,        # Reckless Charger x2 (2c 4/1 Charge+Rush)
+    4031, 4031,        # Eager Sellsword x2 (1c 2/1 Rush)
+    4000,              # Bounty Hunter (2c 2/2 Ranged)
+    4003,              # Hired Blade
+    4012,              # Supply Depot
 ]

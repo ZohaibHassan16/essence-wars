@@ -1,15 +1,39 @@
 id = "architect_fortify"
 name = "The Grand Architect"
-description = "Build an impenetrable fortress of steel and shields. Behind walls of Guard units, methodically dismantle your opponent's strategy piece by piece."
+description = "Build an impenetrable fortress of steel and shields. Your creatures gain Fortify, making Guard units nearly unkillable walls that methodically outlast opponents."
 playstyle = "Fortified Control"
 tags = ["commander", "argentum"]
 commander = 5003
 
 cards = [
-    1030, 1040, 1048, 1055, 1062,
-    1041, 1035, 1037, 1042, 1064,
-    1036, 1043, 1038, 1044, 1053,
-    1072, 1010, 1025, 1045, 1052,
-    1065, 1070, 4001, 4003, 4010,
-    4012, 4015, 4017, 4020,
+    # 1-cost creatures (early game presence)
+    1075, 1075,        # Brass Scout x2 (1c 1/2)
+
+    # Guard creatures WITHOUT Fortify (gain Fortify from commander)
+    1000, 1000, 1000,  # Brass Sentinel x3 (2c 2/5 Guard)
+    1021, 1021,        # Bronze Gatekeeper x2 (2c 2/4 Guard)
+    1002, 1002,        # Cogwork Defender x2 (3c 3/5 Guard)
+    1022,              # Armored Sentinel (3c 3/5 Guard+Shield)
+    1027,              # Shield Wall Captain (3c 2/5 Guard, grants Shield to Guards)
+    1031, 1031,        # Stalwart Defender x2 (4c 3/7 Guard)
+    1020,              # Ironclad Bulwark (4c 2/8 Guard)
+    1004,              # Iron Colossus (5c 3/7 Guard)
+    1008,              # Siege Engine (6c 4/6 Guard+Piercing)
+
+    # High-health non-Guard creatures (also benefit from Fortify)
+    1006, 1006,        # Shield Bearer x2 (2c 2/4 Shield)
+    1007,              # Clockwork Medic (3c 2/4, heals on play)
+
+    # Removal and utility spells
+    1025, 1025,        # Execute x2 (2c destroy ≤3 health)
+    1070, 1070,        # Precision Strike x2 (2c 3dmg)
+    1052,              # Lockdown Protocol (2c silence+2dmg)
+
+    # Supports
+    1048,              # Forge of Creation (4c, summons Guard tokens)
+    4012,              # Supply Depot (3c heal)
+
+    # Neutral - utility
+    4003, 4003,        # Hired Blade x2 (3c 3/3)
+    4021,              # Mystic Guardian (4c 3/4 Ward+Guard)
 ]

@@ -198,7 +198,7 @@ fn test_load_from_directory() {
     //   - Symbiote: IDs 2000-2074 (75 cards) - includes 4 commanders
     //   - Obsidion: IDs 3000-3074 (75 cards) - includes 4 commanders
     //   - Free-Walkers: IDs 4000-4074 (75 cards) - no commanders (mercenaries)
-    assert_eq!(db.len(), 300);
+    assert_eq!(db.len(), 301);
 
     // Verify specific cards exist from each faction
     let brass_sentinel = db.get(CardId(1000)).expect("Card 1000 not found");
@@ -403,8 +403,8 @@ fn test_card_database_with_commanders() {
 
     let full_db = card_db.with_commanders(commanders);
 
-    // Verify cards
-    assert_eq!(full_db.len(), 300);
+    // Verify cards (301 after Brass Scout added in v0.8.0)
+    assert_eq!(full_db.len(), 301);
 
     // Verify commanders
     assert_eq!(full_db.commander_count(), 12);
@@ -433,7 +433,7 @@ fn test_load_with_commanders_convenience() {
         cardgame::data_dir().join("commanders"),
     ).expect("Failed to load cards and commanders");
 
-    assert_eq!(full_db.len(), 300);
+    assert_eq!(full_db.len(), 301);
     assert_eq!(full_db.commander_count(), 12);
 }
 

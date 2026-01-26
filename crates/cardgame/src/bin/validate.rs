@@ -1,17 +1,15 @@
 //! Balance Validation CLI - Run comprehensive faction matchup testing.
 //!
 //! Tests all deck combinations across faction pairs (Argentum, Symbiote, Obsidion)
-//! in both player orders using MCTS agents with faction-specific weights.
+//! in both player orders using configurable bots with faction-specific weights.
 //! Uses round-robin matchup generation to test ALL valid deck combinations.
 //!
-//! Current deck counts: Argentum (3), Symbiote (4), Obsidion (4)
-//! Total matchups: 40 deck combinations (3×4 + 3×4 + 4×4)
-//! Total games: matchups × 2 directions × games parameter
+//! Default bot is Alpha-Beta (depth 6) for speed. Use --bot mcts for MCTS validation.
 //!
 //! Usage:
-//!   cargo run --release --bin validate -- --games 100              # 8k total - quick check
-//!   cargo run --release --bin validate -- --games 500 --output results.json  # 40k total - full test
-//!   cargo run --release --bin validate -- --games 1500             # 120k total - comprehensive
+//!   cargo run --release --bin validate -- -n 100                   # Fast with Alpha-Beta
+//!   cargo run --release --bin validate -- -n 100 --bot mcts        # Use MCTS instead
+//!   cargo run --release --bin validate -- -n 100 --ab-depth 8      # Deeper Alpha-Beta search
 
 use std::path::PathBuf;
 use std::process;
@@ -19,6 +17,7 @@ use std::time::Instant;
 
 use clap::Parser;
 
+use cardgame::bots::BotType;
 use cardgame::cards::CardDatabase;
 use cardgame::decks::DeckRegistry;
 use cardgame::execution::configure_thread_pool;
@@ -38,7 +37,15 @@ struct Args {
     #[arg(long, short = 'n', default_value = "500")]
     games: usize,
 
-    /// MCTS simulations per move
+    /// Bot type for validation (alphabeta for speed, mcts for consistency)
+    #[arg(long, default_value = "alphabeta")]
+    bot: String,
+
+    /// Alpha-beta search depth (only used with --bot alphabeta)
+    #[arg(long, default_value = "6")]
+    ab_depth: u32,
+
+    /// MCTS simulations per move (only used with --bot mcts)
     #[arg(long, default_value = "100")]
     mcts_sims: u32,
 
@@ -51,8 +58,12 @@ struct Args {
     #[arg(long)]
     run_id: Option<String>,
 
-    /// Interactive mode - show progress spinners (for terminal use)
-    #[arg(long, short = 'i')]
+    /// Show progress indicator
+    #[arg(long)]
+    progress: bool,
+
+    /// Interactive mode - show progress spinners (deprecated, use --progress)
+    #[arg(long, short = 'i', hide = true)]
     interactive: bool,
 
     /// Random seed for reproducibility
@@ -87,6 +98,18 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
+    // Handle deprecated --interactive flag
+    let show_progress = args.progress || args.interactive;
+    if args.interactive && !args.progress {
+        eprintln!("Warning: --interactive is deprecated, use --progress instead");
+    }
+
+    // Parse bot type
+    let bot_type: BotType = args.bot.parse().unwrap_or_else(|_| {
+        eprintln!("Error: Invalid bot type '{}'. Valid options: alphabeta, mcts, greedy, random", args.bot);
+        process::exit(1);
+    });
+
     // Configure thread pool
     let num_threads = configure_thread_pool(args.threads);
 
@@ -109,7 +132,7 @@ fn main() {
     };
 
     // Load faction weights
-    let faction_weights = FactionWeights::load_from_directory(&args.weights, !args.interactive);
+    let faction_weights = FactionWeights::load_from_directory(&args.weights, !show_progress);
 
     // Build matchups (all deck combinations, round-robin)
     let builder = MatchupBuilder::new(&deck_registry, &card_db);
@@ -135,9 +158,14 @@ fn main() {
     // Print header
     println!("=== Balance Validation ===");
     println!("Version: {}", version::version_string());
+    let bot_config_str = match bot_type {
+        BotType::AlphaBeta => format!("Alpha-Beta depth {}", args.ab_depth),
+        BotType::Mcts => format!("MCTS {} sims", args.mcts_sims),
+        _ => format!("{:?}", bot_type),
+    };
     println!(
-        "Config: {} games/matchup, {} MCTS sims, {} threads",
-        args.games, args.mcts_sims, num_threads
+        "Config: {} games/matchup, {}, {} threads",
+        args.games, bot_config_str, num_threads
     );
     println!("Matchups: {} deck pairs (round-robin)", matchups.len());
     println!("Total games: {} (matchups × 2 directions × {})", matchups.len() * 2 * args.games, args.games);
@@ -145,7 +173,10 @@ fn main() {
 
     // Run validation
     let start_time = Instant::now();
-    let executor = ValidationExecutor::new(&card_db, args.mcts_sims).with_progress(args.interactive);
+    let executor = ValidationExecutor::new(&card_db, args.mcts_sims)
+        .with_bot_type(bot_type)
+        .with_alphabeta_depth(args.ab_depth)
+        .with_progress(show_progress);
 
     let matchup_results = executor.run_all(&matchups, &faction_weights, args.games, args.seed);
     let total_time = start_time.elapsed();

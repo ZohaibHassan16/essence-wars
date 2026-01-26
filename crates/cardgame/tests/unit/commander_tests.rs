@@ -185,7 +185,7 @@ fn test_void_archon_grants_quick() {
 
 #[test]
 fn test_siege_marshal_vex_grants_attack_bonus() {
-    // Siege Marshal Vex (5002): Your creatures have +1 Attack
+    // Siege Marshal Vex (5002): Your creatures have +2 Attack (buffed in v0.8.0)
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
@@ -203,10 +203,10 @@ fn test_siege_marshal_vex_grants_attack_bonus() {
 
     assert_eq!(
         creature.attack,
-        base_attack as i8 + 1,
-        "Creature should have +1 Attack from Siege Marshal Vex passive (base {} + 1 = {})",
+        base_attack as i8 + 2,
+        "Creature should have +2 Attack from Siege Marshal Vex passive (base {} + 2 = {})",
         base_attack,
-        base_attack + 1
+        base_attack + 2
     );
 }
 
@@ -359,8 +359,8 @@ fn test_commander_stat_buff_stacks_with_creature_base() {
         .get_creature(Slot(0))
         .expect("Creature should exist");
 
-    // Brass Sentinel is 2/5, so with +1 attack it should be 3/5
-    assert_eq!(creature.attack, 3, "Attack should be 2 (base) + 1 (passive) = 3");
+    // Brass Sentinel is 2/5, so with +2 attack (v0.8.0 Vex buff) it should be 4/5
+    assert_eq!(creature.attack, 4, "Attack should be 2 (base) + 2 (passive) = 4");
     assert_eq!(creature.current_health, 5, "Health should be unchanged at 5");
     assert_eq!(creature.max_health, 5, "Max health should be unchanged at 5");
 }
@@ -371,7 +371,7 @@ fn test_commander_passive_preserved_after_combat() {
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
-    // P1 has Void Archon (Quick), P2 has Siege Marshal Vex (+1 Attack)
+    // P1 has Void Archon (Quick), P2 has Siege Marshal Vex (+2 Attack, buffed in v0.8.0)
     setup_game_with_commanders(&mut engine, 5011, 5002, 42);
 
     // P1 plays a creature
@@ -400,10 +400,10 @@ fn test_commander_passive_preserved_after_combat() {
         "P1's creature should still have Quick after turn cycle"
     );
 
-    // P2's creature should have +1 attack (3 instead of 2)
+    // P2's creature should have +2 attack (4 instead of 2, Vex buffed in v0.8.0)
     assert_eq!(
-        p2_creature.attack, 3,
-        "P2's creature should have +1 Attack from commander passive"
+        p2_creature.attack, 4,
+        "P2's creature should have +2 Attack from commander passive"
     );
 }
 
@@ -435,8 +435,9 @@ fn test_high_artificer_summons_brass_cog_on_turn_start() {
     );
 
     let brass_cog = &p1_creatures[0];
-    assert_eq!(brass_cog.attack, 1, "Brass Cog should have 1 attack");
-    assert_eq!(brass_cog.current_health, 1, "Brass Cog should have 1 health");
+    // Brass Cog is now 2/2 after v0.8.0 balance buff
+    assert_eq!(brass_cog.attack, 2, "Brass Cog should have 2 attack");
+    assert_eq!(brass_cog.current_health, 2, "Brass Cog should have 2 health");
 }
 
 #[test]

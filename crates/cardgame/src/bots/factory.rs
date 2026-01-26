@@ -83,6 +83,20 @@ impl BotType {
         )
     }
 
+    /// Returns true for bots suitable for balance validation and serious analysis.
+    ///
+    /// Competitive bots (MCTS, Alpha-Beta, Agents) use proper search or tuned weights.
+    /// Debug bots (Random, Greedy) are only suitable for quick sanity checks.
+    pub fn is_competitive(&self) -> bool {
+        matches!(
+            self,
+            BotType::Mcts
+                | BotType::AlphaBeta
+                | BotType::AgentSpecialist(_)
+                | BotType::AgentGeneralist
+        )
+    }
+
     /// Returns the weights file path for Agent bot types, if applicable.
     ///
     /// Returns the relative path from the project root.
@@ -359,5 +373,17 @@ mod tests {
             Some(Faction::Argentum)
         );
         assert_eq!(BotType::AgentGeneralist.faction(), None);
+    }
+
+    #[test]
+    fn test_bot_type_is_competitive() {
+        // Debug bots - not competitive
+        assert!(!BotType::Random.is_competitive());
+        assert!(!BotType::Greedy.is_competitive());
+        // Competitive bots
+        assert!(BotType::Mcts.is_competitive());
+        assert!(BotType::AlphaBeta.is_competitive());
+        assert!(BotType::AgentSpecialist(Faction::Argentum).is_competitive());
+        assert!(BotType::AgentGeneralist.is_competitive());
     }
 }

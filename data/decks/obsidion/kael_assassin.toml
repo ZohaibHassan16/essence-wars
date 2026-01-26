@@ -1,42 +1,34 @@
 id = "kael_assassin"
 name = "Shadow Emperor Kael"
-description = "Strike from shadows, vanish before retaliation. Stealth creatures slip past defenses undetected, delivering devastating blows that end games in darkness."
-playstyle = "Stealth Assassin"
+description = "Every enemy death draws you a card. Lethal assassins and removal spells create overwhelming card advantage as you eliminate all opposition."
+playstyle = "Card Advantage Assassin"
 tags = ["commander", "obsidion"]
 commander = 5009
 
 cards = [
-    # Core Stealth Creatures
-    3001, 3001, 3001,  # Shadow Blade x3
-    3005,              # Silent Assassin
-    3018,              # Spectral Assassin
-    3019,              # Nightstalker
+    # Lethal creatures (guaranteed kills = guaranteed draws)
+    3001, 3001, 3001,  # Shadow Blade x3 (2c 3/2 Stealth+Lethal)
+    3064, 3064,        # Nightblade x2 (4c 4/2 Stealth+Lethal)
+    3022,              # Twilight Executioner (6c 6/5 Quick+Lethal)
 
-    # Quick Creatures (immediate impact)
-    3002, 3002, 3002,  # Blood Acolyte x3
-    3017,              # Blood Seeker
-    3058,              # Void Archon
+    # Quick/High-attack creatures (kill enemies fast)
+    3002, 3002, 3002,  # Blood Acolyte x3 (2c 2/3 Quick+Lifesteal)
+    3017, 3017,        # Blood Seeker x2 (3c 3/3 Lifesteal)
+    3005,              # Silent Assassin (4c 4/3 Stealth+Quick)
+    3019,              # Nightstalker (4c 3/4 Stealth+Lifesteal+Regen)
+    3004,              # Hemomancer (4c 4/4 Lifesteal)
+    3023, 3023,        # Blood Ritualist x2 (3c 3/4)
 
-    # Burst Damage
-    3003, 3003,        # Void Walker x2
-    3000, 3000, 3000,  # Soul Fragment x3
-    3006,              # Ritual Master
+    # Removal spells (kill enemies = draw cards)
+    3010, 3010,        # Shadow Strike x2 (1c 2dmg)
+    3008, 3008,        # Soul Drain x2 (2c 3dmg)
+    3025,              # Life Tap (1c 2dmg)
+    3011,              # Obliteration (4c Destroy)
+    3030,              # Soul Harvest (3c 3dmg)
 
-    # Removal Spells
-    3010,              # Soul Drain
-    3008,              # Life Tap
-    3025,              # Shadow Strike
-    3016,              # Corruption
-    3009,              # Void Bolt
-
-    # Utility
-    3068,              # Shadowstep
-    3015,              # Blood Pact
-
-    # Neutral Support
-    4000,              # Wandering Merchant
-    4001,              # Road Warden
-    4003,              # Hedge Wizard
-    4005,              # Caravan Guard
-    4010,              # Supply Cache
+    # Neutral - Aggressive creatures
+    4007, 4007,        # Reckless Charger x2 (2c 4/1 Charge+Rush)
+    4031, 4031,        # Eager Sellsword x2 (1c 2/1 Rush)
+    4003,              # Hired Blade (3c)
+    4012,              # Supply Depot
 ]

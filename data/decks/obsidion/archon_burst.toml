@@ -1,15 +1,35 @@
 id = "archon_burst"
 name = "Void Archon"
-description = "Unleash devastating Quick combos that end games in a single explosive turn. Strike multiple times before opponents can react, leaving nothing but void in your wake."
-playstyle = "Burst Combo"
+description = "Your creatures gain Quick, striking first in every combat. Lethal assassins become unstoppable killers, and high-attack creatures dominate the board."
+playstyle = "First Strike Aggro"
 tags = ["commander", "obsidion"]
 commander = 5011
 
 cards = [
-    3039, 3032, 3034, 3069, 3013,
-    3015, 3002, 3070, 3018, 3052,
-    3005, 3037, 3051, 3071, 3020,
-    3022, 3043, 3000, 3024, 3003,
-    3010, 3025, 4007, 4011, 4016,
-    4018, 4019, 4024, 4032,
+    # Lethal creatures (Quick + Lethal = guaranteed kill)
+    3001, 3001, 3001,  # Shadow Blade x3 (2c 3/2 Stealth+Lethal)
+    3064, 3064,        # Nightblade x2 (4c 4/2 Stealth+Lethal)
+
+    # High-attack creatures (4+ ATK, kill enemies outright with Quick)
+    3006, 3006,        # Ritual Master x2 (4c 4/4)
+    3004,              # Hemomancer (4c 4/4 Lifesteal)
+    3048,              # Sanguine Lord (5c 4/5 Lifesteal)
+    3021,              # Void Devourer (5c 4/4)
+
+    # Mid-attack aggressive creatures
+    3023, 3023, 3023,  # Blood Ritualist x3 (3c 3/4 - survives trades)
+    3019,              # Nightstalker (4c 3/4 Stealth+Lifesteal+Regen)
+    3017, 3017, 3017,  # Blood Seeker x3 (3c 3/3 Lifesteal)
+
+    # Removal spells
+    3010, 3010,        # Shadow Strike x2
+    3008, 3008,        # Soul Drain x2
+    3025,              # Life Tap
+
+    # Neutral - High attack and Lethal
+    4007, 4007,        # Reckless Charger x2 (2c 4/1 Charge+Rush)
+    4036, 4036,        # Contract Killer x2 (3c 3/2 Lethal)
+    4004,              # War Veteran (4c 4/4 Charge)
+    4039,              # Battle Hardened Veteran (4c 4/4)
+    4012,              # Supply Depot
 ]

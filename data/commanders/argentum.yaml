@@ -10,13 +10,13 @@ commanders:
     rarity: Legendary
     triggered_ability:
       trigger: StartOfTurn
-      description: "At the start of your turn, summon a 1/1 Brass Cog"
+      description: "At the start of your turn, summon a 2/2 Brass Cog"  # Buffed from 1/1→2/1→2/2 (v0.8.0 balance)
       effects:
         - type: summon_token
           token:
             name: "Brass Cog"
-            attack: 1
-            health: 1
+            attack: 2  # Buffed from 1 (v0.8.0 balance)
+            health: 2  # Buffed from 1 (v0.8.0 balance wave 4)
             keywords: []
     flavor: "The Combine doesn't build soldiers. We manufacture victory."
 
@@ -38,10 +38,10 @@ commanders:
     faction: Argentum
     rarity: Legendary
     passive_ability:
-      description: "Your creatures have +1 Attack"
+      description: "Your creatures have +2 Attack"  # Buffed from +1 (v0.8.0 balance wave 4)
       effect:
         type: buff_stats
-        attack: 1
+        attack: 2  # Buffed from 1 (v0.8.0 balance wave 4)
         health: 0
     flavor: "A wall is just a door that hasn't been opened hard enough."
 

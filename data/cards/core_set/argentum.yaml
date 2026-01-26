@@ -42,7 +42,7 @@ cards:
     name: "Factory Foreman"
     cost: 4
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.8.0 balance)
     health: 4
     keywords: []
     rarity: Uncommon
@@ -89,7 +89,7 @@ cards:
     name: "Clockwork Medic"
     cost: 3
     card_type: creature
-    attack: 2  # Buffed from 1 (v0.5.1 round 4)
+    attack: 3  # Buffed from 1→2→3 (v0.8.0 balance wave 4)
     health: 4
     keywords: []
     rarity: Uncommon
@@ -209,7 +209,7 @@ cards:
     name: "Steam Cannon"
     cost: 6
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.8.0 balance)
     health: 7
     keywords: [Guard]
     rarity: Rare
@@ -225,7 +225,7 @@ cards:
     name: "Artillery Tower"
     cost: 5
     card_type: creature
-    attack: 1
+    attack: 2  # Buffed from 1 (v0.8.0 balance)
     health: 6
     keywords: []
     rarity: Legendary
@@ -264,7 +264,7 @@ cards:
     name: "Ironclad Bulwark"
     cost: 4
     card_type: creature
-    attack: 2  # Buffed from 1 (v0.5.1 round 2)
+    attack: 3  # Buffed from 1→2→3 (v0.8.0 balance wave 4)
     health: 8
     keywords: [Guard]
     rarity: Uncommon
@@ -352,7 +352,7 @@ cards:
     name: "Shield Wall Captain"
     cost: 3
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.8.0 balance wave 4)
     health: 5
     keywords: [Guard]
     rarity: Uncommon
@@ -490,7 +490,7 @@ cards:
     name: "Bulwark Commander"
     cost: 4
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.8.0 balance)
     health: 5
     keywords: [Guard, Fortify]
     rarity: Rare
@@ -508,7 +508,7 @@ cards:
     name: "Fortress Wall"
     cost: 6
     card_type: creature
-    attack: 2  # Buffed from 1 (v0.5.1)
+    attack: 3  # Buffed from 2 (v0.8.0 balance)
     health: 10
     keywords: [Guard, Fortify, Shield]
     rarity: Legendary
@@ -579,7 +579,7 @@ cards:
     name: "Bastion Lord"
     cost: 6
     card_type: creature
-    attack: 3
+    attack: 4  # Buffed from 3 (v0.8.0 balance wave 4)
     health: 8
     keywords: [Fortify, Guard]
     rarity: Legendary
@@ -609,7 +609,7 @@ cards:
     name: "Assembly Overseer"
     cost: 4
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.8.0 balance)
     health: 5
     keywords: []
     rarity: Uncommon
@@ -621,15 +621,15 @@ cards:
           - type: summon_token
             token:
               name: "Brass Cog"
-              attack: 1
-              health: 1
+              attack: 2  # Buffed from 1 (v0.8.0 balance wave 4)
+              health: 2  # Buffed from 1 (v0.8.0 balance wave 4)
               keywords: []
 
   - id: 1047
     name: "Factory Heart"
     cost: 5
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.8.0 balance wave 4)
     health: 5
     keywords: []
     rarity: Rare
@@ -641,8 +641,8 @@ cards:
           - type: summon_token
             token:
               name: "Brass Cog"
-              attack: 1
-              health: 1
+              attack: 2  # Buffed from 1 (v0.8.0 balance wave 4)
+              health: 2  # Buffed from 1 (v0.8.0 balance wave 4)
               keywords: []
 
   - id: 1048
@@ -656,7 +656,7 @@ cards:
           - type: summon_token
             token:
               name: "Brass Sentinel"
-              attack: 1
+              attack: 2  # Buffed from 1 (v0.8.0 balance wave 4)
               health: 2
               keywords: [Guard]
     rarity: Rare
@@ -670,14 +670,14 @@ cards:
       - type: summon_token
         token:
           name: "Brass Cog"
-          attack: 1
-          health: 1
+          attack: 2  # Buffed from 1 (v0.8.0 balance wave 4)
+          health: 2  # Buffed from 1 (v0.8.0 balance wave 4)
           keywords: []
       - type: summon_token
         token:
           name: "Brass Cog"
-          attack: 1
-          health: 1
+          attack: 2  # Buffed from 1 (v0.8.0 balance wave 4)
+          health: 2  # Buffed from 1 (v0.8.0 balance wave 4)
           keywords: []
     rarity: Uncommon
 
@@ -686,7 +686,7 @@ cards:
     name: "Interceptor"
     cost: 3
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.8.0 balance wave 4)
     health: 4
     keywords: [Guard]
     rarity: Uncommon
@@ -795,7 +795,7 @@ cards:
     name: "Field Medic Vera"
     cost: 4
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.8.0 balance wave 4)
     health: 5
     keywords: [Regenerate]
     rarity: Uncommon
@@ -807,7 +807,7 @@ cards:
     name: "Gatehouse Sentry"
     cost: 3
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.8.0 balance wave 4)
     health: 4
     keywords: [Guard]
     rarity: Common
@@ -819,7 +819,7 @@ cards:
     name: "Workshop Forewoman"
     cost: 3
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.8.0 balance wave 4)
     health: 3
     keywords: [Fortify]
     rarity: Common
@@ -836,7 +836,7 @@ cards:
     name: "Cog Assembler"
     cost: 2
     card_type: creature
-    attack: 1
+    attack: 2  # Buffed from 1 (v0.8.0 balance)
     health: 3
     keywords: []
     rarity: Common
@@ -848,15 +848,15 @@ cards:
           - type: summon_token
             token:
               name: "Brass Cog"
-              attack: 1
-              health: 1
+              attack: 2  # Buffed from 1 (v0.8.0 balance wave 4)
+              health: 2  # Buffed from 1 (v0.8.0 balance wave 4)
               keywords: []
 
   - id: 1061
     name: "Forge Overseer"
     cost: 4
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.8.0 balance wave 4)
     health: 4
     keywords: []
     rarity: Uncommon
@@ -886,7 +886,7 @@ cards:
     name: "Bulwark Sentinel"
     cost: 3
     card_type: creature
-    attack: 2
+    attack: 3  # Buffed from 2 (v0.8.0 balance wave 4)
     health: 4
     keywords: [Guard]
     rarity: Common
@@ -896,7 +896,7 @@ cards:
     name: "Iron Bastion"
     cost: 4
     card_type: creature
-    attack: 1
+    attack: 2  # Buffed from 1 (v0.8.0 balance)
     health: 6
     keywords: [Guard, Fortify]
     rarity: Uncommon
@@ -1009,3 +1009,19 @@ cards:
         filter:
           has_keyword: 3  # Guard keyword bit
     rarity: Uncommon
+
+  # =============================================================================
+  # Phase 9: Balance Wave 3 - 1-Cost Creature (v0.8.0)
+  # Argentum was the only faction without 1-cost creatures
+  # =============================================================================
+
+  - id: 1075
+    name: "Brass Scout"
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 2
+    keywords: []
+    rarity: Common
+    tags: [Construct]
+    # A small reconnaissance automaton that scouts ahead for the Combine
