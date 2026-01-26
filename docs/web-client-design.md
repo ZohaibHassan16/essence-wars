@@ -805,6 +805,13 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] Remove MCP Sync View so that the menu item can be hidden / removed, while preserving the functionality
 - [x] hide the console window that gets opened in release mode (keep for dev / debg mode)
 
+### Phase 9.7 'This Time for real' Final Final Art Pass
+
+- Generate better backgrounds that fit the art direction of the game, replace existing ones
+- Use Flux Schnell to create decorations and props, populate the Menus with thoughtful additions (not plastering it, but making it look nice)
+- Overhall all Menus and Boards etc to be visually stunning and professional
+- Audit SFX Library, current creature sounds are a bit unfitting 😅 Web Search for a consistent art asset pack that fits our theme and replace the existing ones.
+
 ### Phase 10: Release Prep
 - [ ] Build for Windows
 - [ ] Build for Linux

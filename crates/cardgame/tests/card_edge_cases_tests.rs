@@ -12,9 +12,14 @@
 use cardgame::core::cards::{CardDatabase, CardType};
 use cardgame::core::engine::GameEngine;
 use cardgame::core::types::CardId;
+use cardgame::state::GameMode;
 
 mod common;
-use common::valid_yaml_deck;
+
+/// Default commander for tests (The High Artificer).
+const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000);
+
+use common::{load_real_card_db, valid_yaml_deck};
 
 #[test]
 fn test_card_database_loads_successfully() {
@@ -64,8 +69,7 @@ fn test_all_creatures_have_valid_attack() {
 fn test_no_creatures_survive_with_zero_health() {
     // This is the most important test - run several games and verify that
     // after every action, no creature has health <= 0
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
     
     // Test 3 random games with different seeds
     for seed in [12345, 67890, 11111] {
@@ -73,7 +77,7 @@ fn test_no_creatures_survive_with_zero_health() {
         let deck2 = valid_yaml_deck();
         
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
         
         // Play 50 actions checking state after each
         for _ in 0..50 {
@@ -106,8 +110,7 @@ fn test_no_creatures_survive_with_zero_health() {
 #[test]
 fn test_all_decks_playable_without_crashes() {
     // Load all decks and play each against each other briefly
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
     
     // Test a few matchups with different seeds
     for seed in [42, 100, 200] {
@@ -115,7 +118,7 @@ fn test_all_decks_playable_without_crashes() {
         let deck2 = valid_yaml_deck();
         
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
         
         // Play 20 actions
         for _ in 0..20 {
@@ -172,8 +175,7 @@ fn test_buff_effects_have_valid_ranges() {
 fn test_weaken_card_exists_and_is_playable() {
     // Weaken (4046) was one of the cards that triggered the "Dead creature" bug
     // because it has a buff with health: -1
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
     
     let weaken = card_db.get(CardId(4046));
     assert!(weaken.is_some(), "Weaken card (4046) should exist");
@@ -183,8 +185,8 @@ fn test_weaken_card_exists_and_is_playable() {
     let deck2 = valid_yaml_deck();
     
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(deck1, deck2, 42);
-    
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+
     // Play 30 actions to increase chance of seeing Weaken
     for _ in 0..30 {
         if engine.is_game_over() {
@@ -206,8 +208,7 @@ fn test_weaken_card_exists_and_is_playable() {
 fn test_vampiric_cards_with_health_zero_buffs() {
     // Vampiric Surge (3035) and Sanguine Blessing (3062) have buff with health:0
     // This caused bugs when combined with death processing
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
     
     // These cards should exist
     let vampiric_surge = card_db.get(CardId(3035));
@@ -221,8 +222,8 @@ fn test_vampiric_cards_with_health_zero_buffs() {
     let deck2 = valid_yaml_deck();
     
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(deck1, deck2, 99999);
-    
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 99999, GameMode::default());
+
     // Play 40 actions to increase chance of seeing vampiric cards
     for _ in 0..40 {
         if engine.is_game_over() {

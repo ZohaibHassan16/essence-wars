@@ -76,7 +76,7 @@ fn run_single_game_parallel(
 
     // Create and start game engine
     let mut engine = GameEngine::new(card_db);
-    engine.start_game_with_mode(config.deck1.clone(), config.deck2.clone(), seeds.game, config.game_mode);
+    engine.start_game_with_mode(&config.deck1, &config.deck2, seeds.game, config.game_mode);
 
     // Main game loop
     let max_actions = 1000;
@@ -207,7 +207,7 @@ fn run_single_game_sequential(
 
     // Create and start game engine
     let mut engine = GameEngine::new(card_db);
-    engine.start_game_with_mode(config.deck1.clone(), config.deck2.clone(), seeds.game, config.game_mode);
+    engine.start_game_with_mode(&config.deck1, &config.deck2, seeds.game, config.game_mode);
 
     // Log game start
     if let Some(ref mut l) = logger {
@@ -363,26 +363,24 @@ fn verify_invariants(engine: &GameEngine, seed: u64, action_count: usize) {
 mod tests {
     use super::*;
     use crate::bots::BotType;
-    use crate::types::CardId;
+    use crate::decks::DeckDefinition;
 
     fn test_card_db() -> CardDatabase {
         let cards_path = crate::data_dir().join("cards/core_set");
-        CardDatabase::load_from_directory(cards_path).unwrap()
+        let commanders_path = crate::data_dir().join("commanders");
+        CardDatabase::load_with_commanders(cards_path, commanders_path).unwrap()
     }
 
-    fn test_deck() -> Vec<CardId> {
-        vec![
-            CardId(1000),
-            CardId(1000),
-            CardId(1001),
-            CardId(1001),
-            CardId(1002),
-            CardId(1002),
-            CardId(1003),
-            CardId(1003),
-            CardId(1004),
-            CardId(1004),
-        ]
+    fn test_deck_definition() -> DeckDefinition {
+        DeckDefinition {
+            id: "test".to_string(),
+            name: "Test Deck".to_string(),
+            description: String::new(),
+            playstyle: String::new(),
+            commander: 5000, // The High Artificer
+            cards: vec![1000, 1000, 1001, 1001, 1002, 1002, 1003, 1003, 1004, 1004],
+            tags: vec![],
+        }
     }
 
     #[test]
@@ -391,8 +389,8 @@ mod tests {
         let config = MatchConfig::new(
             BotType::Random,
             BotType::Random,
-            test_deck(),
-            test_deck(),
+            test_deck_definition(),
+            test_deck_definition(),
             5,
             42,
         );
@@ -407,8 +405,8 @@ mod tests {
         let config = MatchConfig::new(
             BotType::Random,
             BotType::Random,
-            test_deck(),
-            test_deck(),
+            test_deck_definition(),
+            test_deck_definition(),
             3,
             42,
         );

@@ -6,6 +6,7 @@
 use cardgame::actions::Action;
 use cardgame::cards::CardDatabase;
 use cardgame::engine::GameEngine;
+use cardgame::state::GameMode;
 use cardgame::types::{CardId, Slot};
 
 /// Helper function to load the full card database with commanders
@@ -30,12 +31,13 @@ fn setup_game_with_commanders(
     let deck1: Vec<CardId> = vec![CardId(1000); 30];
     let deck2: Vec<CardId> = vec![CardId(1000); 30];
 
-    engine.start_game_with_commanders(
+    engine.start_game_raw(
         deck1,
         deck2,
         CardId(commander1_id),
         CardId(commander2_id),
         seed,
+        GameMode::default(),
     );
 
     // Advance to turn 2 so P1 has 2 essence (enough to play Brass Sentinel)
@@ -485,12 +487,13 @@ fn test_broodmother_summons_broodling_when_rush_creature_played() {
     let deck1: Vec<CardId> = vec![CardId(2003); 30]; // Rush creatures
     let deck2: Vec<CardId> = vec![CardId(1000); 30]; // Brass Sentinels
 
-    engine.start_game_with_commanders(
+    engine.start_game_raw(
         deck1,
         deck2,
         CardId(5004), // Broodmother
         CardId(5000), // High Artificer
         42,
+        GameMode::default(),
     );
 
     // Turn 1: P1 has 1 essence, can play 1-cost Broodling
@@ -531,12 +534,13 @@ fn test_broodmother_does_not_summon_when_non_rush_creature_played() {
     let deck1: Vec<CardId> = vec![CardId(1000); 30];
     let deck2: Vec<CardId> = vec![CardId(1000); 30];
 
-    engine.start_game_with_commanders(
+    engine.start_game_raw(
         deck1,
         deck2,
         CardId(5004), // Broodmother
         CardId(5000), // High Artificer
         42,
+        GameMode::default(),
     );
 
     // Advance to turn 2 so P1 has 2 essence
@@ -567,12 +571,13 @@ fn test_plague_sovereign_deals_damage_on_ally_death() {
     let deck1: Vec<CardId> = vec![CardId(4031); 30]; // Rush creatures that will die easily
     let deck2: Vec<CardId> = vec![CardId(1000); 30]; // Brass Sentinel 2/4 Guard
 
-    engine.start_game_with_commanders(
+    engine.start_game_raw(
         deck1,
         deck2,
         CardId(5005), // Plague Sovereign
         CardId(5001), // Sanctum Healer (passive, no tokens)
         42,
+        GameMode::default(),
     );
 
     let initial_p2_health = engine.state.players[1].life;
@@ -638,12 +643,13 @@ fn test_shadow_emperor_kael_draws_on_enemy_death() {
     let deck1: Vec<CardId> = vec![CardId(1000); 30]; // Brass Sentinel 2/4 Guard
     let deck2: Vec<CardId> = vec![CardId(4031); 30]; // Eager Sellsword 2/1 Rush (weak)
 
-    engine.start_game_with_commanders(
+    engine.start_game_raw(
         deck1,
         deck2,
         CardId(5009), // Shadow Emperor Kael
         CardId(5001), // Sanctum Healer
         42,
+        GameMode::default(),
     );
 
     // Advance to turn 2 so P1 has enough essence
@@ -713,12 +719,13 @@ fn test_shadow_emperor_kael_multiple_deaths_multiple_draws() {
     let deck1: Vec<CardId> = vec![CardId(1000); 30]; // Brass Sentinel 2/4
     let deck2: Vec<CardId> = vec![CardId(4031); 30]; // Eager Sellsword 2/1 Rush
 
-    engine.start_game_with_commanders(
+    engine.start_game_raw(
         deck1,
         deck2,
         CardId(5009), // Shadow Emperor Kael
         CardId(5001), // Sanctum Healer
         42,
+        GameMode::default(),
     );
 
     // Setup: Both players place creatures across multiple turns

@@ -10,10 +10,13 @@ use cardgame::actions::Action;
 use cardgame::cards::CardDatabase;
 use cardgame::config::{game, player};
 use cardgame::engine::GameEngine;
-use cardgame::state::GameState;
+use cardgame::state::{GameMode, GameState};
 use cardgame::types::{CardId, Slot};
 
 use common::{test_card_db, valid_yaml_deck};
+
+/// Default commander for tests (The High Artificer).
+const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000);
 
 // =============================================================================
 // Strategy generators for proptest
@@ -171,7 +174,7 @@ proptest! {
         let deck2 = valid_yaml_deck();
 
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         // Play several turns and verify each legal action can be applied
         for _ in 0..50 {
@@ -209,7 +212,7 @@ proptest! {
         let deck2 = valid_yaml_deck();
 
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         for _ in 0..30 {
             if engine.is_game_over() {
@@ -289,7 +292,7 @@ proptest! {
         let deck2 = valid_yaml_deck();
 
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         // Run game to completion
         let (finished, _) = run_random_game(&mut engine, seed, 500);
@@ -314,7 +317,7 @@ proptest! {
         let deck2 = valid_yaml_deck();
 
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         // Verify initial state
         verify_state_invariants(&engine.state, "Initial state");
@@ -354,11 +357,11 @@ proptest! {
 
         // Run game twice with same seed and random action selection
         let mut engine1 = GameEngine::new(&card_db);
-        engine1.start_game(deck1.clone(), deck2.clone(), seed);
+        engine1.start_game_raw(deck1.clone(), deck2.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
         let (_, steps1) = run_random_game(&mut engine1, seed, 100);
 
         let mut engine2 = GameEngine::new(&card_db);
-        engine2.start_game(deck1, deck2, seed);
+        engine2.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
         let (_, steps2) = run_random_game(&mut engine2, seed, 100);
 
         // Same number of steps
@@ -399,7 +402,7 @@ proptest! {
         let deck2 = valid_yaml_deck();
 
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         // Advance a few steps
         for _ in 0..10 {
@@ -449,7 +452,7 @@ proptest! {
         let deck2 = valid_yaml_deck();
 
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         // Check tensor at various game states
         for _ in 0..30 {
@@ -499,7 +502,7 @@ proptest! {
         let card_db = load_full_card_db();
 
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         // Verify game started correctly
         prop_assert!(!engine.is_game_over(), "Game should not be over at start");
@@ -566,7 +569,7 @@ fn test_empty_legal_actions_terminal() {
     let deck2 = common::simple_deck();
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(deck1, deck2, 12345);
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Run game to completion instead of manually setting state
     let (_, _) = run_random_game(&mut engine, 12345, 500);

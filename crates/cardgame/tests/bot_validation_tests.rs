@@ -7,11 +7,28 @@ mod common;
 use cardgame::arena::GameRunner;
 use cardgame::bots::{AlphaBetaBot, AlphaBetaConfig, GreedyBot, MctsBot, MctsConfig, RandomBot};
 use cardgame::cards::CardDatabase;
-use cardgame::decks::DeckRegistry;
+use cardgame::decks::{DeckDefinition, DeckRegistry};
 use cardgame::engine::GameEngine;
+use cardgame::state::GameMode;
 use cardgame::types::{CardId, PlayerId};
 
 use common::{arena_test_deck, load_real_card_db, load_real_deck_registry};
+
+/// Default commander for tests (The High Artificer).
+const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000);
+
+/// Create a test DeckDefinition from a Vec<CardId>.
+fn make_test_deck(cards: Vec<CardId>) -> DeckDefinition {
+    DeckDefinition {
+        id: "test_deck".to_string(),
+        name: "Test Deck".to_string(),
+        description: String::new(),
+        playstyle: String::new(),
+        commander: DEFAULT_COMMANDER.0,
+        cards: cards.iter().map(|c| c.0).collect(),
+        tags: vec![],
+    }
+}
 
 // =============================================================================
 // Helper functions
@@ -39,9 +56,12 @@ fn run_traced_match(
     let mut results = Vec::with_capacity(games);
     let mut runner = GameRunner::new(card_db);
 
+    let deck1_def = make_test_deck(deck1);
+    let deck2_def = make_test_deck(deck2);
+
     for i in 0..games {
         let seed = base_seed.wrapping_add(i as u64);
-        let result = runner.run_game(bot1, bot2, deck1.clone(), deck2.clone(), seed);
+        let result = runner.run_game(bot1, bot2, &deck1_def, &deck2_def, seed);
         results.push(result);
     }
 
@@ -344,11 +364,9 @@ fn test_all_deck_combinations() {
     for deck1_id in &deck_ids {
         for deck2_id in &deck_ids {
             let deck1 = registry.get(deck1_id)
-                .expect(&format!("Failed to get deck {}", deck1_id))
-                .to_card_ids();
+                .expect(&format!("Failed to get deck {}", deck1_id));
             let deck2 = registry.get(deck2_id)
-                .expect(&format!("Failed to get deck {}", deck2_id))
-                .to_card_ids();
+                .expect(&format!("Failed to get deck {}", deck2_id));
 
             let mut bot1 = GreedyBot::new(&card_db, 12345);
             let mut bot2 = GreedyBot::new(&card_db, 54321);
@@ -392,7 +410,7 @@ fn test_edge_case_quick_lethal_vs_shield() {
     // Create a game and manually set up the edge case
     let mut engine = GameEngine::new(&card_db);
     let deck = arena_test_deck();
-    engine.start_game(deck.clone(), deck, 12345);
+    engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Find cards with specific keywords to create the scenario
     // For now, just verify we can run games that might encounter this
@@ -540,7 +558,8 @@ fn test_edge_case_guard_enforcement() {
 
     // Create game engine to check legal actions
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(arena_test_deck(), arena_test_deck(), 99000);
+    let deck = arena_test_deck();
+    engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 99000, GameMode::default());
 
     // Play until we have creatures on board
     let mut guard_scenarios_checked = 0;

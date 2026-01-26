@@ -4,7 +4,11 @@ use cardgame::actions::Action;
 use cardgame::bots::{Bot, MctsBot, MctsConfig, MctsNode};
 use cardgame::cards::CardDatabase;
 use cardgame::engine::GameEngine;
+use cardgame::state::GameMode;
 use cardgame::types::{CardId, Slot};
+
+/// Default commander for tests (The High Artificer).
+const DEFAULT_COMMANDER: CardId = CardId(5000);
 
 fn load_test_db() -> CardDatabase {
     CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set")).expect("Failed to load cards")
@@ -61,7 +65,7 @@ fn test_mcts_search_returns_valid_action() {
     let mut bot = MctsBot::with_config(&card_db, config, 42);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(test_deck(), test_deck(), 12345);
+    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     let action = bot.search(&engine);
     let legal = engine.get_legal_actions();
@@ -77,7 +81,7 @@ fn test_mcts_completes_game() {
     let mut bot = MctsBot::with_config(&card_db, config, 42);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(test_deck(), test_deck(), 12345);
+    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     let mut actions = 0;
     while !engine.is_game_over() && actions < 200 {
@@ -102,7 +106,7 @@ fn test_mcts_parallel_search() {
     let mut bot = MctsBot::with_config(&card_db, config, 42);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(test_deck(), test_deck(), 12345);
+    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     let action = bot.search(&engine);
     let legal = engine.get_legal_actions();
@@ -137,7 +141,7 @@ fn test_mcts_leaf_parallel_search() {
     let mut bot = MctsBot::with_config(&card_db, config, 42);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(test_deck(), test_deck(), 12345);
+    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     let action = bot.search(&engine);
     let legal = engine.get_legal_actions();
@@ -175,7 +179,7 @@ fn test_mcts_select_action_with_engine_trait_method() {
     let mut bot = MctsBot::with_config(&card_db, MctsConfig::fast(), 42);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(test_deck(), test_deck(), 12345);
+    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Call through the trait method (as GameRunner does)
     let action = bot.select_action_with_engine(&engine);

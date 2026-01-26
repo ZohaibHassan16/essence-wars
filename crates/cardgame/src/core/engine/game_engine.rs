@@ -13,6 +13,7 @@ use crate::core::legal::legal_actions;
 use crate::core::state::{Creature, CreatureStatus, GameMode, GamePhase, GameResult, GameState, Support, WinReason};
 use crate::core::tracing::{CombatTracer, EffectTracer};
 use crate::core::types::{CardId, PlayerId, Slot};
+use crate::decks::DeckDefinition;
 
 use super::effect_queue::EffectQueue;
 use super::effect_convert::{resolve_spell_target, effect_def_to_effect_with_target, effect_def_to_triggered_effect};
@@ -42,13 +43,71 @@ impl<'a> GameEngine<'a> {
         }
     }
 
-    /// Initialize a new game with the given decks.
-    /// Shuffles decks using the provided seed, draws initial hands,
-    /// and starts Player 1's first turn.
-    pub fn start_game(&mut self, deck1: Vec<CardId>, deck2: Vec<CardId>, seed: u64) {
+    /// Initialize a new game with the given deck definitions.
+    ///
+    /// This is the primary API for starting games. Each deck definition includes
+    /// the commander, so commanders are always used. Uses Attrition mode by default.
+    ///
+    /// # Panics
+    /// Panics if either commander is not found in the card database.
+    pub fn start_game(&mut self, deck1: &DeckDefinition, deck2: &DeckDefinition, seed: u64) {
+        self.start_game_with_mode(deck1, deck2, seed, GameMode::default())
+    }
+
+    /// Initialize a new game with the given deck definitions and game mode.
+    ///
+    /// # Panics
+    /// Panics if either commander is not found in the card database.
+    pub fn start_game_with_mode(
+        &mut self,
+        deck1: &DeckDefinition,
+        deck2: &DeckDefinition,
+        seed: u64,
+        mode: GameMode,
+    ) {
+        self.start_game_raw(
+            deck1.to_card_ids(),
+            deck2.to_card_ids(),
+            deck1.commander_id(),
+            deck2.commander_id(),
+            seed,
+            mode,
+        )
+    }
+
+    /// Low-level game initialization with raw components.
+    ///
+    /// Use this when you have raw card IDs and commander IDs (e.g., in tests
+    /// or when constructing games programmatically without DeckDefinitions).
+    /// Commanders are mandatory - Essence Wars is built around commanders.
+    ///
+    /// # Panics
+    /// Panics if either commander ID is not found in the card database.
+    pub fn start_game_raw(
+        &mut self,
+        deck1: Vec<CardId>,
+        deck2: Vec<CardId>,
+        commander1: CardId,
+        commander2: CardId,
+        seed: u64,
+        mode: GameMode,
+    ) {
+        // Validate commanders exist in database
+        if self.card_db.get_commander(commander1).is_none() {
+            panic!("Commander {} not found in card database", commander1.0);
+        }
+        if self.card_db.get_commander(commander2).is_none() {
+            panic!("Commander {} not found in card database", commander2.0);
+        }
+
         // Reset state
         self.state = GameState::new();
         self.state.rng_state = seed;
+        self.state.game_mode = mode;
+
+        // Set commanders
+        self.state.commander_p1 = Some(commander1);
+        self.state.commander_p2 = Some(commander2);
 
         // Set up player 1's deck
         let mut deck1_cards: Vec<CardInstance> = deck1.into_iter().map(CardInstance::new).collect();
@@ -97,66 +156,6 @@ impl<'a> GameEngine<'a> {
 
         // Validate initial state in debug builds
         self.state.debug_validate();
-    }
-
-    /// Initialize a new game with the given decks and game mode.
-    /// Same as `start_game` but allows specifying the game mode.
-    pub fn start_game_with_mode(
-        &mut self,
-        deck1: Vec<CardId>,
-        deck2: Vec<CardId>,
-        seed: u64,
-        mode: GameMode,
-    ) {
-        self.start_game(deck1, deck2, seed);
-        self.state.game_mode = mode;
-    }
-
-    /// Initialize a new game with the given decks and commanders.
-    /// Commanders are validated against the card database before the game starts.
-    ///
-    /// # Panics
-    /// Panics if either commander ID is not found in the card database.
-    pub fn start_game_with_commanders(
-        &mut self,
-        deck1: Vec<CardId>,
-        deck2: Vec<CardId>,
-        commander1: CardId,
-        commander2: CardId,
-        seed: u64,
-    ) {
-        // Validate commanders exist in database
-        if self.card_db.get_commander(commander1).is_none() {
-            panic!("Commander {} not found in card database", commander1.0);
-        }
-        if self.card_db.get_commander(commander2).is_none() {
-            panic!("Commander {} not found in card database", commander2.0);
-        }
-
-        // Start the game normally
-        self.start_game(deck1, deck2, seed);
-
-        // Set commanders
-        self.state.commander_p1 = Some(commander1);
-        self.state.commander_p2 = Some(commander2);
-    }
-
-    /// Initialize a new game with decks, commanders, and game mode.
-    /// Combines `start_game_with_commanders` and `start_game_with_mode`.
-    ///
-    /// # Panics
-    /// Panics if either commander ID is not found in the card database.
-    pub fn start_game_full(
-        &mut self,
-        deck1: Vec<CardId>,
-        deck2: Vec<CardId>,
-        commander1: CardId,
-        commander2: CardId,
-        seed: u64,
-        mode: GameMode,
-    ) {
-        self.start_game_with_commanders(deck1, deck2, commander1, commander2, seed);
-        self.state.game_mode = mode;
     }
 
     /// Get the commander definition for a player.

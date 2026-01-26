@@ -8,8 +8,9 @@ use crate::bots::Bot;
 use crate::cards::CardDatabase;
 use crate::core::state::GameMode;
 use crate::core::tracing::{CombatTrace, CombatTracer, EffectEvent, EffectTracer};
+use crate::decks::DeckDefinition;
 use crate::engine::GameEngine;
-use crate::types::{CardId, PlayerId};
+use crate::types::PlayerId;
 
 /// Result of a single game.
 #[derive(Clone, Debug)]
@@ -78,8 +79,8 @@ impl<'a> GameRunner<'a> {
     /// # Arguments
     /// * `bot1` - Bot playing as Player 1
     /// * `bot2` - Bot playing as Player 2
-    /// * `deck1` - Deck for Player 1
-    /// * `deck2` - Deck for Player 2
+    /// * `deck1` - Deck definition for Player 1 (includes commander)
+    /// * `deck2` - Deck definition for Player 2 (includes commander)
     /// * `seed` - Random seed for deterministic replay
     ///
     /// # Returns
@@ -88,8 +89,8 @@ impl<'a> GameRunner<'a> {
         &mut self,
         bot1: &mut dyn Bot,
         bot2: &mut dyn Bot,
-        deck1: Vec<CardId>,
-        deck2: Vec<CardId>,
+        deck1: &DeckDefinition,
+        deck2: &DeckDefinition,
         seed: u64,
     ) -> GameResult {
         let start = Instant::now();
@@ -222,8 +223,8 @@ impl<'a> GameRunner<'a> {
         &mut self,
         bot1: &mut dyn Bot,
         bot2: &mut dyn Bot,
-        deck1: Vec<CardId>,
-        deck2: Vec<CardId>,
+        deck1: &DeckDefinition,
+        deck2: &DeckDefinition,
         games: usize,
         base_seed: u64,
     ) -> MatchStats {
@@ -231,7 +232,7 @@ impl<'a> GameRunner<'a> {
 
         for i in 0..games {
             let seed = base_seed.wrapping_add(i as u64);
-            let result = self.run_game(bot1, bot2, deck1.clone(), deck2.clone(), seed);
+            let result = self.run_game(bot1, bot2, deck1, deck2, seed);
             stats.record_game(result.winner, result.turns, result.duration);
         }
 
@@ -243,8 +244,8 @@ impl<'a> GameRunner<'a> {
         card_db: &CardDatabase,
         bot1: &mut dyn Bot,
         bot2: &mut dyn Bot,
-        deck1: Vec<CardId>,
-        deck2: Vec<CardId>,
+        deck1: &DeckDefinition,
+        deck2: &DeckDefinition,
         games: usize,
         base_seed: u64,
     ) -> MatchStats {

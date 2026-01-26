@@ -5,17 +5,11 @@
 
 use crate::bots::BotType;
 use crate::cards::CardDatabase;
-use crate::decks::DeckRegistry;
+use crate::decks::{DeckDefinition, DeckRegistry};
 use crate::types::CardId;
 
-/// Result of loading a deck.
-#[derive(Debug)]
-pub struct LoadedDeck {
-    /// The deck's card IDs.
-    pub cards: Vec<CardId>,
-    /// Display name for the deck.
-    pub name: String,
-}
+/// Default commander for default/test decks (The High Artificer).
+const DEFAULT_COMMANDER: u16 = 5000;
 
 /// Load a deck by ID or use default.
 ///
@@ -26,35 +20,62 @@ pub struct LoadedDeck {
 /// * `player_label` - Label for error messages (e.g., "1" or "2")
 ///
 /// # Returns
-/// * `Ok(LoadedDeck)` - The loaded deck with cards and name
+/// * `Ok(DeckDefinition)` - The loaded deck definition (includes commander)
 /// * `Err(String)` - Error message if deck not found or invalid
 pub fn load_deck(
     deck_id: Option<&str>,
     registry: &DeckRegistry,
     card_db: &CardDatabase,
     player_label: &str,
-) -> Result<LoadedDeck, String> {
+) -> Result<DeckDefinition, String> {
     match deck_id {
         Some(id) => match registry.get(id) {
             Some(deck) => {
                 if let Err(e) = deck.validate(card_db) {
                     return Err(format!("Deck '{}' validation error: {}", id, e));
                 }
-                Ok(LoadedDeck {
-                    cards: deck.to_card_ids(),
-                    name: deck.name.clone(),
-                })
+                Ok(deck.clone())
             }
             None => Err(format!(
                 "Deck '{}' not found. Use --list-decks to see available decks.",
                 id
             )),
         },
-        None => Ok(LoadedDeck {
-            cards: create_default_deck(),
-            name: format!("Default Deck {}", player_label),
-        }),
+        None => Ok(create_default_deck_definition(player_label)),
     }
+}
+
+/// Create a default deck definition for testing.
+///
+/// Returns a simple deck with default commander for basic testing
+/// when no specific deck is specified.
+fn create_default_deck_definition(player_label: &str) -> DeckDefinition {
+    DeckDefinition {
+        id: format!("default_{}", player_label),
+        name: format!("Default Deck {}", player_label),
+        description: "Default testing deck".to_string(),
+        playstyle: "Aggro".to_string(),
+        commander: DEFAULT_COMMANDER,
+        cards: create_default_deck_cards(),
+        tags: vec!["default".to_string()],
+    }
+}
+
+/// Create default deck cards (without commander).
+fn create_default_deck_cards() -> Vec<u16> {
+    // Aggressive Assault deck from design doc (simplified)
+    // Note: This is 18 cards, not 29 - it's for quick testing only
+    vec![
+        1, 1, // Eager Recruit x2
+        3, 3, // Nimble Scout x2
+        6, 6, // Frontier Ranger x2
+        8, 8, // Shielded Squire x2
+        11, 11, // Centaur Charger x2
+        12, 12, // Blade Dancer x2
+        16, 16, // Piercing Striker x2
+        20, 20, // Siege Breaker x2
+        34, 34, // Lightning Bolt x2
+    ]
 }
 
 /// Validate that specialist agents are paired with their faction's decks.
@@ -116,24 +137,9 @@ pub fn validate_faction_deck_binding(
     }
 }
 
-/// Create a default deck for testing.
-///
-/// Returns a simple deck with a mix of creatures for basic testing
-/// when no specific deck is specified.
+/// Create a default deck as CardIds (for backwards compatibility).
 pub fn create_default_deck() -> Vec<CardId> {
-    // Aggressive Assault deck from design doc (simplified)
-    let card_ids = [
-        1, 1, // Eager Recruit x2
-        3, 3, // Nimble Scout x2
-        6, 6, // Frontier Ranger x2
-        8, 8, // Shielded Squire x2
-        11, 11, // Centaur Charger x2
-        12, 12, // Blade Dancer x2
-        16, 16, // Piercing Striker x2
-        20, 20, // Siege Breaker x2
-        34, 34, // Lightning Bolt x2
-    ];
-    card_ids.iter().map(|&id| CardId(id)).collect()
+    create_default_deck_cards().into_iter().map(CardId).collect()
 }
 
 #[cfg(test)]

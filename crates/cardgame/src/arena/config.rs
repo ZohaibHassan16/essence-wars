@@ -4,7 +4,7 @@
 
 use crate::bots::{AlphaBetaConfig, BotType, BotWeights, MctsConfig};
 use crate::core::state::GameMode;
-use crate::types::CardId;
+use crate::decks::DeckDefinition;
 
 /// Configuration for a single match between two bots.
 #[derive(Clone, Debug)]
@@ -13,10 +13,10 @@ pub struct MatchConfig {
     pub bot1_type: BotType,
     /// Bot 2 type
     pub bot2_type: BotType,
-    /// Deck for bot 1
-    pub deck1: Vec<CardId>,
-    /// Deck for bot 2
-    pub deck2: Vec<CardId>,
+    /// Deck definition for bot 1 (includes commander)
+    pub deck1: DeckDefinition,
+    /// Deck definition for bot 2 (includes commander)
+    pub deck2: DeckDefinition,
     /// Custom weights for bot 1 (optional)
     pub weights1: Option<BotWeights>,
     /// Custom weights for bot 2 (optional)
@@ -40,8 +40,8 @@ impl MatchConfig {
     pub fn new(
         bot1_type: BotType,
         bot2_type: BotType,
-        deck1: Vec<CardId>,
-        deck2: Vec<CardId>,
+        deck1: DeckDefinition,
+        deck2: DeckDefinition,
         games: usize,
         seed: u64,
     ) -> Self {

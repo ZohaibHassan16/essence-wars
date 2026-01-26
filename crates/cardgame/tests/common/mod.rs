@@ -8,18 +8,50 @@ use cardgame::cards::{
     AbilityDefinition, CardDatabase, CardDefinition, CardType, EffectDefinition,
     PassiveEffectDefinition, PassiveModifier,
 };
-use cardgame::decks::DeckRegistry;
+use cardgame::decks::{DeckDefinition, DeckRegistry};
 use cardgame::effects::{TargetingRule, Trigger};
 use cardgame::keywords::Keywords;
-use cardgame::state::{Creature, CreatureStatus, GameState};
+use cardgame::state::{Creature, CreatureStatus, GameMode, GameState};
 use cardgame::types::{CardId, PlayerId, Rarity, Slot};
 
-/// Load the real card database from the data directory.
+/// Default commander for tests (The High Artificer).
+/// Used when tests don't need a specific commander.
+pub const DEFAULT_COMMANDER: CardId = CardId(5000);
+
+/// Create a test DeckDefinition from a Vec<CardId>.
+/// Uses the default commander (The High Artificer).
+pub fn make_test_deck(cards: Vec<CardId>) -> DeckDefinition {
+    DeckDefinition {
+        id: "test_deck".to_string(),
+        name: "Test Deck".to_string(),
+        description: String::new(),
+        playstyle: String::new(),
+        commander: DEFAULT_COMMANDER.0,
+        cards: cards.iter().map(|c| c.0).collect(),
+        tags: vec![],
+    }
+}
+
+/// Create a test DeckDefinition with a specific commander.
+pub fn make_test_deck_with_commander(cards: Vec<CardId>, commander: CardId) -> DeckDefinition {
+    DeckDefinition {
+        id: "test_deck".to_string(),
+        name: "Test Deck".to_string(),
+        description: String::new(),
+        playstyle: String::new(),
+        commander: commander.0,
+        cards: cards.iter().map(|c| c.0).collect(),
+        tags: vec![],
+    }
+}
+
+/// Load the real card database from the data directory, including commanders.
 /// Used by integration tests that need actual game cards.
 pub fn load_real_card_db() -> CardDatabase {
     let cards_path = cardgame::data_dir().join("cards/core_set");
-    CardDatabase::load_from_directory(cards_path)
-        .expect("Failed to load card database")
+    let commanders_path = cardgame::data_dir().join("commanders");
+    CardDatabase::load_with_commanders(cards_path, commanders_path)
+        .expect("Failed to load card database with commanders")
 }
 
 /// Load the real deck registry from the data directory.
@@ -388,4 +420,40 @@ pub fn setup_test_essence(state: &mut GameState, player: PlayerId, essence: u8) 
     let player_state = &mut state.players[player.index()];
     player_state.max_essence = essence;
     player_state.current_essence = essence;
+}
+
+/// Helper to start a game with default commanders.
+/// Use this in tests that don't need specific commander functionality.
+pub fn start_test_game(
+    engine: &mut cardgame::engine::GameEngine,
+    deck1: Vec<CardId>,
+    deck2: Vec<CardId>,
+    seed: u64,
+) {
+    engine.start_game_raw(
+        deck1,
+        deck2,
+        DEFAULT_COMMANDER,
+        DEFAULT_COMMANDER,
+        seed,
+        GameMode::default(),
+    );
+}
+
+/// Helper to start a game with default commanders and a specific mode.
+pub fn start_test_game_with_mode(
+    engine: &mut cardgame::engine::GameEngine,
+    deck1: Vec<CardId>,
+    deck2: Vec<CardId>,
+    seed: u64,
+    mode: GameMode,
+) {
+    engine.start_game_raw(
+        deck1,
+        deck2,
+        DEFAULT_COMMANDER,
+        DEFAULT_COMMANDER,
+        seed,
+        mode,
+    );
 }

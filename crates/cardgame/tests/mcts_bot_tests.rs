@@ -13,9 +13,12 @@ use cardgame::bots::{Bot, GreedyBot, MctsBot, MctsConfig};
 use cardgame::cards::CardDatabase;
 use cardgame::engine::GameEngine;
 use cardgame::keywords::Keywords;
-use cardgame::state::{Creature, CreatureStatus};
+use cardgame::state::{Creature, CreatureStatus, GameMode};
 use cardgame::types::{CardId, PlayerId, Slot};
 use common::*;
+
+/// Default commander for tests (The High Artificer).
+const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000);
 
 /// Helper to create an MCTS config with default parallel settings
 fn mcts_config(simulations: u32) -> MctsConfig {
@@ -41,7 +44,7 @@ fn test_mcts_finds_lethal() {
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game(deck1, deck2, 42);
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
 
     // Set up lethal scenario: P2 has 3 life, P1 has creature with 3+ attack
     engine.state.players[1].life = 3;
@@ -111,7 +114,7 @@ fn test_attack_face_ends_game() {
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game(deck1, deck2, 42);
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
 
     // Set up lethal scenario
     engine.state.players[1].life = 3;
@@ -169,7 +172,7 @@ fn test_mcts_single_legal_action() {
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game(deck1, deck2, 42);
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
 
     // Clear hand so no plays possible
     engine.state.players[0].hand.clear();
@@ -198,7 +201,7 @@ fn test_mcts_on_terminal_state() {
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game(deck1, deck2, 42);
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
 
     // Make P2 lose by setting terminal result directly
     engine.state.players[1].life = 0;
@@ -227,10 +230,10 @@ fn test_mcts_determinism_same_seed() {
     let seed = 42;
 
     let mut engine1 = GameEngine::new(&card_db);
-    engine1.start_game(valid_yaml_deck(), valid_yaml_deck(), seed);
+    engine1.start_game_raw(valid_yaml_deck(), valid_yaml_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
     let mut engine2 = GameEngine::new(&card_db);
-    engine2.start_game(valid_yaml_deck(), valid_yaml_deck(), seed);
+    engine2.start_game_raw(valid_yaml_deck(), valid_yaml_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
     // Both engines should be in identical states
     assert_eq!(engine1.state.current_turn, engine2.state.current_turn);
@@ -259,7 +262,7 @@ fn test_mcts_varies_with_seed() {
         .expect("Failed to load cards");
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(valid_yaml_deck(), valid_yaml_deck(), 42);
+    engine.start_game_raw(valid_yaml_deck(), valid_yaml_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
 
     let config = mcts_config(20); // Fewer sims = more variance
 
@@ -299,7 +302,7 @@ fn test_mcts_simulation_count_matters() {
 
     for seed in 0u64..20 {
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(valid_yaml_deck(), valid_yaml_deck(), seed);
+        engine.start_game_raw(valid_yaml_deck(), valid_yaml_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let low_config = mcts_config(10);
         let high_config = mcts_config(200);
@@ -354,7 +357,7 @@ fn test_mcts_vs_greedy() {
 
     for seed in 0u64..20 {
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(valid_yaml_deck(), valid_yaml_deck(), seed);
+        engine.start_game_raw(valid_yaml_deck(), valid_yaml_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut mcts_bot = MctsBot::with_config(&card_db, mcts_config(100), seed);
         let mut greedy_bot = GreedyBot::new(&card_db, seed + 1000);
@@ -408,7 +411,7 @@ fn test_mcts_fork_integrity() {
         .expect("Failed to load cards");
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(valid_yaml_deck(), valid_yaml_deck(), 42);
+    engine.start_game_raw(valid_yaml_deck(), valid_yaml_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
 
     // Record original state
     let original_turn = engine.turn_number();

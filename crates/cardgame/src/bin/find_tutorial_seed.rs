@@ -24,14 +24,13 @@ fn main() {
     let deck_registry = DeckRegistry::load_from_directory(data_dir.join("decks"))
         .expect("Failed to load deck registry");
 
-    // Get tutorial decks
+    // Get tutorial decks (DeckDefinitions include commanders)
     let player_deck = deck_registry.get("architect_fortify")
-        .expect("Player deck not found: architect_fortify");
+        .expect("Player deck not found: architect_fortify")
+        .clone();
     let opponent_deck = deck_registry.get("broodmother_swarm")
-        .expect("Opponent deck not found: broodmother_swarm");
-
-    let deck1_cards = player_deck.to_card_ids();
-    let deck2_cards = opponent_deck.to_card_ids();
+        .expect("Opponent deck not found: broodmother_swarm")
+        .clone();
 
     println!("Searching for good tutorial seeds...\n");
     println!("Criteria:");
@@ -45,7 +44,7 @@ fn main() {
 
     for seed in 0..10000u64 {
         let mut client = GameClient::new(card_db.clone());
-        client.start_game(deck1_cards.clone(), deck2_cards.clone(), seed);
+        client.start_game(&player_deck, &opponent_deck, seed);
 
         let state = client.get_state().expect("Game should have state");
         let hand = &state.players[0].hand;

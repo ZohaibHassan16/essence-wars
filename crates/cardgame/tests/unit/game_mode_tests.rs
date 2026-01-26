@@ -6,6 +6,9 @@ use cardgame::core::state::{GameMode, GameResult, WinReason};
 use cardgame::engine::GameEngine;
 use cardgame::types::CardId;
 
+/// Default commander for tests (The High Artificer).
+const DEFAULT_COMMANDER: CardId = CardId(5000);
+
 fn load_test_db() -> CardDatabase {
     CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
         .expect("Failed to load card database")
@@ -38,7 +41,7 @@ fn test_game_mode_default_is_attrition() {
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
-    engine.start_game(deck.clone(), deck.clone(), 12345);
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     assert_eq!(engine.state.game_mode, GameMode::Attrition);
 }
@@ -49,7 +52,7 @@ fn test_start_game_with_mode_sets_mode() {
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
-    engine.start_game_with_mode(deck.clone(), deck.clone(), 12345, GameMode::EssenceDuel);
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceDuel);
 
     assert_eq!(engine.state.game_mode, GameMode::EssenceDuel);
 }
@@ -65,7 +68,7 @@ fn test_essence_duel_vp_victory_at_threshold() {
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
-    engine.start_game_with_mode(deck.clone(), deck.clone(), 12345, GameMode::EssenceDuel);
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceDuel);
 
     // Simulate player 1 dealing exactly 50 face damage
     engine.state.players[0].total_damage_dealt = 50;
@@ -87,7 +90,7 @@ fn test_essence_duel_vp_victory_above_threshold() {
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
-    engine.start_game_with_mode(deck.clone(), deck.clone(), 12345, GameMode::EssenceDuel);
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceDuel);
 
     // Simulate player 2 dealing more than 50 face damage
     engine.state.players[1].total_damage_dealt = 55;
@@ -109,7 +112,7 @@ fn test_essence_duel_no_victory_below_threshold() {
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
-    engine.start_game_with_mode(deck.clone(), deck.clone(), 12345, GameMode::EssenceDuel);
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceDuel);
 
     // Set damage just below threshold
     engine.state.players[0].total_damage_dealt = 49;
@@ -126,7 +129,7 @@ fn test_attrition_ignores_vp() {
     let deck = get_test_deck();
 
     // Use default Attrition mode
-    engine.start_game(deck.clone(), deck.clone(), 12345);
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Even with 100 damage dealt, game doesn't end via VP in Attrition mode
     engine.state.players[0].total_damage_dealt = 100;
@@ -141,7 +144,7 @@ fn test_life_victory_takes_precedence_in_essence_duel() {
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
-    engine.start_game_with_mode(deck.clone(), deck.clone(), 12345, GameMode::EssenceDuel);
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceDuel);
 
     // Reduce player 2's life to 0
     engine.state.players[1].life = 0;
@@ -163,7 +166,7 @@ fn test_vp_check_doesnt_override_existing_result() {
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
-    engine.start_game_with_mode(deck.clone(), deck.clone(), 12345, GameMode::EssenceDuel);
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceDuel);
 
     // Player 2 has life victory first
     engine.state.players[1].life = 0;
@@ -188,7 +191,7 @@ fn test_game_mode_preserved_across_turns() {
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
-    engine.start_game_with_mode(deck.clone(), deck.clone(), 12345, GameMode::EssenceDuel);
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceDuel);
 
     // End turn a few times
     for _ in 0..3 {

@@ -15,6 +15,7 @@ use crate::core::cards::CardDatabase;
 use crate::core::engine::GameEngine;
 use crate::core::state::{GameMode, GameResult, GameState};
 use crate::core::types::{CardId, PlayerId};
+use crate::decks::DeckDefinition;
 use crate::tensor::{legal_mask_to_tensor, state_to_tensor};
 
 /// High-level game client that wraps GameEngine.
@@ -99,18 +100,19 @@ impl GameClient {
         }
     }
 
-    /// Start a new game with the given decks and seed.
+    /// Start a new game with the given deck definitions and seed.
     ///
-    /// This initializes the game and emits GameStarted event.
-    pub fn start_game(&mut self, deck1: Vec<CardId>, deck2: Vec<CardId>, seed: u64) {
+    /// This is the primary API for starting games. Each deck definition includes
+    /// the commander, so commanders are always used.
+    pub fn start_game(&mut self, deck1: &DeckDefinition, deck2: &DeckDefinition, seed: u64) {
         self.start_game_with_mode(deck1, deck2, seed, GameMode::default())
     }
 
     /// Start a new game with specific game mode.
     pub fn start_game_with_mode(
         &mut self,
-        deck1: Vec<CardId>,
-        deck2: Vec<CardId>,
+        deck1: &DeckDefinition,
+        deck2: &DeckDefinition,
         seed: u64,
         mode: GameMode,
     ) {
@@ -126,7 +128,7 @@ impl GameClient {
 
         // Create and initialize engine
         let mut engine = GameEngine::new(db_ref);
-        engine.start_game_with_mode(deck1.clone(), deck2.clone(), seed, mode);
+        engine.start_game_with_mode(deck1, deck2, seed, mode);
 
         // Take initial snapshot
         let snapshot = StateSnapshot::from_state(&engine.state);
@@ -135,8 +137,8 @@ impl GameClient {
         self.emit_event(GameEvent::GameStarted {
             seed,
             mode,
-            player1_deck_size: deck1.len(),
-            player2_deck_size: deck2.len(),
+            player1_deck_size: deck1.cards.len(),
+            player2_deck_size: deck2.cards.len(),
         });
 
         // Emit TurnStarted for the first turn
@@ -153,19 +155,21 @@ impl GameClient {
         self.pre_action_snapshot = Some(snapshot);
     }
 
-    /// Start a new game with commanders.
+    /// Low-level game initialization with raw card IDs and commanders.
     ///
-    /// This initializes the game with decks and commanders.
+    /// Use this when you have raw card IDs and commander IDs (e.g., in tests
+    /// or when constructing games programmatically without DeckDefinitions).
     ///
     /// # Panics
     /// Panics if either commander ID is not found in the card database.
-    pub fn start_game_with_commanders(
+    pub fn start_game_raw(
         &mut self,
         deck1: Vec<CardId>,
         deck2: Vec<CardId>,
         commander1: CardId,
         commander2: CardId,
         seed: u64,
+        mode: GameMode,
     ) {
         // Clear previous state
         self.event_buffer.clear();
@@ -179,7 +183,7 @@ impl GameClient {
 
         // Create and initialize engine with commanders
         let mut engine = GameEngine::new(db_ref);
-        engine.start_game_with_commanders(deck1.clone(), deck2.clone(), commander1, commander2, seed);
+        engine.start_game_raw(deck1.clone(), deck2.clone(), commander1, commander2, seed, mode);
 
         // Take initial snapshot
         let snapshot = StateSnapshot::from_state(&engine.state);
@@ -187,7 +191,7 @@ impl GameClient {
         // Emit GameStarted event
         self.emit_event(GameEvent::GameStarted {
             seed,
-            mode: GameMode::default(),
+            mode,
             player1_deck_size: deck1.len(),
             player2_deck_size: deck2.len(),
         });

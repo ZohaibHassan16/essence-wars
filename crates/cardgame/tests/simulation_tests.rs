@@ -15,8 +15,12 @@ use cardgame::actions::Action;
 use cardgame::bots::{Bot, GreedyBot};
 use cardgame::cards::CardDatabase;
 use cardgame::engine::GameEngine;
+use cardgame::state::GameMode;
 use cardgame::types::PlayerId;
 use common::*;
+
+/// Default commander for tests (The High Artificer).
+const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000);
 
 /// Simple linear congruential generator for deterministic "random" selection
 struct SimpleRng {
@@ -50,7 +54,7 @@ fn test_random_action_games() {
         let mut engine = GameEngine::new(&card_db);
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
-        engine.start_game(deck1.clone(), deck2.clone(), game_seed * 1000);
+        engine.start_game_raw(deck1.clone(), deck2.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, game_seed * 1000, GameMode::default());
 
         let mut rng = SimpleRng::new(game_seed);
         let mut action_count = 0;
@@ -100,7 +104,7 @@ fn test_turn_limit_enforcement() {
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game(deck1, deck2, 99999);
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 99999, GameMode::default());
 
     // Always end turn immediately to maximize turn count
     while !engine.is_game_over() {
@@ -133,7 +137,7 @@ fn test_state_validity_during_random_play() {
         let mut engine = GameEngine::new(&card_db);
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
-        engine.start_game(deck1, deck2, game_seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, game_seed, GameMode::default());
 
         let mut rng = SimpleRng::new(game_seed);
         let mut action_count = 0;
@@ -239,7 +243,7 @@ fn test_mask_consistency_during_random_play() {
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game(deck1, deck2, 55555);
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 55555, GameMode::default());
 
     let mut rng = SimpleRng::new(55555);
     let mut action_count = 0;
@@ -281,7 +285,7 @@ fn test_victory_points_tracking() {
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game(deck1, deck2, 11111);
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 11111, GameMode::default());
 
     let mut rng = SimpleRng::new(11111);
 
@@ -317,7 +321,7 @@ fn test_rapid_game_stress() {
         let mut engine = GameEngine::new(&card_db);
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut rng = SimpleRng::new(seed);
         let mut action_count = 0;
@@ -641,7 +645,7 @@ fn test_database_validated_games() {
         let mut engine = GameEngine::new(&card_db);
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut action_count = 0;
 
@@ -679,7 +683,7 @@ fn test_greedy_vs_greedy_with_invariants() {
         let mut engine = GameEngine::new(&card_db);
         let deck1 = arena_test_deck();
         let deck2 = arena_test_deck();
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut bot1 = GreedyBot::new(&card_db, seed);
         let mut bot2 = GreedyBot::new(&card_db, seed + 1000);
@@ -752,7 +756,7 @@ fn test_extended_random_stress() {
         let mut engine = GameEngine::new(&card_db);
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut rng = SimpleRng::new(seed);
         let mut action_count = 0;
@@ -807,7 +811,7 @@ fn test_fork_state_validity() {
         let mut engine = GameEngine::new(&card_db);
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut rng = SimpleRng::new(seed);
 
@@ -867,7 +871,7 @@ fn stress_test_100k_random() {
         let mut engine = GameEngine::new(&card_db);
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut rng = SimpleRng::new(seed);
         let mut action_count = 0;
@@ -932,7 +936,7 @@ fn stress_test_100k_greedy() {
         let mut engine = GameEngine::new(&card_db);
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut bot1 = GreedyBot::new(&card_db, seed);
         let mut bot2 = GreedyBot::new(&card_db, seed.wrapping_add(1_000_000));

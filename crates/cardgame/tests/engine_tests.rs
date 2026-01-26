@@ -7,10 +7,13 @@ mod common;
 use cardgame::actions::Action;
 use cardgame::config::{game, player};
 use cardgame::engine::{seeded_shuffle, GameEngine};
-use cardgame::state::{Creature, CreatureStatus, GameResult, WinReason};
+use cardgame::state::{Creature, CreatureStatus, GameMode, GameResult, WinReason};
 use cardgame::keywords::Keywords;
 use cardgame::types::{CardId, PlayerId, Slot};
 use common::*;
+
+/// Default commander for tests (The High Artificer).
+const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000);
 
 #[test]
 fn test_new_game_setup() {
@@ -20,7 +23,7 @@ fn test_new_game_setup() {
     let deck1 = simple_deck();
     let deck2 = simple_deck();
 
-    engine.start_game(deck1, deck2, 12345);
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Both players should start with 30 life
     assert_eq!(engine.state.players[0].life, 30);
@@ -61,7 +64,7 @@ fn test_turn_start_ap_restored() {
     let card_db = test_card_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(simple_deck(), simple_deck(), 12345);
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Spend some AP
     engine.state.players[0].action_points = 0;
@@ -81,7 +84,7 @@ fn test_turn_start_card_drawn() {
     let card_db = test_card_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(simple_deck(), simple_deck(), 12345);
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // P1 has 4 cards, P2 has 3 cards after game start
     let p1_hand_before = engine.state.players[0].hand.len();
@@ -102,7 +105,7 @@ fn test_turn_start_creatures_can_attack() {
     let card_db = test_card_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(simple_deck(), simple_deck(), 12345);
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Add a creature to P1's board from previous turn
     let creature = Creature {
@@ -138,7 +141,7 @@ fn test_turn_end_player_switches() {
     let card_db = test_card_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(simple_deck(), simple_deck(), 12345);
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     assert_eq!(engine.state.active_player, PlayerId::PLAYER_ONE);
 
@@ -157,7 +160,7 @@ fn test_win_by_damage() {
     let card_db = test_card_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(simple_deck(), simple_deck(), 12345);
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Add a powerful creature to P1's board
     let creature = Creature {
@@ -207,7 +210,7 @@ fn test_win_by_turn_limit_higher_life() {
     let card_db = test_card_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(simple_deck(), simple_deck(), 12345);
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Set P1 life higher
     engine.state.players[0].life = 25;
@@ -235,7 +238,7 @@ fn test_win_by_turn_limit_tie_p1_wins() {
     let card_db = test_card_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(simple_deck(), simple_deck(), 12345);
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Equal life
     engine.state.players[0].life = 20;
@@ -292,7 +295,7 @@ fn test_play_creature_card() {
     let card_db = test_card_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(simple_deck(), simple_deck(), 12345);
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Give player essence to play cards
     engine.state.players[0].max_essence = 10;
@@ -357,7 +360,7 @@ fn test_creature_combat() {
     let card_db = test_card_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(simple_deck(), simple_deck(), 12345);
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Add creatures to both sides
     let p1_creature = Creature {
@@ -418,7 +421,7 @@ fn test_direct_face_attack() {
     let card_db = test_card_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(simple_deck(), simple_deck(), 12345);
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     let initial_life = engine.state.players[1].life;
 
@@ -457,7 +460,7 @@ fn test_illegal_action_rejected() {
     let card_db = test_card_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(simple_deck(), simple_deck(), 12345);
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Try to attack with non-existent creature
     let result = engine.apply_action(Action::Attack {
@@ -473,7 +476,7 @@ fn test_game_over_no_more_actions() {
     let card_db = test_card_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(simple_deck(), simple_deck(), 12345);
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Set P2's life to 0 to end the game
     engine.state.players[1].life = 0;
@@ -575,7 +578,7 @@ fn test_use_ability_basic() {
     let card_db = ability_test_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(ability_deck(), ability_deck(), 12345);
+    engine.start_game_raw(ability_deck(), ability_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Add a creature with an OnPlay ability to P1's board
     let creature = Creature {
@@ -615,7 +618,7 @@ fn test_use_ability_silenced_fails() {
     let card_db = ability_test_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(ability_deck(), ability_deck(), 12345);
+    engine.start_game_raw(ability_deck(), ability_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Add a silenced creature with ability to P1's board
     let mut creature = Creature {
@@ -676,7 +679,7 @@ fn test_use_ability_invalid_slot() {
     let card_db = ability_test_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(ability_deck(), ability_deck(), 12345);
+    engine.start_game_raw(ability_deck(), ability_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Don't add any creatures - slot 0 is empty
 
@@ -695,7 +698,7 @@ fn test_use_ability_invalid_ability_index() {
     let card_db = ability_test_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(ability_deck(), ability_deck(), 12345);
+    engine.start_game_raw(ability_deck(), ability_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Add a creature with only 1 ability
     let creature = Creature {
@@ -734,7 +737,7 @@ fn test_use_ability_self_target() {
     let card_db = ability_test_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(ability_deck(), ability_deck(), 12345);
+    engine.start_game_raw(ability_deck(), ability_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // Add a creature with self-buff ability (OnPlay trigger)
     let creature = Creature {
@@ -872,7 +875,7 @@ fn test_conditional_spell_triggers_on_kill() {
     let card_db = conditional_card_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(conditional_deck(), conditional_deck(), 42);
+    engine.start_game_raw(conditional_deck(), conditional_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
 
     // Directly set up the game state to avoid relying on random draws
     // Place a Target Dummy (id=1, 1/2) on P2's board
@@ -934,7 +937,7 @@ fn test_conditional_spell_does_not_trigger_when_target_survives() {
     let card_db = conditional_card_db();
     let mut engine = GameEngine::new(&card_db);
 
-    engine.start_game(conditional_deck(), conditional_deck(), 42);
+    engine.start_game_raw(conditional_deck(), conditional_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
 
     // Directly set up the game state
     // Place a Tough Dummy (id=4, 1/5) on P2's board

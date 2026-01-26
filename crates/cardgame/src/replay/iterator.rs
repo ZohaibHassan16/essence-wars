@@ -7,7 +7,12 @@ use crate::core::actions::Action;
 use crate::core::cards::CardDatabase;
 use crate::core::engine::GameEngine;
 use crate::core::state::GameState;
+use crate::core::types::CardId;
 use crate::replay::types::GameReplay;
+
+/// Default commander for replays (The High Artificer).
+/// TODO: PlayerConfig should include commander ID.
+const DEFAULT_COMMANDER: CardId = CardId(5000);
 
 /// Error type for replay operations.
 #[derive(Debug, Clone)]
@@ -79,9 +84,12 @@ impl<'a> ReplayIterator<'a> {
         }
 
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game_with_mode(
+        // TODO: Use actual commanders from replay once PlayerConfig includes them
+        engine.start_game_raw(
             self.replay.player1.deck.clone(),
             self.replay.player2.deck.clone(),
+            DEFAULT_COMMANDER,
+            DEFAULT_COMMANDER,
             self.replay.header.seed,
             self.replay.header.mode,
         );
@@ -193,9 +201,12 @@ pub fn replay_to_end(
     card_db: &CardDatabase,
 ) -> Result<GameState, ReplayError> {
     let mut engine = GameEngine::new(card_db);
-    engine.start_game_with_mode(
+    // TODO: Use actual commanders from replay once PlayerConfig includes them
+    engine.start_game_raw(
         replay.player1.deck.clone(),
         replay.player2.deck.clone(),
+        DEFAULT_COMMANDER,
+        DEFAULT_COMMANDER,
         replay.header.seed,
         replay.header.mode,
     );

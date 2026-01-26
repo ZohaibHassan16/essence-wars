@@ -8,6 +8,8 @@
 //!
 //! Test failures are logged to experiments/test_failures/ for reproduction.
 
+mod common;
+
 use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
@@ -18,9 +20,24 @@ use cardgame::arena::{GameRunner, GameResult};
 use cardgame::bots::{Bot, GreedyBot, MctsBot, MctsConfig, RandomBot};
 use cardgame::bots::weights::BotWeights;
 use cardgame::cards::CardDatabase;
-use cardgame::decks::DeckRegistry;
+use cardgame::decks::{DeckDefinition, DeckRegistry};
 use cardgame::keywords::Keywords;
 use cardgame::types::{CardId, PlayerId};
+
+use common::load_real_card_db;
+
+/// Helper function to create test deck definitions
+fn make_test_deck(cards: Vec<CardId>) -> DeckDefinition {
+    DeckDefinition {
+        id: "test_deck".to_string(),
+        name: "Test Deck".to_string(),
+        description: String::new(),
+        playstyle: String::new(),
+        commander: 5000, // Default commander (The High Artificer)
+        cards: cards.iter().map(|c| c.0).collect(),
+        tags: vec![],
+    }
+}
 
 /// Coverage statistics collected across all games
 struct CoverageStats {
@@ -321,11 +338,13 @@ fn run_coverage_games(
         let mut runner = GameRunner::new(card_db)
             .with_tracing(true, true); // Enable tracing to capture combat details
 
+        let deck1_def = make_test_deck(deck1_cards.clone());
+        let deck2_def = make_test_deck(deck2_cards.clone());
         let result = runner.run_game(
             bot1,
             bot2,
-            deck1_cards.clone(),
-            deck2_cards.clone(),
+            &deck1_def,
+            &deck2_def,
             seed,
         );
         
@@ -367,7 +386,7 @@ fn run_coverage_games(
 
 #[test]
 fn test_coverage_random_vs_random_1k() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set")).expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let deck_registry = DeckRegistry::load_from_directory(cardgame::data_dir().join("decks"))
         .expect("Failed to load decks");
 
@@ -395,7 +414,7 @@ fn test_coverage_random_vs_random_1k() {
 
 #[test]
 fn test_coverage_greedy_vs_random_1k() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set")).expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let deck_registry = DeckRegistry::load_from_directory(cardgame::data_dir().join("decks"))
         .expect("Failed to load decks");
 
@@ -441,7 +460,7 @@ fn test_coverage_greedy_vs_random_1k() {
 #[test]
 #[ignore = "tier_long"] // ~10 min: 10k game coverage test
 fn stress_test_coverage_10k_games() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set")).expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let deck_registry = DeckRegistry::load_from_directory(cardgame::data_dir().join("decks"))
         .expect("Failed to load decks");
 
@@ -569,7 +588,7 @@ fn stress_test_coverage_10k_games() {
 #[test]
 #[ignore = "tier_long"] // ~15 min: 500 MCTS coverage games
 fn stress_test_mcts_coverage_500_games() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set")).expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let deck_registry = DeckRegistry::load_from_directory(cardgame::data_dir().join("decks"))
         .expect("Failed to load decks");
 
@@ -606,7 +625,7 @@ fn stress_test_mcts_coverage_500_games() {
 
 #[test]
 fn test_all_decks_exercised() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set")).expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let deck_registry = DeckRegistry::load_from_directory(cardgame::data_dir().join("decks"))
         .expect("Failed to load decks");
 
@@ -625,12 +644,14 @@ fn test_all_decks_exercised() {
             let mut bot1 = RandomBot::new(i as u64);
             let mut bot2 = RandomBot::new((i + 1) as u64);
 
+            let deck1_def = make_test_deck(deck1_cards);
+            let deck2_def = make_test_deck(deck2_cards);
             let mut runner = GameRunner::new(&card_db);
             let result = runner.run_game(
                 &mut bot1,
                 &mut bot2,
-                deck1_cards,
-                deck2_cards,
+                &deck1_def,
+                &deck2_def,
                 i as u64,
             );
 
@@ -686,7 +707,7 @@ fn test_action_index_roundtrip_exhaustive() {
 
 #[test]
 fn test_game_determinism_verification() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set")).expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let deck_registry = DeckRegistry::load_from_directory(cardgame::data_dir().join("decks"))
         .expect("Failed to load decks");
 
@@ -705,13 +726,15 @@ fn test_game_determinism_verification() {
         // Use same seed for both bots to ensure determinism
         let mut bot1 = GreedyBot::new(&card_db, seed);
         let mut bot2 = GreedyBot::new(&card_db, seed + 1);
+        let deck1_def = make_test_deck(d1);
+        let deck2_def = make_test_deck(d2);
         let mut runner = GameRunner::new(&card_db);
 
         runner.run_game(
             &mut bot1,
             &mut bot2,
-            d1,
-            d2,
+            &deck1_def,
+            &deck2_def,
             seed,
         )
     };

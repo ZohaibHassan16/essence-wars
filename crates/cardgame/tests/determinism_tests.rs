@@ -16,8 +16,12 @@ mod common;
 use cardgame::bots::{Bot, GreedyBot};
 use cardgame::cards::CardDatabase;
 use cardgame::engine::GameEngine;
+use cardgame::state::GameMode;
 use cardgame::types::PlayerId;
 use common::*;
+
+/// Default commander for tests (The High Artificer).
+const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000);
 
 /// Simple LCG for deterministic action selection
 struct SimpleRng {
@@ -55,7 +59,7 @@ fn run_game_with_seed(card_db: &CardDatabase, seed: u64) -> GameOutcome {
     let mut engine = GameEngine::new(card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game(deck1, deck2, seed);
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
     let mut rng = SimpleRng::new(seed);
     let mut action_indices = Vec::new();
@@ -94,8 +98,7 @@ fn run_game_with_seed(card_db: &CardDatabase, seed: u64) -> GameOutcome {
 /// Test that same seed produces identical outcomes
 #[test]
 fn test_identical_seed_identical_outcome() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     for seed in [0u64, 42, 12345, 99999, u64::MAX / 2] {
         let outcome1 = run_game_with_seed(&card_db, seed);
@@ -137,8 +140,7 @@ fn test_identical_seed_identical_outcome() {
 /// Test multiple runs of the same seed
 #[test]
 fn test_repeated_identical_outcomes() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let seed = 77777u64;
     let baseline = run_game_with_seed(&card_db, seed);
@@ -156,8 +158,7 @@ fn test_repeated_identical_outcomes() {
 /// Test that different seeds produce different initial states
 #[test]
 fn test_different_seeds_different_initial_states() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let deck = valid_yaml_deck();
 
@@ -165,7 +166,7 @@ fn test_different_seeds_different_initial_states() {
     let initial_hands: Vec<Vec<u16>> = (0u64..20)
         .map(|seed| {
             let mut engine = GameEngine::new(&card_db);
-            engine.start_game(deck.clone(), deck.clone(), seed);
+            engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
             // Get card IDs from hand
             engine.state.players[0]
                 .hand
@@ -193,13 +194,12 @@ fn test_different_seeds_different_initial_states() {
 /// Test that fork creates an isolated copy
 #[test]
 fn test_fork_isolation() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game(deck1, deck2, 12345);
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     let mut rng = SimpleRng::new(12345);
 
@@ -250,14 +250,13 @@ fn test_fork_isolation() {
 /// Test that fork and original produce identical results with same actions
 #[test]
 fn test_fork_identical_with_same_actions() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     for seed in [42u64, 12345, 99999] {
         let mut engine = GameEngine::new(&card_db);
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut rng = SimpleRng::new(seed);
 
@@ -317,13 +316,12 @@ fn test_fork_identical_with_same_actions() {
 /// Test that tensor output is consistent across calls
 #[test]
 fn test_tensor_determinism() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game(deck1, deck2, 55555);
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 55555, GameMode::default());
 
     let mut rng = SimpleRng::new(55555);
 
@@ -361,13 +359,12 @@ fn test_tensor_determinism() {
 /// Test that tensor accurately reflects state changes
 #[test]
 fn test_tensor_reflects_state_changes() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game(deck1, deck2, 33333);
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 33333, GameMode::default());
 
     let tensor_before = engine.get_state_tensor();
 
@@ -390,14 +387,13 @@ fn test_tensor_reflects_state_changes() {
 /// Test that GreedyBot produces identical decisions with same state
 #[test]
 fn test_greedy_bot_determinism() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     for seed in [42u64, 12345, 99999] {
         let mut engine = GameEngine::new(&card_db);
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
-        engine.start_game(deck1, deck2, seed);
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         // Create two identical bots
         let mut bot1 = GreedyBot::new(&card_db, seed);
@@ -426,8 +422,7 @@ fn test_greedy_bot_determinism() {
 /// Test GreedyBot vs GreedyBot game determinism
 #[test]
 fn test_greedy_vs_greedy_determinism() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     for seed in [100u64, 200, 300] {
         // Run game twice with same seed
@@ -457,7 +452,7 @@ fn run_greedy_game(card_db: &CardDatabase, seed: u64) -> GameOutcome {
     let mut engine = GameEngine::new(card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game(deck1, deck2, seed);
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
     let mut bot1 = GreedyBot::new(card_db, seed);
     let mut bot2 = GreedyBot::new(card_db, seed + 1000);
@@ -503,8 +498,7 @@ fn run_greedy_game(card_db: &CardDatabase, seed: u64) -> GameOutcome {
 /// Test that deck shuffling is deterministic
 #[test]
 fn test_deck_shuffle_determinism() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     for seed in [42u64, 12345, 99999] {
         let mut engine1 = GameEngine::new(&card_db);
@@ -513,8 +507,8 @@ fn test_deck_shuffle_determinism() {
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
 
-        engine1.start_game(deck1.clone(), deck2.clone(), seed);
-        engine2.start_game(deck1, deck2, seed);
+        engine1.start_game_raw(deck1.clone(), deck2.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine2.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         // Decks should be in same order
         assert_eq!(

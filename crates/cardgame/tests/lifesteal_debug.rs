@@ -9,8 +9,20 @@
 use cardgame::arena::GameRunner;
 use cardgame::bots::{GreedyBot, RandomBot};
 use cardgame::cards::CardDatabase;
-use cardgame::decks::DeckRegistry;
+use cardgame::decks::{DeckDefinition, DeckRegistry};
 use cardgame::types::{CardId, PlayerId};
+
+fn make_test_deck(cards: Vec<cardgame::types::CardId>) -> DeckDefinition {
+    DeckDefinition {
+        id: "test_deck".to_string(),
+        name: "Test Deck".to_string(),
+        description: String::new(),
+        playstyle: String::new(),
+        commander: 5000, // Default commander (The High Artificer)
+        cards: cards.iter().map(|c| c.0).collect(),
+        tags: vec![],
+    }
+}
 
 #[test]
 fn debug_lifesteal_investigation() {
@@ -58,11 +70,13 @@ fn debug_lifesteal_investigation() {
         let mut runner = GameRunner::new(&card_db)
             .with_tracing(true, false); // Enable combat tracing
 
+        let deck1 = make_test_deck(deck1_cards.clone());
+        let deck2 = make_test_deck(deck2_cards.clone());
         let result = runner.run_game(
             &mut bot1,
             &mut bot2,
-            deck1_cards.clone(),
-            deck2_cards.clone(),
+            &deck1,
+            &deck2,
             seed,
         );
 
@@ -138,11 +152,13 @@ fn debug_game_length_and_mana() {
 
         let mut runner = GameRunner::new(&card_db);
 
+        let deck1 = make_test_deck(deck1_cards.clone());
+        let deck2 = make_test_deck(deck2_cards.clone());
         let result = runner.run_game(
             &mut bot1,
             &mut bot2,
-            deck1_cards.clone(),
-            deck2_cards.clone(),
+            &deck1,
+            &deck2,
             seed,
         );
 

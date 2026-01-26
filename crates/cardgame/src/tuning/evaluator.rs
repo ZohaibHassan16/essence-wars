@@ -12,8 +12,13 @@ use rayon::prelude::*;
 
 use crate::bots::{AlphaBetaBot, AlphaBetaConfig, Bot, GreedyBot, GreedyWeights, MctsBot, MctsConfig, RandomBot};
 use crate::cards::CardDatabase;
+use crate::core::state::GameMode;
 use crate::engine::GameEngine;
 use crate::types::{CardId, PlayerId};
+
+/// Default commander for tuning (The High Artificer).
+/// TODO: Evaluator should use deck definitions with commanders.
+const DEFAULT_COMMANDER: CardId = CardId(5000);
 
 /// Type of bot to use as the candidate during tuning.
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -577,7 +582,7 @@ impl<'a> Evaluator<'a> {
         let mut random_bot = RandomBot::new(seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game(self.default_deck.clone(), self.default_deck.clone(), seed);
+        engine.start_game_raw(self.default_deck.clone(), self.default_deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < self.config.max_actions {
@@ -607,7 +612,7 @@ impl<'a> Evaluator<'a> {
         let mut baseline_bot = GreedyBot::new(self.card_db, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game(self.default_deck.clone(), self.default_deck.clone(), seed);
+        engine.start_game_raw(self.default_deck.clone(), self.default_deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < self.config.max_actions {
@@ -647,7 +652,7 @@ impl<'a> Evaluator<'a> {
         let mut random_bot = RandomBot::new(seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(card_db);
-        engine.start_game(deck.to_vec(), deck.to_vec(), seed);
+        engine.start_game_raw(deck.to_vec(), deck.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < max_actions {
@@ -684,7 +689,7 @@ impl<'a> Evaluator<'a> {
         let mut baseline_bot = GreedyBot::new(card_db, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(card_db);
-        engine.start_game(deck.to_vec(), deck.to_vec(), seed);
+        engine.start_game_raw(deck.to_vec(), deck.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < max_actions {
@@ -726,7 +731,7 @@ impl<'a> Evaluator<'a> {
         let mut mcts_bot = MctsBot::with_config(card_db, mcts_config, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(card_db);
-        engine.start_game(deck.to_vec(), deck.to_vec(), seed);
+        engine.start_game_raw(deck.to_vec(), deck.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < max_actions {
@@ -758,7 +763,7 @@ impl<'a> Evaluator<'a> {
         let mut random_bot = RandomBot::new(seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
+        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < self.config.max_actions {
@@ -788,7 +793,7 @@ impl<'a> Evaluator<'a> {
         let mut baseline_bot = GreedyBot::new(self.card_db, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
+        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < self.config.max_actions {
@@ -822,7 +827,7 @@ impl<'a> Evaluator<'a> {
         let mut mcts_bot = MctsBot::with_config(self.card_db, mcts_config, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
+        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < self.config.max_actions {
@@ -857,7 +862,7 @@ impl<'a> Evaluator<'a> {
         let mut random_bot = RandomBot::new(seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(card_db);
-        engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
+        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < max_actions {
@@ -895,7 +900,7 @@ impl<'a> Evaluator<'a> {
         let mut baseline_bot = GreedyBot::new(card_db, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(card_db);
-        engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
+        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < max_actions {
@@ -938,7 +943,7 @@ impl<'a> Evaluator<'a> {
         let mut mcts_bot = MctsBot::with_config(card_db, mcts_config, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(card_db);
-        engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
+        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < max_actions {
@@ -1061,7 +1066,7 @@ impl<'a> Evaluator<'a> {
 
         // Create and start game
         let mut engine = GameEngine::new(card_db);
-        engine.start_game(deck1.to_vec(), deck2.to_vec(), seed);
+        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < config.max_actions {

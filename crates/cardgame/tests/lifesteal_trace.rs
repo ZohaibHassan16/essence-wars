@@ -7,7 +7,11 @@ use cardgame::bots::{Bot, GreedyBot};
 use cardgame::cards::CardDatabase;
 use cardgame::decks::DeckRegistry;
 use cardgame::engine::GameEngine;
+use cardgame::state::GameMode;
 use cardgame::types::{CardId, PlayerId};
+
+/// Default commander for tests (The High Artificer).
+const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000);
 
 #[test]
 fn trace_single_game_detailed() {
@@ -25,7 +29,7 @@ fn trace_single_game_detailed() {
 
     // Create engine directly to observe state
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(deck1_cards.clone(), deck2_cards.clone(), 42);
+    engine.start_game_raw(deck1_cards.clone(), deck2_cards.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
 
     let mut bot1 = GreedyBot::new(&card_db, 42);
     let mut bot2 = GreedyBot::new(&card_db, 43);
@@ -169,7 +173,7 @@ fn check_vampire_lord_in_starting_hands() {
 
     for seed in 0..100 {
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(deck1_cards.clone(), deck2_cards.clone(), seed);
+        engine.start_game_raw(deck1_cards.clone(), deck2_cards.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         // Check P1's starting hand
         let has_lifesteal = engine.state.players[0].hand.iter()

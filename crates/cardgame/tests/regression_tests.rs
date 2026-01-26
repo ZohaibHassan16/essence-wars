@@ -16,7 +16,11 @@ use cardgame::bots::{Bot, GreedyBot};
 use cardgame::cards::CardDatabase;
 use cardgame::decks::DeckRegistry;
 use cardgame::engine::GameEngine;
+use cardgame::state::GameMode;
 use cardgame::types::{CardId, PlayerId};
+
+/// Default commander for tests (The High Artificer).
+const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000);
 
 /// Golden test case - a deterministic game with expected outcomes
 struct GoldenTestCase {
@@ -100,7 +104,7 @@ fn run_golden_test(test: &GoldenTestCase, card_db: &CardDatabase, deck_registry:
     let mut bot2 = GreedyBot::new(card_db, test.seed + 1);
 
     let mut engine = GameEngine::new(card_db);
-    engine.start_game(deck1_cards, deck2_cards, test.seed);
+    engine.start_game_raw(deck1_cards, deck2_cards, DEFAULT_COMMANDER, DEFAULT_COMMANDER, test.seed, GameMode::default());
 
     let mut actions = Vec::new();
     let max_actions = 1000;
@@ -213,7 +217,7 @@ fn generate_golden_data() {
         let mut bot2 = GreedyBot::new(&card_db, seed + 1);
 
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(deck1_cards, deck2_cards, seed);
+        engine.start_game_raw(deck1_cards, deck2_cards, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut action_count = 0;
         let max_actions = 1000;
@@ -272,7 +276,7 @@ fn test_regression_determinism() {
             let mut bot2 = GreedyBot::new(&card_db, seed + 1);
 
             let mut engine = GameEngine::new(&card_db);
-            engine.start_game(deck1_cards.clone(), deck2_cards.clone(), seed);
+            engine.start_game_raw(deck1_cards.clone(), deck2_cards.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
             let mut actions = Vec::new();
             let max_actions = 1000;
@@ -345,7 +349,7 @@ fn test_regression_all_games_valid() {
         let mut bot2 = GreedyBot::new(&card_db, test.seed + 1);
 
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(deck1_cards, deck2_cards, test.seed);
+        engine.start_game_raw(deck1_cards, deck2_cards, DEFAULT_COMMANDER, DEFAULT_COMMANDER, test.seed, GameMode::default());
 
         let mut actions = Vec::new();
         let max_actions = 1000;

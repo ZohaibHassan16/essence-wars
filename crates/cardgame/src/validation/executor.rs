@@ -9,9 +9,14 @@ use rayon::prelude::*;
 
 use crate::bots::{create_bot, AlphaBetaConfig, BotType, MctsConfig};
 use crate::cards::CardDatabase;
+use crate::core::state::GameMode;
 use crate::engine::GameEngine;
 use crate::execution::{GameSeeds, ProgressReporter, ProgressStyle};
-use crate::types::PlayerId;
+use crate::types::{CardId, PlayerId};
+
+/// Default commander for validation (The High Artificer).
+/// TODO: MatchupDefinition should include commander IDs from deck definitions.
+const DEFAULT_COMMANDER: CardId = CardId(5000);
 
 use super::game_diagnostics::{GameDiagnosticCollector, GameDiagnosticData};
 use super::types::{
@@ -328,8 +333,16 @@ impl<'a> ValidationExecutor<'a> {
         let mut collector = GameDiagnosticCollector::new();
 
         // Create and start game
+        // TODO: Use actual commanders from deck definitions once MatchupDefinition is updated
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game(deck1.to_vec(), deck2.to_vec(), seeds.game);
+        engine.start_game_raw(
+            deck1.to_vec(),
+            deck2.to_vec(),
+            DEFAULT_COMMANDER,
+            DEFAULT_COMMANDER,
+            seeds.game,
+            GameMode::default(),
+        );
 
         // Main game loop
         let max_actions = 1000;

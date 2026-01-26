@@ -212,23 +212,22 @@ fn main() {
             .as_secs()
     });
 
-    // Load decks
-    let loaded1 = match load_deck(args.deck1.as_deref(), &deck_registry, &card_db, "1") {
+    // Load decks (now returns DeckDefinition with commander)
+    let deck1 = match load_deck(args.deck1.as_deref(), &deck_registry, &card_db, "1") {
         Ok(d) => d,
         Err(e) => {
             eprintln!("{}", e);
             process::exit(1);
         }
     };
-    let loaded2 = match load_deck(args.deck2.as_deref(), &deck_registry, &card_db, "2") {
+    let deck2 = match load_deck(args.deck2.as_deref(), &deck_registry, &card_db, "2") {
         Ok(d) => d,
         Err(e) => {
             eprintln!("{}", e);
             process::exit(1);
         }
     };
-    let (deck1, deck1_name) = (loaded1.cards, loaded1.name);
-    let (deck2, deck2_name) = (loaded2.cards, loaded2.name);
+    let (deck1_name, deck2_name) = (deck1.name.clone(), deck2.name.clone());
 
     // Validate faction-deck binding for specialist agents
     if let Some(warning) = validate_faction_deck_binding(

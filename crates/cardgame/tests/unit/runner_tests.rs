@@ -3,14 +3,27 @@
 use cardgame::arena::GameRunner;
 use cardgame::bots::RandomBot;
 use cardgame::cards::CardDatabase;
-use cardgame::types::CardId;
+use cardgame::decks::DeckDefinition;
 
-fn test_deck() -> Vec<CardId> {
+/// Default commander for tests (The High Artificer).
+const DEFAULT_COMMANDER: u16 = 5000;
+
+fn test_deck() -> DeckDefinition {
     // Simple deck with starter set cards
     let valid_ids = [1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 15, 32, 33, 40];
-    (0..20)
-        .map(|i| CardId(valid_ids[i % valid_ids.len()] as u16))
-        .collect()
+    let cards: Vec<u16> = (0..20)
+        .map(|i| valid_ids[i % valid_ids.len()] as u16)
+        .collect();
+
+    DeckDefinition {
+        id: "test_deck".to_string(),
+        name: "Test Deck".to_string(),
+        description: String::new(),
+        playstyle: String::new(),
+        commander: DEFAULT_COMMANDER,
+        cards,
+        tags: vec![],
+    }
 }
 
 #[test]
@@ -22,11 +35,12 @@ fn test_run_single_game() {
     let mut bot1 = RandomBot::new(42);
     let mut bot2 = RandomBot::new(43);
 
+    let deck = test_deck();
     let result = runner.run_game(
         &mut bot1,
         &mut bot2,
-        test_deck(),
-        test_deck(),
+        &deck,
+        &deck,
         12345,
     );
 
@@ -41,6 +55,7 @@ fn test_game_determinism() {
         .expect("Failed to load cards");
 
     let mut runner = GameRunner::new(&card_db);
+    let deck = test_deck();
 
     // Run same game twice
     let mut bot1a = RandomBot::new(100);
@@ -48,8 +63,8 @@ fn test_game_determinism() {
     let result1 = runner.run_game(
         &mut bot1a,
         &mut bot2a,
-        test_deck(),
-        test_deck(),
+        &deck,
+        &deck,
         12345,
     );
 
@@ -58,8 +73,8 @@ fn test_game_determinism() {
     let result2 = runner.run_game(
         &mut bot1b,
         &mut bot2b,
-        test_deck(),
-        test_deck(),
+        &deck,
+        &deck,
         12345,
     );
 
@@ -76,12 +91,13 @@ fn test_run_match() {
     let mut runner = GameRunner::new(&card_db);
     let mut bot1 = RandomBot::new(42);
     let mut bot2 = RandomBot::new(43);
+    let deck = test_deck();
 
     let stats = runner.run_match(
         &mut bot1,
         &mut bot2,
-        test_deck(),
-        test_deck(),
+        &deck,
+        &deck,
         10,
         1000,
     );

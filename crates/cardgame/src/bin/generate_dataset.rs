@@ -34,7 +34,7 @@ use cardgame::execution::configure_thread_pool;
 use cardgame::legal::legal_action_mask;
 use cardgame::state::GameMode;
 use cardgame::tensor::state_to_tensor;
-use cardgame::types::{CardId, PlayerId};
+use cardgame::types::PlayerId;
 use cardgame::{DeckRegistry, GameEngine};
 
 /// Dataset Generator - Generate MCTS self-play data for ML training
@@ -392,15 +392,13 @@ fn generate_game(
 ) -> GameRecord {
     let mut rng = SmallRng::seed_from_u64(config.seed);
 
-    // Load decks
-    let deck1 = deck_registry.get(config.deck1_id).expect("Deck 1 not found");
-    let deck2 = deck_registry.get(config.deck2_id).expect("Deck 2 not found");
+    // Load decks (DeckDefinitions include commanders)
+    let deck1 = deck_registry.get(config.deck1_id).expect("Deck 1 not found").clone();
+    let deck2 = deck_registry.get(config.deck2_id).expect("Deck 2 not found").clone();
 
     // Create engine
     let mut engine = GameEngine::new(card_db);
-    let deck1_cards: Vec<CardId> = deck1.cards.iter().map(|&id| CardId(id)).collect();
-    let deck2_cards: Vec<CardId> = deck2.cards.iter().map(|&id| CardId(id)).collect();
-    engine.start_game_with_mode(deck1_cards, deck2_cards, config.seed, config.game_mode);
+    engine.start_game_with_mode(&deck1, &deck2, config.seed, config.game_mode);
 
     // Create MCTS searcher
     let searcher = if let Some(w) = config.weights {

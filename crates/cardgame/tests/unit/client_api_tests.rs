@@ -3,7 +3,7 @@
 use std::sync::Arc;
 use cardgame::cards::CardDatabase;
 use cardgame::client_api::{GameClient, GameClientBuilder, GameEvent, StateSnapshot};
-use cardgame::decks::DeckRegistry;
+use cardgame::decks::{DeckDefinition, DeckRegistry};
 use cardgame::state::GameMode;
 use cardgame::types::PlayerId;
 
@@ -21,17 +21,17 @@ fn load_decks() -> DeckRegistry {
         .expect("Failed to load decks")
 }
 
-/// Helper to create a GameClient with loaded card database.
-fn create_test_client() -> (GameClient, Vec<cardgame::types::CardId>, Vec<cardgame::types::CardId>) {
+/// Helper to create a GameClient with loaded card database and deck definitions.
+fn create_test_client() -> (GameClient, DeckDefinition, DeckDefinition) {
     let db = load_card_db();
     let registry = load_decks();
 
     let deck1 = registry.get("architect_fortify")
         .expect("Deck not found")
-        .to_card_ids();
+        .clone();
     let deck2 = registry.get("broodmother_swarm")
         .expect("Deck not found")
-        .to_card_ids();
+        .clone();
 
     let client = GameClient::new(db);
     (client, deck1, deck2)
@@ -50,11 +50,9 @@ fn test_game_client_start_game() {
     let registry = load_decks();
 
     let deck1 = registry.get("architect_fortify")
-        .expect("Deck not found")
-        .to_card_ids();
+        .expect("Deck not found");
     let deck2 = registry.get("broodmother_swarm")
-        .expect("Deck not found")
-        .to_card_ids();
+        .expect("Deck not found");
 
     let mut client = GameClient::new(db);
     client.start_game(deck1, deck2, 12345);
@@ -71,11 +69,9 @@ fn test_game_client_emits_game_started_event() {
     let registry = load_decks();
 
     let deck1 = registry.get("architect_fortify")
-        .expect("Deck not found")
-        .to_card_ids();
+        .expect("Deck not found");
     let deck2 = registry.get("broodmother_swarm")
-        .expect("Deck not found")
-        .to_card_ids();
+        .expect("Deck not found");
 
     let mut client = GameClient::new(db);
     client.start_game(deck1, deck2, 12345);
@@ -93,11 +89,9 @@ fn test_game_client_apply_action() {
     let registry = load_decks();
 
     let deck1 = registry.get("architect_fortify")
-        .expect("Deck not found")
-        .to_card_ids();
+        .expect("Deck not found");
     let deck2 = registry.get("broodmother_swarm")
-        .expect("Deck not found")
-        .to_card_ids();
+        .expect("Deck not found");
 
     let mut client = GameClient::new(db);
     client.start_game(deck1, deck2, 12345);
@@ -123,11 +117,9 @@ fn test_game_client_event_history() {
     let registry = load_decks();
 
     let deck1 = registry.get("architect_fortify")
-        .expect("Deck not found")
-        .to_card_ids();
+        .expect("Deck not found");
     let deck2 = registry.get("broodmother_swarm")
-        .expect("Deck not found")
-        .to_card_ids();
+        .expect("Deck not found");
 
     let mut client = GameClientBuilder::new()
         .with_card_db(db)
@@ -155,11 +147,9 @@ fn test_state_snapshot_creation() {
     let registry = load_decks();
 
     let deck1 = registry.get("architect_fortify")
-        .expect("Deck not found")
-        .to_card_ids();
+        .expect("Deck not found");
     let deck2 = registry.get("broodmother_swarm")
-        .expect("Deck not found")
-        .to_card_ids();
+        .expect("Deck not found");
 
     let mut client = GameClient::new(db);
     client.start_game(deck1, deck2, 12345);

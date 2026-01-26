@@ -718,33 +718,21 @@ Command Zone integrated into Tauri UI with faction-specific styling. Face attack
 
 ### Tasks
 
-- [ ] **9.1** Run full test suite
+- [x] **9.1** Run full test suite
   ```bash
   cargo nextest run --status-level=fail
   ```
   - All ~629+ tests must pass
   - No new warnings
 
-- [ ] **9.2** Run Clippy
+- [x] **9.2** Run Clippy
   ```bash
   ./scripts/run-clippy.sh
   ```
   - No new warnings or errors
 
 - [ ] **9.3** Automated arena tournaments
-  - Run all commander matchups
-  ```bash
-  # All 12 commanders vs all 12 commanders
-  # 144 matchups × 100 games = 14,400 games
-  for deck1 in $(cargo run --release --bin arena -- --list-decks | grep id); do
-    for deck2 in $(cargo run --release --bin arena -- --list-decks | grep id); do
-      cargo run --release --bin arena -- \
-        --deck1 $deck1 --deck2 $deck2 \
-        --bot1 mcts --bot2 mcts \
-        --games 100 --progress
-    done
-  done
-  ```
+  - Run all commander matchups using validate (Alpha-Beta Bot, MCTSBot)
 
 - [ ] **9.4** Analyze tournament results
   - Calculate win rates per commander

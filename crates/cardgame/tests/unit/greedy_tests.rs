@@ -4,8 +4,11 @@ use cardgame::actions::Action;
 use cardgame::bots::{Bot, GreedyBot, GreedyWeights};
 use cardgame::cards::CardDatabase;
 use cardgame::engine::GameEngine;
-use cardgame::state::{GameResult, GameState, WinReason};
+use cardgame::state::{GameMode, GameResult, GameState, WinReason};
 use cardgame::types::{CardId, PlayerId, Slot};
+
+/// Default commander for tests (The High Artificer).
+const DEFAULT_COMMANDER: CardId = CardId(5000);
 
 fn load_test_db() -> CardDatabase {
     CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set")).expect("Failed to load cards")
@@ -32,7 +35,7 @@ fn test_state_evaluation() {
 
     // Create a simple game state
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(test_deck(), test_deck(), 12345);
+    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     let score = bot.evaluate_state(&engine.state, PlayerId::PLAYER_ONE);
 
@@ -46,7 +49,7 @@ fn test_action_evaluation() {
     let bot = GreedyBot::new(&card_db, 42);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(test_deck(), test_deck(), 12345);
+    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
 
     // EndTurn should have a valid score
     let score = bot.evaluate_action(&engine, Action::EndTurn);
@@ -60,7 +63,7 @@ fn test_greedy_vs_random_game() {
     // Run multiple games and verify GreedyBot doesn't crash
     for seed in 0..5 {
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(test_deck(), test_deck(), seed);
+        engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut greedy = GreedyBot::new(&card_db, seed);
 

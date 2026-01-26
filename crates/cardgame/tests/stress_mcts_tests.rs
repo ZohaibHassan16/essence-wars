@@ -16,8 +16,12 @@ use std::collections::HashSet;
 use cardgame::bots::{Bot, GreedyBot, MctsBot, MctsConfig, RandomBot};
 use cardgame::cards::CardDatabase;
 use cardgame::engine::GameEngine;
+use cardgame::state::GameMode;
 use cardgame::types::PlayerId;
 use common::arena_test_deck;
+
+/// Default commander for tests (The High Artificer).
+const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000);
 
 /// Helper to create an MCTS config matching arena defaults.
 ///
@@ -151,7 +155,7 @@ fn run_bot_game(
 ) -> Option<PlayerId> {
     let mut engine = GameEngine::new(card_db);
     let deck = arena_test_deck();
-    engine.start_game(deck.clone(), deck, seed);
+    engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
     let mut action_count = 0;
     let max_actions = 500;
@@ -427,7 +431,7 @@ fn stress_test_mcts_fork_integrity() {
     for seed in 0..NUM_GAMES {
         let mut engine = GameEngine::new(&card_db);
         let deck = arena_test_deck();
-        engine.start_game(deck.clone(), deck, seed);
+        engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
 
         let mut mcts_bot = MctsBot::with_config(&card_db, mcts_config(100), seed);
 

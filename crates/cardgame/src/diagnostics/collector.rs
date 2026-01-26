@@ -4,9 +4,14 @@
 
 use crate::bots::{create_bot, AlphaBetaConfig, BotType, MctsConfig};
 use crate::cards::CardDatabase;
+use crate::core::state::GameMode;
 use crate::engine::GameEngine;
 use crate::execution::GameSeeds;
 use crate::types::{CardId, PlayerId};
+
+/// Default commander for diagnostics (The High Artificer).
+/// TODO: DiagnosticConfig should include commander IDs.
+const DEFAULT_COMMANDER: CardId = CardId(5000);
 
 use super::metrics::{
     CombatEfficiency, GameMetrics, ResourceEfficiency, TempoMetrics, TurnMetrics,
@@ -251,7 +256,15 @@ impl<'a> DiagnosticRunner<'a> {
         bot2.reset();
 
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game(config.deck1.clone(), config.deck2.clone(), seeds.game);
+        // TODO: Use actual commanders from deck definitions
+        engine.start_game_raw(
+            config.deck1.clone(),
+            config.deck2.clone(),
+            DEFAULT_COMMANDER,
+            DEFAULT_COMMANDER,
+            seeds.game,
+            GameMode::default(),
+        );
 
         let mut snapshots = Vec::new();
         let mut first_damage_to_p1_turn = None;
@@ -460,7 +473,8 @@ mod tests {
 
     fn test_card_db() -> CardDatabase {
         let cards_path = crate::data_dir().join("cards/core_set");
-        CardDatabase::load_from_directory(cards_path).unwrap()
+        let commanders_path = crate::data_dir().join("commanders");
+        CardDatabase::load_with_commanders(cards_path, commanders_path).unwrap()
     }
 
     fn test_deck() -> Vec<CardId> {
@@ -482,7 +496,7 @@ mod tests {
     fn test_turn_snapshot_capture() {
         let card_db = test_card_db();
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game(test_deck(), test_deck(), 42);
+        engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
 
         let snapshot = TurnSnapshot::capture(&engine);
 
