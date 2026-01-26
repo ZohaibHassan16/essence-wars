@@ -122,6 +122,8 @@ impl ExperimentDir {
 /// - generalist -> data/weights/generalist.toml
 /// - faction-specialist -> data/weights/specialists/{faction}.toml
 /// - specialist -> data/weights/specialists/{faction}.toml (inferred from deck name)
+/// - alphabeta -> data/weights/alphabeta/generalist.toml
+/// - alphabeta-specialist -> data/weights/alphabeta/specialists/{faction}.toml
 pub fn deploy_weights(
     weights: &GreedyWeights,
     name: &str,
@@ -131,6 +133,20 @@ pub fn deploy_weights(
 ) -> io::Result<Option<PathBuf>> {
     let deploy_path = match mode {
         "generalist" | "agent-generalist" => Some(PathBuf::from("data/weights/generalist.toml")),
+        "alphabeta" => {
+            let alphabeta_dir = PathBuf::from("data/weights/alphabeta");
+            fs::create_dir_all(&alphabeta_dir)?;
+            Some(alphabeta_dir.join("generalist.toml"))
+        }
+        "alphabeta-specialist" => {
+            if let Some(faction_str) = faction {
+                let alphabeta_specialists_dir = PathBuf::from("data/weights/alphabeta/specialists");
+                fs::create_dir_all(&alphabeta_specialists_dir)?;
+                Some(alphabeta_specialists_dir.join(format!("{}.toml", faction_str.to_lowercase())))
+            } else {
+                None
+            }
+        }
         "faction-specialist" => {
             if let Some(faction_str) = faction {
                 let specialists_dir = PathBuf::from("data/weights/specialists");

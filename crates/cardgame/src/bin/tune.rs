@@ -11,6 +11,7 @@
 use std::io::Write;
 use std::path::PathBuf;
 use std::process;
+use std::str::FromStr;
 use std::time::Instant;
 
 use clap::Parser;
@@ -23,6 +24,7 @@ use cardgame::tuning::{
     ExperimentDir, TuningMode,
 };
 use cardgame::types::CardId;
+use cardgame::validation::MatchupBuilder;
 use cardgame::version;
 
 /// Weight tuning CLI using CMA-ES optimization
@@ -37,11 +39,12 @@ struct Args {
     /// - generalist: Train across all deck matchups (vs Random/Greedy/MCTS)
     /// - specialist: Train for specific deck matchup (requires --deck and --opponent)
     /// - faction-specialist: Train for a faction (requires --faction)
-    /// - alphabeta: Train weights for Alpha-Beta bot vs MCTS (uses --ab-depth)
+    /// - alphabeta: Train Alpha-Beta weights across all decks (uses --ab-depth)
+    /// - alphabeta-specialist: Train Alpha-Beta weights for a faction (requires --faction and --ab-depth)
     #[arg(long, default_value = "generalist")]
     mode: String,
 
-    /// Alpha-Beta search depth for alphabeta mode
+    /// Alpha-Beta search depth for alphabeta modes
     #[arg(long, default_value = "6")]
     ab_depth: u32,
 
@@ -117,6 +120,10 @@ struct Args {
     #[arg(long, default_value = "data/cards/core_set")]
     cards: PathBuf,
 
+    /// Path to commanders directory
+    #[arg(long, default_value = "data/commanders")]
+    commanders: PathBuf,
+
     /// Path to deck definitions directory
     #[arg(long, default_value = "data/decks")]
     decks: PathBuf,
@@ -144,11 +151,11 @@ fn main() {
         eprintln!("Warning: Could not save version info: {}", e);
     }
 
-    // Load card database
-    let card_db = match CardDatabase::load_from_directory(&args.cards) {
+    // Load card database with commanders
+    let card_db = match CardDatabase::load_with_commanders(&args.cards, &args.commanders) {
         Ok(db) => db,
         Err(e) => {
-            eprintln!("Error loading card database from {:?}: {}", args.cards, e);
+            eprintln!("Error loading card database from {:?} and commanders from {:?}: {}", args.cards, args.commanders, e);
             process::exit(1);
         }
     };
@@ -256,8 +263,40 @@ fn main() {
             println!("  Total games per evaluation: {}", args.games);
             TuningMode::AlphaBetaVsMcts { matchups, ab_depth: args.ab_depth }
         }
+        "alphabeta-specialist" => {
+            let faction = args.faction.as_ref().expect("--faction required for alphabeta-specialist mode");
+            let faction_enum = Faction::from_str(faction).expect("Invalid faction name");
+            
+            // Build matchups for the specified faction vs all other factions
+            let builder = MatchupBuilder::new(&deck_registry, &card_db);
+            let all_matchups = builder.build_all_deck_matchups();
+            let faction_matchups: Vec<_> = all_matchups
+                .into_iter()
+                .filter(|m| m.faction1 == faction_enum || m.faction2 == faction_enum)
+                .collect();
+            
+            if faction_matchups.is_empty() {
+                eprintln!("No valid matchups found for faction {}", faction);
+                process::exit(1);
+            }
+            
+            // Convert MatchupDefinition to (Vec<CardId>, Vec<CardId>)
+            let matchups: Vec<_> = faction_matchups
+                .into_iter()
+                .map(|m| (m.deck1_cards, m.deck2_cards))
+                .collect();
+            
+            println!("Alpha-Beta Faction Specialist mode:");
+            println!("  Faction: {:?}", faction_enum);
+            println!("  {} deck matchups", matchups.len());
+            println!("  Alpha-Beta depth: {}", args.ab_depth);
+            println!("  Testing vs MCTS-{}", args.mcts_sims);
+            println!("  Total games per evaluation: {}", args.games);
+
+            TuningMode::AlphaBetaVsMcts { matchups, ab_depth: args.ab_depth }
+        }
         _ => {
-            eprintln!("Unknown mode: {}. Available modes: generalist, specialist, faction-specialist, alphabeta", args.mode);
+            eprintln!("Unknown mode: {}. Available modes: generalist, specialist, faction-specialist, alphabeta, alphabeta-specialist", args.mode);
             process::exit(1);
         }
     };

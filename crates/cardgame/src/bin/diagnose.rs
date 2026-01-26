@@ -67,12 +67,13 @@ fn main() {
         args.games
     );
 
-    // Load card database
+    // Load card database with commanders
     let cards_path = cardgame::data_dir().join("cards/core_set");
-    let card_db = match CardDatabase::load_from_directory(&cards_path) {
+    let commanders_path = cardgame::data_dir().join("commanders");
+    let card_db = match CardDatabase::load_with_commanders(&cards_path, &commanders_path) {
         Ok(db) => db,
         Err(e) => {
-            eprintln!("Error loading card database: {}", e);
+            eprintln!("Error loading card database and commanders: {}", e);
             process::exit(1);
         }
     };

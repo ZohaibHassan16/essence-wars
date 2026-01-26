@@ -35,7 +35,6 @@ The `cardgame` crate is pure engine code designed for AI research.
 - **CMA-ES Optimizer**: tuning/cmaes module - Parallel fitness evaluation (14x speedup on 16 cores)
 - **Experiment Outputs**: `experiments/{mcts,ppo,alphazero}/YYYY-MM-DD_HHMM_tag/` (gitignored)
 - **GameRunner**: arena/runner module - Executes bot matches, optional ActionLogger for replay
-- **Modal Cloud**: modal_tune.py - Serverless parallel tuning/validation (4x faster than local)
 
 ### Diagnostics (`crates/cardgame/src/diagnostics/`)
 - **P1/P2 Asymmetry Analysis**: DiagnosticRunner, GameDiagnostics for balance testing

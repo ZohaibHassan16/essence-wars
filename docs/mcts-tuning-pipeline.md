@@ -27,11 +27,10 @@ cargo run --release --bin arena -- --bot1 mcts --bot2 random --games 100
 3. [Performance: MCTS Simulations](#performance-mcts-simulations)
 4. [Complete Workflow](#complete-workflow)
 5. [Auto-Deploy System](#auto-deploy-system)
-6. [Cloud Training with Modal](#cloud-training-with-modal-optional)
-7. [Analysis & Visualization](#analysis--visualization)
-8. [Using Tuned Weights](#using-tuned-weights)
-9. [How MCTS Uses Weights](#how-mcts-uses-weights)
-10. [Troubleshooting](#troubleshooting)
+6. [Analysis & Visualization](#analysis--visualization)
+7. [Using Tuned Weights](#using-tuned-weights)
+8. [How MCTS Uses Weights](#how-mcts-uses-weights)
+9. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -332,52 +331,6 @@ cargo run --release --bin arena -- \
   --bot2 greedy \
   --games 100
 ```
-
----
-
-## Cloud Training with Modal (Optional)
-
-For **4x faster parallel training**, use Modal's serverless platform. Instead of training 4 specialists sequentially (~60 min), run them all in parallel (~15 min).
-
-### Quick Start
-
-```bash
-# One-time setup (2 minutes)
-uv tool install modal
-modal token new
-
-# Full pipeline: train all 4 + validate + auto-deploy to local repo
-modal run modal_tune.py
-
-# Train only (skip validation)
-modal run modal_tune.py --mode train-only
-
-# Single configuration
-modal run modal_tune.py --single argentum
-```
-
-### What Happens
-
-1. **Phase 1:** 4 parallel training jobs (generalist + 3 faction specialists)
-2. **Phase 2:** Balance validation (round-robin: 40 deck matchups × 2 directions × games)
-3. **Auto-deploy:** Trained weights automatically copied to `data/weights/`
-
-### When to Use Cloud vs Local
-
-| Scenario | Use | Time | Cost |
-|----------|-----|------|------|
-| Quick experiment | Local | ~10 min | Free |
-| Single specialist | Local | ~10 min | Free |
-| All 4 configs | **Cloud** | ~15 min | ~$0.32 |
-| Hyperparameter search | **Cloud** | ~15 min | ~$0.50 |
-
-### Full Documentation
-
-See **[modal-cloud-setup.md](modal-cloud-setup.md)** for:
-- Detailed setup instructions
-- Cost breakdown and optimization
-- Troubleshooting
-- Advanced configuration
 
 ---
 

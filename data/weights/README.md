@@ -9,8 +9,9 @@ This directory contains weight configurations for GreedyBot, MctsBot, and AlphaB
   - `argentum.toml` - Optimized for Argentum faction
   - `symbiote.toml` - Optimized for Symbiote faction
   - `obsidion.toml` - Optimized for Obsidion faction
-- **`alphabeta/`** - Tuned weights for Alpha-Beta bot
-  - `generalist.toml` - Cross-faction weights (90% vs MCTS-100, 60-70% vs MCTS-1000)
+- **`alphabeta/`** - Auto-deployed weights for Alpha-Beta bot
+  - `generalist.toml` - Cross-faction weights (auto-deployed)
+  - `specialists/` - Faction-specific Alpha-Beta weights (auto-deployed)
 - **`default.toml`** - Legacy fallback (deprecated, use generalist.toml)
 
 ## Auto-Deploy System
@@ -24,30 +25,36 @@ cargo run --release --bin tune -- --mode generalist --tag gen-v0.4
 # Train specialist → auto-deploys to specialists/argentum.toml
 cargo run --release --bin tune -- --mode faction-specialist --faction argentum --tag arg-v0.4
 
-# Train Alpha-Beta weights → saves to experiments/, copy manually
+# Train Alpha-Beta weights → auto-deploys to alphabeta/generalist.toml
 cargo run --release --bin tune -- --mode alphabeta --ab-depth 6 --generations 30 --tag ab-v1
-cp experiments/mcts/<latest>/weights.toml data/weights/alphabeta/generalist.toml
+
+# Train Alpha-Beta specialist → auto-deploys to alphabeta/specialists/argentum.toml
+cargo run --release --bin tune -- --mode alphabeta-specialist --faction argentum --ab-depth 8 --tag ab-arg-v1
 ```
 
-No manual copying needed for greedy/mcts!
+**All modes now auto-deploy!** No manual copying needed.
 
 ## Usage
 
 ### Automatic Loading
 
-Both GreedyBot and MctsBot automatically load weights from:
+**GreedyBot and MctsBot** automatically load weights from:
 1. **Generalist weights**: `data/weights/generalist.toml` (most common)
 2. **Specialist weights**: `data/weights/specialists/{faction}.toml` (when using faction decks)
 3. **Fallback**: Hardcoded defaults in `src/bots/weights.rs`
+
+**AlphaBetaBot** automatically loads weights from:
+1. **Alpha-Beta specific**: `data/weights/alphabeta/generalist.toml` (preferred)
+2. **Shared generalist**: `data/weights/generalist.toml` (fallback)
+3. **Hardcoded defaults**: `src/bots/weights.rs`
 
 ```bash
 # Uses generalist.toml automatically
 cargo run --release --bin arena -- --bot1 greedy --bot2 random --games 100
 cargo run --release --bin arena -- --bot1 mcts --bot2 random --games 20
 
-# Alpha-Beta with tuned weights
-cargo run --release --bin arena -- --bot1 alphabeta --bot2 mcts \
-  --weights1 data/weights/alphabeta/generalist.toml --ab-depth 8 --games 50
+# Uses alphabeta/generalist.toml automatically (NEW!)
+cargo run --release --bin arena -- --bot1 alphabeta --bot2 mcts --ab-depth 8 --games 50
 ```
 
 ### Override with Custom Weights

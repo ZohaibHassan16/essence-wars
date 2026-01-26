@@ -15,6 +15,10 @@ struct Args {
     #[arg(long, default_value = "data/cards/core_set")]
     cards: PathBuf,
 
+    /// Path to commanders directory
+    #[arg(long, default_value = "data/commanders")]
+    commanders: PathBuf,
+
     /// Path to decks directory
     #[arg(long, default_value = "data/decks")]
     decks: PathBuf,
@@ -28,10 +32,11 @@ fn main() {
     let args = Args::parse();
 
     println!("Loading card database from: {:?}", args.cards);
-    let card_db = match CardDatabase::load_from_directory(&args.cards) {
+    println!("Loading commanders from: {:?}", args.commanders);
+    let card_db = match CardDatabase::load_with_commanders(&args.cards, &args.commanders) {
         Ok(db) => db,
         Err(e) => {
-            eprintln!("Error loading card database: {}", e);
+            eprintln!("Error loading card database and commanders: {}", e);
             process::exit(1);
         }
     };
