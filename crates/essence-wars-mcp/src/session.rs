@@ -128,21 +128,13 @@ impl SessionManager {
         // Create game client
         let mut client = GameClient::new(self.card_db.clone());
 
-        // Convert deck cards to CardId vec
-        let deck1_cards = player_deck.to_card_ids();
-        let deck2_cards = opponent_deck.to_card_ids();
-
         // Generate seeds
         let mut rng = rand::thread_rng();
         let game_seed = seed.unwrap_or_else(|| rng.gen::<u64>());
         let bot_seed = rng.gen::<u64>();
 
-        // Get commander IDs from decks
-        let commander1 = player_deck.commander_id();
-        let commander2 = opponent_deck.commander_id();
-
-        // Start game with commanders (player is always Player 1)
-        client.start_game_with_commanders(deck1_cards, deck2_cards, commander1, commander2, game_seed);
+        // Start game (player is always Player 1)
+        client.start_game(player_deck, opponent_deck, game_seed);
 
         // Generate unique game ID
         let game_id = uuid::Uuid::new_v4().to_string();

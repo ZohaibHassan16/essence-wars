@@ -213,10 +213,7 @@ impl ReplayManager {
 
         // Create new game client and start with the same seed
         let mut client = GameClient::new(self.card_db.clone());
-        let deck1_cards = deck1.to_card_ids();
-        let deck2_cards = deck2.to_card_ids();
-
-        client.start_game(deck1_cards, deck2_cards, session.game_seed);
+        client.start_game(deck1, deck2, session.game_seed);
 
         let match_id = uuid::Uuid::new_v4().to_string();
 

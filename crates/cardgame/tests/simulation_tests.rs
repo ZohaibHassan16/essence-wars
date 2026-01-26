@@ -46,8 +46,7 @@ impl SimpleRng {
 /// Test that games with truly random action selection complete without panics
 #[test]
 fn test_random_action_games() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     // Run 20 games with different seeds
     for game_seed in 0u64..20 {
@@ -97,8 +96,7 @@ fn test_random_action_games() {
 /// Test that games respect the 30 turn limit
 #[test]
 fn test_turn_limit_enforcement() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     // Use a seed that tends to produce longer games (mostly EndTurn actions)
     let mut engine = GameEngine::new(&card_db);
@@ -130,8 +128,7 @@ fn test_turn_limit_enforcement() {
 /// Test state validity is maintained throughout random play
 #[test]
 fn test_state_validity_during_random_play() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     for game_seed in [42u64, 12345, 99999, 7777, 31415] {
         let mut engine = GameEngine::new(&card_db);
@@ -237,8 +234,7 @@ fn verify_state_invariants(engine: &GameEngine, game_seed: u64) {
 /// Test legal action mask consistency with legal actions list
 #[test]
 fn test_mask_consistency_during_random_play() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
@@ -279,8 +275,7 @@ fn test_mask_consistency_during_random_play() {
 /// Test victory points win condition
 #[test]
 fn test_victory_points_tracking() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
@@ -311,8 +306,7 @@ fn test_victory_points_tracking() {
 /// Stress test with many rapid games
 #[test]
 fn test_rapid_game_stress() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut games_completed = 0;
     let mut total_actions = 0;
@@ -626,8 +620,7 @@ fn verify_comprehensive_invariants_with_db(
 /// Test with full database validation (checks all card IDs are valid)
 #[test]
 fn test_database_validated_games() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     // Verify deck card IDs exist in the database first
     let deck = valid_yaml_deck();
@@ -672,8 +665,7 @@ fn test_database_validated_games() {
 /// Test GreedyBot vs GreedyBot games with comprehensive invariant checking
 #[test]
 fn test_greedy_vs_greedy_with_invariants() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut games_completed = 0;
     let mut total_actions = 0;
@@ -746,8 +738,7 @@ fn test_greedy_vs_greedy_with_invariants() {
 /// Extended stress test with 500 random games
 #[test]
 fn test_extended_random_stress() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut games_completed = 0;
     let mut invariant_violations = 0;
@@ -804,8 +795,7 @@ fn test_extended_random_stress() {
 /// Test that engine fork produces valid states
 #[test]
 fn test_fork_state_validity() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     for seed in [42u64, 12345, 99999] {
         let mut engine = GameEngine::new(&card_db);
@@ -861,8 +851,7 @@ fn test_fork_state_validity() {
 fn stress_test_100k_random() {
     const NUM_GAMES: u64 = 100_000;
 
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut games_completed = 0u64;
     let mut total_actions = 0u64;
@@ -926,8 +915,7 @@ fn stress_test_100k_random() {
 fn stress_test_100k_greedy() {
     const NUM_GAMES: u64 = 100_000;
 
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut games_completed = 0u64;
     let mut total_actions = 0u64;

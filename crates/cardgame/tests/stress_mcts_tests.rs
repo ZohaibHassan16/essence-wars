@@ -18,7 +18,7 @@ use cardgame::cards::CardDatabase;
 use cardgame::engine::GameEngine;
 use cardgame::state::GameMode;
 use cardgame::types::PlayerId;
-use common::arena_test_deck;
+use common::{arena_test_deck, load_real_card_db};
 
 /// Default commander for tests (The High Artificer).
 const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000);
@@ -191,8 +191,7 @@ fn run_bot_game(
 fn stress_test_mcts_vs_mcts_100_games() {
     const NUM_GAMES: u64 = 100;
 
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut p1_wins = 0u64;
     let mut p2_wins = 0u64;
@@ -242,8 +241,7 @@ fn stress_test_mcts_vs_mcts_100_games() {
 fn stress_test_mcts_vs_greedy_500_games() {
     const NUM_GAMES: u64 = 500;
 
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut mcts_wins = 0u64;
     let mut greedy_wins = 0u64;
@@ -303,8 +301,7 @@ fn stress_test_mcts_vs_greedy_500_games() {
 #[test]
 #[ignore = "tier_medium"] // ~5 min: 300 games across all bot matchups
 fn stress_test_all_bot_combinations() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     eprintln!("=== All Bot Combinations Stress Test ===\n");
 
@@ -423,8 +420,7 @@ fn stress_test_all_bot_combinations() {
 fn stress_test_mcts_fork_integrity() {
     const NUM_GAMES: u64 = 50;
 
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     eprintln!("Testing MCTS fork integrity over {} games...", NUM_GAMES);
 
@@ -501,8 +497,7 @@ fn stress_test_mcts_fork_integrity() {
 fn stress_test_mcts_high_sims() {
     const NUM_GAMES: u64 = 20;
 
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut high_sim_wins = 0u64;
     let mut low_sim_wins = 0u64;

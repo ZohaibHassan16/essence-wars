@@ -165,35 +165,16 @@ impl GameManager {
         // Determine who goes first
         let player_first = config.player_goes_first.unwrap_or(true);
 
-        // Convert deck cards to CardId vec
-        let deck1_cards = player_deck.to_card_ids();
-        let deck2_cards = opponent_deck.to_card_ids();
-
-        // Get commander IDs from decks
-        let player_commander = player_deck.commander_id();
-        let opponent_commander = opponent_deck.commander_id();
-
         // Use provided seed or generate random
         let mut rng = rand::thread_rng();
         let game_seed = config.seed.unwrap_or_else(|| rng.gen::<u64>());
         let bot_seed = rng.gen::<u64>();
 
+        // Start game (deck definitions include commanders)
         if player_first {
-            client.start_game_with_commanders(
-                deck1_cards,
-                deck2_cards,
-                player_commander,
-                opponent_commander,
-                game_seed,
-            );
+            client.start_game(player_deck, opponent_deck, game_seed);
         } else {
-            client.start_game_with_commanders(
-                deck2_cards,
-                deck1_cards,
-                opponent_commander,
-                player_commander,
-                game_seed,
-            );
+            client.start_game(opponent_deck, player_deck, game_seed);
         }
 
         let game_id = Uuid::new_v4().to_string();
@@ -381,17 +362,14 @@ impl GameManager {
             .get(&session.original_config.opponent_deck_id)
             .ok_or_else(|| "Opponent deck not found".to_string())?;
 
-        // Convert deck cards
-        let deck1_cards = player_deck.to_card_ids();
-        let deck2_cards = opponent_deck.to_card_ids();
         let player_first = session.original_config.player_goes_first.unwrap_or(true);
 
         // Create new client and start game with same seed
         let mut new_client = GameClient::new(self.card_db.clone());
         if player_first {
-            new_client.start_game(deck1_cards, deck2_cards, session.game_seed);
+            new_client.start_game(player_deck, opponent_deck, session.game_seed);
         } else {
-            new_client.start_game(deck2_cards, deck1_cards, session.game_seed);
+            new_client.start_game(opponent_deck, player_deck, session.game_seed);
         }
 
         // Remove the last action
@@ -498,10 +476,6 @@ impl GameManager {
         // Create game client
         let mut client = GameClient::new(self.card_db.clone());
 
-        // Convert deck cards to CardId vec
-        let deck1_cards = deck1.to_card_ids();
-        let deck2_cards = deck2.to_card_ids();
-
         // Use provided seed or generate random
         let mut rng = rand::thread_rng();
         let game_seed = config.seed.unwrap_or_else(|| rng.gen::<u64>());
@@ -509,7 +483,7 @@ impl GameManager {
         let bot2_seed = rng.gen::<u64>();
 
         // Start game (player 1 always goes first in spectator mode)
-        client.start_game(deck1_cards, deck2_cards, game_seed);
+        client.start_game(&deck1, &deck2, game_seed);
 
         let match_id = Uuid::new_v4().to_string();
 
@@ -991,22 +965,14 @@ impl SpectatorComputer {
         // Create game client
         let mut client = GameClient::new(self.card_db.clone());
 
-        // Convert deck cards to CardId vec
-        let deck1_cards = deck1.to_card_ids();
-        let deck2_cards = deck2.to_card_ids();
-
-        // Get commander IDs from decks
-        let commander1 = deck1.commander_id();
-        let commander2 = deck2.commander_id();
-
         // Use provided seed or generate random
         let mut rng = rand::thread_rng();
         let game_seed = config.seed.unwrap_or_else(|| rng.gen::<u64>());
         let bot1_seed = rng.gen::<u64>();
         let bot2_seed = rng.gen::<u64>();
 
-        // Start game with commanders (player 1 always goes first in spectator mode)
-        client.start_game_with_commanders(deck1_cards, deck2_cards, commander1, commander2, game_seed);
+        // Start game (deck definitions include commanders, player 1 always goes first in spectator mode)
+        client.start_game(&deck1, &deck2, game_seed);
 
         let match_id = Uuid::new_v4().to_string();
 

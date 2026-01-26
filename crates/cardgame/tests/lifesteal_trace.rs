@@ -2,6 +2,8 @@
 //!
 //! Updated 2026-01-14 to use new Core Set (Obsidion has Lifesteal creatures).
 
+mod common;
+
 use cardgame::actions::Action;
 use cardgame::bots::{Bot, GreedyBot};
 use cardgame::cards::CardDatabase;
@@ -9,13 +11,14 @@ use cardgame::decks::DeckRegistry;
 use cardgame::engine::GameEngine;
 use cardgame::state::GameMode;
 use cardgame::types::{CardId, PlayerId};
+use common::load_real_card_db;
 
 /// Default commander for tests (The High Artificer).
 const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000);
 
 #[test]
 fn trace_single_game_detailed() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set")).expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let deck_registry = DeckRegistry::load_from_directory(cardgame::data_dir().join("decks")).expect("Failed to load decks");
 
     // Use Obsidion deck which has Lifesteal creatures
@@ -157,7 +160,7 @@ fn trace_single_game_detailed() {
 
 #[test]
 fn check_vampire_lord_in_starting_hands() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set")).expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let deck_registry = DeckRegistry::load_from_directory(cardgame::data_dir().join("decks")).expect("Failed to load decks");
 
     // Use Obsidion deck which has Lifesteal creatures

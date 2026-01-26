@@ -11,6 +11,8 @@
 //! Note: Uses GameEngine directly instead of GameRunner due to a known bug in
 //! GameRunner that causes games to hit the 1000 action limit.
 
+mod common;
+
 use cardgame::actions::Action;
 use cardgame::bots::{Bot, GreedyBot};
 use cardgame::cards::CardDatabase;
@@ -18,6 +20,7 @@ use cardgame::decks::DeckRegistry;
 use cardgame::engine::GameEngine;
 use cardgame::state::GameMode;
 use cardgame::types::{CardId, PlayerId};
+use common::load_real_card_db;
 
 /// Default commander for tests (The High Artificer).
 const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000);
@@ -73,8 +76,7 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
 ];
 
 fn load_test_resources() -> (CardDatabase, DeckRegistry) {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let deck_registry = DeckRegistry::load_from_directory(cardgame::data_dir().join("decks"))
         .expect("Failed to load decks");
     (card_db, deck_registry)

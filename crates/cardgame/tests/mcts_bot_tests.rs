@@ -38,8 +38,7 @@ fn mcts_config(simulations: u32) -> MctsConfig {
 /// Test that MCTS finds lethal when a creature can attack face for exact kill
 #[test]
 fn test_mcts_finds_lethal() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
@@ -108,8 +107,7 @@ fn test_mcts_finds_lethal() {
 /// Diagnostic test: verify that attacking face actually ends the game
 #[test]
 fn test_attack_face_ends_game() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
@@ -166,8 +164,7 @@ fn test_attack_face_ends_game() {
 /// Test MCTS with only one legal action returns immediately
 #[test]
 fn test_mcts_single_legal_action() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
@@ -195,8 +192,7 @@ fn test_mcts_single_legal_action() {
 /// Test MCTS handles terminal states gracefully
 #[test]
 fn test_mcts_on_terminal_state() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
@@ -223,8 +219,7 @@ fn test_mcts_on_terminal_state() {
 /// Test same seed produces identical action selection
 #[test]
 fn test_mcts_determinism_same_seed() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     // Create the same game state twice
     let seed = 42;
@@ -258,8 +253,7 @@ fn test_mcts_determinism_same_seed() {
 /// Test different seeds produce varying selections (probabilistic)
 #[test]
 fn test_mcts_varies_with_seed() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut engine = GameEngine::new(&card_db);
     engine.start_game_raw(valid_yaml_deck(), valid_yaml_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
@@ -293,8 +287,7 @@ fn test_mcts_varies_with_seed() {
 #[test]
 #[ignore = "tier_quick"] // ~1 min: 20 games comparing sim counts
 fn test_mcts_simulation_count_matters() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     // Run several games with low vs high simulation counts
     let mut low_sim_wins = 0;
@@ -349,8 +342,7 @@ fn test_mcts_simulation_count_matters() {
 #[test]
 #[ignore = "tier_quick"] // ~1 min: 20 MCTS vs Greedy games
 fn test_mcts_vs_greedy() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut mcts_wins = 0;
     let mut greedy_wins = 0;
@@ -407,8 +399,7 @@ fn test_mcts_vs_greedy() {
 /// Verify forking during MCTS doesn't corrupt original state
 #[test]
 fn test_mcts_fork_integrity() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
+    let card_db = load_real_card_db();
 
     let mut engine = GameEngine::new(&card_db);
     engine.start_game_raw(valid_yaml_deck(), valid_yaml_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());

@@ -28,7 +28,10 @@ fn test_deck() -> DeckDefinition {
 
 #[test]
 fn test_run_single_game() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
+    let card_db = CardDatabase::load_with_commanders(
+        cardgame::data_dir().join("cards/core_set"),
+        cardgame::data_dir().join("commanders"),
+    )
         .expect("Failed to load cards");
 
     let mut runner = GameRunner::new(&card_db);
@@ -51,7 +54,10 @@ fn test_run_single_game() {
 
 #[test]
 fn test_game_determinism() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
+    let card_db = CardDatabase::load_with_commanders(
+        cardgame::data_dir().join("cards/core_set"),
+        cardgame::data_dir().join("commanders"),
+    )
         .expect("Failed to load cards");
 
     let mut runner = GameRunner::new(&card_db);
@@ -85,7 +91,10 @@ fn test_game_determinism() {
 
 #[test]
 fn test_run_match() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
+    let card_db = CardDatabase::load_with_commanders(
+        cardgame::data_dir().join("cards/core_set"),
+        cardgame::data_dir().join("commanders"),
+    )
         .expect("Failed to load cards");
 
     let mut runner = GameRunner::new(&card_db);

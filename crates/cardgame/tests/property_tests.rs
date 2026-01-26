@@ -13,6 +13,8 @@ use cardgame::engine::GameEngine;
 use cardgame::state::{GameMode, GameState};
 use cardgame::types::{CardId, Slot};
 
+use common::load_real_card_db;
+
 use common::{test_card_db, valid_yaml_deck};
 
 /// Default commander for tests (The High Artificer).
@@ -43,8 +45,7 @@ fn seed_strategy() -> impl Strategy<Value = u64> {
 
 /// Load the full card database
 fn load_full_card_db() -> CardDatabase {
-    CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load card database")
+    load_real_card_db()
 }
 
 /// Run a game with random actions until terminal or max steps

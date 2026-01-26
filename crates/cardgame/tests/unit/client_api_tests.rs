@@ -7,11 +7,15 @@ use cardgame::decks::{DeckDefinition, DeckRegistry};
 use cardgame::state::GameMode;
 use cardgame::types::PlayerId;
 
-/// Helper to load card database.
+/// Helper to load card database with commanders.
 fn load_card_db() -> Arc<CardDatabase> {
+    let data_dir = cardgame::data_dir();
     Arc::new(
-        CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-            .expect("Failed to load cards")
+        CardDatabase::load_with_commanders(
+            data_dir.join("cards/core_set"),
+            data_dir.join("commanders"),
+        )
+        .expect("Failed to load cards with commanders")
     )
 }
 

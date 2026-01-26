@@ -6,11 +6,14 @@
 //!
 //! Updated 2026-01-14 to use new Core Set (Obsidion has Lifesteal creatures).
 
+mod common;
+
 use cardgame::arena::GameRunner;
 use cardgame::bots::{GreedyBot, RandomBot};
 use cardgame::cards::CardDatabase;
 use cardgame::decks::{DeckDefinition, DeckRegistry};
 use cardgame::types::{CardId, PlayerId};
+use common::load_real_card_db;
 
 fn make_test_deck(cards: Vec<cardgame::types::CardId>) -> DeckDefinition {
     DeckDefinition {
@@ -26,7 +29,7 @@ fn make_test_deck(cards: Vec<cardgame::types::CardId>) -> DeckDefinition {
 
 #[test]
 fn debug_lifesteal_investigation() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set")).expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let deck_registry = DeckRegistry::load_from_directory(cardgame::data_dir().join("decks")).expect("Failed to load decks");
 
     // Verify Lifesteal cards exist in Obsidion faction
@@ -131,7 +134,7 @@ fn debug_lifesteal_investigation() {
 
 #[test]
 fn debug_game_length_and_mana() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set")).expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let deck_registry = DeckRegistry::load_from_directory(cardgame::data_dir().join("decks")).expect("Failed to load decks");
 
     let obsidion_deck = deck_registry.get("archon_burst").expect("Deck should exist");
@@ -186,7 +189,7 @@ fn debug_game_length_and_mana() {
 
 #[test]
 fn debug_what_cards_are_played() {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set")).expect("Failed to load cards");
+    let card_db = load_real_card_db();
     let deck_registry = DeckRegistry::load_from_directory(cardgame::data_dir().join("decks")).expect("Failed to load decks");
 
     let obsidion_deck = deck_registry.get("archon_burst").expect("Deck should exist");
