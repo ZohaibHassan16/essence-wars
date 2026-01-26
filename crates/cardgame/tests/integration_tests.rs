@@ -5,7 +5,6 @@
 mod common;
 
 use cardgame::actions::Action;
-use cardgame::cards::CardDatabase;
 use cardgame::engine::GameEngine;
 use cardgame::state::{GameMode, GameResult};
 use cardgame::types::{CardId, PlayerId};

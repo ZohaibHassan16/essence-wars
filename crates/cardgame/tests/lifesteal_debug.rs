@@ -10,7 +10,6 @@ mod common;
 
 use cardgame::arena::GameRunner;
 use cardgame::bots::{GreedyBot, RandomBot};
-use cardgame::cards::CardDatabase;
 use cardgame::decks::{DeckDefinition, DeckRegistry};
 use cardgame::types::{CardId, PlayerId};
 use common::load_real_card_db;

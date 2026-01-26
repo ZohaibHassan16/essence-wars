@@ -52,8 +52,8 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
         deck1_id: "broodmother_swarm",
         deck2_id: "broodmother_swarm",
         expected_winner: Some(1), // P2 wins
-        expected_turns: 18,       // Updated for v0.8.0 deck format migration (29 cards + commander)
-        expected_action_count: 78,
+        expected_turns: 14,       // Updated for start_game API unification
+        expected_action_count: 68,
     },
     GoldenTestCase {
         name: "greedy_mirror_seed_200",
@@ -61,17 +61,17 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
         deck1_id: "broodmother_swarm",
         deck2_id: "broodmother_swarm",
         expected_winner: Some(1), // P2 wins
-        expected_turns: 18,       // Updated for v0.8.0 deck format migration (29 cards + commander)
-        expected_action_count: 86,
+        expected_turns: 12,       // Updated for start_game API unification
+        expected_action_count: 53,
     },
     GoldenTestCase {
         name: "greedy_mirror_seed_600",
         seed: 600,
         deck1_id: "broodmother_swarm",
         deck2_id: "broodmother_swarm",
-        expected_winner: Some(0), // P1 wins (updated for v0.8.0 deck format migration)
-        expected_turns: 13,
-        expected_action_count: 54,
+        expected_winner: Some(0), // P1 wins
+        expected_turns: 19,       // Updated for start_game API unification
+        expected_action_count: 95,
     },
 ];
 

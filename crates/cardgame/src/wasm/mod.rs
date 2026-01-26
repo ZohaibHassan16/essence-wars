@@ -40,7 +40,13 @@ use crate::actions::Action;
 #[cfg(feature = "wasm")]
 use crate::types::CardId;
 #[cfg(feature = "wasm")]
+use crate::state::GameMode;
+#[cfg(feature = "wasm")]
 use std::sync::Arc;
+
+/// Default commander for WASM games (The High Artificer).
+#[cfg(feature = "wasm")]
+const DEFAULT_COMMANDER: CardId = CardId(5000);
 
 /// Initialize panic hook for better error messages in browser console.
 #[cfg(feature = "wasm")]
@@ -124,7 +130,15 @@ impl WasmGameClient {
         let deck1: Vec<CardId> = deck1_ids.into_iter().map(CardId).collect();
         let deck2: Vec<CardId> = deck2_ids.into_iter().map(CardId).collect();
 
-        self.client.start_game(deck1, deck2, seed);
+        // Use start_game_raw with default commanders for WASM compatibility
+        self.client.start_game_raw(
+            deck1,
+            deck2,
+            DEFAULT_COMMANDER,
+            DEFAULT_COMMANDER,
+            seed,
+            GameMode::default(),
+        );
 
         let events = self.client.drain_events();
         serde_json::to_string(&events)

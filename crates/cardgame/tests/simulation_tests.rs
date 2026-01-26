@@ -589,10 +589,10 @@ fn verify_comprehensive_invariants_with_db(
             );
         }
 
-        // Check creature card IDs
+        // Check creature card IDs (CardId(0) is allowed for tokens)
         for creature in &player.creatures {
             assert!(
-                card_db.get(creature.card_id).is_some(),
+                creature.card_id.0 == 0 || card_db.get(creature.card_id).is_some(),
                 "{}: Creature in slot {} has invalid card_id {:?}",
                 player_ctx,
                 creature.slot.0,

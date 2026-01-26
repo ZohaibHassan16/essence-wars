@@ -10,7 +10,6 @@ mod common;
 
 use cardgame::actions::Action;
 use cardgame::bots::{Bot, GreedyBot, MctsBot, MctsConfig};
-use cardgame::cards::CardDatabase;
 use cardgame::engine::GameEngine;
 use cardgame::keywords::Keywords;
 use cardgame::state::{Creature, CreatureStatus, GameMode};

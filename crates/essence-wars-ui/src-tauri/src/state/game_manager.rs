@@ -483,7 +483,7 @@ impl GameManager {
         let bot2_seed = rng.gen::<u64>();
 
         // Start game (player 1 always goes first in spectator mode)
-        client.start_game(&deck1, &deck2, game_seed);
+        client.start_game(deck1, deck2, game_seed);
 
         let match_id = Uuid::new_v4().to_string();
 
@@ -972,7 +972,7 @@ impl SpectatorComputer {
         let bot2_seed = rng.gen::<u64>();
 
         // Start game (deck definitions include commanders, player 1 always goes first in spectator mode)
-        client.start_game(&deck1, &deck2, game_seed);
+        client.start_game(deck1, deck2, game_seed);
 
         let match_id = Uuid::new_v4().to_string();
 

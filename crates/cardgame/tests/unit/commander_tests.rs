@@ -326,12 +326,12 @@ fn test_triggered_commander_has_no_passive_effect() {
     // High Artificer (5000) and Broodmother (5004)
     setup_game_with_commanders(&mut engine, 5000, 5004, 42);
 
-    // High Artificer summoned a Brass Cog at slot 0 at turn 2 start
-    // Play our creature at slot 1 instead
-    play_creature_at_slot(&mut engine, 0, Slot(1));
+    // High Artificer summoned Brass Cogs at turn 1 start (slot 0) and turn 2 start (slot 1)
+    // Play our creature at slot 2 instead
+    play_creature_at_slot(&mut engine, 0, Slot(2));
 
     let creature = engine.state.players[0]
-        .get_creature(Slot(1))
+        .get_creature(Slot(2))
         .expect("Creature should exist");
 
     // Brass Sentinel has Guard keyword by default
@@ -415,25 +415,25 @@ fn test_commander_passive_preserved_after_combat() {
 
 #[test]
 fn test_high_artificer_summons_brass_cog_on_turn_start() {
-    // The High Artificer (5000): At start of turn, summon a 1/1 Brass Cog
+    // The High Artificer (5000): At start of turn, summon a 2/2 Brass Cog
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
     // Set up game with High Artificer as P1's commander
     setup_game_with_commanders(&mut engine, 5000, 5001, 42);
 
-    // After setup, we're at turn 2. At the start of turn 2, High Artificer should
-    // have summoned a Brass Cog. But actually, the trigger fires at the START of
-    // P1's turn, so let's check if there's a creature.
-    // Note: setup_game_with_commanders ends turns to get to turn 2, so
-    // the trigger should have fired at the start of turn 2.
+    // After setup, we're at turn 2. The High Artificer triggers at the START of
+    // each of P1's turns, so:
+    // - Turn 1 Start: Summons 1 Brass Cog (slot 0)
+    // - Turn 2 Start: Summons 1 Brass Cog (slot 1)
+    // Total: 2 Brass Cogs
 
-    // Check P1 has a creature (the Brass Cog token)
+    // Check P1 has 2 creatures (Brass Cogs)
     let p1_creatures = &engine.state.players[0].creatures;
     assert_eq!(
         p1_creatures.len(),
-        1,
-        "P1 should have exactly 1 creature (Brass Cog) summoned by High Artificer at turn start"
+        2,
+        "P1 should have 2 Brass Cogs (one from turn 1 start, one from turn 2 start)"
     );
 
     let brass_cog = &p1_creatures[0];
@@ -451,29 +451,29 @@ fn test_high_artificer_summons_multiple_tokens_over_turns() {
     // Set up game with High Artificer as P1's commander
     setup_game_with_commanders(&mut engine, 5000, 5001, 42);
 
-    // After setup, we're at turn 2 with 1 Brass Cog
-    assert_eq!(engine.state.players[0].creatures.len(), 1, "Should have 1 token after turn 2 start");
+    // After setup, we're at turn 2 with 2 Brass Cogs (turn 1 start + turn 2 start)
+    assert_eq!(engine.state.players[0].creatures.len(), 2, "Should have 2 tokens after turn 2 start");
 
     // End turns to get to turn 3
     engine.apply_action(Action::EndTurn).expect("P1 end turn");
     engine.apply_action(Action::EndTurn).expect("P2 end turn");
 
-    // Should now have 2 Brass Cogs (one from turn 2, one from turn 3)
+    // Should now have 3 Brass Cogs (turn 1, turn 2, turn 3)
     assert_eq!(
         engine.state.players[0].creatures.len(),
-        2,
-        "P1 should have 2 Brass Cogs after turn 3 start"
+        3,
+        "P1 should have 3 Brass Cogs after turn 3 start"
     );
 
     // End turns to get to turn 4
     engine.apply_action(Action::EndTurn).expect("P1 end turn");
     engine.apply_action(Action::EndTurn).expect("P2 end turn");
 
-    // Should now have 3 Brass Cogs
+    // Should now have 4 Brass Cogs
     assert_eq!(
         engine.state.players[0].creatures.len(),
-        3,
-        "P1 should have 3 Brass Cogs after turn 4 start"
+        4,
+        "P1 should have 4 Brass Cogs after turn 4 start"
     );
 }
 

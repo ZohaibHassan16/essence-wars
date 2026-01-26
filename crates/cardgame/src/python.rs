@@ -37,8 +37,8 @@ use crate::core::cards::CardDatabase;
 use crate::core::config::tensor::STATE_TENSOR_SIZE;
 use crate::core::engine::GameEngine;
 use crate::core::state::GameMode;
-use crate::core::types::{CardId, PlayerId};
-use crate::decks::DeckRegistry;
+use crate::core::types::PlayerId;
+use crate::decks::{DeckDefinition, DeckRegistry};
 use crate::bots::{Bot, GreedyBot, MctsBot, MctsConfig, RandomBot};
 
 /// Single game wrapper for Python.
@@ -52,8 +52,8 @@ pub struct PyGame {
     card_db: &'static CardDatabase,
     #[allow(dead_code)]
     deck_registry: &'static DeckRegistry,
-    deck1: Vec<CardId>,
-    deck2: Vec<CardId>,
+    deck1: DeckDefinition,
+    deck2: DeckDefinition,
     game_mode: GameMode,
 }
 
@@ -61,9 +61,11 @@ pub struct PyGame {
 // These are loaded once and shared across all PyGame instances
 lazy_static::lazy_static! {
     static ref CARD_DB: CardDatabase = {
-        let cards_path = crate::data_dir().join("cards/core_set");
-        CardDatabase::load_from_directory(cards_path)
-            .expect("Failed to load card database")
+        let data_dir = crate::data_dir();
+        let cards_path = data_dir.join("cards/core_set");
+        let commanders_path = data_dir.join("commanders");
+        CardDatabase::load_with_commanders(cards_path, commanders_path)
+            .expect("Failed to load card database with commanders")
     };
     static ref DECK_REGISTRY: DeckRegistry = {
         let decks_path = crate::data_dir().join("decks");
@@ -112,8 +114,8 @@ impl PyGame {
             engine,
             card_db,
             deck_registry,
-            deck1: deck1_def.to_card_ids(),
-            deck2: deck2_def.to_card_ids(),
+            deck1: deck1_def.clone(),
+            deck2: deck2_def.clone(),
             game_mode: mode,
         })
     }
@@ -124,8 +126,8 @@ impl PyGame {
     ///     seed: Random seed for deck shuffling and game randomness
     fn reset(&mut self, seed: u64) {
         self.engine.start_game_with_mode(
-            self.deck1.clone(),
-            self.deck2.clone(),
+            &self.deck1,
+            &self.deck2,
             seed,
             self.game_mode,
         );
@@ -301,8 +303,8 @@ pub struct PyParallelGames {
     card_db: &'static CardDatabase,
     #[allow(dead_code)]
     deck_registry: &'static DeckRegistry,
-    deck1: Vec<CardId>,
-    deck2: Vec<CardId>,
+    deck1: DeckDefinition,
+    deck2: DeckDefinition,
     game_mode: GameMode,
     num_envs: usize,
 }
@@ -352,8 +354,8 @@ impl PyParallelGames {
             engines,
             card_db,
             deck_registry,
-            deck1: deck1_def.to_card_ids(),
-            deck2: deck2_def.to_card_ids(),
+            deck1: deck1_def.clone(),
+            deck2: deck2_def.clone(),
             game_mode: mode,
             num_envs,
         })
@@ -374,8 +376,8 @@ impl PyParallelGames {
 
         for (engine, seed) in self.engines.iter_mut().zip(seeds.iter()) {
             engine.start_game_with_mode(
-                self.deck1.clone(),
-                self.deck2.clone(),
+                &self.deck1,
+                &self.deck2,
                 *seed,
                 self.game_mode,
             );
@@ -502,8 +504,8 @@ impl PyParallelGames {
         }
 
         self.engines[idx].start_game_with_mode(
-            self.deck1.clone(),
-            self.deck2.clone(),
+            &self.deck1,
+            &self.deck2,
             seed,
             self.game_mode,
         );
@@ -520,8 +522,8 @@ impl PyParallelGames {
     fn reset_all(&mut self, base_seed: u64) {
         for (i, engine) in self.engines.iter_mut().enumerate() {
             engine.start_game_with_mode(
-                self.deck1.clone(),
-                self.deck2.clone(),
+                &self.deck1,
+                &self.deck2,
                 base_seed + i as u64,
                 self.game_mode,
             );

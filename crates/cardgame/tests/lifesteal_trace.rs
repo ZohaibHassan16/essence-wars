@@ -6,7 +6,6 @@ mod common;
 
 use cardgame::actions::Action;
 use cardgame::bots::{Bot, GreedyBot};
-use cardgame::cards::CardDatabase;
 use cardgame::decks::DeckRegistry;
 use cardgame::engine::GameEngine;
 use cardgame::state::GameMode;

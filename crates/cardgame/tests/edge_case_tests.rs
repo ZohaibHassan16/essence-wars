@@ -14,8 +14,11 @@ use cardgame::types::{CardId, PlayerId, Slot};
 
 use common::load_real_card_db;
 
-/// Default commander for tests (The High Artificer).
+/// Default commander for tests (The High Artificer) - has triggered ability that summons tokens.
 const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000);
+
+/// Passive commander for tests that need empty board (The Sanctum Healer) - grants Regenerate.
+const PASSIVE_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5001);
 
 fn create_test_db() -> CardDatabase {
     load_real_card_db()
@@ -171,7 +174,8 @@ fn test_edge_case_ranged_bypasses_guard() {
     let deck2 = create_test_deck(&[guard, regular]);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    // Use passive commander to avoid token summoning at turn start
+    engine.start_game_raw(deck1, deck2, PASSIVE_COMMANDER, PASSIVE_COMMANDER, 42, GameMode::default());
 
     // Give both players max essence
     engine.state.players[0].max_essence = 10;
