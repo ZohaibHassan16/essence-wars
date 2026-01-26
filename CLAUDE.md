@@ -30,8 +30,11 @@ cargo run --release --bin arena -- --list-decks
 cargo run --release --bin tune -- --mode generalist --tag my_run --generations 50
 cargo run --release --bin tune -- --mode faction-specialist --faction argentum --tag argentum_v1
 
-# Analysis & validation
-cargo run --release --bin validate -- --games 100
+# Balance validation (deck/commander performance is key metric)
+cargo run --release --bin validate -- --games 50 --progress
+cargo run --release --bin validate -- --games 100 --bot mcts --mcts-sims 200
+
+# P1/P2 asymmetry analysis
 cargo run --release --bin diagnose -- 200
 
 # Benchmarks
@@ -302,13 +305,39 @@ CMA-ES optimizer with parallel evaluation. Outputs to `experiments/mcts/YYYY-MM-
 
 See `docs/tuning-pipeline.md` for full options.
 
+## Balance Validation
+
+The `validate` binary runs cross-faction matchups and reports balance metrics.
+
+**Key metric: Per-deck/commander performance** (not faction averages).
+
+```bash
+cargo run --release --bin validate -- --games 50 --progress --run-id my_run
+```
+
+Output includes:
+- Per-deck win rates with 95% confidence intervals
+- Best/worst matchups per deck
+- Visual indicators: ▲ (>60% win rate), ▼ (<40% win rate)
+- Results saved to `experiments/validation/{run_id}/`
+
+**Balance thresholds:**
+- Balanced deck: 40-60% win rate
+- Outlier deck: <40% or >60% win rate
+- Sample size: 50+ games per matchup recommended for statistical confidence
+
 ## Performance
 
-| Benchmark | Throughput |
-|-----------|------------|
-| Random game | ~80k/sec |
-| Greedy game | ~17k/sec |
-| Engine fork | ~99 ns |
+Benchmarks use real 30-card decks with commanders (v0.8.0+).
+
+| Benchmark | Result | Notes |
+|-----------|--------|-------|
+| Random game | ~33k/sec | ~30 µs/game |
+| Greedy game | ~4.3k/sec | ~230 µs/game |
+| Engine fork | ~107 ns | State cloning |
+| State tensor | ~158 ns | 328-float encoding |
+| Legal actions | ~55 ns | Action enumeration |
+| Throughput | ~18k games/sec | 10-game batches |
 
 ## Versioning
 

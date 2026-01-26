@@ -18,13 +18,10 @@ use std::time::Instant;
 use clap::Parser;
 
 use cardgame::bots::BotType;
-use cardgame::cards::CardDatabase;
-use cardgame::decks::DeckRegistry;
-use cardgame::execution::configure_thread_pool;
+use cardgame::execution::{configure_thread_pool, GameData, MatchupBuilder};
 use cardgame::validation::{
-    export_json, filter_matchups, print_results, save_validation_results, BalanceAnalyzer,
-    BalanceStatus, FactionWeights, MatchupBuilder, ValidationConfig, ValidationExecutor,
-    ValidationResults,
+    export_json, print_results, save_validation_results, BalanceAnalyzer, BalanceStatus,
+    FactionWeights, ValidationConfig, ValidationExecutor, ValidationResults,
 };
 use cardgame::version::{self, VersionInfo};
 
@@ -113,30 +110,27 @@ fn main() {
     // Configure thread pool
     let num_threads = configure_thread_pool(args.threads);
 
-    // Load card database with commanders
-    let card_db = match CardDatabase::load_with_commanders(&args.cards, &args.commanders) {
-        Ok(db) => db,
+    // Load game data using unified loader
+    let game_data = match GameData::load_with_overrides(
+        Some(&args.cards),
+        Some(&args.commanders),
+        Some(&args.decks),
+        Some(&args.weights),
+        !show_progress,
+    ) {
+        Ok(data) => data,
         Err(e) => {
-            eprintln!("Error loading card database from {:?} and commanders from {:?}: {}", args.cards, args.commanders, e);
+            eprintln!("Error loading game data: {}", e);
             process::exit(1);
         }
     };
 
-    // Load deck registry
-    let deck_registry = match DeckRegistry::load_from_directory(&args.decks) {
-        Ok(r) => r,
-        Err(e) => {
-            eprintln!("Error loading decks from {:?}: {}", args.decks, e);
-            process::exit(1);
-        }
-    };
-
-    // Load faction weights
+    // Load faction weights for bots
     let faction_weights = FactionWeights::load_from_directory(&args.weights, !show_progress);
 
-    // Build matchups (all deck combinations, round-robin)
-    let builder = MatchupBuilder::new(&deck_registry, &card_db);
-    let mut matchups = builder.build_all_deck_matchups();
+    // Build matchups using new MatchupBuilder (preserves commander info)
+    let builder = MatchupBuilder::new(&game_data.deck_registry);
+    let mut matchups = builder.build_inter_faction_matchups();
 
     if matchups.is_empty() {
         eprintln!("Error: No valid faction matchups found. Need decks for at least 2 factions.");
@@ -145,7 +139,7 @@ fn main() {
 
     // Filter to specific matchup if requested
     if let Some(ref matchup_filter) = args.matchup {
-        matchups = filter_matchups(matchups, matchup_filter);
+        matchups = MatchupBuilder::filter_matchups(matchups, matchup_filter);
         if matchups.is_empty() {
             eprintln!(
                 "Error: No matchup found matching '{}'. Valid options: argentum-symbiote, argentum-obsidion, symbiote-obsidion",
@@ -173,7 +167,7 @@ fn main() {
 
     // Run validation
     let start_time = Instant::now();
-    let executor = ValidationExecutor::new(&card_db, args.mcts_sims)
+    let executor = ValidationExecutor::new(&game_data.card_db, args.mcts_sims)
         .with_bot_type(bot_type)
         .with_alphabeta_depth(args.ab_depth)
         .with_progress(show_progress);

@@ -58,6 +58,14 @@ pub struct MatchupResult {
     pub deck1_id: String,
     /// Deck ID used for faction 2.
     pub deck2_id: String,
+    /// Commander ID for deck 1.
+    pub commander1_id: u16,
+    /// Commander ID for deck 2.
+    pub commander2_id: u16,
+    /// Commander name for deck 1.
+    pub commander1_name: String,
+    /// Commander name for deck 2.
+    pub commander2_name: String,
     /// Faction 1 wins when playing as Player 1.
     pub f1_as_p1_wins: u32,
     /// Games played with faction 1 as Player 1.
@@ -108,6 +116,33 @@ impl std::fmt::Display for BalanceStatus {
     }
 }
 
+/// Per-deck performance statistics.
+#[derive(Debug, Clone, Serialize)]
+pub struct DeckStats {
+    /// Deck ID (e.g., "artificer_tokens").
+    pub deck_id: String,
+    /// Commander ID.
+    pub commander_id: u16,
+    /// Commander name.
+    pub commander_name: String,
+    /// Faction name.
+    pub faction: String,
+    /// Total games played.
+    pub total_games: u32,
+    /// Total wins.
+    pub total_wins: u32,
+    /// Overall win rate.
+    pub win_rate: f64,
+    /// 95% confidence interval lower bound.
+    pub win_rate_ci_lower: f64,
+    /// 95% confidence interval upper bound.
+    pub win_rate_ci_upper: f64,
+    /// Best matchup (deck ID and win rate).
+    pub best_matchup: Option<(String, f64)>,
+    /// Worst matchup (deck ID and win rate).
+    pub worst_matchup: Option<(String, f64)>,
+}
+
 /// Balance analysis summary.
 #[derive(Debug, Clone, Serialize)]
 pub struct BalanceSummary {
@@ -127,6 +162,9 @@ pub struct BalanceSummary {
     pub warnings: Vec<String>,
     /// P1/P2 diagnostic summary.
     pub p1_p2_diagnostics: P1P2Summary,
+    /// Per-deck statistics (sorted by win rate descending).
+    #[serde(default)]
+    pub deck_stats: Vec<DeckStats>,
 }
 
 /// Summary of P1/P2 asymmetry analysis across all matchups.

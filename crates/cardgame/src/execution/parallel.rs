@@ -384,6 +384,330 @@ pub fn configure_thread_pool(_threads: usize) -> usize {
     1 // Single-threaded
 }
 
+// ============================================================================
+// Metrics-aware batch execution
+// ============================================================================
+
+use super::metrics::{AggregatedMetrics, GameMetricsData};
+
+/// Extended game outcome with full metrics.
+///
+/// This type combines the basic `GameOutcome` with comprehensive per-game
+/// metrics for detailed analysis.
+#[derive(Clone, Debug)]
+pub struct GameOutcomeWithMetrics {
+    /// Full metrics data (includes winner, turns, duration, and detailed metrics).
+    pub metrics: GameMetricsData,
+}
+
+impl GameOutcomeWithMetrics {
+    /// Create a new outcome with metrics.
+    pub fn new(metrics: GameMetricsData) -> Self {
+        Self { metrics }
+    }
+
+    /// Create from basic outcome (minimal metrics).
+    pub fn from_outcome(winner: Option<PlayerId>, turns: u32, duration: Duration, seed: u64) -> Self {
+        Self {
+            metrics: GameMetricsData::from_outcome(winner, turns, duration, seed),
+        }
+    }
+
+    /// Get the basic game outcome.
+    pub fn outcome(&self) -> GameOutcome {
+        GameOutcome {
+            winner: self.metrics.winner,
+            turns: self.metrics.turns,
+            duration: self.metrics.duration,
+        }
+    }
+}
+
+/// Batch result with full metrics.
+#[derive(Debug)]
+pub struct BatchResultWithMetrics {
+    /// Individual game outcomes with metrics.
+    pub outcomes: Vec<GameOutcomeWithMetrics>,
+    /// Total wall-clock time for the batch.
+    pub wall_clock_time: Duration,
+}
+
+impl BatchResultWithMetrics {
+    /// Count wins for Player 1.
+    pub fn p1_wins(&self) -> usize {
+        self.outcomes
+            .iter()
+            .filter(|o| o.metrics.p1_won())
+            .count()
+    }
+
+    /// Count wins for Player 2.
+    pub fn p2_wins(&self) -> usize {
+        self.outcomes
+            .iter()
+            .filter(|o| o.metrics.p2_won())
+            .count()
+    }
+
+    /// Count draws.
+    pub fn draws(&self) -> usize {
+        self.outcomes
+            .iter()
+            .filter(|o| o.metrics.is_draw())
+            .count()
+    }
+
+    /// Total number of games.
+    pub fn total_games(&self) -> usize {
+        self.outcomes.len()
+    }
+
+    /// Total turns across all games.
+    pub fn total_turns(&self) -> u32 {
+        self.outcomes.iter().map(|o| o.metrics.turns).sum()
+    }
+
+    /// Average turns per game.
+    pub fn avg_turns(&self) -> f64 {
+        if self.outcomes.is_empty() {
+            0.0
+        } else {
+            self.total_turns() as f64 / self.outcomes.len() as f64
+        }
+    }
+
+    /// Total CPU time (sum of individual game durations).
+    pub fn cpu_time(&self) -> Duration {
+        self.outcomes.iter().map(|o| o.metrics.duration).sum()
+    }
+
+    /// Aggregate all metrics.
+    pub fn aggregate(&self) -> AggregatedMetrics {
+        let metrics: Vec<_> = self.outcomes.iter().map(|o| o.metrics.clone()).collect();
+        AggregatedMetrics::from_games(&metrics)
+    }
+
+    /// Convert to basic BatchResult (loses detailed metrics).
+    pub fn to_basic_result(&self) -> BatchResult {
+        BatchResult {
+            outcomes: self.outcomes.iter().map(|o| o.outcome()).collect(),
+            wall_clock_time: self.wall_clock_time,
+        }
+    }
+}
+
+/// Run a batch of games collecting full metrics.
+///
+/// Similar to `run_batch_parallel` but the closure returns `GameOutcomeWithMetrics`,
+/// enabling detailed analysis of game statistics.
+///
+/// # Example
+///
+/// ```ignore
+/// let config = BatchConfig::new(100, 42).with_progress(ProgressStyle::Rich);
+/// let result = run_batch_parallel_with_metrics(&config, |seeds| {
+///     let metrics = run_game_with_metrics(seeds);
+///     GameOutcomeWithMetrics::new(metrics)
+/// });
+///
+/// let aggregated = result.aggregate();
+/// println!("P1 win rate: {:.1}%", aggregated.p1_win_rate() * 100.0);
+/// ```
+#[cfg(feature = "parallel")]
+pub fn run_batch_parallel_with_metrics<F>(
+    config: &BatchConfig,
+    run_game: F,
+) -> BatchResultWithMetrics
+where
+    F: Fn(GameSeeds) -> GameOutcomeWithMetrics + Send + Sync,
+{
+    let start_time = Instant::now();
+
+    // Set up progress reporting
+    let progress = if config.show_progress {
+        Some(
+            ProgressReporter::new(config.games)
+                .with_style(config.progress_style)
+                .with_prefix(config.progress_prefix.clone())
+                .start(),
+        )
+    } else {
+        None
+    };
+
+    let counter = progress.as_ref().map(|p| p.counter());
+
+    // Run games in parallel
+    let outcomes: Vec<GameOutcomeWithMetrics> = (0..config.games)
+        .into_par_iter()
+        .map(|i| {
+            let seeds = GameSeeds::for_game(config.base_seed, i);
+            let outcome = run_game(seeds);
+            if let Some(ref c) = counter {
+                c.fetch_add(1, Ordering::Relaxed);
+            }
+            outcome
+        })
+        .collect();
+
+    // Finish progress reporting
+    if let Some(p) = progress {
+        p.finish();
+    }
+
+    BatchResultWithMetrics {
+        outcomes,
+        wall_clock_time: start_time.elapsed(),
+    }
+}
+
+/// Run a batch of games collecting full metrics (sequential fallback).
+#[cfg(not(feature = "parallel"))]
+pub fn run_batch_parallel_with_metrics<F>(
+    config: &BatchConfig,
+    run_game: F,
+) -> BatchResultWithMetrics
+where
+    F: Fn(GameSeeds) -> GameOutcomeWithMetrics,
+{
+    let start_time = Instant::now();
+
+    // Set up progress reporting
+    let progress = if config.show_progress {
+        Some(
+            ProgressReporter::new(config.games)
+                .with_style(config.progress_style)
+                .with_prefix(config.progress_prefix.clone())
+                .start(),
+        )
+    } else {
+        None
+    };
+
+    let counter = progress.as_ref().map(|p| p.counter());
+
+    // Run games sequentially
+    let outcomes: Vec<GameOutcomeWithMetrics> = (0..config.games)
+        .map(|i| {
+            let seeds = GameSeeds::for_game(config.base_seed, i);
+            let outcome = run_game(seeds);
+            if let Some(ref c) = counter {
+                c.fetch_add(1, Ordering::Relaxed);
+            }
+            outcome
+        })
+        .collect();
+
+    // Finish progress reporting
+    if let Some(p) = progress {
+        p.finish();
+    }
+
+    BatchResultWithMetrics {
+        outcomes,
+        wall_clock_time: start_time.elapsed(),
+    }
+}
+
+/// Run a batch of games for a matchup with full metrics.
+///
+/// Uses matchup-aware seed derivation for deterministic, reproducible results.
+#[cfg(feature = "parallel")]
+pub fn run_batch_parallel_matchup_with_metrics<F>(
+    config: &BatchConfig,
+    matchup_index: usize,
+    reverse_direction: bool,
+    run_game: F,
+) -> BatchResultWithMetrics
+where
+    F: Fn(GameSeeds) -> GameOutcomeWithMetrics + Send + Sync,
+{
+    let start_time = Instant::now();
+
+    let progress = if config.show_progress {
+        Some(
+            ProgressReporter::new(config.games)
+                .with_style(config.progress_style)
+                .with_prefix(config.progress_prefix.clone())
+                .start(),
+        )
+    } else {
+        None
+    };
+
+    let counter = progress.as_ref().map(|p| p.counter());
+
+    let outcomes: Vec<GameOutcomeWithMetrics> = (0..config.games)
+        .into_par_iter()
+        .map(|i| {
+            let seeds =
+                GameSeeds::for_matchup(config.base_seed, matchup_index, i, reverse_direction);
+            let outcome = run_game(seeds);
+            if let Some(ref c) = counter {
+                c.fetch_add(1, Ordering::Relaxed);
+            }
+            outcome
+        })
+        .collect();
+
+    if let Some(p) = progress {
+        p.finish();
+    }
+
+    BatchResultWithMetrics {
+        outcomes,
+        wall_clock_time: start_time.elapsed(),
+    }
+}
+
+/// Run a batch of games for a matchup with full metrics (sequential fallback).
+#[cfg(not(feature = "parallel"))]
+pub fn run_batch_parallel_matchup_with_metrics<F>(
+    config: &BatchConfig,
+    matchup_index: usize,
+    reverse_direction: bool,
+    run_game: F,
+) -> BatchResultWithMetrics
+where
+    F: Fn(GameSeeds) -> GameOutcomeWithMetrics,
+{
+    let start_time = Instant::now();
+
+    let progress = if config.show_progress {
+        Some(
+            ProgressReporter::new(config.games)
+                .with_style(config.progress_style)
+                .with_prefix(config.progress_prefix.clone())
+                .start(),
+        )
+    } else {
+        None
+    };
+
+    let counter = progress.as_ref().map(|p| p.counter());
+
+    let outcomes: Vec<GameOutcomeWithMetrics> = (0..config.games)
+        .map(|i| {
+            let seeds =
+                GameSeeds::for_matchup(config.base_seed, matchup_index, i, reverse_direction);
+            let outcome = run_game(seeds);
+            if let Some(ref c) = counter {
+                c.fetch_add(1, Ordering::Relaxed);
+            }
+            outcome
+        })
+        .collect();
+
+    if let Some(p) = progress {
+        p.finish();
+    }
+
+    BatchResultWithMetrics {
+        outcomes,
+        wall_clock_time: start_time.elapsed(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -2,37 +2,40 @@
 //!
 //! Run with: cargo bench
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 
 use cardgame::bots::{Bot, GreedyBot, MctsBot, MctsConfig, RandomBot};
 use cardgame::cards::CardDatabase;
+use cardgame::decks::DeckRegistry;
 use cardgame::engine::GameEngine;
-use cardgame::types::CardId;
 
-fn test_deck() -> Vec<CardId> {
-    vec![
-        CardId(1), CardId(1),   // Eager Recruit x2
-        CardId(3), CardId(3),   // Nimble Scout x2
-        CardId(6), CardId(6),   // Frontier Ranger x2
-        CardId(8), CardId(8),   // Shielded Squire x2
-        CardId(11), CardId(11), // Centaur Charger x2
-        CardId(12), CardId(12), // Blade Dancer x2
-        CardId(16), CardId(16), // Piercing Striker x2
-        CardId(20), CardId(20), // Siege Breaker x2
-        CardId(34), CardId(34), // Lightning Bolt x2
-    ]
+/// Load card database with commanders.
+fn load_card_db() -> CardDatabase {
+    CardDatabase::load_with_commanders(
+        cardgame::data_dir().join("cards/core_set"),
+        cardgame::data_dir().join("commanders"),
+    )
+    .expect("Failed to load cards")
+}
+
+/// Load deck registry.
+fn load_decks() -> DeckRegistry {
+    DeckRegistry::load_from_directory(cardgame::data_dir().join("decks"))
+        .expect("Failed to load decks")
 }
 
 /// Benchmark single game with random bots.
 fn bench_random_game(c: &mut Criterion) {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
-    let deck = test_deck();
+    let card_db = load_card_db();
+    let deck_registry = load_decks();
+    let deck = deck_registry
+        .get("architect_fortify")
+        .expect("Deck should exist");
 
     c.bench_function("random_game", |b| {
         b.iter(|| {
             let mut engine = GameEngine::new(&card_db);
-            engine.start_game(deck.clone(), deck.clone(), 42);
+            engine.start_game(deck, deck, 42);
 
             let mut random1 = RandomBot::new(42);
             let mut random2 = RandomBot::new(43);
@@ -59,14 +62,16 @@ fn bench_random_game(c: &mut Criterion) {
 
 /// Benchmark single game with greedy bots.
 fn bench_greedy_game(c: &mut Criterion) {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
-    let deck = test_deck();
+    let card_db = load_card_db();
+    let deck_registry = load_decks();
+    let deck = deck_registry
+        .get("architect_fortify")
+        .expect("Deck should exist");
 
     c.bench_function("greedy_game", |b| {
         b.iter(|| {
             let mut engine = GameEngine::new(&card_db);
-            engine.start_game(deck.clone(), deck.clone(), 42);
+            engine.start_game(deck, deck, 42);
 
             let mut greedy1 = GreedyBot::new(&card_db, 42);
             let mut greedy2 = GreedyBot::new(&card_db, 43);
@@ -89,17 +94,21 @@ fn bench_greedy_game(c: &mut Criterion) {
 
 /// Benchmark state tensor generation.
 fn bench_state_tensor(c: &mut Criterion) {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
-    let deck = test_deck();
+    let card_db = load_card_db();
+    let deck_registry = load_decks();
+    let deck = deck_registry
+        .get("architect_fortify")
+        .expect("Deck should exist");
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(deck.clone(), deck.clone(), 42);
+    engine.start_game(deck, deck, 42);
 
     // Play a few turns to get a more complex state
     let mut random = RandomBot::new(42);
     for _ in 0..20 {
-        if engine.is_game_over() { break; }
+        if engine.is_game_over() {
+            break;
+        }
         let state_tensor = engine.get_state_tensor();
         let legal_mask = engine.get_legal_action_mask();
         let legal_actions = engine.get_legal_actions();
@@ -108,25 +117,27 @@ fn bench_state_tensor(c: &mut Criterion) {
     }
 
     c.bench_function("state_tensor", |b| {
-        b.iter(|| {
-            black_box(engine.get_state_tensor())
-        })
+        b.iter(|| black_box(engine.get_state_tensor()))
     });
 }
 
 /// Benchmark legal action generation.
 fn bench_legal_actions(c: &mut Criterion) {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
-    let deck = test_deck();
+    let card_db = load_card_db();
+    let deck_registry = load_decks();
+    let deck = deck_registry
+        .get("architect_fortify")
+        .expect("Deck should exist");
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(deck.clone(), deck.clone(), 42);
+    engine.start_game(deck, deck, 42);
 
     // Play a few turns to get a more complex state
     let mut random = RandomBot::new(42);
     for _ in 0..20 {
-        if engine.is_game_over() { break; }
+        if engine.is_game_over() {
+            break;
+        }
         let state_tensor = engine.get_state_tensor();
         let legal_mask = engine.get_legal_action_mask();
         let legal_actions = engine.get_legal_actions();
@@ -135,25 +146,27 @@ fn bench_legal_actions(c: &mut Criterion) {
     }
 
     c.bench_function("legal_actions", |b| {
-        b.iter(|| {
-            black_box(engine.get_legal_actions())
-        })
+        b.iter(|| black_box(engine.get_legal_actions()))
     });
 }
 
 /// Benchmark engine fork operation.
 fn bench_engine_fork(c: &mut Criterion) {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
-    let deck = test_deck();
+    let card_db = load_card_db();
+    let deck_registry = load_decks();
+    let deck = deck_registry
+        .get("architect_fortify")
+        .expect("Deck should exist");
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(deck.clone(), deck.clone(), 42);
+    engine.start_game(deck, deck, 42);
 
     // Play a few turns to get a more complex state
     let mut random = RandomBot::new(42);
     for _ in 0..20 {
-        if engine.is_game_over() { break; }
+        if engine.is_game_over() {
+            break;
+        }
         let state_tensor = engine.get_state_tensor();
         let legal_mask = engine.get_legal_action_mask();
         let legal_actions = engine.get_legal_actions();
@@ -161,26 +174,26 @@ fn bench_engine_fork(c: &mut Criterion) {
         let _ = engine.apply_action(action);
     }
 
-    c.bench_function("engine_fork", |b| {
-        b.iter(|| {
-            black_box(engine.fork())
-        })
-    });
+    c.bench_function("engine_fork", |b| b.iter(|| black_box(engine.fork())));
 }
 
 /// Benchmark MCTS with different simulation counts.
 fn bench_mcts_simulations(c: &mut Criterion) {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
-    let deck = test_deck();
+    let card_db = load_card_db();
+    let deck_registry = load_decks();
+    let deck = deck_registry
+        .get("architect_fortify")
+        .expect("Deck should exist");
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(deck.clone(), deck.clone(), 42);
+    engine.start_game(deck, deck, 42);
 
     // Play a few turns to get to an interesting decision point
     let mut random = RandomBot::new(42);
     for _ in 0..10 {
-        if engine.is_game_over() { break; }
+        if engine.is_game_over() {
+            break;
+        }
         let state_tensor = engine.get_state_tensor();
         let legal_mask = engine.get_legal_action_mask();
         let legal_actions = engine.get_legal_actions();
@@ -212,9 +225,11 @@ fn bench_mcts_simulations(c: &mut Criterion) {
 
 /// Benchmark throughput: games per second with random bots.
 fn bench_games_per_second(c: &mut Criterion) {
-    let card_db = CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set"))
-        .expect("Failed to load cards");
-    let deck = test_deck();
+    let card_db = load_card_db();
+    let deck_registry = load_decks();
+    let deck = deck_registry
+        .get("architect_fortify")
+        .expect("Deck should exist");
 
     let mut group = c.benchmark_group("games_per_second");
     group.throughput(criterion::Throughput::Elements(10));
@@ -224,7 +239,7 @@ fn bench_games_per_second(c: &mut Criterion) {
         b.iter(|| {
             for seed in 0..10u64 {
                 let mut engine = GameEngine::new(&card_db);
-                engine.start_game(deck.clone(), deck.clone(), seed);
+                engine.start_game(deck, deck, seed);
 
                 let mut random1 = RandomBot::new(seed);
                 let mut random2 = RandomBot::new(seed + 1000);
@@ -235,7 +250,8 @@ fn bench_games_per_second(c: &mut Criterion) {
                     let legal_mask = engine.get_legal_action_mask();
                     let legal_actions = engine.get_legal_actions();
 
-                    let action = if engine.current_player() == cardgame::types::PlayerId::PLAYER_ONE {
+                    let action = if engine.current_player() == cardgame::types::PlayerId::PLAYER_ONE
+                    {
                         random1.select_action(&state_tensor, &legal_mask, &legal_actions)
                     } else {
                         random2.select_action(&state_tensor, &legal_mask, &legal_actions)

@@ -21,10 +21,8 @@ use cardgame::arena::{
     ActionLogger, MatchConfig, SequentialConfig,
 };
 use cardgame::bots::{AlphaBetaConfig, BotType, MctsConfig};
-use cardgame::cards::CardDatabase;
 use cardgame::core::state::GameMode;
-use cardgame::decks::DeckRegistry;
-use cardgame::execution::configure_thread_pool;
+use cardgame::execution::{configure_thread_pool, GameData};
 
 /// Arena - Run matches between card game bots
 #[derive(Parser, Debug)]
@@ -143,36 +141,58 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    // Load card database with commanders
-    let card_db = match CardDatabase::load_with_commanders(&args.cards, &args.commanders) {
-        Ok(db) => db,
-        Err(e) => {
-            eprintln!("Error loading card database from {:?} and commanders from {:?}: {}", args.cards, args.commanders, e);
-            process::exit(1);
-        }
-    };
-
-    // Load deck registry
-    let deck_registry = match DeckRegistry::load_from_directory(&args.decks) {
-        Ok(r) => r,
+    // Load game data using unified loader
+    let game_data = match GameData::load_with_overrides(
+        Some(&args.cards),
+        Some(&args.commanders),
+        Some(&args.decks),
+        None, // weights handled separately
+        true, // quiet loading
+    ) {
+        Ok(data) => data,
         Err(e) => {
             // Only warn if decks were specifically requested
             if args.deck1.is_some() || args.deck2.is_some() || args.list_decks {
-                eprintln!("Error loading decks from {:?}: {}", args.decks, e);
+                eprintln!("Error loading game data: {}", e);
                 process::exit(1);
             }
-            DeckRegistry::new()
+            // Fall back to loading just cards and commanders for default decks
+            match GameData::load_with_overrides(
+                Some(&args.cards),
+                Some(&args.commanders),
+                None, // no decks
+                None, // no weights
+                true,
+            ) {
+                Ok(data) => data,
+                Err(e) => {
+                    eprintln!("Error loading card database: {}", e);
+                    process::exit(1);
+                }
+            }
         }
     };
 
     // Handle --list-decks
     if args.list_decks {
         println!("Available decks:");
-        if deck_registry.is_empty() {
+        if game_data.deck_registry.is_empty() {
             println!("  (no decks found in {:?})", args.decks);
         } else {
-            for deck in deck_registry.decks() {
-                println!("  {} - {} ({} cards)", deck.id, deck.name, deck.size());
+            for deck in game_data.deck_registry.decks() {
+                // Show commander name if available
+                let commander_info = game_data
+                    .card_db
+                    .get_commander(cardgame::types::CardId(deck.commander))
+                    .map(|c| format!(" [{}]", c.name))
+                    .unwrap_or_default();
+                println!(
+                    "  {} - {} ({} cards){}",
+                    deck.id,
+                    deck.name,
+                    deck.size(),
+                    commander_info
+                );
                 if !deck.tags.is_empty() {
                     println!("    Tags: {}", deck.tags.join(", "));
                 }
@@ -213,14 +233,14 @@ fn main() {
     });
 
     // Load decks (now returns DeckDefinition with commander)
-    let deck1 = match load_deck(args.deck1.as_deref(), &deck_registry, &card_db, "1") {
+    let deck1 = match load_deck(args.deck1.as_deref(), &game_data.deck_registry, &game_data.card_db, "1") {
         Ok(d) => d,
         Err(e) => {
             eprintln!("{}", e);
             process::exit(1);
         }
     };
-    let deck2 = match load_deck(args.deck2.as_deref(), &deck_registry, &card_db, "2") {
+    let deck2 = match load_deck(args.deck2.as_deref(), &game_data.deck_registry, &game_data.card_db, "2") {
         Ok(d) => d,
         Err(e) => {
             eprintln!("{}", e);
@@ -233,7 +253,7 @@ fn main() {
     if let Some(warning) = validate_faction_deck_binding(
         &bot1_type,
         args.deck1.as_deref(),
-        &deck_registry,
+        &game_data.deck_registry,
         "Bot 1",
     ) {
         eprintln!("{}", warning);
@@ -241,7 +261,7 @@ fn main() {
     if let Some(warning) = validate_faction_deck_binding(
         &bot2_type,
         args.deck2.as_deref(),
-        &deck_registry,
+        &game_data.deck_registry,
         "Bot 2",
     ) {
         eprintln!("{}", warning);
@@ -403,13 +423,13 @@ fn main() {
 
     // Run the match
     let stats = if parallel {
-        run_match_parallel(&card_db, &config)
+        run_match_parallel(&game_data.card_db, &config)
     } else {
         let seq_config = SequentialConfig::new()
             .with_invariants(args.invariants)
             .with_combat_tracing(trace_combat)
             .with_effect_tracing(trace_effects);
-        run_match_sequential(&card_db, &config, &seq_config, &mut logger)
+        run_match_sequential(&game_data.card_db, &config, &seq_config, &mut logger)
     };
 
     // Print results

@@ -18,13 +18,11 @@ use std::process;
 use clap::Parser;
 
 use cardgame::bots::{AlphaBetaConfig, BotType, MctsConfig};
-use cardgame::cards::CardDatabase;
-use cardgame::decks::DeckRegistry;
 use cardgame::diagnostics::{
     export_csv, export_json, AggregatedStats, DiagnosticConfig, DiagnosticRunner, ExportFormat,
     print_report,
 };
-use cardgame::types::CardId;
+use cardgame::execution::GameData;
 
 /// P1/P2 Asymmetry Diagnostic Tool
 #[derive(Parser, Debug)]
@@ -118,40 +116,35 @@ fn main() {
         num_games, bot_config_str, bot_config_str
     );
 
-    // Load card database with commanders
-    let cards_path = cardgame::data_dir().join("cards/core_set");
-    let commanders_path = cardgame::data_dir().join("commanders");
-    let card_db = match CardDatabase::load_with_commanders(&cards_path, &commanders_path) {
-        Ok(db) => db,
+    // Load game data using unified loader
+    let game_data = match GameData::load_default(!args.progress) {
+        Ok(data) => data,
         Err(e) => {
-            eprintln!("Error loading card database and commanders: {}", e);
+            eprintln!("Error loading game data: {}", e);
             process::exit(1);
         }
     };
 
-    // Load deck registry
-    let decks_path = cardgame::data_dir().join("decks");
-    let deck_registry = match DeckRegistry::load_from_directory(&decks_path) {
-        Ok(r) => r,
-        Err(e) => {
-            eprintln!("Error loading decks: {}", e);
-            process::exit(1);
-        }
-    };
-
-    // Get the specified deck
-    let deck = match deck_registry.get(&args.deck) {
-        Some(d) => d,
+    // Get the specified deck (with its commander)
+    let deck = match game_data.deck_registry.get(&args.deck) {
+        Some(d) => d.clone(),
         None => {
             eprintln!("Error: deck '{}' not found", args.deck);
             eprintln!("Available decks:");
-            for d in deck_registry.decks() {
-                eprintln!("  - {}", d.id);
+            for d in game_data.deck_registry.decks() {
+                eprintln!("  - {} (commander: {})", d.id, d.commander);
             }
             process::exit(1);
         }
     };
-    let deck_cards: Vec<CardId> = deck.cards.iter().map(|&id| CardId(id)).collect();
+
+    // Show deck info including commander
+    if let Some(commander) = game_data.card_db.get_commander(cardgame::types::CardId(deck.commander)) {
+        println!("Deck: {} (Commander: {})", deck.name, commander.name);
+    } else {
+        println!("Deck: {} (Commander ID: {})", deck.name, deck.commander);
+    }
+    println!();
 
     // Build MCTS and Alpha-Beta configs
     let mcts_config = MctsConfig {
@@ -163,8 +156,8 @@ fn main() {
     };
     let alphabeta_config = AlphaBetaConfig::with_depth(args.ab_depth);
 
-    // Configure diagnostics
-    let config = DiagnosticConfig::new(deck_cards, num_games)
+    // Configure diagnostics using deck definition (includes commander)
+    let config = DiagnosticConfig::new(deck, num_games)
         .with_bots(bot_type.clone(), bot_type)
         .with_mcts_config(mcts_config)
         .with_alphabeta_config(alphabeta_config)
@@ -172,7 +165,7 @@ fn main() {
         .with_progress(args.progress);
 
     // Run diagnostic games
-    let runner = DiagnosticRunner::new(&card_db);
+    let runner = DiagnosticRunner::new(&game_data.card_db);
 
     // Simple progress indicator (if not using built-in progress)
     if !args.progress {

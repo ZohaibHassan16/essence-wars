@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 use crate::diagnostics::statistics::{chi_square_test, wilson_score_interval};
 
-use super::types::{BalanceStatus, BalanceSummary, MatchupP1Stats, MatchupResult, P1P2Summary};
+use super::types::{BalanceStatus, BalanceSummary, DeckStats, MatchupP1Stats, MatchupResult, P1P2Summary};
 
 /// Analyzer for balance validation results.
 pub struct BalanceAnalyzer {
@@ -100,6 +100,9 @@ impl BalanceAnalyzer {
         // Build P1/P2 diagnostic summary
         let p1_p2_diagnostics = self.build_p1_p2_summary(matchups);
 
+        // Calculate per-deck statistics
+        let deck_stats = self.calculate_deck_stats(matchups);
+
         BalanceSummary {
             p1_win_rate,
             p1_status,
@@ -109,6 +112,7 @@ impl BalanceAnalyzer {
             overall_status,
             warnings,
             p1_p2_diagnostics,
+            deck_stats,
         }
     }
 
@@ -293,6 +297,92 @@ impl BalanceAnalyzer {
         }
     }
 
+    /// Calculate per-deck statistics from matchup results.
+    fn calculate_deck_stats(&self, matchups: &[MatchupResult]) -> Vec<DeckStats> {
+        // Aggregate data per deck
+        #[derive(Default)]
+        struct DeckData {
+            commander_id: u16,
+            commander_name: String,
+            faction: String,
+            wins: u32,
+            games: u32,
+            matchup_results: Vec<(String, f64)>, // (opponent_deck_id, win_rate)
+        }
+
+        let mut deck_data: HashMap<String, DeckData> = HashMap::new();
+
+        for m in matchups {
+            // Process deck1
+            let d1 = deck_data.entry(m.deck1_id.clone()).or_default();
+            d1.commander_id = m.commander1_id;
+            d1.commander_name = m.commander1_name.clone();
+            d1.faction = m.faction1.clone();
+            d1.wins += m.faction1_total_wins;
+            d1.games += m.total_games - m.draws;
+            d1.matchup_results.push((m.deck2_id.clone(), m.faction1_win_rate));
+
+            // Process deck2
+            let d2 = deck_data.entry(m.deck2_id.clone()).or_default();
+            d2.commander_id = m.commander2_id;
+            d2.commander_name = m.commander2_name.clone();
+            d2.faction = m.faction2.clone();
+            d2.wins += m.faction2_total_wins;
+            d2.games += m.total_games - m.draws;
+            d2.matchup_results.push((m.deck1_id.clone(), m.faction2_win_rate));
+        }
+
+        // Convert to DeckStats
+        let mut stats: Vec<DeckStats> = deck_data
+            .into_iter()
+            .map(|(deck_id, data)| {
+                let win_rate = if data.games > 0 {
+                    data.wins as f64 / data.games as f64
+                } else {
+                    0.5
+                };
+
+                let (ci_lower, ci_upper) = if data.games > 0 {
+                    wilson_score_interval(data.wins as usize, data.games as usize, 0.95)
+                } else {
+                    (0.0, 1.0)
+                };
+
+                // Find best and worst matchups
+                let best_matchup = data
+                    .matchup_results
+                    .iter()
+                    .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+                    .map(|(id, rate)| (id.clone(), *rate));
+
+                let worst_matchup = data
+                    .matchup_results
+                    .iter()
+                    .min_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+                    .map(|(id, rate)| (id.clone(), *rate));
+
+                DeckStats {
+                    deck_id,
+                    commander_id: data.commander_id,
+                    commander_name: data.commander_name,
+                    faction: data.faction,
+                    total_games: data.games,
+                    total_wins: data.wins,
+                    win_rate,
+                    win_rate_ci_lower: ci_lower,
+                    win_rate_ci_upper: ci_upper,
+                    best_matchup,
+                    worst_matchup,
+                }
+            })
+            .collect();
+
+        // Sort by win rate descending
+        stats.sort_by(|a, b| b.win_rate.partial_cmp(&a.win_rate).unwrap());
+
+        stats
+    }
+
     /// Check if a specific win rate indicates imbalance.
     pub fn is_imbalanced(&self, win_rate: f64) -> bool {
         win_rate < self.p1_warning_low || win_rate > self.p1_warning_high
@@ -318,6 +408,10 @@ mod tests {
             faction2: f2.to_string(),
             deck1_id: format!("{}_deck", f1),
             deck2_id: format!("{}_deck", f2),
+            commander1_id: 5000,
+            commander2_id: 5001,
+            commander1_name: format!("{} Commander", f1),
+            commander2_name: format!("{} Commander", f2),
             f1_as_p1_wins: f1_wins / 2,
             f1_as_p1_games: total / 2,
             f1_as_p2_wins: f1_wins - f1_wins / 2,

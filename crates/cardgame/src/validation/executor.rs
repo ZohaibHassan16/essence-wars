@@ -1,6 +1,7 @@
 //! Validation execution engine.
 //!
 //! Runs matchup games using the shared execution infrastructure.
+//! Now uses `UnifiedMatchup` which preserves commander information from deck definitions.
 
 use std::sync::atomic::Ordering;
 use std::time::Instant;
@@ -9,19 +10,13 @@ use rayon::prelude::*;
 
 use crate::bots::{create_bot, AlphaBetaConfig, BotType, MctsConfig};
 use crate::cards::CardDatabase;
-use crate::core::state::GameMode;
 use crate::engine::GameEngine;
-use crate::execution::{GameSeeds, ProgressReporter, ProgressStyle};
-use crate::types::{CardId, PlayerId};
-
-/// Default commander for validation (The High Artificer).
-/// TODO: MatchupDefinition should include commander IDs from deck definitions.
-const DEFAULT_COMMANDER: CardId = CardId(5000);
+use crate::execution::{GameSeeds, ProgressReporter, ProgressStyle, UnifiedMatchup};
+use crate::types::PlayerId;
 
 use super::game_diagnostics::{GameDiagnosticCollector, GameDiagnosticData};
 use super::types::{
-    DirectionDiagnostics, DirectionResults, FactionWeights, MatchupDefinition, MatchupDiagnostics,
-    MatchupResult,
+    DirectionDiagnostics, DirectionResults, FactionWeights, MatchupDiagnostics, MatchupResult,
 };
 
 /// Executor for running validation matchups.
@@ -75,7 +70,7 @@ impl<'a> ValidationExecutor<'a> {
     /// Uses parallel execution to maximize CPU utilization.
     pub fn run_all(
         &self,
-        matchups: &[MatchupDefinition],
+        matchups: &[UnifiedMatchup],
         faction_weights: &FactionWeights,
         games_per_matchup: usize,
         base_seed: u64,
@@ -92,30 +87,31 @@ impl<'a> ValidationExecutor<'a> {
         };
 
         let counter = progress.as_ref().map(|p| p.counter());
-        
+
         // Run matchups in parallel
         let mut results: Vec<(usize, MatchupResult)> = matchups
             .par_iter()
             .enumerate()
             .map(|(matchup_idx, matchup)| {
                 let matchup_seed = base_seed.wrapping_add((matchup_idx * 1_000_000) as u64);
-                
-                let result = self.run_matchup(matchup, faction_weights, games_per_matchup, matchup_seed);
-                
+
+                let result =
+                    self.run_matchup(matchup, faction_weights, games_per_matchup, matchup_seed);
+
                 // Increment progress counter
                 if let Some(ref c) = counter {
                     c.fetch_add(1, Ordering::Relaxed);
                 }
-                
+
                 (matchup_idx, result)
             })
             .collect();
-        
+
         // Finish progress reporting
         if let Some(p) = progress {
             p.finish();
         }
-        
+
         // Sort by original index to maintain deterministic order
         results.sort_by_key(|(idx, _)| *idx);
         results.into_iter().map(|(_, result)| result).collect()
@@ -124,28 +120,33 @@ impl<'a> ValidationExecutor<'a> {
     /// Run a single matchup (both player orders).
     pub fn run_matchup(
         &self,
-        matchup: &MatchupDefinition,
+        matchup: &UnifiedMatchup,
         faction_weights: &FactionWeights,
         games_per_side: usize,
         base_seed: u64,
     ) -> MatchupResult {
-        let weights1 = faction_weights.get(matchup.faction1);
-        let weights2 = faction_weights.get(matchup.faction2);
+        // Get weights for each faction (if available)
+        let weights1 = matchup
+            .faction1()
+            .and_then(|f| faction_weights.get(f));
+        let weights2 = matchup
+            .faction2()
+            .and_then(|f| faction_weights.get(f));
 
-        // Run F1 as P1 vs F2 as P2
-        let f1_p1_results = self.run_direction(
-            &matchup.deck1_cards,
-            &matchup.deck2_cards,
+        // Run Direction 1: Deck1 as P1 vs Deck2 as P2
+        let dir1_results = self.run_direction(
+            matchup,
+            false, // deck1 as P1
             weights1,
             weights2,
             games_per_side,
             base_seed,
         );
 
-        // Run F2 as P1 vs F1 as P2
-        let f2_p1_results = self.run_direction(
-            &matchup.deck2_cards,
-            &matchup.deck1_cards,
+        // Run Direction 2: Deck2 as P1 vs Deck1 as P2
+        let dir2_results = self.run_direction(
+            matchup,
+            true, // reversed: deck2 as P1
             weights2,
             weights1,
             games_per_side,
@@ -153,51 +154,64 @@ impl<'a> ValidationExecutor<'a> {
         );
 
         // Calculate combined results
-        let f1_as_p1_wins = f1_p1_results.p1_wins;
-        let f1_as_p1_games = games_per_side as u32;
-        let f1_as_p2_wins = games_per_side as u32 - f2_p1_results.p1_wins - f2_p1_results.draws;
-        let f1_as_p2_games = games_per_side as u32;
+        // deck1 wins when it's P1 (direction 1, P1 wins) + when it's P2 (direction 2, P2 wins)
+        let deck1_as_p1_wins = dir1_results.p1_wins;
+        let deck1_as_p1_games = games_per_side as u32;
+        let deck1_as_p2_wins = games_per_side as u32 - dir2_results.p1_wins - dir2_results.draws;
+        let deck1_as_p2_games = games_per_side as u32;
 
         let total_games = (games_per_side * 2) as u32;
-        let faction1_total_wins = f1_as_p1_wins + f1_as_p2_wins;
-        let total_draws = f1_p1_results.draws + f2_p1_results.draws;
-        let faction2_total_wins = total_games - faction1_total_wins - total_draws;
+        let deck1_total_wins = deck1_as_p1_wins + deck1_as_p2_wins;
+        let total_draws = dir1_results.draws + dir2_results.draws;
+        let deck2_total_wins = total_games - deck1_total_wins - total_draws;
 
-        let total_turns = f1_p1_results.total_turns + f2_p1_results.total_turns;
-        let total_time = f1_p1_results.duration_secs + f2_p1_results.duration_secs;
+        let total_turns = dir1_results.total_turns + dir2_results.total_turns;
+        let total_time = dir1_results.duration_secs + dir2_results.duration_secs;
 
         let decisive_games = total_games - total_draws;
 
         // Build P1/P2 diagnostics
-        // Total P1 wins = F1's P1 wins (when F1 is P1) + F2's P1 wins (when F2 is P1)
-        let total_p1_wins = f1_p1_results.p1_wins + f2_p1_results.p1_wins;
+        // Total P1 wins = direction 1 P1 wins + direction 2 P1 wins
+        let total_p1_wins = dir1_results.p1_wins + dir2_results.p1_wins;
         let diagnostics = MatchupDiagnostics::from_directions(
-            &f1_p1_results.diagnostics,
-            &f2_p1_results.diagnostics,
+            &dir1_results.diagnostics,
+            &dir2_results.diagnostics,
             total_games,
         )
         .with_p1_stats(total_p1_wins, decisive_games);
 
         MatchupResult {
-            faction1: matchup.faction1.as_tag().to_string(),
-            faction2: matchup.faction2.as_tag().to_string(),
-            deck1_id: matchup.deck1_id.clone(),
-            deck2_id: matchup.deck2_id.clone(),
-            f1_as_p1_wins,
-            f1_as_p1_games,
-            f1_as_p2_wins,
-            f1_as_p2_games,
-            faction1_total_wins,
-            faction2_total_wins,
+            faction1: matchup.faction1_or_neutral().as_tag().to_string(),
+            faction2: matchup.faction2_or_neutral().as_tag().to_string(),
+            deck1_id: matchup.deck1.id.clone(),
+            deck2_id: matchup.deck2.id.clone(),
+            commander1_id: matchup.deck1.commander,
+            commander2_id: matchup.deck2.commander,
+            commander1_name: self
+                .card_db
+                .get_commander(matchup.commander1())
+                .map(|c| c.name.clone())
+                .unwrap_or_else(|| format!("Commander {}", matchup.deck1.commander)),
+            commander2_name: self
+                .card_db
+                .get_commander(matchup.commander2())
+                .map(|c| c.name.clone())
+                .unwrap_or_else(|| format!("Commander {}", matchup.deck2.commander)),
+            f1_as_p1_wins: deck1_as_p1_wins,
+            f1_as_p1_games: deck1_as_p1_games,
+            f1_as_p2_wins: deck1_as_p2_wins,
+            f1_as_p2_games: deck1_as_p2_games,
+            faction1_total_wins: deck1_total_wins,
+            faction2_total_wins: deck2_total_wins,
             draws: total_draws,
             total_games,
             faction1_win_rate: if decisive_games > 0 {
-                faction1_total_wins as f64 / decisive_games as f64
+                deck1_total_wins as f64 / decisive_games as f64
             } else {
                 0.5
             },
             faction2_win_rate: if decisive_games > 0 {
-                faction2_total_wins as f64 / decisive_games as f64
+                deck2_total_wins as f64 / decisive_games as f64
             } else {
                 0.5
             },
@@ -207,11 +221,14 @@ impl<'a> ValidationExecutor<'a> {
         }
     }
 
-    /// Run games for a single direction (P1 deck vs P2 deck).
+    /// Run games for a single direction.
+    ///
+    /// If `reversed` is false, deck1 is P1 and deck2 is P2.
+    /// If `reversed` is true, deck2 is P1 and deck1 is P2.
     fn run_direction(
         &self,
-        deck1: &[crate::types::CardId],
-        deck2: &[crate::types::CardId],
+        matchup: &UnifiedMatchup,
+        reversed: bool,
         weights1: Option<&crate::bots::BotWeights>,
         weights2: Option<&crate::bots::BotWeights>,
         games: usize,
@@ -238,7 +255,7 @@ impl<'a> ValidationExecutor<'a> {
             .map(|i| {
                 let seeds = GameSeeds::for_game(base_seed, i);
                 let (winner, turns, diag) =
-                    self.run_single_game_with_diagnostics(deck1, deck2, weights1, weights2, seeds);
+                    self.run_single_game_with_diagnostics(matchup, reversed, weights1, weights2, seeds);
                 if let Some(ref c) = counter {
                     c.fetch_add(1, Ordering::Relaxed);
                 }
@@ -301,8 +318,8 @@ impl<'a> ValidationExecutor<'a> {
     /// Run a single game between two bots with diagnostic collection.
     fn run_single_game_with_diagnostics(
         &self,
-        deck1: &[crate::types::CardId],
-        deck2: &[crate::types::CardId],
+        matchup: &UnifiedMatchup,
+        reversed: bool,
         weights1: Option<&crate::bots::BotWeights>,
         weights2: Option<&crate::bots::BotWeights>,
         seeds: GameSeeds,
@@ -332,17 +349,15 @@ impl<'a> ValidationExecutor<'a> {
         // Create diagnostic collector
         let mut collector = GameDiagnosticCollector::new();
 
-        // Create and start game
-        // TODO: Use actual commanders from deck definitions once MatchupDefinition is updated
+        // Create and start game using deck definitions with commanders
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game_raw(
-            deck1.to_vec(),
-            deck2.to_vec(),
-            DEFAULT_COMMANDER,
-            DEFAULT_COMMANDER,
-            seeds.game,
-            GameMode::default(),
-        );
+
+        // Use the appropriate deck order based on direction
+        if reversed {
+            engine.start_game(&matchup.deck2, &matchup.deck1, seeds.game);
+        } else {
+            engine.start_game(&matchup.deck1, &matchup.deck2, seeds.game);
+        }
 
         // Main game loop
         let max_actions = 1000;
@@ -384,39 +399,63 @@ impl<'a> ValidationExecutor<'a> {
 mod tests {
     use super::*;
     use crate::decks::Faction;
-    use crate::validation::matchup::MatchupBuilder;
+    use crate::execution::{GameData, MatchupBuilder};
 
-    fn test_card_db() -> CardDatabase {
-        let cards_path = crate::data_dir().join("cards/core_set");
-        let commanders_path = crate::data_dir().join("commanders");
-        CardDatabase::load_from_directory(cards_path)
-            .unwrap()
-            .with_commanders(
-                CardDatabase::load_commanders_from_directory(commanders_path).unwrap(),
-            )
-    }
-
-    fn test_deck_registry() -> crate::decks::DeckRegistry {
-        let decks_path = crate::data_dir().join("decks");
-        crate::decks::DeckRegistry::load_from_directory(decks_path).unwrap()
+    fn load_test_data() -> GameData {
+        GameData::load_default(true).expect("Failed to load test data")
     }
 
     #[test]
     fn test_run_single_matchup() {
-        let card_db = test_card_db();
-        let registry = test_deck_registry();
-        let builder = MatchupBuilder::new(&registry, &card_db);
+        let data = load_test_data();
+        let builder = MatchupBuilder::new(&data.deck_registry);
 
-        let matchups = builder.build_faction_matchups();
+        let matchups = builder.build_faction_matchups(Faction::Argentum, Faction::Symbiote);
         let matchup = &matchups[0];
 
-        let executor = ValidationExecutor::new(&card_db, 10); // Low sims for test speed
+        // Use GreedyBot for fast test execution
+        let executor = ValidationExecutor::new(&data.card_db, 10).with_bot_type(BotType::Greedy);
         let faction_weights = FactionWeights::new();
 
         let result = executor.run_matchup(matchup, &faction_weights, 2, 42);
 
         assert_eq!(result.total_games, 4); // 2 games each direction
         assert!(result.faction1_win_rate >= 0.0 && result.faction1_win_rate <= 1.0);
+
+        // Verify commander info is populated
+        assert!(result.commander1_id > 0);
+        assert!(result.commander2_id > 0);
+        assert!(!result.commander1_name.is_empty());
+        assert!(!result.commander2_name.is_empty());
+    }
+
+    #[test]
+    fn test_commanders_are_used() {
+        let data = load_test_data();
+
+        // Get specific decks with known commanders
+        let argentum_decks = data.deck_registry.decks_for_faction(Faction::Argentum);
+        let symbiote_decks = data.deck_registry.decks_for_faction(Faction::Symbiote);
+
+        assert!(!argentum_decks.is_empty());
+        assert!(!symbiote_decks.is_empty());
+
+        let matchup = UnifiedMatchup::new(
+            argentum_decks[0].clone(),
+            symbiote_decks[0].clone(),
+        );
+
+        // Verify commanders match deck definitions
+        assert_eq!(matchup.commander1().0, argentum_decks[0].commander);
+        assert_eq!(matchup.commander2().0, symbiote_decks[0].commander);
+
+        // Run a game and verify result has correct commander info
+        let executor = ValidationExecutor::new(&data.card_db, 10).with_bot_type(BotType::Greedy);
+        let faction_weights = FactionWeights::new();
+        let result = executor.run_matchup(&matchup, &faction_weights, 1, 42);
+
+        assert_eq!(result.commander1_id, argentum_decks[0].commander);
+        assert_eq!(result.commander2_id, symbiote_decks[0].commander);
     }
 
     #[test]

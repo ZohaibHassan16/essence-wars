@@ -58,6 +58,44 @@ pub fn print_results(results: &ValidationResults, total_time: Duration) {
         results.summary.faction_status
     );
 
+    // Deck performance section
+    if !results.summary.deck_stats.is_empty() {
+        println!("\n=== Deck Performance ===");
+        println!(
+            "{:28} {:10} {:>7}  {:>12}  {:22}",
+            "Commander", "Faction", "WinRate", "95% CI", "Worst Matchup"
+        );
+        println!("{}", "-".repeat(85));
+
+        for ds in &results.summary.deck_stats {
+            let status = if ds.win_rate > 0.60 {
+                "▲"
+            } else if ds.win_rate < 0.40 {
+                "▼"
+            } else {
+                " "
+            };
+
+            let worst = ds
+                .worst_matchup
+                .as_ref()
+                .map(|(id, rate)| format!("{} ({:.0}%)", id, rate * 100.0))
+                .unwrap_or_else(|| "-".to_string());
+
+            println!(
+                "{:28} {:10} {:6.1}% {} [{:4.1}-{:4.1}%]  {}",
+                ds.commander_name,
+                capitalize(&ds.faction),
+                ds.win_rate * 100.0,
+                status,
+                ds.win_rate_ci_lower * 100.0,
+                ds.win_rate_ci_upper * 100.0,
+                worst
+            );
+        }
+        println!("\nLegend: ▲ = Above 60% (strong), ▼ = Below 40% (weak)");
+    }
+
     if !results.summary.warnings.is_empty() {
         println!("\nWarnings:");
         for w in &results.summary.warnings {
@@ -160,6 +198,46 @@ fn generate_summary_text(
     lines.push("--- Faction Win Rates ---".to_string());
     for (faction, rate) in &results.summary.faction_win_rates {
         lines.push(format!("  {}: {:.1}%", capitalize(faction), rate * 100.0));
+    }
+
+    // Deck performance section
+    if !results.summary.deck_stats.is_empty() {
+        lines.push(String::new());
+        lines.push("--- Deck Performance ---".to_string());
+        lines.push(format!(
+            "{:28} {:10} {:>7}  {:>12}  {}",
+            "Commander", "Faction", "WinRate", "95% CI", "Worst Matchup"
+        ));
+        lines.push("-".repeat(85));
+
+        for ds in &results.summary.deck_stats {
+            let status = if ds.win_rate > 0.60 {
+                "▲"
+            } else if ds.win_rate < 0.40 {
+                "▼"
+            } else {
+                " "
+            };
+
+            let worst = ds
+                .worst_matchup
+                .as_ref()
+                .map(|(id, rate)| format!("{} ({:.0}%)", id, rate * 100.0))
+                .unwrap_or_else(|| "-".to_string());
+
+            lines.push(format!(
+                "{:28} {:10} {:6.1}% {} [{:4.1}-{:4.1}%]  {}",
+                ds.commander_name,
+                capitalize(&ds.faction),
+                ds.win_rate * 100.0,
+                status,
+                ds.win_rate_ci_lower * 100.0,
+                ds.win_rate_ci_upper * 100.0,
+                worst
+            ));
+        }
+        lines.push(String::new());
+        lines.push("Legend: ▲ = Above 60% (strong), ▼ = Below 40% (weak)".to_string());
     }
 
     if !results.summary.warnings.is_empty() {

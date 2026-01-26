@@ -4,14 +4,10 @@
 
 use crate::bots::{create_bot, AlphaBetaConfig, BotType, MctsConfig};
 use crate::cards::CardDatabase;
-use crate::core::state::GameMode;
+use crate::decks::DeckDefinition;
 use crate::engine::GameEngine;
 use crate::execution::GameSeeds;
 use crate::types::{CardId, PlayerId};
-
-/// Default commander for diagnostics (The High Artificer).
-/// TODO: DiagnosticConfig should include commander IDs.
-const DEFAULT_COMMANDER: CardId = CardId(5000);
 
 use super::metrics::{
     CombatEfficiency, GameMetrics, ResourceEfficiency, TempoMetrics, TurnMetrics,
@@ -118,10 +114,10 @@ pub struct GameDiagnostics {
 pub struct DiagnosticConfig {
     /// Number of games to run.
     pub num_games: usize,
-    /// Deck for Player 1.
-    pub deck1: Vec<CardId>,
-    /// Deck for Player 2.
-    pub deck2: Vec<CardId>,
+    /// Deck definition for Player 1 (includes commander).
+    pub deck1: DeckDefinition,
+    /// Deck definition for Player 2 (includes commander).
+    pub deck2: DeckDefinition,
     /// Bot type for Player 1.
     pub bot1_type: BotType,
     /// Bot type for Player 2.
@@ -137,8 +133,10 @@ pub struct DiagnosticConfig {
 }
 
 impl DiagnosticConfig {
-    /// Create a new diagnostic config with greedy bots.
-    pub fn new(deck: Vec<CardId>, num_games: usize) -> Self {
+    /// Create a new diagnostic config with greedy bots using a deck definition.
+    ///
+    /// Uses the same deck for both players (mirror match).
+    pub fn new(deck: DeckDefinition, num_games: usize) -> Self {
         Self {
             num_games,
             deck1: deck.clone(),
@@ -152,8 +150,26 @@ impl DiagnosticConfig {
         }
     }
 
+    /// Create a new diagnostic config from raw card IDs (legacy support).
+    ///
+    /// Creates a synthetic deck definition with the default commander (5000).
+    #[deprecated(note = "Use DiagnosticConfig::new with DeckDefinition instead")]
+    #[allow(dead_code)]
+    pub fn from_card_ids(cards: Vec<CardId>, num_games: usize) -> Self {
+        let deck = DeckDefinition {
+            id: "diagnostic_deck".to_string(),
+            name: "Diagnostic Deck".to_string(),
+            description: String::new(),
+            playstyle: String::new(),
+            commander: 5000, // Default commander for legacy support
+            cards: cards.iter().map(|c| c.0).collect(),
+            tags: Vec::new(),
+        };
+        Self::new(deck, num_games)
+    }
+
     /// Set decks for both players.
-    pub fn with_decks(mut self, deck1: Vec<CardId>, deck2: Vec<CardId>) -> Self {
+    pub fn with_decks(mut self, deck1: DeckDefinition, deck2: DeckDefinition) -> Self {
         self.deck1 = deck1;
         self.deck2 = deck2;
         self
@@ -256,15 +272,8 @@ impl<'a> DiagnosticRunner<'a> {
         bot2.reset();
 
         let mut engine = GameEngine::new(self.card_db);
-        // TODO: Use actual commanders from deck definitions
-        engine.start_game_raw(
-            config.deck1.clone(),
-            config.deck2.clone(),
-            DEFAULT_COMMANDER,
-            DEFAULT_COMMANDER,
-            seeds.game,
-            GameMode::default(),
-        );
+        // Use deck definitions with their associated commanders
+        engine.start_game(&config.deck1, &config.deck2, seeds.game);
 
         let mut snapshots = Vec::new();
         let mut first_damage_to_p1_turn = None;
@@ -470,33 +479,29 @@ impl<'a> DiagnosticRunner<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::decks::Faction;
+    use crate::execution::GameData;
 
-    fn test_card_db() -> CardDatabase {
-        let cards_path = crate::data_dir().join("cards/core_set");
-        let commanders_path = crate::data_dir().join("commanders");
-        CardDatabase::load_with_commanders(cards_path, commanders_path).unwrap()
+    fn load_test_data() -> GameData {
+        GameData::load_default(true).expect("Failed to load test data")
     }
 
-    fn test_deck() -> Vec<CardId> {
-        vec![
-            CardId(1000),
-            CardId(1000),
-            CardId(1001),
-            CardId(1001),
-            CardId(1002),
-            CardId(1002),
-            CardId(1003),
-            CardId(1003),
-            CardId(1004),
-            CardId(1004),
-        ]
+    fn get_test_deck(data: &GameData) -> DeckDefinition {
+        // Get the first Argentum deck for testing
+        let decks = data.deck_registry.decks_for_faction(Faction::Argentum);
+        (*decks
+            .first()
+            .expect("No Argentum deck found"))
+        .clone()
     }
 
     #[test]
     fn test_turn_snapshot_capture() {
-        let card_db = test_card_db();
-        let mut engine = GameEngine::new(&card_db);
-        engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+        let data = load_test_data();
+        let deck = get_test_deck(&data);
+
+        let mut engine = GameEngine::new(&data.card_db);
+        engine.start_game(&deck, &deck, 42);
 
         let snapshot = TurnSnapshot::capture(&engine);
 
@@ -507,10 +512,11 @@ mod tests {
 
     #[test]
     fn test_diagnostic_runner() {
-        let card_db = test_card_db();
-        let config = DiagnosticConfig::new(test_deck(), 3).with_seed(42);
+        let data = load_test_data();
+        let deck = get_test_deck(&data);
+        let config = DiagnosticConfig::new(deck, 3).with_seed(42);
 
-        let runner = DiagnosticRunner::new(&card_db);
+        let runner = DiagnosticRunner::new(&data.card_db);
         let results = runner.run(&config);
 
         assert_eq!(results.len(), 3);
@@ -518,5 +524,22 @@ mod tests {
             assert!(!diag.snapshots.is_empty());
             assert!(diag.total_turns > 0);
         }
+    }
+
+    #[test]
+    fn test_diagnostic_uses_commander() {
+        let data = load_test_data();
+        let deck = get_test_deck(&data);
+
+        // Verify deck has a real commander
+        assert!(deck.commander > 0);
+
+        let config = DiagnosticConfig::new(deck.clone(), 1).with_seed(42);
+        let runner = DiagnosticRunner::new(&data.card_db);
+        let results = runner.run(&config);
+
+        assert_eq!(results.len(), 1);
+        // The test verifies the game runs successfully with the deck's commander
+        assert!(results[0].total_turns > 0);
     }
 }
