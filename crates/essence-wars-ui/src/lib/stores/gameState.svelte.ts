@@ -340,6 +340,18 @@ class GameStore {
     }
   }
 
+  // Commander's Insight - catch-up mechanic
+  get insightAvailable() {
+    return this.legalActions.some(a => a.actionType === "commander_insight");
+  }
+
+  async applyCommanderInsight() {
+    const action = this.legalActions.find(a => a.actionType === "commander_insight");
+    if (action) {
+      await this.applyAction(action.index);
+    }
+  }
+
   async requestHint() {
     if (!this.gameId || !this.isPlayerTurn) return;
     this.isHintLoading = true;

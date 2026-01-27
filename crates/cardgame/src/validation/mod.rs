@@ -42,10 +42,13 @@ mod types;
 
 // Re-export types
 pub use types::{
-    ArchetypeWeights, BalanceStatus, BalanceSummary, DirectionDiagnostics, DirectionResults,
+    BalanceStatus, BalanceSummary, DirectionDiagnostics, DirectionResults,
     MatchupDefinition, MatchupDiagnostics, MatchupP1Stats, MatchupResult, P1P2Summary,
     ValidationConfig, ValidationResults,
 };
+
+// Re-export ArchetypeWeights from bots (canonical location)
+pub use crate::bots::weights::ArchetypeWeights;
 
 // Re-export diagnostic types
 pub use game_diagnostics::{GameDiagnosticCollector, GameDiagnosticData};

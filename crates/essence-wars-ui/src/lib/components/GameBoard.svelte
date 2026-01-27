@@ -139,6 +139,16 @@
   });
 
   const boardBgClass = $derived(`board-bg-${playerFaction()}`);
+
+  // Show insight indicator when approaching eligibility (Turn >= 8, low hand, has essence)
+  // This hints that Commander's Insight could become available soon
+  const showInsightIndicator = $derived(() => {
+    if (!gameState) return false;
+    const turn = gameState.turn ?? 0;
+    const handSize = gameState.player.hand?.length ?? 10;
+    const essence = gameState.player.essence ?? 0;
+    return turn >= 8 && handSize <= 3 && essence >= 4;
+  });
 </script>
 
 <!-- Turn transition overlay -->
@@ -235,6 +245,9 @@
         maxEssence={gameState?.player.maxEssence ?? 0}
         isActive={isPlayerTurn}
         isPlayer={true}
+        insightAvailable={gameStore.insightAvailable && isPlayerTurn}
+        insightIndicator={showInsightIndicator() && !gameStore.insightAvailable}
+        onInsightClick={() => gameStore.applyCommanderInsight()}
       />
     </div>
   </div>

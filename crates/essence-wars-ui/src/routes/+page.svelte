@@ -56,6 +56,12 @@
           event.preventDefault();
           gameStore.requestHint();
           return;
+        case 'i':
+          event.preventDefault();
+          if (gameStore.insightAvailable) {
+            gameStore.applyCommanderInsight();
+          }
+          return;
         // Number keys 1-5 for selecting player creatures
         case '1':
         case '2':

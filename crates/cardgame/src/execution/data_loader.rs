@@ -5,9 +5,9 @@
 
 use std::path::Path;
 
+use crate::bots::weights::ArchetypeWeights;
 use crate::cards::CardDatabase;
 use crate::decks::DeckRegistry;
-use crate::validation::ArchetypeWeights;
 
 /// All game data needed for execution.
 ///

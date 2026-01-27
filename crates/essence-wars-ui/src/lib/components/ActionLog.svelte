@@ -16,6 +16,7 @@
       case "play_card": return "🃏";
       case "attack": return "⚔️";
       case "use_ability": return "✨";
+      case "commander_insight": return "💡";
       case "end_turn": return "⏭️";
       default: return "•";
     }

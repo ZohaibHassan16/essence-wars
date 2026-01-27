@@ -16,8 +16,9 @@ use crate::types::PlayerId;
 
 use super::game_diagnostics::{GameDiagnosticCollector, GameDiagnosticData};
 use super::types::{
-    ArchetypeWeights, DirectionDiagnostics, DirectionResults, MatchupDiagnostics, MatchupResult,
+    DirectionDiagnostics, DirectionResults, MatchupDiagnostics, MatchupResult,
 };
+use super::ArchetypeWeights;
 
 /// Executor for running validation matchups.
 pub struct ValidationExecutor<'a> {

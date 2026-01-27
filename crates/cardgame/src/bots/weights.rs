@@ -381,3 +381,80 @@ impl std::fmt::Display for WeightError {
 }
 
 impl std::error::Error for WeightError {}
+
+/// Holder for archetype-specific weights.
+///
+/// Archetypes (Aggro, Control, Tempo, Midrange) provide better bot behavior
+/// than faction-based weights because they match the deck's actual playstyle.
+#[derive(Debug, Default)]
+pub struct ArchetypeWeights {
+    /// Aggro archetype weights.
+    pub aggro: Option<BotWeights>,
+    /// Control archetype weights.
+    pub control: Option<BotWeights>,
+    /// Tempo archetype weights.
+    pub tempo: Option<BotWeights>,
+    /// Midrange archetype weights.
+    pub midrange: Option<BotWeights>,
+}
+
+impl ArchetypeWeights {
+    /// Create empty archetype weights.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Get weights for a specific archetype (case-insensitive).
+    pub fn get(&self, archetype: &str) -> Option<&BotWeights> {
+        match archetype.to_lowercase().as_str() {
+            "aggro" => self.aggro.as_ref(),
+            "control" => self.control.as_ref(),
+            "tempo" => self.tempo.as_ref(),
+            "midrange" => self.midrange.as_ref(),
+            _ => None,
+        }
+    }
+
+    /// Set weights for a specific archetype.
+    pub fn set(&mut self, archetype: &str, weights: Option<BotWeights>) {
+        match archetype.to_lowercase().as_str() {
+            "aggro" => self.aggro = weights,
+            "control" => self.control = weights,
+            "tempo" => self.tempo = weights,
+            "midrange" => self.midrange = weights,
+            _ => {}
+        }
+    }
+
+    /// Load archetype weights from a directory.
+    ///
+    /// Looks for `archetypes/{archetype}.toml` files.
+    pub fn load_from_directory(weights_dir: &Path, quiet: bool) -> Self {
+        let archetypes_dir = weights_dir.join("archetypes");
+        let mut weights = Self::new();
+
+        for name in ["aggro", "control", "tempo", "midrange"] {
+            let path = archetypes_dir.join(format!("{}.toml", name));
+            match BotWeights::load(&path) {
+                Ok(w) => {
+                    if !quiet {
+                        println!("Loaded {} archetype weights: {}", name, w.name);
+                    }
+                    weights.set(name, Some(w));
+                }
+                Err(_) => {
+                    if !quiet {
+                        println!("Note: {} archetype using default weights", name);
+                    }
+                }
+            }
+        }
+
+        weights
+    }
+
+    /// Check if any archetype weights are loaded.
+    pub fn has_any(&self) -> bool {
+        self.aggro.is_some() || self.control.is_some() || self.tempo.is_some() || self.midrange.is_some()
+    }
+}

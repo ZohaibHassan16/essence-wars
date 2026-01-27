@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { CommanderDto } from "$lib/api/types";
+  import { playSound } from "$lib/audio";
 
   let {
     commander,
@@ -9,6 +10,9 @@
     maxEssence = 0,
     isActive = false,
     isPlayer = true,
+    insightAvailable = false,
+    insightIndicator = false,
+    onInsightClick,
   }: {
     commander: CommanderDto | null;
     life: number;
@@ -17,6 +21,9 @@
     maxEssence?: number;
     isActive?: boolean;
     isPlayer?: boolean;
+    insightAvailable?: boolean;
+    insightIndicator?: boolean;
+    onInsightClick?: () => void;
   } = $props();
 
   // Track life changes for animation
@@ -218,6 +225,37 @@
           {factionDisplayName()}
         </div>
       </div>
+
+      <!-- Commander's Insight Button (player side only) -->
+      {#if isPlayer && (insightAvailable || insightIndicator)}
+        <button
+          class="w-full mt-3 px-3 py-2 rounded-lg font-semibold text-sm
+                 flex items-center justify-center gap-2
+                 transition-all duration-200
+                 {insightAvailable
+                   ? `bg-black/40 border-2 ${factionColors().border} ${factionColors().text} hover:bg-black/60 cursor-pointer`
+                   : 'bg-black/20 border border-gray-600/50 text-gray-500 cursor-not-allowed'}"
+          class:animate-pulse={insightAvailable}
+          onclick={() => {
+            if (insightAvailable && onInsightClick) {
+              playSound('buttonClick');
+              onInsightClick();
+            }
+          }}
+          onmouseenter={() => insightAvailable && playSound('buttonHover')}
+          disabled={!insightAvailable}
+          title={insightAvailable
+            ? "Draw a card for 4 Essence (I)"
+            : "Available Turn 10+ when behind with low hand"}
+        >
+          <span class="text-lg">💡</span>
+          <span>Insight</span>
+          <span class="text-xs opacity-70">4⟡</span>
+          {#if insightAvailable}
+            <kbd class="ml-1 px-1 py-0.5 text-xs bg-black/30 rounded">I</kbd>
+          {/if}
+        </button>
+      {/if}
     </div>
   {:else}
     <!-- Placeholder when no commander -->
