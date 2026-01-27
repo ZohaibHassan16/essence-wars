@@ -3,6 +3,7 @@
 //! Provides reusable progress tracking for parallel game execution
 //! in arena, validate, and tune binaries.
 
+use std::io::IsTerminal;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::thread::{self, JoinHandle};
@@ -21,6 +22,7 @@ pub enum ProgressStyle {
 ///
 /// Spawns a background thread that periodically updates stderr with progress.
 /// Thread-safe counter can be incremented from parallel worker threads.
+/// Uses milestone-based reporting (every 10% or min 5 items) to avoid spam.
 pub struct ProgressReporter {
     total: usize,
     completed: Arc<AtomicUsize>,
@@ -29,6 +31,8 @@ pub struct ProgressReporter {
     start_time: Instant,
     style: ProgressStyle,
     prefix: String,
+    is_tty: bool,
+    milestone_interval: usize,
 }
 
 impl ProgressReporter {
@@ -37,6 +41,16 @@ impl ProgressReporter {
     /// # Arguments
     /// * `total` - Total number of items to process
     pub fn new(total: usize) -> Self {
+        // Detect if stderr is a TTY (interactive terminal)
+        let is_tty = std::io::stderr().is_terminal();
+        
+        // Calculate milestone interval: every 10% or minimum 5 items, max 10 milestones
+        let milestone_interval = if total <= 50 {
+            5.max(total / 10)
+        } else {
+            total / 10
+        };
+        
         Self {
             total,
             completed: Arc::new(AtomicUsize::new(0)),
@@ -45,6 +59,8 @@ impl ProgressReporter {
             start_time: Instant::now(),
             style: ProgressStyle::Rich,
             prefix: String::new(),
+            is_tty,
+            milestone_interval,
         }
     }
 
@@ -72,11 +88,13 @@ impl ProgressReporter {
         let start_time = self.start_time;
         let style = self.style;
         let prefix = self.prefix.clone();
+        let is_tty = self.is_tty;
+        let milestone_interval = self.milestone_interval;
 
         let handle = thread::spawn(move || {
-            let mut last_progress = 0;
+            let mut last_milestone = 0;
             loop {
-                thread::sleep(Duration::from_millis(100));
+                thread::sleep(Duration::from_millis(200));
                 // Check stop flag first
                 if stop_flag.load(Ordering::Relaxed) {
                     break;
@@ -85,14 +103,22 @@ impl ProgressReporter {
                 if done >= total {
                     break;
                 }
-                let progress = if total > 0 { (done * 100) / total } else { 0 };
-
-                match style {
-                    ProgressStyle::Simple => {
-                        eprint!("\r{}Progress: {:3}% ({}/{})    ", prefix, progress, done, total);
-                    }
-                    ProgressStyle::Rich => {
-                        if progress > last_progress {
+                
+                // Only print at milestones to avoid spam
+                let current_milestone = done / milestone_interval;
+                if current_milestone > last_milestone {
+                    last_milestone = current_milestone;
+                    let progress = if total > 0 { (done * 100) / total } else { 0 };
+                    
+                    match style {
+                        ProgressStyle::Simple => {
+                            if is_tty {
+                                eprint!("\r{}Progress: {:3}% ({}/{})    ", prefix, progress, done, total);
+                            } else {
+                                eprintln!("{}Completed {}/{} ({:3}%)", prefix, done, total, progress);
+                            }
+                        }
+                        ProgressStyle::Rich => {
                             let elapsed = start_time.elapsed().as_secs_f64();
                             let rate = done as f64 / elapsed.max(0.001);
                             let eta = if rate > 0.0 {
@@ -100,11 +126,17 @@ impl ProgressReporter {
                             } else {
                                 0.0
                             };
-                            eprint!(
-                                "\r{}Progress: {:3}% ({}/{}) | {:.0} games/sec | ETA: {:.1}s    ",
-                                prefix, progress, done, total, rate, eta
-                            );
-                            last_progress = progress;
+                            if is_tty {
+                                eprint!(
+                                    "\r{}Progress: {:3}% ({}/{}) | {:.0} items/sec | ETA: {:.1}s    ",
+                                    prefix, progress, done, total, rate, eta
+                                );
+                            } else {
+                                eprintln!(
+                                    "{}Completed {}/{} ({:3}%) | {:.0} items/sec | ETA: {:.1}s",
+                                    prefix, done, total, progress, rate, eta
+                                );
+                            }
                         }
                     }
                 }
@@ -141,10 +173,17 @@ impl ProgressReporter {
             let _ = handle.join();
         }
         let done = self.completed.load(Ordering::Relaxed);
+        
+        // Clear progress line if TTY, then print final status
+        if self.is_tty {
+            eprint!("\r{}", " ".repeat(80)); // Clear line
+            eprint!("\r");
+        }
+        
         match self.style {
             ProgressStyle::Simple => {
                 eprintln!(
-                    "\r{}Progress: 100% ({}/{})    ",
+                    "{}Completed: {}/{} (100%)",
                     self.prefix, done, self.total
                 );
             }

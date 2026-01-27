@@ -254,20 +254,33 @@ impl<'a> DiagnosticRunner<'a> {
 
     /// Run games sequentially to collect full diagnostic data.
     fn run_sequential(&self, config: &DiagnosticConfig) -> Vec<GameDiagnostics> {
+        use crate::execution::{ProgressReporter, ProgressStyle};
+        
         let mut results = Vec::with_capacity(config.num_games);
 
-        for i in 0..config.num_games {
-            if config.show_progress && i % 50 == 0 {
-                eprint!("\rProgress: {}/{}", i, config.num_games);
-            }
+        // Set up progress reporting if enabled
+        let progress = if config.show_progress {
+            Some(
+                ProgressReporter::new(config.num_games)
+                    .with_style(ProgressStyle::Simple)
+                    .start(),
+            )
+        } else {
+            None
+        };
 
+        for i in 0..config.num_games {
             let seeds = GameSeeds::for_game(config.base_seed, i);
             let diag = self.run_diagnostic_game(config, seeds);
             results.push(diag);
+            
+            if let Some(ref p) = progress {
+                p.increment();
+            }
         }
 
-        if config.show_progress {
-            eprintln!("\rProgress: {}/{}", config.num_games, config.num_games);
+        if let Some(p) = progress {
+            p.finish();
         }
 
         results

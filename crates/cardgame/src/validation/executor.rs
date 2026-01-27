@@ -266,18 +266,8 @@ impl<'a> ValidationExecutor<'a> {
     ) -> DirectionResults {
         let start_time = Instant::now();
 
-        // Set up progress reporting
-        let progress = if self.show_progress {
-            Some(
-                ProgressReporter::new(games)
-                    .with_style(ProgressStyle::Simple)
-                    .start(),
-            )
-        } else {
-            None
-        };
-
-        let counter = progress.as_ref().map(|p| p.counter());
+        // NOTE: No progress reporting at this level - progress is tracked at matchup level
+        // to avoid spamming output with per-game updates
 
         // Run games in parallel, collecting outcomes and diagnostics
         let results: Vec<(Option<PlayerId>, u32, GameDiagnosticData)> = (0..games)
@@ -286,17 +276,9 @@ impl<'a> ValidationExecutor<'a> {
                 let seeds = GameSeeds::for_game(base_seed, i);
                 let (winner, turns, diag) =
                     self.run_single_game_with_diagnostics(matchup, reversed, weights1, weights2, seeds);
-                if let Some(ref c) = counter {
-                    c.fetch_add(1, Ordering::Relaxed);
-                }
                 (winner, turns, diag)
             })
             .collect();
-
-        // Finish progress reporting
-        if let Some(p) = progress {
-            p.finish();
-        }
 
         // Aggregate results and diagnostics
         let mut p1_wins = 0u32;

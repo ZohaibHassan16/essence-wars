@@ -9,37 +9,46 @@ use super::types::ValidationResults;
 
 /// Print formatted results to stdout.
 pub fn print_results(results: &ValidationResults, total_time: Duration) {
-    println!("=== Matchup Results ===");
+    // Print detailed deck matchups (commander vs commander)
+    println!("=== Commander Matchup Results ===");
+    println!(
+        "{:28} vs {:28} | {:7} | {:7} | {:6}",
+        "Commander 1", "Commander 2", "Overall", "As P1", "As P2"
+    );
+    println!("{}", "-".repeat(95));
 
     for m in &results.matchups {
-        let f1_name = capitalize(&m.faction1);
-        let f2_name = capitalize(&m.faction2);
+        let p1_rate = if m.f1_as_p1_games > 0 {
+            m.f1_as_p1_wins as f64 / m.f1_as_p1_games as f64 * 100.0
+        } else {
+            0.0
+        };
+        let p2_rate = if m.f1_as_p2_games > 0 {
+            m.f1_as_p2_wins as f64 / m.f1_as_p2_games as f64 * 100.0
+        } else {
+            0.0
+        };
 
-        println!("\n{} vs {}:", f1_name, f2_name);
+        // Determine visual indicator
+        let indicator = if m.faction1_win_rate >= 0.60 {
+            "▲"
+        } else if m.faction1_win_rate <= 0.40 {
+            "▼"
+        } else {
+            " "
+        };
+
         println!(
-            "  {} P1: {}/{} ({:.1}%)  |  {} P2: {}/{} ({:.1}%)",
-            f1_name,
-            m.f1_as_p1_wins,
-            m.f1_as_p1_games,
-            m.f1_as_p1_wins as f64 / m.f1_as_p1_games as f64 * 100.0,
-            f1_name,
-            m.f1_as_p2_wins,
-            m.f1_as_p2_games,
-            m.f1_as_p2_wins as f64 / m.f1_as_p2_games as f64 * 100.0,
-        );
-        println!(
-            "  Total: {} {:.1}% / {} {:.1}%  (draws: {})",
-            f1_name,
+            "{:28} vs {:28} | {:5.1}% {} | {:5.1}% | {:5.1}%",
+            truncate_name(&m.commander1_name, 28),
+            truncate_name(&m.commander2_name, 28),
             m.faction1_win_rate * 100.0,
-            f2_name,
-            m.faction2_win_rate * 100.0,
-            m.draws,
-        );
-        println!(
-            "  Avg turns: {:.1}, Time: {:.1}s",
-            m.avg_turns, m.total_time_secs
+            indicator,
+            p1_rate,
+            p2_rate
         );
     }
+    println!("\nLegend: ▲ = C1 wins ≥60%, ▼ = C1 wins ≤40%");
 
     println!("\n=== Summary ===");
     println!(
@@ -349,6 +358,17 @@ pub fn capitalize(s: &str) -> String {
     match chars.next() {
         None => String::new(),
         Some(c) => c.to_uppercase().chain(chars).collect(),
+    }
+}
+
+/// Truncate a string to a maximum width, adding "..." if truncated.
+fn truncate_name(s: &str, max_width: usize) -> String {
+    if s.len() <= max_width {
+        format!("{:width$}", s, width = max_width)
+    } else if max_width >= 3 {
+        format!("{:width$}", format!("{}...", &s[..max_width - 3]), width = max_width)
+    } else {
+        format!("{:width$}", s, width = max_width)
     }
 }
 
