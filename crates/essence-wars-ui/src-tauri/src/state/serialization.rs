@@ -445,6 +445,15 @@ pub fn action_to_info(action: &Action, index: u8) -> ActionInfo {
                 card_id: None,
             }
         }
+        Action::CommanderInsight => ActionInfo {
+            index,
+            action_type: "commander_insight".to_string(),
+            description: "Commander's Insight - draw a card for 4 essence".to_string(),
+            source_slot: None,
+            target_slot: None,
+            hand_index: None,
+            card_id: None,
+        },
         Action::EndTurn => ActionInfo {
             index,
             action_type: "end_turn".to_string(),

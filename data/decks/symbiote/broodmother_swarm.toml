@@ -1,39 +1,30 @@
 id = "broodmother_swarm"
 name = "The Broodmother"
-description = "Unleash the hive's fury before enemies can react. Rush creatures flood the board in waves, overwhelming defenses through sheer numbers and relentless aggression."
+description = "Every creature strikes the moment it hits the board. With Rush on all your minions, overwhelm enemies before they can mount a defense. The swarm waits for no one."
 playstyle = "Aggro"
 tags = ["commander", "symbiote"]
 commander = 5004
 
 cards = [
-    # Core Rush Creatures (immediate pressure)
-    2003, 2003, 2003,  # Broodling x3
-    2005, 2005, 2005,  # Pack Hunter x3
-    2019,              # Swarm Leader
+    # === 1-COST (6 cards) - Early aggression ===
+    2006, 2006, 2006,  # Parasitic Larva x3 (1c 1/2 Lethal) - instant kills with Rush!
+    4031, 4031, 4031,  # Eager Sellsword x3 (1c 2/1 Rush) - fast early pressure
 
-    # Token Generators (more bodies)
-    2038,              # Spawn Nest
-    2042,              # Brood Pit
-    2049,              # Hive Spawner
+    # === 2-COST (8 cards) - Core damage dealers ===
+    2001, 2001, 2001,  # Venom Fang x3 (2c 2/3 Lethal) - Lethal+Rush = assassins
+    2015, 2015, 2015,  # Feral Striker x3 (2c 2/2 Frenzy) - Frenzy+Rush stacks damage
+    2000, 2000,        # Spore Crawler x2 (1c 1/3) - cheap bodies that now Rush
 
-    # Cheap Creatures (board flood)
-    2000, 2000, 2000,  # Spore Crawler x3
-    2006, 2006,        # Parasitic Larva x2
-    2001, 2001,        # Venom Fang x2
+    # === 3-COST (10 cards) - Midgame power ===
+    4036, 4036, 4036,  # Contract Killer x3 (3c 3/2 Lethal) - premium Lethal+Rush
+    2026, 2026,        # Festering Plague x2 (3c 2/2 Volatile+Lethal) - kills + explodes
+    2070, 2070,        # Rabid Hunter x2 (3c 3/2 Frenzy) - aggressive Frenzy
+    2016, 2016,        # Frenzied Brood x2 (3c 2/3 Frenzy) - durable Frenzy
 
-    # Buff Spells (make swarm dangerous)
-    2010, 2010,        # Overgrowth x2
-    2012,              # Feral Rage
-    2014,              # Predator's Mark
+    # === 4-COST (4 cards) - Closers ===
+    2068, 2068,        # Death Blossom x2 (4c 3/2 Volatile+Lethal) - big Lethal threats
+    2021, 2021,        # Bloodrage Berserker x2 (4c 3/2 Frenzy) - Frenzy finisher
 
-    # Utility
-    2016,              # Regeneration
-    2059,              # Brood Overlord
-
-    # Neutral Support
-    4000, 4000,        # Wandering Merchant x2
-    4001,              # Road Warden
-    4005,              # Caravan Guard
-    4010,              # Supply Cache
-    4012,              # Wayfarer's Blessing
+    # === 5-COST (2 cards) - Top-end ===
+    2008, 2008,        # Alpha Predator x2 (5c 5/5 Rush+Lethal) - ultimate finisher
 ]

@@ -80,6 +80,7 @@ impl CoverageStats {
             Action::PlayCard { .. } => "PlayCard",
             Action::Attack { .. } => "Attack",
             Action::UseAbility { .. } => "UseAbility",
+            Action::CommanderInsight => "CommanderInsight",
             Action::EndTurn => "EndTurn",
         };
         *types.entry(type_name).or_insert(0) += 1;

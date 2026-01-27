@@ -1,4 +1,4 @@
-# MCTS Tuning Pipeline Reference
+# Bot Tuning Pipeline Reference
 
 **Complete guide to training and using optimized bot weights for Essence Wars**
 
@@ -6,10 +6,10 @@
 
 ```bash
 # 1. Train generalist weights (works with all decks)
-cargo run --release --bin tune -- --tag generalist-v0.4
+cargo run --release --bin tune -- --tag generalist-v1
 
-# 2. Train faction specialist (e.g., Argentum)
-cargo run --release --bin tune -- --mode faction-specialist --faction argentum --tag argentum-v0.4
+# 2. Train archetype weights (e.g., Aggro decks)
+cargo run --release --bin tune -- --mode archetype --archetype aggro --tag aggro-v1
 
 # 3. Analyze results
 ./scripts/analyze-tuning.sh --latest
@@ -29,7 +29,7 @@ cargo run --release --bin arena -- --bot1 mcts --bot2 random --games 100
 5. [Auto-Deploy System](#auto-deploy-system)
 6. [Analysis & Visualization](#analysis--visualization)
 7. [Using Tuned Weights](#using-tuned-weights)
-8. [How MCTS Uses Weights](#how-mcts-uses-weights)
+8. [How Bots Use Weights](#how-bots-use-weights)
 9. [Troubleshooting](#troubleshooting)
 
 ---
@@ -59,28 +59,40 @@ experiments/mcts/YYYY-MM-DD_HHMM_tag/
 data/weights/
 ├── default.toml                 # Legacy fallback (deprecated)
 ├── generalist.toml              # Auto-deployed generalist weights
-└── specialists/
-    ├── argentum.toml            # Auto-deployed Argentum specialist
-    ├── symbiote.toml            # Auto-deployed Symbiote specialist
-    └── obsidion.toml            # Auto-deployed Obsidion specialist
+└── archetypes/
+    ├── aggro.toml               # Auto-deployed Aggro archetype
+    ├── control.toml             # Auto-deployed Control archetype
+    ├── tempo.toml               # Auto-deployed Tempo archetype
+    └── midrange.toml            # Auto-deployed Midrange archetype
 ```
 
-**Important:** Bots automatically load weights from these files. No manual copying needed!
+**Important:** Bots automatically load weights based on deck archetype. No manual copying needed!
+
+### Deck-to-Archetype Mapping
+
+Each deck has a `playstyle` field that maps to an archetype:
+
+| Archetype | Decks |
+|-----------|-------|
+| **Aggro** | vex_piercing, archon_burst, shadow_weaver, alpha_frenzy, broodmother_swarm |
+| **Control** | architect_fortify, sanctum_healer, plague_volatile |
+| **Tempo** | artificer_tokens, kael_assassin, sovereign_lifesteal |
+| **Midrange** | grove_regenerate |
 
 ---
 
 ## Tuning Modes
 
-All modes now test against **Random, Greedy, AND MCTS opponents** for robust training.
+All modes test against **Random, Greedy, AND MCTS opponents** for robust training.
 
-### 1. Generalist (Recommended)
+### 1. Generalist (Recommended for Starting)
 
 Trains weights that work well across **all deck matchups**.
 
 ```bash
 cargo run --release --bin tune -- \
   --mode generalist \
-  --tag generalist-v0.4 \
+  --tag generalist-v1 \
   --generations 100 \
   --games 100 \
   --mcts-sims 50
@@ -93,28 +105,28 @@ cargo run --release --bin tune -- \
 
 **Auto-deploys to:** `data/weights/generalist.toml`
 
-### 2. Faction Specialist (Focused)
+### 2. Archetype (Recommended for Best Performance)
 
-Trains weights for **all decks in a specific faction** vs other factions.
+Trains weights for **all decks sharing a playstyle** (Aggro, Control, Tempo, Midrange).
 
 ```bash
 cargo run --release --bin tune -- \
-  --mode faction-specialist \
-  --faction argentum \
-  --tag argentum-v0.4 \
+  --mode archetype \
+  --archetype aggro \
+  --tag aggro-v1 \
   --generations 100 \
   --games 100 \
   --mcts-sims 50
 ```
 
-**Available factions:** `argentum`, `symbiote`, `obsidion`
+**Available archetypes:** `aggro`, `control`, `tempo`, `midrange`
 
 **When to use:**
-- Optimizing for a specific faction's playstyle
-- Creating specialists for rock-paper-scissors meta
-- Training against known opponent factions
+- Optimizing for a specific playstyle
+- Better than faction-based: decks with similar strategies share weights
+- Each archetype plays differently (aggro = fast damage, control = outlast, etc.)
 
-**Auto-deploys to:** `data/weights/specialists/{faction}.toml`
+**Auto-deploys to:** `data/weights/archetypes/{archetype}.toml`
 
 ### 3. Specialist (Experimental)
 
@@ -123,9 +135,9 @@ Trains weights for **one specific deck** vs **one specific opponent**.
 ```bash
 cargo run --release --bin tune -- \
   --mode specialist \
-  --deck argentum_control \
-  --opponent symbiote_aggro \
-  --tag argentum-vs-symbiote \
+  --deck architect_fortify \
+  --opponent alpha_frenzy \
+  --tag architect-vs-alpha \
   --generations 100 \
   --games 100 \
   --mcts-sims 50
@@ -136,9 +148,7 @@ cargo run --release --bin tune -- \
 - Exploring matchup-specific strategies
 - Research/experimentation
 
-**Auto-deploys to:** `data/weights/specialists/{faction}.toml` (inferred from deck name)
-
-**Note:** This mode is less general-purpose than faction-specialist but can achieve higher win rates in specific matchups.
+**Note:** This mode is less general-purpose than archetype but can achieve higher win rates in specific matchups.
 
 ---
 
@@ -160,7 +170,7 @@ MCTS simulations scale linearly in time, but opponent strength improves with **d
 | 200       | ~95% optimal      | 63s      | 105 min        |
 | 500       | ~97% optimal      | 180s     | 300 min        |
 
-**Real benchmark** (faction-specialist, 100 gens, 100 games):
+**Real benchmark** (archetype mode, 100 gens, 100 games):
 - `--mcts-sims 200`: **4087.6s** (68 min) 🐌
 - `--mcts-sims 50`: **239.7s** (4 min) 🚀
 - **17x speedup** with minimal quality loss!
@@ -181,19 +191,19 @@ MCTS simulations scale linearly in time, but opponent strength improves with **d
 
 ### Recommended Workflow
 
-✅ **DO:** Use `--mcts-sims 50` for tuning (default, fast iteration)  
-✅ **DO:** Validate with `--mcts-sims 200` in arena after tuning (rigorous test)  
+✅ **DO:** Use `--mcts-sims 50` for tuning (default, fast iteration)
+✅ **DO:** Validate with `--mcts-sims 200` in arena after tuning (rigorous test)
 ❌ **DON'T:** Use 200+ sims during tuning (wastes 10x time for ~5% quality gain)
 
 ```bash
 # STEP 1: Fast tuning (50 sims - default)
 cargo run --release --bin tune -- \
-  --mode faction-specialist --faction symbiote \
-  --tag symbiote-v0.4
+  --mode archetype --archetype aggro \
+  --tag aggro-v1
 
 # STEP 2: Thorough validation (200 sims)
 cargo run --release --bin arena -- \
-  --bot1 mcts --weights1 data/weights/specialists/symbiote.toml \
+  --bot1 mcts --deck1 alpha_frenzy \
   --bot2 mcts --mcts-sims2 200 \
   --games 500 --progress
 ```
@@ -210,7 +220,7 @@ cargo run --release --bin arena -- \
 ```bash
 cargo run --release --bin tune -- \
   --mode generalist \
-  --tag generalist-v0.4 \
+  --tag generalist-v1 \
   --generations 100 \
   --games 100 \
   --mcts-sims 50
@@ -219,16 +229,17 @@ cargo run --release --bin tune -- \
 - Works well with all decks
 - Auto-deploys to `data/weights/generalist.toml`
 
-**Option B: Train All Faction Specialists (Best Performance)**
+**Option B: Train All Archetypes (Best Performance)**
 ```bash
 # Run these in parallel or sequentially
-cargo run --release --bin tune -- --mode faction-specialist --faction argentum --tag argentum-v0.4
-cargo run --release --bin tune -- --mode faction-specialist --faction symbiote --tag symbiote-v0.4
-cargo run --release --bin tune -- --mode faction-specialist --faction obsidion --tag obsidion-v0.4
+cargo run --release --bin tune -- --mode archetype --archetype aggro --tag aggro-v1
+cargo run --release --bin tune -- --mode archetype --archetype control --tag control-v1
+cargo run --release --bin tune -- --mode archetype --archetype tempo --tag tempo-v1
+cargo run --release --bin tune -- --mode archetype --archetype midrange --tag midrange-v1
 ```
 - Takes ~10 minutes each
-- Optimized for specific faction playstyles
-- Auto-deploys to `data/weights/specialists/{faction}.toml`
+- Optimized for specific playstyles
+- Auto-deploys to `data/weights/archetypes/{archetype}.toml`
 
 ### Step 2: Analyze Results
 
@@ -237,7 +248,7 @@ cargo run --release --bin tune -- --mode faction-specialist --faction obsidion -
 ./scripts/analyze-tuning.sh --latest
 
 # Or analyze specific experiment
-./scripts/analyze-tuning.sh experiments/mcts/2026-01-14_0719_generalist-v0.4
+./scripts/analyze-tuning.sh experiments/mcts/2026-01-27_0719_aggro-v1
 
 # Compare multiple experiments
 ./scripts/analyze-tuning.sh --all
@@ -257,16 +268,17 @@ Verify deployment:
 # Check generalist weights
 ls -lh data/weights/generalist.toml
 
-# Check specialist weights
-ls -lh data/weights/specialists/
+# Check archetype weights
+ls -lh data/weights/archetypes/
 ```
 
 ### Step 4: Test Your Weights
 
 ```bash
-# Test with GreedyBot
+# Test with GreedyBot (archetype weights auto-load based on deck)
 cargo run --release --bin arena -- \
-  --bot1 greedy --bot2 random \
+  --bot1 greedy --deck1 alpha_frenzy \
+  --bot2 greedy --deck2 architect_fortify \
   --games 100 --progress
 
 # Test with MctsBot (uses weights for rollouts)
@@ -274,11 +286,11 @@ cargo run --release --bin arena -- \
   --bot1 mcts --bot2 random \
   --games 50 --progress
 
-# Test specific specialist
+# Override with specific weights
 cargo run --release --bin arena -- \
-  --bot1 greedy --deck1 argentum_control \
-  --bot2 greedy --deck2 symbiote_aggro \
-  --weights1 data/weights/specialists/argentum.toml \
+  --bot1 greedy --deck1 architect_fortify \
+  --bot2 greedy --deck2 alpha_frenzy \
+  --weights1 data/weights/archetypes/control.toml \
   --games 100 --progress
 ```
 
@@ -287,8 +299,8 @@ cargo run --release --bin arena -- \
 ```bash
 # If weights show improvement, commit them
 git add data/weights/generalist.toml
-git add data/weights/specialists/*.toml
-git commit -m "Update tuned weights v0.4: [summary of improvements]"
+git add data/weights/archetypes/*.toml
+git commit -m "Update tuned weights v1: [summary of improvements]"
 ```
 
 ---
@@ -299,16 +311,15 @@ git commit -m "Update tuned weights v0.4: [summary of improvements]"
 
 After training completes, weights are **automatically copied** to the appropriate location:
 
-| Tuning Mode         | Auto-Deploy Location                      |
-|---------------------|-------------------------------------------|
-| `generalist`        | `data/weights/generalist.toml`            |
-| `faction-specialist`| `data/weights/specialists/{faction}.toml` |
-| `specialist`        | `data/weights/specialists/{faction}.toml` |
+| Tuning Mode   | Auto-Deploy Location                        |
+|---------------|---------------------------------------------|
+| `generalist`  | `data/weights/generalist.toml`              |
+| `archetype`   | `data/weights/archetypes/{archetype}.toml`  |
 
 You'll see this in the output:
 ```
-✓ Weights saved to "experiments/mcts/2026-01-14_0735_argentum-v0.4/weights.toml"
-✅ Auto-deployed to "data/weights/specialists/argentum.toml"
+✓ Weights saved to "experiments/mcts/2026-01-27_0735_aggro-v1/weights.toml"
+✅ Auto-deployed to "data/weights/archetypes/aggro.toml"
 ```
 
 ### Loading Priority
@@ -316,8 +327,9 @@ You'll see this in the output:
 Bots load weights in this order:
 
 1. **Command-line override**: `--weights1 path/to/custom.toml` (highest priority)
-2. **Auto-deployed weights**: `data/weights/generalist.toml` or `specialists/{faction}.toml`
-3. **Hardcoded fallback**: Default weights in `crates/cardgame/src/bots/weights.rs` (lowest priority)
+2. **Archetype weights**: `data/weights/archetypes/{archetype}.toml` (based on deck's playstyle)
+3. **Generalist weights**: `data/weights/generalist.toml` (fallback)
+4. **Hardcoded fallback**: Default weights in `crates/cardgame/src/bots/weights.rs` (lowest priority)
 
 ### Manual Override
 
@@ -327,7 +339,7 @@ If you want to test different weights without overwriting auto-deployed ones:
 # Test experimental weights without deploying
 cargo run --release --bin arena -- \
   --bot1 greedy \
-  --weights1 experiments/mcts/2026-01-14_1200_experimental/weights.toml \
+  --weights1 experiments/mcts/2026-01-27_1200_experimental/weights.toml \
   --bot2 greedy \
   --games 100
 ```
@@ -343,7 +355,7 @@ cargo run --release --bin arena -- \
 ./scripts/analyze-tuning.sh --latest
 
 # Analyze specific experiment by path
-./scripts/analyze-tuning.sh experiments/mcts/2026-01-14_0719_generalist-v0.4
+./scripts/analyze-tuning.sh experiments/mcts/2026-01-27_0719_aggro-v1
 
 # Analyze all experiments in experiments/mcts/
 ./scripts/analyze-tuning.sh --all
@@ -408,12 +420,14 @@ score = w.own_life * state.life
 
 **Usage:**
 ```bash
-# Auto-loads from data/weights/generalist.toml
-cargo run --release --bin arena -- --bot1 greedy --bot2 random --games 100
+# Auto-loads archetype weights based on deck's playstyle
+cargo run --release --bin arena -- \
+  --bot1 greedy --deck1 alpha_frenzy \
+  --bot2 random --games 100
 
 # Override with specific weights
 cargo run --release --bin arena -- \
-  --bot1 greedy --weights1 data/weights/specialists/argentum.toml \
+  --bot1 greedy --weights1 data/weights/archetypes/aggro.toml \
   --bot2 random --games 100
 ```
 
@@ -458,13 +472,31 @@ MctsBot uses weights for **rollout evaluation** during tree search:
 
 **Usage:**
 ```bash
-# Auto-loads from data/weights/generalist.toml
-cargo run --release --bin arena -- --bot1 mcts --bot2 random --games 50
+# Auto-loads archetype weights based on deck's playstyle
+cargo run --release --bin arena -- \
+  --bot1 mcts --deck1 alpha_frenzy \
+  --bot2 random --games 50
 
 # Override with specific weights
 cargo run --release --bin arena -- \
-  --bot1 mcts --weights1 data/weights/specialists/symbiote.toml \
+  --bot1 mcts --weights1 data/weights/archetypes/aggro.toml \
   --bot2 mcts --games 50
+```
+
+### With AlphaBetaBot
+
+AlphaBetaBot uses weights for **leaf node evaluation** in minimax search:
+
+```bash
+# Auto-loads archetype weights based on deck's playstyle
+cargo run --release --bin arena -- \
+  --bot1 alphabeta --deck1 architect_fortify \
+  --bot2 mcts --games 50
+
+# Override with specific weights
+cargo run --release --bin arena -- \
+  --bot1 alphabeta --weights1 data/weights/archetypes/control.toml \
+  --ab-depth 8 --bot2 mcts --games 50
 ```
 
 ### Comparing Weights
@@ -472,23 +504,17 @@ cargo run --release --bin arena -- \
 Test if new weights improved performance:
 
 ```bash
-# Generalist vs default
+# Archetype vs generalist for an aggro deck
 cargo run --release --bin arena -- \
-  --bot1 greedy --weights1 data/weights/generalist.toml \
-  --bot2 greedy \
-  --games 500 --progress
-
-# Specialist vs generalist
-cargo run --release --bin arena -- \
-  --bot1 greedy --weights1 data/weights/specialists/argentum.toml \
+  --bot1 greedy --weights1 data/weights/archetypes/aggro.toml \
   --bot2 greedy --weights2 data/weights/generalist.toml \
-  --deck1 argentum_control --deck2 symbiote_aggro \
+  --deck1 alpha_frenzy --deck2 architect_fortify \
   --games 500 --progress
 ```
 
 ---
 
-## How MCTS Uses Weights
+## How Bots Use Weights
 
 ### The Evaluation Chain
 
@@ -545,24 +571,23 @@ User calls MctsBot.select_action()
 1. Check `--mcts-sims` is set to 50 (not 200+)
 2. Verify `--parallel true` (default)
 3. Reduce `--games` (e.g., 50 instead of 100)
-4. Use faster mode: `specialist` < `faction-specialist` < `generalist`
+4. Use faster mode: `specialist` < `archetype` < `generalist`
 
 ### Weights not auto-deploying
 
 **Problem:** No "✅ Auto-deployed" message after training
 
 **Check:**
-1. Mode is `generalist`, `faction-specialist`, or `specialist`
-2. For `faction-specialist`: `--faction` is specified
-3. For `specialist`: `--deck` is specified (faction inferred from deck name)
-4. Directory `data/weights/specialists/` exists and is writable
+1. Mode is `generalist` or `archetype`
+2. For `archetype`: `--archetype` is specified
+3. Directory `data/weights/archetypes/` exists and is writable
 
 ### Win rate not improving
 
 **Problem:** Best win rate stuck at low value (e.g., 30-40%)
 
 **Possible causes:**
-1. **Tough matchup**: Some faction vs faction matchups are naturally hard (e.g., control vs aggro)
+1. **Tough matchup**: Some archetype matchups are naturally hard (e.g., control vs aggro)
 2. **Not enough generations**: Try 150-200 generations
 3. **MCTS opponent too strong**: Try `--mcts-sims 25` to make opponent weaker
 4. **CMA-ES stuck**: Try different `--sigma` (e.g., 0.5 for more exploration)
@@ -574,7 +599,7 @@ User calls MctsBot.select_action()
 **Solutions:**
 1. Ensure Python dependencies installed: `uv sync --all-groups`
 2. Check experiment directory has `train.log` file
-3. Try manual analysis: `uv run python python/scripts/analyze_tuning.py experiments/mcts/2026-01-14_HHMM_tag`
+3. Try manual analysis: `uv run python python/scripts/analyze_tuning.py experiments/mcts/2026-01-27_HHMM_tag`
 
 ### Weights don't seem to help
 
@@ -607,7 +632,7 @@ Stop when target win rate achieved:
 
 ```bash
 cargo run --release --bin tune -- \
-  --mode faction-specialist --faction symbiote \
+  --mode archetype --archetype aggro \
   --target-win-rate 0.90 \
   --generations 200
 ```
@@ -646,16 +671,16 @@ cargo run --release --bin tune -- --help
 ```
 
 **Essential flags:**
-- `--mode <MODE>`: generalist | specialist | faction-specialist
+- `--mode <MODE>`: generalist | archetype | specialist
 - `--tag <TAG>`: Experiment name (default: "default")
 - `--generations <N>`: Number of CMA-ES generations (default: 100)
 - `--games <N>`: Games per evaluation (default: 100)
 - `--mcts-sims <N>`: MCTS sims for opponents (default: 50)
 
 **Mode-specific flags:**
-- `--faction <FACTION>`: For faction-specialist (argentum, symbiote, obsidion)
-- `--deck <DECK_ID>`: For specialist (e.g., argentum_control)
-- `--opponent <DECK_ID>`: For specialist (e.g., symbiote_aggro)
+- `--archetype <ARCHETYPE>`: For archetype mode (aggro, control, tempo, midrange)
+- `--deck <DECK_ID>`: For specialist (e.g., architect_fortify)
+- `--opponent <DECK_ID>`: For specialist (e.g., alpha_frenzy)
 
 **CMA-ES flags:**
 - `--sigma <F>`: Initial step size (default: 0.3)

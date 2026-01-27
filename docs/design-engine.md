@@ -1,8 +1,8 @@
 # Card Game Engine Design Document
 
-> **Version:** 1.4 (Commander Edition)
-> **Last Updated:** 2026-01-25
-> **Status:** Implementation In Progress - Commander System Rework
+> **Version:** 1.5 (Commander Edition)
+> **Last Updated:** 2026-01-27
+> **Status:** Implementation In Progress - Commander's Insight
 
 This document is the single source of truth for all game rules, parameters, and engine specifications.
 
@@ -329,6 +329,7 @@ When playing a creature card:
 | Play Card | 1 | Essence cost of card | Play a card from hand |
 | Attack | 1 | None | Attack with one creature |
 | Activate Ability | Varies | As specified | Use a creature's activated ability |
+| Commander's Insight | 0 | 4 Essence | Draw a card (catch-up mechanic) |
 | End Turn | 0 | None | Pass, forfeit remaining AP |
 
 ### 5.2 Play Card Action
@@ -388,27 +389,69 @@ Effect:
   • Turn passes to opponent
 ```
 
-### 5.5 Action Index Mapping (For AI)
+### 5.5 Commander's Insight (Catch-Up Mechanic)
+
+```
+COMMANDER'S INSIGHT
+───────────────────
+Cost: 0 AP + 4 Essence
+
+Effect: Draw 1 card from your deck
+
+Requirements (ALL must be met):
+  • Turn number ≥ 10 (late game only)
+  • Hand size ≤ 1 (starving for cards)
+  • You have ≥ 4 essence
+  • Behind on creatures OR behind on life (strict inequality)
+  • Not already used this turn
+
+Limit: Once per turn
+
+Design Intent:
+  Commander's Insight is a catch-up mechanic designed to help struggling
+  players in the late game. It activates when a player is both:
+  1. Low on cards (0-1 in hand) — "top-deck mode"
+  2. Losing on board OR life — actually behind, not just tied
+
+  The 4 essence cost ensures the player must sacrifice tempo to draw,
+  and the once-per-turn limit prevents abuse. Being a free action (0 AP)
+  allows players to still use the drawn card.
+
+Example:
+  Turn 12, you have 1 card in hand, 18 life (opponent has 22),
+  2 creatures (opponent has 3), and 6 essence.
+
+  You can use Commander's Insight because:
+  ✓ Turn 12 ≥ 10
+  ✓ 1 card ≤ 1
+  ✓ 6 essence ≥ 4
+  ✓ Behind on creatures (2 < 3)
+```
+
+### 5.6 Action Index Mapping (For AI)
 
 Actions are mapped to a fixed-size index space for neural network output:
 
 ```
 INDEX RANGE    ACTION TYPE
 ───────────────────────────────────────────────────────────
-0              End Turn
+0-49           Play Card (creature to slot)
+               = hand_index × 5 + slot_index
 
-1-50           Play Card from Hand
-               = hand_index (0-9) × 5 + slot/target (0-4)
-               [Note: Simplified — actual targeting is more complex]
+50-74          Attack
+               = 50 + attacker_slot × 5 + target_slot
 
-51-80          Attack
-               = attacker_slot (0-4) × 6 + target (0-5)
-               where target 0 = Face, 1-5 = enemy slots
+75-253         Use Ability
+               = 75 + slot × 36 + ability_index × 6 + target
+               (5 slots × 6 abilities × 6 targets = 180 theoretical,
+                but only indices 75-253 used in practice)
 
-81-100         Activate Ability (reserved for future)
+254            Commander's Insight (catch-up mechanic)
+
+255            End Turn
 
 ───────────────────────────────────────────────────────────
-MAX_ACTIONS = 128 (power of 2 for efficient masking)
+MAX_ACTIONS = 256 (power of 2 for efficient masking)
 ```
 
 **Detailed Play Card Indexing:**
@@ -1820,6 +1863,7 @@ See `docs/cards-new-horizons.md` for the complete card database reference.
 | 1.2 | 2026-01-16 | Phase 4 engine enhancements: Creature Filters, Conditional Triggers, Bounce Effect, Frenzy/Volatile keywords |
 | 1.3 | 2026-01-17 | **New Horizons Edition**: 300 cards, 16 keywords (added Fortify, Ward), 12 Commander Decks |
 | 1.4 | 2026-01-25 | **Commander Edition**: Commander system rework - commanders are now player personas in Command Zone with persistent abilities, not battlefield creatures. See Section 8.4 for details. |
+| 1.5 | 2026-01-27 | Added **Commander's Insight** catch-up mechanic (Section 5.5). Updated action index mapping to 256-action space with CommanderInsight at index 254 (Section 5.6). |
 
 ---
 

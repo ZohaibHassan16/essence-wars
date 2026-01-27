@@ -67,6 +67,18 @@ pub mod game {
     pub const VICTORY_POINTS_THRESHOLD: u16 = 50;
 }
 
+/// Commander's Insight (catch-up mechanic) constants
+pub mod insight {
+    /// Essence cost to use Commander's Insight
+    pub const ESSENCE_COST: u8 = 4;
+
+    /// Minimum turn number when Insight becomes available
+    pub const MIN_TURN: u16 = 10;
+
+    /// Maximum hand size to be eligible (hand must be <= this)
+    pub const MAX_HAND_SIZE: usize = 1;
+}
+
 /// Action space constants for neural network interface
 pub mod actions {
     /// Total action space size (for neural network output)

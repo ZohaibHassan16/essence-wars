@@ -7,7 +7,7 @@ use crate::core::actions::Action;
 use crate::core::cards::{CardDatabase, CardType};
 use crate::core::state::CardInstance;
 use crate::core::combat;
-use crate::core::config::{game, player};
+use crate::core::config::{game, insight, player};
 use crate::core::effects::{EffectSource, Trigger};
 use crate::core::legal::legal_actions;
 use crate::core::state::{Creature, CreatureStatus, GameMode, GamePhase, GameResult, GameState, Support, WinReason};
@@ -188,6 +188,7 @@ impl<'a> GameEngine<'a> {
     /// - Draw a card
     /// - Restore AP to 3
     /// - Reset creature attack flags (clear exhausted status)
+    /// - Reset Commander's Insight usage flag
     fn start_turn(&mut self) {
         // Increment turn counter
         self.state.current_turn += 1;
@@ -200,6 +201,9 @@ impl<'a> GameEngine<'a> {
 
         let current_player = self.state.active_player;
         let player_state = &mut self.state.players[current_player.index()];
+
+        // Reset Commander's Insight usage for this turn
+        player_state.used_commander_insight = false;
 
         // Increase max essence by 1 (capped at MAX_ESSENCE)
         if player_state.max_essence < player::MAX_ESSENCE {
@@ -505,6 +509,9 @@ impl<'a> GameEngine<'a> {
             } => {
                 self.execute_use_ability(slot, ability_index, target)?;
             }
+            Action::CommanderInsight => {
+                self.execute_commander_insight()?;
+            }
             Action::EndTurn => {
                 self.end_turn();
             }
@@ -556,6 +563,10 @@ impl<'a> GameEngine<'a> {
             } => {
                 // UseAbility doesn't have combat, use regular execution
                 self.execute_use_ability(slot, ability_index, target)?;
+            }
+            Action::CommanderInsight => {
+                // CommanderInsight doesn't have combat, use regular execution
+                self.execute_commander_insight()?;
             }
             Action::EndTurn => {
                 self.end_turn();
@@ -888,7 +899,7 @@ impl<'a> GameEngine<'a> {
 
         // Process OnAttack effects before combat (e.g., Alpha of the Hunt's buff)
         // Reborrow effect_tracer so we can use it again after combat
-        effect_queue.process_all_with_tracer(&mut self.state, self.card_db, effect_tracer.as_mut().map(|r| &mut **r));
+        effect_queue.process_all_with_tracer(&mut self.state, self.card_db, effect_tracer.as_deref_mut());
 
         // Delegate to combat module with tracer
         let _result = combat::resolve_combat(
@@ -980,6 +991,32 @@ impl<'a> GameEngine<'a> {
 
         // Process all effects
         effect_queue.process_all(&mut self.state, self.card_db);
+
+        Ok(())
+    }
+
+    /// Execute Commander's Insight action.
+    ///
+    /// Commander's Insight is a catch-up mechanic that allows struggling players
+    /// to draw a card by paying essence (no AP cost). Prerequisites are checked
+    /// by the legal action generator.
+    ///
+    /// Effect: Pay 4 essence, draw 1 card, mark as used for this turn.
+    fn execute_commander_insight(&mut self) -> Result<(), String> {
+        let current_player = self.state.active_player;
+        let player_state = &mut self.state.players[current_player.index()];
+
+        // Deduct essence cost
+        if player_state.current_essence < insight::ESSENCE_COST {
+            return Err("Not enough essence for Commander's Insight".to_string());
+        }
+        player_state.current_essence -= insight::ESSENCE_COST;
+
+        // Mark as used this turn (prevents multiple uses)
+        player_state.used_commander_insight = true;
+
+        // Draw a card
+        self.draw_card(current_player);
 
         Ok(())
     }

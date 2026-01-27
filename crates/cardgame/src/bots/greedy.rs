@@ -338,6 +338,8 @@ fn action_priority(action: &Action) -> i32 {
         Action::Attack { .. } => 100,
         // Playing cards is important
         Action::PlayCard { .. } => 80,
+        // Commander's Insight draws cards for free (no AP), decent priority when available
+        Action::CommanderInsight => 70,
         // Using abilities can be valuable
         Action::UseAbility { .. } => 60,
         // End turn only if nothing else to do

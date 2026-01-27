@@ -28,7 +28,7 @@ cargo run --release --bin arena -- --list-decks
 
 # Weight tuning
 cargo run --release --bin tune -- --mode generalist --tag my_run --generations 50
-cargo run --release --bin tune -- --mode faction-specialist --faction argentum --tag argentum_v1
+cargo run --release --bin tune -- --mode archetype --archetype aggro --tag aggro_v1
 
 # Balance validation (deck/commander performance is key metric)
 cargo run --release --bin validate -- --games 50 --progress
@@ -64,7 +64,7 @@ cargo bench -p cardgame
 - `data/commanders/` - 12 commanders in 3 YAML files (by faction)
 - `data/decks/{argentum,symbiote,obsidion}/` - 12 commander decks
 - `data/datasets/` - MCTS game datasets (JSONL.gz)
-- `data/weights/` - Tuned bot weights (generalist + specialists)
+- `data/weights/` - Tuned bot weights (generalist + archetypes)
 - `models/` - Trained ML models (Card2Vec, BC, PPO checkpoints)
 - `experiments/` - Training outputs (GITIGNORED)
 - `docs/` - Design docs, guides
@@ -87,8 +87,7 @@ When adding tests, create in `tests/unit/` and add module to `tests/unit.rs`.
 | `greedy` | Heuristic evaluation (28 tunable weights) |
 | `mcts` | UCB1 tree search with greedy rollouts |
 | `alphabeta` | Alpha-Beta minimax search (depth 6-8 recommended) |
-| `agent-{faction}` | MCTS with faction-specialist weights |
-| `agent-generalist` | MCTS with cross-faction weights |
+| `agent-generalist` | MCTS with cross-deck generalist weights |
 
 ### Alpha-Beta Bot
 
@@ -299,11 +298,11 @@ CMA-ES optimizer with parallel evaluation. Outputs to `experiments/mcts/YYYY-MM-
 
 | Mode | Use Case |
 |------|----------|
-| `generalist` | Cross-faction optimization |
+| `generalist` | Cross-deck optimization (all archetypes) |
+| `archetype` | Playstyle-specific (aggro, control, tempo, midrange) |
 | `specialist` | Specific deck matchup |
-| `faction-specialist` | Faction-wide optimization |
 
-See `docs/tuning-pipeline.md` for full options.
+See `docs/bots-tuning-pipeline.md` for full options.
 
 ## Balance Validation
 

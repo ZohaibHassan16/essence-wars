@@ -1,7 +1,7 @@
 # ESSENCE WARS
 ## A Strategic Card Game Design Document
 
-**Version:** 1.2 (New Horizons Edition)
+**Version:** 1.3 (New Horizons Edition)
 **Last Updated:** January 2026
 
 ---
@@ -408,13 +408,40 @@ Action Points (AP) limit how many things you can do each turn. This creates mean
 
 ## 8.3 Action Costs
 
-| Action | AP Cost |
-|--------|---------|
-| Play any card | 1 AP |
-| Attack with a creature | 1 AP |
-| End turn early | 0 AP |
+| Action | AP Cost | Essence Cost |
+|--------|---------|--------------|
+| Play any card | 1 AP | Card's essence cost |
+| Attack with a creature | 1 AP | None |
+| Commander's Insight | 0 AP | 4 Essence |
+| End turn early | 0 AP | None |
 
-## 8.4 Strategic Implications
+## 8.4 Commander's Insight (Catch-Up Mechanic)
+
+Commander's Insight is a special action available in the late game to help struggling players:
+
+**Cost:** 0 AP + 4 Essence
+**Effect:** Draw 1 card
+
+**Requirements (ALL must be met):**
+- Turn 10 or later
+- 0-1 cards in hand
+- 4+ essence available
+- Behind on creatures OR behind on life (strict inequality, ties don't qualify)
+- Not already used this turn
+
+**Example:**
+> Turn 12. You have 1 card in hand, 18 life (opponent: 24), 2 creatures (opponent: 3).
+> Commander's Insight is available because you're behind on both life AND creatures.
+> You pay 4 essence and draw a card, hoping for an answer.
+
+**Design Rationale:**
+- **Late game only (Turn 10+):** Prevents early game abuse and ensures the mechanic only matters when games go long
+- **Low hand size (≤1):** Targets players in "top-deck mode" who are truly struggling
+- **Behind condition:** Players who are winning or tied cannot use it — this is strictly a catch-up mechanic
+- **Free action (0 AP):** Players can actually use the drawn card immediately
+- **Once per turn:** Prevents infinite loops or excessive card advantage
+
+## 8.5 Strategic Implications
 
 With only 3 AP per turn, players must choose between:
 - Playing multiple cheap cards vs. one expensive card + an attack
@@ -1954,6 +1981,7 @@ Time: ~30-60 minutes
 | **Turn** | One player's complete cycle of phases (Start, Main, End). |
 | **Vanilla** | A creature with no keywords or abilities, just stats. |
 | **Victory Points** | Total damage dealt to the enemy player (tracked for alternate win condition). |
+| **Commander's Insight** | A catch-up mechanic allowing struggling players to draw a card for 4 essence (requires Turn 10+, ≤1 hand, behind on creatures OR life). |
 | **Frenzy** | Keyword: +1 attack after each attack this turn. |
 | **Volatile** | Keyword: Deal 2 damage to all enemy creatures when this creature dies. |
 | **Fortify** | Keyword: Take 1 less damage from all sources (minimum 1). |
@@ -1994,6 +2022,7 @@ Time: ~30-60 minutes
 |--------|------|
 | Play any card | 1 AP + Essence Cost |
 | Attack with creature | 1 AP |
+| Commander's Insight | 0 AP + 4 Essence (late game catch-up) |
 | End turn | Free |
 
 ## 21.3 Lane Attack Ranges
@@ -2079,3 +2108,4 @@ For production as a physical card game:
 | 1.0 | 2025-01 | Initial design document (43 cards, 12 keywords) |
 | 1.1 | 2025-06 | Added faction system, AI architecture |
 | 1.2 | 2026-01 | **New Horizons Edition** — 300 cards, 16 keywords, 12 Commander Decks, Phase 4 engine features |
+| 1.3 | 2026-01-27 | Added **Commander's Insight** catch-up mechanic (Section 8.4) — late-game card draw for struggling players |

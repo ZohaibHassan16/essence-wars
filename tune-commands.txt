@@ -1,0 +1,21 @@
+  Next Steps: Training
+
+  Now you can train the archetype weights:
+
+  # Train Aggro weights (5 decks)
+  cargo run --release --bin tune -- --mode archetype --archetype aggro \
+      --generations 100 --games 100 --tag aggro_v1
+
+  # Train Control weights (3 decks)
+  cargo run --release --bin tune -- --mode archetype --archetype control \
+      --generations 100 --games 100 --tag control_v1
+
+  # Train Tempo weights (3 decks)
+  cargo run --release --bin tune -- --mode archetype --archetype tempo \
+      --generations 100 --games 100 --tag tempo_v1
+
+  # Train Midrange weights (1 deck)
+  cargo run --release --bin tune -- --mode archetype --archetype midrange \
+      --generations 100 --games 100 --tag midrange_v1
+
+  The weights will auto-deploy to data/weights/archetypes/ and be automatically used by arena/validate.

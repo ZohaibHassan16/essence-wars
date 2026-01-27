@@ -324,6 +324,7 @@ impl<'a> AlphaBetaBot<'a> {
         match action {
             Action::Attack { .. } => 100.0, // Attacks often decisive
             Action::PlayCard { .. } => 50.0, // Developing is good
+            Action::CommanderInsight => 40.0, // Free card draw when behind
             Action::UseAbility { .. } => 30.0, // Abilities can be powerful
             Action::EndTurn => -100.0, // Usually worst option
         }

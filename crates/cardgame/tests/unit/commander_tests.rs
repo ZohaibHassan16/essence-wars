@@ -59,25 +59,34 @@ fn play_creature_at_slot(engine: &mut GameEngine, hand_index: u8, slot: Slot) {
 // =============================================================================
 
 #[test]
-fn test_sanctum_healer_grants_regenerate() {
-    // The Sanctum Healer (5001): Your creatures have Regenerate
+fn test_sanctum_healer_grants_health_buff() {
+    // The Sanctum Healer (5001): Your creatures have +0/+3
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
     // Set up game with Sanctum Healer as P1's commander
     setup_game_with_commanders(&mut engine, 5001, 5000, 42);
 
-    // Play a creature for P1
+    // Play a creature for P1 (Brass Sentinel: 2/5 Guard)
     play_creature_at_slot(&mut engine, 0, Slot(0));
 
-    // Check the creature has Regenerate
+    // Check the creature has +0/+3 health buff
     let creature = engine.state.players[0]
         .get_creature(Slot(0))
         .expect("Creature should exist");
 
-    assert!(
-        creature.keywords.has_regenerate(),
-        "Creature should have Regenerate from Sanctum Healer passive"
+    // Brass Sentinel base stats: 2/5, with +0/+3 should be 2/8
+    assert_eq!(
+        creature.attack, 2,
+        "Creature attack should be 2 (unchanged)"
+    );
+    assert_eq!(
+        creature.current_health, 8,
+        "Creature health should be 8 (5 base + 3 from Sanctum Healer)"
+    );
+    assert_eq!(
+        creature.max_health, 8,
+        "Creature max health should be 8 (5 base + 3 from Sanctum Healer)"
     );
 }
 
@@ -519,60 +528,12 @@ fn test_high_artificer_summons_multiple_tokens_over_turns() {
 }
 
 #[test]
-fn test_broodmother_summons_broodling_when_rush_creature_played() {
-    // The Broodmother (5004): When you play a creature with Rush, summon a 1/1 Broodling with Rush
+fn test_broodmother_grants_rush_to_all_creatures() {
+    // The Broodmother (5004): Your creatures have Rush
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
-    // Use Broodling (2003) - 1 cost, 2/2 Rush creature
-    let deck1: Vec<CardId> = vec![CardId(2003); 30]; // Rush creatures
-    let deck2: Vec<CardId> = vec![CardId(1000); 30]; // Brass Sentinels
-
-    engine.start_game_raw(
-        deck1,
-        deck2,
-        CardId(5004), // Broodmother
-        CardId(5000), // High Artificer
-        42,
-        GameMode::default(),
-    );
-
-    // Turn 1: P1 has 1 essence, can play 1-cost Broodling
-    // Play the Rush creature
-    let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
-    engine.apply_action(action).expect("Failed to play Rush creature");
-
-    // Check P1 has 2 creatures: the Broodling played and the token summoned
-    let p1_creatures = &engine.state.players[0].creatures;
-    assert_eq!(
-        p1_creatures.len(),
-        2,
-        "P1 should have 2 creatures: 1 played + 1 summoned Broodling token"
-    );
-
-    // Find the token (it should be the one with 1/1 stats)
-    let token = p1_creatures.iter().find(|c| c.attack == 1 && c.current_health == 1);
-    assert!(
-        token.is_some(),
-        "There should be a 1/1 Broodling token summoned by The Broodmother"
-    );
-
-    // Verify the token has Rush
-    let token = token.unwrap();
-    assert!(
-        token.keywords.has_rush(),
-        "Broodling token should have Rush keyword"
-    );
-}
-
-#[test]
-fn test_broodmother_summons_on_any_creature_played() {
-    // Verify Broodmother triggers on ANY creature played (not just Rush)
-    // This was buffed from Rush-only to any creature in v0.8.0
-    let card_db = load_test_db();
-    let mut engine = GameEngine::new(&card_db);
-
-    // Use Brass Sentinel (1000) - 2 cost, 2/4 Guard (no Rush)
+    // Use Brass Sentinel (1000) - 2 cost, 2/4 Guard (no Rush naturally)
     let deck1: Vec<CardId> = vec![CardId(1000); 30];
     let deck2: Vec<CardId> = vec![CardId(1000); 30];
 
@@ -585,28 +546,76 @@ fn test_broodmother_summons_on_any_creature_played() {
         GameMode::default(),
     );
 
-    // Advance to turn 2 so P1 has 2 essence
+    // Advance to turn 2 so P1 has 2 essence for Brass Sentinel
     engine.apply_action(Action::EndTurn).expect("P1 end turn");
     engine.apply_action(Action::EndTurn).expect("P2 end turn");
 
-    // Play the non-Rush creature
+    // Play the creature (no Rush naturally)
     let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
     engine.apply_action(action).expect("Failed to play creature");
 
-    // Check P1 has 2 creatures (the played creature + Broodling token)
+    // The creature should have Rush granted by The Broodmother
     let p1_creatures = &engine.state.players[0].creatures;
-    assert_eq!(
-        p1_creatures.len(),
-        2,
-        "P1 should have 2 creatures (played creature + Broodling token)"
+    assert_eq!(p1_creatures.len(), 1, "P1 should have 1 creature");
+
+    let creature = &p1_creatures[0];
+    assert!(
+        creature.keywords.has_rush(),
+        "Brass Sentinel should have Rush granted by The Broodmother"
+    );
+}
+
+#[test]
+fn test_broodmother_rush_does_not_affect_opponent() {
+    // Verify The Broodmother's Rush only affects own creatures, not opponent's
+    let card_db = load_test_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    // Use Brass Sentinel (1000) - 2 cost, 2/4 Guard (no Rush naturally)
+    let deck1: Vec<CardId> = vec![CardId(1000); 30];
+    let deck2: Vec<CardId> = vec![CardId(1000); 30];
+
+    // Use two passive commanders to avoid token spawning complications
+    engine.start_game_raw(
+        deck1,
+        deck2,
+        CardId(5004), // Broodmother (P1) - grants Rush
+        CardId(5001), // Sanctum Healer (P2) - grants +0/+3
+        42,
+        GameMode::default(),
     );
 
-    // Verify the Broodling was summoned (1/1 with Rush)
-    // Brass Sentinel is 2/4 with Guard, Broodling is 1/1 with Rush
-    let broodling = p1_creatures.iter().find(|c| {
-        c.attack == 1 && c.current_health == 1 && c.keywords.has_rush()
-    });
-    assert!(broodling.is_some(), "Broodling token should be summoned");
+    // Advance to turn 2 so both players have 2 essence
+    engine.apply_action(Action::EndTurn).expect("P1 end turn");
+    engine.apply_action(Action::EndTurn).expect("P2 end turn");
+
+    // P1 plays creature - should have Rush
+    let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
+    engine.apply_action(action).expect("P1 plays creature");
+    engine.apply_action(Action::EndTurn).expect("P1 end turn");
+
+    // P2 plays creature - should NOT have Rush (P2 has Sanctum Healer, not Broodmother)
+    let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
+    engine.apply_action(action).expect("P2 plays creature");
+
+    // Verify P1's creature has Rush
+    let p1_creature = &engine.state.players[0].creatures[0];
+    assert!(
+        p1_creature.keywords.has_rush(),
+        "P1's creature should have Rush from The Broodmother"
+    );
+
+    // Verify P2's creature does NOT have Rush (but should have +3 health from Sanctum Healer)
+    let p2_creature = &engine.state.players[1].creatures[0];
+    assert!(
+        !p2_creature.keywords.has_rush(),
+        "P2's creature should NOT have Rush (wrong commander)"
+    );
+    // Brass Sentinel base is 2/5, with Sanctum Healer should be 2/8
+    assert_eq!(
+        p2_creature.current_health, 8,
+        "P2's creature should have +3 health from Sanctum Healer"
+    );
 }
 
 #[test]

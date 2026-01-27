@@ -6,7 +6,7 @@
 //! - Neural network action masking
 
 use arrayvec::ArrayVec;
-use crate::core::config::board;
+use crate::core::config::{board, insight};
 use crate::core::types::Slot;
 use crate::core::actions::Action;
 use crate::core::state::GameState;
@@ -36,6 +36,11 @@ pub fn legal_actions(
 
     // Generate UseAbility actions
     generate_ability_actions(state, card_db, &mut actions);
+
+    // Generate CommanderInsight action (if eligible)
+    if is_commander_insight_legal(state) && actions.len() < MAX_LEGAL_ACTIONS {
+        actions.push(Action::CommanderInsight);
+    }
 
     // EndTurn is always legal
     actions.push(Action::EndTurn);
@@ -215,7 +220,7 @@ fn generate_attack_actions(
 /// UseAbility actions are reserved for future "Activated" trigger types that
 /// allow players to manually trigger abilities during their turn.
 ///
-/// The action space (indices 75-254) is reserved for this future feature.
+/// The action space (indices 75-253) is reserved for this future feature.
 #[allow(unused_variables)]
 fn generate_ability_actions(
     state: &GameState,
@@ -229,4 +234,48 @@ fn generate_ability_actions(
     // 1. Add `Activated` variant to the `Trigger` enum in effects.rs
     // 2. Create cards with `trigger: Activated` abilities
     // 3. Implement the ability generation logic here, checking for Trigger::Activated
+}
+
+/// Check if Commander's Insight is legal for the current player.
+///
+/// Commander's Insight is a catch-up mechanic that allows struggling players
+/// to draw a card for essence (no AP cost). It's available when:
+/// - Turn >= 10 (late game only)
+/// - Hand size <= 1 (top-decking)
+/// - Behind on creatures OR behind on life (catch-up restriction)
+/// - Have enough essence (4)
+/// - Haven't used it this turn
+pub fn is_commander_insight_legal(state: &GameState) -> bool {
+    // Must be turn 10 or later
+    if state.current_turn < insight::MIN_TURN {
+        return false;
+    }
+
+    let player = state.active_player_state();
+    let opponent = state.opponent_state();
+
+    // Must not have used insight this turn
+    if player.used_commander_insight {
+        return false;
+    }
+
+    // Must have hand size <= 1 (starving)
+    if player.hand.len() > insight::MAX_HAND_SIZE {
+        return false;
+    }
+
+    // Must have enough essence
+    if player.current_essence < insight::ESSENCE_COST {
+        return false;
+    }
+
+    // Must be behind on creatures OR behind on life (strict inequality)
+    let behind_on_creatures = player.creatures.len() < opponent.creatures.len();
+    let behind_on_life = player.life < opponent.life;
+
+    if !behind_on_creatures && !behind_on_life {
+        return false;
+    }
+
+    true
 }

@@ -26,10 +26,11 @@ commanders:
     faction: Argentum
     rarity: Legendary
     passive_ability:
-      description: "Your creatures have Regenerate"
+      description: "Your creatures have +0/+3"
       effect:
-        type: grant_keyword
-        keyword: Regenerate
+        type: buff_stats
+        attack: 0
+        health: 3
     flavor: "Where gears mend flesh and essence restores steel."
 
   - id: 5002

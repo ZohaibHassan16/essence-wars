@@ -106,6 +106,7 @@ pub struct PlayerState {
     pub creatures: ArrayVec<Creature, {board::CREATURE_SLOTS}>,
     pub supports: ArrayVec<Support, {board::SUPPORT_SLOTS}>,
     pub total_damage_dealt: u16,               // For victory points tracking
+    pub used_commander_insight: bool,          // Whether Commander's Insight was used this turn
 }
 
 impl PlayerState {
@@ -120,6 +121,7 @@ impl PlayerState {
             creatures: ArrayVec::new(),
             supports: ArrayVec::new(),
             total_damage_dealt: 0,
+            used_commander_insight: false,
         }
     }
 

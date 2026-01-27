@@ -6,7 +6,8 @@
 //! The game uses a fixed action space of 256 actions for neural network compatibility:
 //! - Index 0-49:    PlayCard(hand_idx 0-9, slot 0-4)
 //! - Index 50-74:   Attack(attacker_slot 0-4, defender_slot 0-4)
-//! - Index 75-254:  UseAbility(slot, ability_idx, target)
+//! - Index 75-253:  UseAbility(slot, ability_idx, target)
+//! - Index 254:     CommanderInsight (draw a card for 4 essence, catch-up mechanic)
 //! - Index 255:     EndTurn
 
 use serde::{Deserialize, Serialize};
@@ -80,6 +81,15 @@ pub enum Action {
         /// Target for the ability
         target: Target,
     },
+    /// Commander's Insight - Draw a card for 4 essence (catch-up mechanic)
+    ///
+    /// Available when:
+    /// - Turn >= 10
+    /// - Hand size <= 1
+    /// - Behind on creatures OR behind on life
+    /// - Have 4+ essence
+    /// - Not used this turn
+    CommanderInsight,
     /// End the current turn
     EndTurn,
 }
@@ -94,7 +104,8 @@ impl Action {
     const ATTACK_START: u8 = 50;
     const ATTACK_END: u8 = 74;
     const USE_ABILITY_START: u8 = 75;
-    const USE_ABILITY_END: u8 = 254;
+    const USE_ABILITY_END: u8 = 253;
+    const COMMANDER_INSIGHT_INDEX: u8 = 254;
     const END_TURN_INDEX: u8 = 255;
 
     // Limits
@@ -107,7 +118,8 @@ impl Action {
     /// Index mapping:
     /// - PlayCard: hand_idx * 5 + slot (0-49)
     /// - Attack: 50 + attacker * 5 + defender (50-74)
-    /// - UseAbility: 75 + slot * 36 + ability * 6 + target (75-254)
+    /// - UseAbility: 75 + slot * 36 + ability * 6 + target (75-253)
+    /// - CommanderInsight: 254
     /// - EndTurn: 255
     ///
     /// Note: For UseAbility, target indices 0-5 are used (NoTarget and EnemySlot only).
@@ -128,6 +140,7 @@ impl Action {
                     + ability_index * Self::NUM_TARGETS
                     + target.to_index()
             }
+            Action::CommanderInsight => Self::COMMANDER_INSIGHT_INDEX,
             Action::EndTurn => Self::END_TURN_INDEX,
         }
     }
@@ -175,6 +188,7 @@ impl Action {
                     target,
                 })
             }
+            Self::COMMANDER_INSIGHT_INDEX => Some(Action::CommanderInsight),
             Self::END_TURN_INDEX => Some(Action::EndTurn),
         }
     }

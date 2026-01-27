@@ -550,3 +550,186 @@ fn test_attack_empty_slot_face_damage() {
         .count();
     assert_eq!(attack_count, 3); // Adjacent slots 1, 2, 3
 }
+
+// =============================================================================
+// COMMANDER'S INSIGHT TESTS
+// =============================================================================
+
+#[test]
+fn test_commander_insight_not_available_early_game() {
+    let card_db = test_card_db();
+    let mut state = GameState::new();
+    state.current_turn = 9; // Before turn 10
+
+    // Set up conditions that would otherwise allow insight
+    state.players[0].current_essence = 10;
+    state.players[0].hand.clear(); // 0 cards - starving
+    state.players[0].life = 10;
+    state.players[1].life = 30; // Behind on life
+
+    let actions = legal_actions(&state, &card_db);
+
+    assert!(!actions.contains(&Action::CommanderInsight),
+        "Commander's Insight should not be available before turn 10");
+}
+
+#[test]
+fn test_commander_insight_not_available_with_full_hand() {
+    let card_db = test_card_db();
+    let mut state = GameState::new();
+    state.current_turn = 10;
+
+    // Add 2 cards to hand (more than allowed 1)
+    state.players[0].hand.push(CardInstance::new(CardId(1)));
+    state.players[0].hand.push(CardInstance::new(CardId(1)));
+    state.players[0].current_essence = 10;
+    state.players[0].life = 10;
+    state.players[1].life = 30;
+
+    let actions = legal_actions(&state, &card_db);
+
+    assert!(!actions.contains(&Action::CommanderInsight),
+        "Commander's Insight should not be available with more than 1 card in hand");
+}
+
+#[test]
+fn test_commander_insight_not_available_when_winning() {
+    let card_db = test_card_db();
+    let mut state = GameState::new();
+    state.current_turn = 10;
+
+    state.players[0].hand.clear(); // 0 cards - starving
+    state.players[0].current_essence = 10;
+
+    // Winning on both metrics
+    state.players[0].life = 30;
+    state.players[1].life = 20;
+
+    // More creatures than opponent
+    let creature = make_creature(1, 0, PlayerId::PLAYER_ONE, 5, Keywords::none());
+    state.players[0].creatures.push(creature);
+
+    let actions = legal_actions(&state, &card_db);
+
+    assert!(!actions.contains(&Action::CommanderInsight),
+        "Commander's Insight should not be available when winning");
+}
+
+#[test]
+fn test_commander_insight_not_available_when_tied() {
+    let card_db = test_card_db();
+    let mut state = GameState::new();
+    state.current_turn = 10;
+
+    state.players[0].hand.clear();
+    state.players[0].current_essence = 10;
+
+    // Tied on both metrics
+    state.players[0].life = 20;
+    state.players[1].life = 20;
+
+    let creature1 = make_creature(1, 0, PlayerId::PLAYER_ONE, 5, Keywords::none());
+    let creature2 = make_creature(1, 0, PlayerId::PLAYER_TWO, 5, Keywords::none());
+    state.players[0].creatures.push(creature1);
+    state.players[1].creatures.push(creature2);
+
+    let actions = legal_actions(&state, &card_db);
+
+    assert!(!actions.contains(&Action::CommanderInsight),
+        "Commander's Insight should not be available when tied");
+}
+
+#[test]
+fn test_commander_insight_not_available_without_essence() {
+    let card_db = test_card_db();
+    let mut state = GameState::new();
+    state.current_turn = 10;
+
+    state.players[0].hand.clear();
+    state.players[0].current_essence = 3; // Less than required 4
+    state.players[0].life = 10;
+    state.players[1].life = 30;
+
+    let actions = legal_actions(&state, &card_db);
+
+    assert!(!actions.contains(&Action::CommanderInsight),
+        "Commander's Insight should not be available without enough essence");
+}
+
+#[test]
+fn test_commander_insight_not_available_when_already_used() {
+    let card_db = test_card_db();
+    let mut state = GameState::new();
+    state.current_turn = 10;
+
+    state.players[0].hand.clear();
+    state.players[0].current_essence = 10;
+    state.players[0].life = 10;
+    state.players[1].life = 30;
+    state.players[0].used_commander_insight = true; // Already used
+
+    let actions = legal_actions(&state, &card_db);
+
+    assert!(!actions.contains(&Action::CommanderInsight),
+        "Commander's Insight should not be available if already used this turn");
+}
+
+#[test]
+fn test_commander_insight_available_behind_on_life() {
+    let card_db = test_card_db();
+    let mut state = GameState::new();
+    state.current_turn = 10;
+
+    state.players[0].hand.clear();
+    state.players[0].current_essence = 10;
+    state.players[0].life = 10;
+    state.players[1].life = 30; // Behind on life
+
+    // Tied or ahead on creatures
+    let creature = make_creature(1, 0, PlayerId::PLAYER_ONE, 5, Keywords::none());
+    state.players[0].creatures.push(creature);
+
+    let actions = legal_actions(&state, &card_db);
+
+    assert!(actions.contains(&Action::CommanderInsight),
+        "Commander's Insight should be available when behind on life");
+}
+
+#[test]
+fn test_commander_insight_available_behind_on_creatures() {
+    let card_db = test_card_db();
+    let mut state = GameState::new();
+    state.current_turn = 10;
+
+    state.players[0].hand.clear();
+    state.players[0].current_essence = 10;
+    state.players[0].life = 30;
+    state.players[1].life = 20; // Ahead on life
+
+    // Behind on creatures (opponent has more)
+    let creature = make_creature(1, 0, PlayerId::PLAYER_TWO, 5, Keywords::none());
+    state.players[1].creatures.push(creature);
+
+    let actions = legal_actions(&state, &card_db);
+
+    assert!(actions.contains(&Action::CommanderInsight),
+        "Commander's Insight should be available when behind on creatures");
+}
+
+#[test]
+fn test_commander_insight_available_with_one_card() {
+    let card_db = test_card_db();
+    let mut state = GameState::new();
+    state.current_turn = 10;
+
+    // Exactly 1 card in hand is still eligible
+    state.players[0].hand.push(CardInstance::new(CardId(1)));
+    state.players[0].current_essence = 10;
+    state.players[0].life = 10;
+    state.players[1].life = 30;
+
+    let actions = legal_actions(&state, &card_db);
+
+    assert!(actions.contains(&Action::CommanderInsight),
+        "Commander's Insight should be available with exactly 1 card in hand");
+}

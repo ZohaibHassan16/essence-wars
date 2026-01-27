@@ -364,6 +364,9 @@ impl GameClient {
             Action::UseAbility { .. } => {
                 // Ability events are complex - would need more tracking
             }
+            Action::CommanderInsight => {
+                // Commander's Insight draws a card - card draw events are handled by diff
+            }
         }
 
         // Now emit all collected events

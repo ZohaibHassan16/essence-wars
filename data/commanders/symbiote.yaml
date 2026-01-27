@@ -8,16 +8,11 @@ commanders:
     card_type: commander
     faction: Symbiote
     rarity: Legendary
-    triggered_ability:
-      trigger: OnCreaturePlayed
-      description: "When you play a creature, summon a 1/1 Broodling with Rush"
-      effects:
-        - type: summon_token
-          token:
-            name: "Broodling"
-            attack: 1
-            health: 1
-            keywords: [Rush]
+    passive_ability:
+      description: "Your creatures have Rush"
+      effect:
+        type: grant_keyword
+        keyword: Rush
     flavor: "Where she commands, the swarm follows."
 
   - id: 5005

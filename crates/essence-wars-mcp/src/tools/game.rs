@@ -353,6 +353,7 @@ fn format_action_short(action: &Action) -> String {
                 target_str
             )
         }
+        Action::CommanderInsight => "CommanderInsight".to_string(),
         Action::EndTurn => "EndTurn".to_string(),
     }
 }
@@ -411,6 +412,7 @@ fn format_action_description(
 
             format!("Use {}'s ability", creature_name)
         }
+        Action::CommanderInsight => "Use Commander's Insight (draw a card for 4 essence)".to_string(),
         Action::EndTurn => "End your turn".to_string(),
     }
 }
