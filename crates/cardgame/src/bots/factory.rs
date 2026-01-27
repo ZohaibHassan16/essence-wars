@@ -309,7 +309,7 @@ pub fn resolve_weights_verbose(
         };
         let weights = BotWeights::load(&full_path)
             .map_err(|e| WeightResolutionError::LoadFailed(full_path.clone(), e.to_string()))?;
-        println!(
+        log::info!(
             "Loaded weights for {}: {} ({} deck-specific)",
             bot_label,
             weights.name,
@@ -323,11 +323,11 @@ pub fn resolve_weights_verbose(
         let full_path = base_dir.join(&agent_path);
         match BotWeights::load(&full_path) {
             Ok(w) => {
-                println!("Auto-loaded {} weights: {}", bot_type.name(), w.name);
+                log::info!("Auto-loaded {} weights: {}", bot_type.name(), w.name);
                 return Ok(Some(w));
             }
             Err(_) => {
-                println!(
+                log::debug!(
                     "Note: {} using default weights (no specialist weights at {:?})",
                     bot_type.name(),
                     full_path
@@ -358,7 +358,7 @@ pub fn resolve_weights_with_archetype_verbose(
     // Then try archetype weights
     if let Some(arch) = archetype {
         if let Some(weights) = resolve_archetype_weights(arch, base_dir)? {
-            println!(
+            log::info!(
                 "Auto-loaded archetype weights for {}: {} (archetype: {})",
                 bot_label, weights.name, arch
             );
@@ -366,7 +366,7 @@ pub fn resolve_weights_with_archetype_verbose(
         }
     }
 
-    println!("Note: {} using built-in default weights", bot_label);
+    log::debug!("Note: {} using built-in default weights", bot_label);
     Ok(None)
 }
 

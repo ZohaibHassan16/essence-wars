@@ -17,7 +17,7 @@ use crate::decks::DeckDefinition;
 
 use super::actions::{execute_attack, execute_attack_with_tracers, execute_play_card, execute_use_ability, ActionContext};
 use super::effect_queue::EffectQueue;
-use super::init::{draw_card, initialize_game_raw};
+use super::init::{draw_card, initialize_game_raw, GameInitError};
 use super::passive::remove_support_passives_from_all_creatures;
 use super::turn;
 use super::victory;
@@ -47,23 +47,23 @@ impl<'a> GameEngine<'a> {
     /// This is the primary API for starting games. Each deck definition includes
     /// the commander, so commanders are always used. Uses Attrition mode by default.
     ///
-    /// # Panics
-    /// Panics if either commander is not found in the card database.
-    pub fn start_game(&mut self, deck1: &DeckDefinition, deck2: &DeckDefinition, seed: u64) {
+    /// # Errors
+    /// Returns `GameInitError::CommanderNotFound` if either commander is not found in the card database.
+    pub fn start_game(&mut self, deck1: &DeckDefinition, deck2: &DeckDefinition, seed: u64) -> Result<(), GameInitError> {
         self.start_game_with_mode(deck1, deck2, seed, GameMode::default())
     }
 
     /// Initialize a new game with the given deck definitions and game mode.
     ///
-    /// # Panics
-    /// Panics if either commander is not found in the card database.
+    /// # Errors
+    /// Returns `GameInitError::CommanderNotFound` if either commander is not found in the card database.
     pub fn start_game_with_mode(
         &mut self,
         deck1: &DeckDefinition,
         deck2: &DeckDefinition,
         seed: u64,
         mode: GameMode,
-    ) {
+    ) -> Result<(), GameInitError> {
         self.start_game_raw(
             deck1.to_card_ids(),
             deck2.to_card_ids(),
@@ -80,8 +80,8 @@ impl<'a> GameEngine<'a> {
     /// or when constructing games programmatically without DeckDefinitions).
     /// Commanders are mandatory - Essence Wars is built around commanders.
     ///
-    /// # Panics
-    /// Panics if either commander ID is not found in the card database.
+    /// # Errors
+    /// Returns `GameInitError::CommanderNotFound` if either commander ID is not found in the card database.
     pub fn start_game_raw(
         &mut self,
         deck1: Vec<crate::core::types::CardId>,
@@ -90,7 +90,7 @@ impl<'a> GameEngine<'a> {
         commander2: crate::core::types::CardId,
         seed: u64,
         mode: GameMode,
-    ) {
+    ) -> Result<(), GameInitError> {
         // Delegate to init module
         initialize_game_raw(
             &mut self.state,
@@ -101,13 +101,15 @@ impl<'a> GameEngine<'a> {
             commander2,
             seed,
             mode,
-        );
+        )?;
 
         // Start Player 1's first turn
         turn::start_turn(&mut self.state, self.card_db, &mut self.effect_queue);
 
         // Validate initial state in debug builds
         self.state.debug_validate();
+
+        Ok(())
     }
 
     /// Get the commander definition for a player.

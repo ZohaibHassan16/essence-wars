@@ -582,7 +582,7 @@ impl<'a> Evaluator<'a> {
         let mut random_bot = RandomBot::new(seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game_raw(self.default_deck.clone(), self.default_deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(self.default_deck.clone(), self.default_deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < self.config.max_actions {
@@ -612,7 +612,7 @@ impl<'a> Evaluator<'a> {
         let mut baseline_bot = GreedyBot::new(self.card_db, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game_raw(self.default_deck.clone(), self.default_deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(self.default_deck.clone(), self.default_deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < self.config.max_actions {
@@ -652,7 +652,7 @@ impl<'a> Evaluator<'a> {
         let mut random_bot = RandomBot::new(seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(card_db);
-        engine.start_game_raw(deck.to_vec(), deck.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck.to_vec(), deck.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < max_actions {
@@ -689,7 +689,7 @@ impl<'a> Evaluator<'a> {
         let mut baseline_bot = GreedyBot::new(card_db, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(card_db);
-        engine.start_game_raw(deck.to_vec(), deck.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck.to_vec(), deck.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < max_actions {
@@ -731,7 +731,7 @@ impl<'a> Evaluator<'a> {
         let mut mcts_bot = MctsBot::with_config(card_db, mcts_config, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(card_db);
-        engine.start_game_raw(deck.to_vec(), deck.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck.to_vec(), deck.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < max_actions {
@@ -763,7 +763,7 @@ impl<'a> Evaluator<'a> {
         let mut random_bot = RandomBot::new(seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < self.config.max_actions {
@@ -793,7 +793,7 @@ impl<'a> Evaluator<'a> {
         let mut baseline_bot = GreedyBot::new(self.card_db, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < self.config.max_actions {
@@ -827,7 +827,7 @@ impl<'a> Evaluator<'a> {
         let mut mcts_bot = MctsBot::with_config(self.card_db, mcts_config, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < self.config.max_actions {
@@ -862,7 +862,7 @@ impl<'a> Evaluator<'a> {
         let mut random_bot = RandomBot::new(seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(card_db);
-        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < max_actions {
@@ -900,7 +900,7 @@ impl<'a> Evaluator<'a> {
         let mut baseline_bot = GreedyBot::new(card_db, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(card_db);
-        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < max_actions {
@@ -943,7 +943,7 @@ impl<'a> Evaluator<'a> {
         let mut mcts_bot = MctsBot::with_config(card_db, mcts_config, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(card_db);
-        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < max_actions {
@@ -1066,7 +1066,7 @@ impl<'a> Evaluator<'a> {
 
         // Create and start game
         let mut engine = GameEngine::new(card_db);
-        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < config.max_actions {

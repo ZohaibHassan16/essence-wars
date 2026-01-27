@@ -107,7 +107,9 @@ impl<'a> GameRunner<'a> {
 
         // Create and start game engine
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game_with_mode(deck1, deck2, seed, self.game_mode);
+        engine
+            .start_game_with_mode(deck1, deck2, seed, self.game_mode)
+            .expect("Failed to start game - commander not found in card database");
 
         // Log game start
         if let Some(ref mut logger) = self.logger {
@@ -174,7 +176,7 @@ impl<'a> GameRunner<'a> {
             };
 
             if let Err(e) = result {
-                eprintln!("Error applying action {:?}: {:?}", action, e);
+                log::error!("Error applying action {:?}: {:?}", action, e);
                 break;
             }
 

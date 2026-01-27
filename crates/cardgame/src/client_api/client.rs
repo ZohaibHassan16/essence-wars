@@ -128,7 +128,9 @@ impl GameClient {
 
         // Create and initialize engine
         let mut engine = GameEngine::new(db_ref);
-        engine.start_game_with_mode(deck1, deck2, seed, mode);
+        engine
+            .start_game_with_mode(deck1, deck2, seed, mode)
+            .expect("Failed to start game - commander not found in card database");
 
         // Take initial snapshot
         let snapshot = StateSnapshot::from_state(&engine.state);
@@ -183,7 +185,9 @@ impl GameClient {
 
         // Create and initialize engine with commanders
         let mut engine = GameEngine::new(db_ref);
-        engine.start_game_raw(deck1.clone(), deck2.clone(), commander1, commander2, seed, mode);
+        engine
+            .start_game_raw(deck1.clone(), deck2.clone(), commander1, commander2, seed, mode)
+            .expect("Failed to start game - commander not found in card database");
 
         // Take initial snapshot
         let snapshot = StateSnapshot::from_state(&engine.state);

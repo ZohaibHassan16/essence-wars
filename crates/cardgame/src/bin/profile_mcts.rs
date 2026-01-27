@@ -37,7 +37,7 @@ fn main() {
     // Profile engine.fork()
     {
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+        engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).expect("Failed to start game");
 
         // Play a few moves to get realistic state
         let mut greedy = GreedyBot::new(&card_db, 42);
@@ -60,7 +60,7 @@ fn main() {
     // Profile GreedyBot action selection
     {
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+        engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).expect("Failed to start game");
 
         let mut greedy = GreedyBot::new(&card_db, 42);
 
@@ -80,7 +80,7 @@ fn main() {
     // Profile single rollout
     {
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+        engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).expect("Failed to start game");
 
         let iterations = 1000;
         let mut total_actions = 0u64;
@@ -107,7 +107,7 @@ fn main() {
     // Profile MCTS search
     {
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+        engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).expect("Failed to start game");
 
         // Play a few moves
         let mut greedy = GreedyBot::new(&card_db, 42);
@@ -157,7 +157,7 @@ fn main() {
 
             for seed in 0..games {
                 let mut engine = GameEngine::new(&card_db);
-                engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+                engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
 
                 let mut mcts = MctsBot::with_config(&card_db, config.clone(), seed);
                 let mut greedy = GreedyBot::new(&card_db, seed + 1000);

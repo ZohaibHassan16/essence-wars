@@ -125,12 +125,9 @@ impl PyGame {
     /// Args:
     ///     seed: Random seed for deck shuffling and game randomness
     fn reset(&mut self, seed: u64) {
-        self.engine.start_game_with_mode(
-            &self.deck1,
-            &self.deck2,
-            seed,
-            self.game_mode,
-        );
+        self.engine
+            .start_game_with_mode(&self.deck1, &self.deck2, seed, self.game_mode)
+            .expect("Failed to start game - commander not found in card database");
     }
 
     /// Get the current state tensor as a NumPy array.
@@ -375,12 +372,9 @@ impl PyParallelGames {
         }
 
         for (engine, seed) in self.engines.iter_mut().zip(seeds.iter()) {
-            engine.start_game_with_mode(
-                &self.deck1,
-                &self.deck2,
-                *seed,
-                self.game_mode,
-            );
+            engine
+                .start_game_with_mode(&self.deck1, &self.deck2, *seed, self.game_mode)
+                .expect("Failed to start game - commander not found in card database");
         }
 
         Ok(())
@@ -503,12 +497,9 @@ impl PyParallelGames {
             )));
         }
 
-        self.engines[idx].start_game_with_mode(
-            &self.deck1,
-            &self.deck2,
-            seed,
-            self.game_mode,
-        );
+        self.engines[idx]
+            .start_game_with_mode(&self.deck1, &self.deck2, seed, self.game_mode)
+            .expect("Failed to start game - commander not found in card database");
 
         Ok(())
     }
@@ -521,12 +512,9 @@ impl PyParallelGames {
     ///     base_seed: Base random seed
     fn reset_all(&mut self, base_seed: u64) {
         for (i, engine) in self.engines.iter_mut().enumerate() {
-            engine.start_game_with_mode(
-                &self.deck1,
-                &self.deck2,
-                base_seed + i as u64,
-                self.game_mode,
-            );
+            engine
+                .start_game_with_mode(&self.deck1, &self.deck2, base_seed + i as u64, self.game_mode)
+                .expect("Failed to start game - commander not found in card database");
         }
     }
 }

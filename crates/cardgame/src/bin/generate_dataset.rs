@@ -398,7 +398,9 @@ fn generate_game(
 
     // Create engine
     let mut engine = GameEngine::new(card_db);
-    engine.start_game_with_mode(&deck1, &deck2, config.seed, config.game_mode);
+    engine
+        .start_game_with_mode(&deck1, &deck2, config.seed, config.game_mode)
+        .expect("Failed to start game");
 
     // Create MCTS searcher
     let searcher = if let Some(w) = config.weights {

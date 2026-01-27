@@ -353,9 +353,13 @@ impl<'a> ValidationExecutor<'a> {
 
         // Use the appropriate deck order based on direction
         if reversed {
-            engine.start_game(&matchup.deck2, &matchup.deck1, seeds.game);
+            engine
+                .start_game(&matchup.deck2, &matchup.deck1, seeds.game)
+                .expect("Failed to start game - commander not found in card database");
         } else {
-            engine.start_game(&matchup.deck1, &matchup.deck2, seeds.game);
+            engine
+                .start_game(&matchup.deck1, &matchup.deck2, seeds.game)
+                .expect("Failed to start game - commander not found in card database");
         }
 
         // Main game loop

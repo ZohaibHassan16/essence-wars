@@ -238,11 +238,11 @@ impl<'a> MctsBot<'a> {
         let default_path = crate::data_dir().join("weights/default.toml");
         match BotWeights::load(&default_path) {
             Ok(bot_weights) => {
-                eprintln!("Loaded default rollout weights from {:?}", default_path);
+                log::debug!("Loaded default rollout weights from {:?}", default_path);
                 Some(bot_weights.default.greedy.clone())
             }
             Err(_) => {
-                eprintln!("Using hardcoded default rollout weights ({:?} not found)", default_path);
+                log::debug!("Using hardcoded default rollout weights ({:?} not found)", default_path);
                 None
             }
         }

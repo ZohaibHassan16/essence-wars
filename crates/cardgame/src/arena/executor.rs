@@ -76,7 +76,9 @@ fn run_single_game_parallel(
 
     // Create and start game engine
     let mut engine = GameEngine::new(card_db);
-    engine.start_game_with_mode(&config.deck1, &config.deck2, seeds.game, config.game_mode);
+    engine
+        .start_game_with_mode(&config.deck1, &config.deck2, seeds.game, config.game_mode)
+        .expect("Failed to start game - commander not found in card database");
 
     // Main game loop
     let max_actions = 1000;
@@ -207,7 +209,9 @@ fn run_single_game_sequential(
 
     // Create and start game engine
     let mut engine = GameEngine::new(card_db);
-    engine.start_game_with_mode(&config.deck1, &config.deck2, seeds.game, config.game_mode);
+    engine
+        .start_game_with_mode(&config.deck1, &config.deck2, seeds.game, config.game_mode)
+        .expect("Failed to start game - commander not found in card database");
 
     // Log game start
     if let Some(ref mut l) = logger {
@@ -268,7 +272,7 @@ fn run_single_game_sequential(
         };
 
         if let Err(e) = result {
-            eprintln!("Error applying action {:?}: {:?}", action, e);
+            log::error!("Error applying action {:?}: {:?}", action, e);
             break;
         }
 

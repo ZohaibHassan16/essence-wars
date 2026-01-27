@@ -2,6 +2,8 @@
 //!
 //! Handles setting up a new game with decks, commanders, and initial state.
 
+use thiserror::Error;
+
 use crate::core::cards::CardDatabase;
 use crate::core::config::{game, player};
 use crate::core::state::{CardInstance, GameMode, GamePhase, GameState};
@@ -9,6 +11,19 @@ use crate::core::types::{CardId, PlayerId};
 use crate::decks::DeckDefinition;
 
 use super::seeded_shuffle;
+
+/// Error type for game initialization failures.
+#[derive(Debug, Clone, Error)]
+pub enum GameInitError {
+    /// Commander not found in the card database.
+    #[error("Commander not found: ID {commander_id} for player {player}")]
+    CommanderNotFound {
+        /// The commander ID that was not found.
+        commander_id: u16,
+        /// The player number (1 or 2).
+        player: usize,
+    },
+}
 
 /// Initialize a new game from deck definitions.
 ///
@@ -18,8 +33,8 @@ use super::seeded_shuffle;
 /// - Initial hands
 /// - Starting essence (with P2 compensation for First Player Advantage)
 ///
-/// # Panics
-/// Panics if either commander is not found in the card database.
+/// # Errors
+/// Returns `GameInitError::CommanderNotFound` if either commander is not found in the card database.
 pub fn initialize_game(
     state: &mut GameState,
     card_db: &CardDatabase,
@@ -27,7 +42,7 @@ pub fn initialize_game(
     deck2: &DeckDefinition,
     seed: u64,
     mode: GameMode,
-) {
+) -> Result<(), GameInitError> {
     initialize_game_raw(
         state,
         card_db,
@@ -37,7 +52,7 @@ pub fn initialize_game(
         deck2.commander_id(),
         seed,
         mode,
-    );
+    )
 }
 
 /// Low-level game initialization with raw components.
@@ -45,8 +60,8 @@ pub fn initialize_game(
 /// Use this when you have raw card IDs and commander IDs (e.g., in tests
 /// or when constructing games programmatically without DeckDefinitions).
 ///
-/// # Panics
-/// Panics if either commander ID is not found in the card database.
+/// # Errors
+/// Returns `GameInitError::CommanderNotFound` if either commander ID is not found in the card database.
 #[allow(clippy::too_many_arguments)]
 pub fn initialize_game_raw(
     state: &mut GameState,
@@ -57,13 +72,19 @@ pub fn initialize_game_raw(
     commander2: CardId,
     seed: u64,
     mode: GameMode,
-) {
+) -> Result<(), GameInitError> {
     // Validate commanders exist in database
     if card_db.get_commander(commander1).is_none() {
-        panic!("Commander {} not found in card database", commander1.0);
+        return Err(GameInitError::CommanderNotFound {
+            commander_id: commander1.0,
+            player: 1,
+        });
     }
     if card_db.get_commander(commander2).is_none() {
-        panic!("Commander {} not found in card database", commander2.0);
+        return Err(GameInitError::CommanderNotFound {
+            commander_id: commander2.0,
+            player: 2,
+        });
     }
 
     // Reset state
@@ -94,6 +115,8 @@ pub fn initialize_game_raw(
     state.current_turn = 0; // Will be incremented to 1 in start_turn
     state.active_player = PlayerId::PLAYER_ONE;
     state.phase = GamePhase::Main;
+
+    Ok(())
 }
 
 /// Set up a player's deck by shuffling card IDs.

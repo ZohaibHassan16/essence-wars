@@ -507,6 +507,7 @@ dependencies = [
  "indicatif",
  "js-sys",
  "lazy_static",
+ "log",
  "numpy",
  "proptest",
  "pyo3",

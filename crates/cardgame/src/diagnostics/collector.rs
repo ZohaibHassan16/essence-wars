@@ -273,7 +273,9 @@ impl<'a> DiagnosticRunner<'a> {
 
         let mut engine = GameEngine::new(self.card_db);
         // Use deck definitions with their associated commanders
-        engine.start_game(&config.deck1, &config.deck2, seeds.game);
+        engine
+            .start_game(&config.deck1, &config.deck2, seeds.game)
+            .expect("Failed to start game - commander not found in card database");
 
         let mut snapshots = Vec::new();
         let mut first_damage_to_p1_turn = None;
@@ -501,7 +503,7 @@ mod tests {
         let deck = get_test_deck(&data);
 
         let mut engine = GameEngine::new(&data.card_db);
-        engine.start_game(&deck, &deck, 42);
+        engine.start_game(&deck, &deck, 42).unwrap();
 
         let snapshot = TurnSnapshot::capture(&engine);
 

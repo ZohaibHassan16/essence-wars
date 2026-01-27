@@ -85,14 +85,16 @@ impl<'a> ReplayIterator<'a> {
 
         let mut engine = GameEngine::new(self.card_db);
         // TODO: Use actual commanders from replay once PlayerConfig includes them
-        engine.start_game_raw(
-            self.replay.player1.deck.clone(),
-            self.replay.player2.deck.clone(),
-            DEFAULT_COMMANDER,
-            DEFAULT_COMMANDER,
-            self.replay.header.seed,
-            self.replay.header.mode,
-        );
+        engine
+            .start_game_raw(
+                self.replay.player1.deck.clone(),
+                self.replay.player2.deck.clone(),
+                DEFAULT_COMMANDER,
+                DEFAULT_COMMANDER,
+                self.replay.header.seed,
+                self.replay.header.mode,
+            )
+            .map_err(|e| ReplayError::InvalidReplay(format!("Failed to initialize game: {}", e)))?;
 
         self.engine = Some(engine);
         self.initialized = true;
@@ -202,14 +204,16 @@ pub fn replay_to_end(
 ) -> Result<GameState, ReplayError> {
     let mut engine = GameEngine::new(card_db);
     // TODO: Use actual commanders from replay once PlayerConfig includes them
-    engine.start_game_raw(
-        replay.player1.deck.clone(),
-        replay.player2.deck.clone(),
-        DEFAULT_COMMANDER,
-        DEFAULT_COMMANDER,
-        replay.header.seed,
-        replay.header.mode,
-    );
+    engine
+        .start_game_raw(
+            replay.player1.deck.clone(),
+            replay.player2.deck.clone(),
+            DEFAULT_COMMANDER,
+            DEFAULT_COMMANDER,
+            replay.header.seed,
+            replay.header.mode,
+        )
+        .map_err(|e| ReplayError::InvalidReplay(format!("Failed to initialize game: {}", e)))?;
 
     for replay_action in &replay.actions {
         engine.apply_action(replay_action.action)

@@ -438,13 +438,13 @@ impl ArchetypeWeights {
             match BotWeights::load(&path) {
                 Ok(w) => {
                     if !quiet {
-                        println!("Loaded {} archetype weights: {}", name, w.name);
+                        log::info!("Loaded {} archetype weights: {}", name, w.name);
                     }
                     weights.set(name, Some(w));
                 }
                 Err(_) => {
                     if !quiet {
-                        println!("Note: {} archetype using default weights", name);
+                        log::info!("Note: {} archetype using default weights", name);
                     }
                 }
             }

@@ -53,7 +53,7 @@ fn main() {
             let mut bot2 = create_bot(&data.card_db, &bot_type, None, &mcts_config, &ab_config, seed + 1);
 
             let mut engine = GameEngine::new(&data.card_db);
-            engine.start_game(deck1, deck2, seed);
+            engine.start_game(deck1, deck2, seed).expect("Failed to start game");
 
             let mut action_count = 0;
             let max_actions = 1000;
