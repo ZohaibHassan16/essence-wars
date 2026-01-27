@@ -11,7 +11,6 @@
 //!   cargo run --release --bin diagnose -- -n 200 --bot mcts        # Use MCTS
 //!   cargo run --release --bin diagnose -- -n 200 --export csv -o ./diagnostics
 
-use std::io::Write;
 use std::path::PathBuf;
 use std::process;
 
@@ -168,16 +167,6 @@ fn main() {
     // Run diagnostic games
     let runner = DiagnosticRunner::new(&game_data.card_db);
 
-    // Simple progress indicator (if not using built-in progress)
-    if !args.progress {
-        for i in 0..num_games {
-            if i % 50 == 0 {
-                eprint!("\rProgress: {}/{}", i, num_games);
-                std::io::stderr().flush().unwrap();
-            }
-        }
-    }
-
     let diagnostics = match runner.run(&config) {
         Ok(d) => d,
         Err(e) => {
@@ -185,10 +174,6 @@ fn main() {
             process::exit(1);
         }
     };
-
-    if !args.progress {
-        eprintln!("\rProgress: {}/{}", num_games, num_games);
-    }
 
     // Analyze and report
     let stats = AggregatedStats::analyze(&diagnostics);

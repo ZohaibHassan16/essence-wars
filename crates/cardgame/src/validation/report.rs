@@ -177,7 +177,8 @@ fn generate_summary_text(
     lines.push(String::new());
 
     lines.push(format!("Timestamp: {}", results.timestamp));
-    lines.push("Parallel Execution: false".to_string());
+    let parallel = results.config.threads > 1;
+    lines.push(format!("Parallel Execution: {} ({} threads)", parallel, results.config.threads));
     lines.push(String::new());
 
     lines.push("--- Balance Status ---".to_string());

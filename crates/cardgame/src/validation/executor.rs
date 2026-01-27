@@ -204,8 +204,9 @@ impl<'a> ValidationExecutor<'a> {
             &dir1_results.diagnostics,
             &dir2_results.diagnostics,
             total_games,
-        )
-        .with_p1_stats(total_p1_wins, decisive_games);
+            total_p1_wins,
+            decisive_games,
+        );
 
         MatchupResult {
             faction1: matchup.faction1_or_neutral().as_tag().to_string(),
@@ -231,6 +232,8 @@ impl<'a> ValidationExecutor<'a> {
             faction1_total_wins: deck1_total_wins,
             faction2_total_wins: deck2_total_wins,
             draws: total_draws,
+            dir1_draws: dir1_results.draws,
+            dir2_draws: dir2_results.draws,
             total_games,
             faction1_win_rate: if decisive_games > 0 {
                 deck1_total_wins as f64 / decisive_games as f64

@@ -128,20 +128,30 @@ impl GameMetricsData {
     }
 
     /// Calculate P1's trade ratio (creatures killed / creatures lost).
-    pub fn p1_trade_ratio(&self) -> f64 {
-        if self.p1_creatures_lost == 0 {
-            self.p1_creatures_killed as f64
-        } else {
-            self.p1_creatures_killed as f64 / self.p1_creatures_lost as f64
+    ///
+    /// Returns:
+    /// - `None` if no creatures were killed or lost (no trades)
+    /// - `Some(f64::INFINITY)` if killed creatures but lost none (perfect)
+    /// - `Some(ratio)` otherwise
+    pub fn p1_trade_ratio(&self) -> Option<f64> {
+        match (self.p1_creatures_killed, self.p1_creatures_lost) {
+            (0, 0) => None,                    // No trades occurred
+            (_, 0) => Some(f64::INFINITY), // Perfect: killed without losing
+            (kills, losses) => Some(kills as f64 / losses as f64),
         }
     }
 
     /// Calculate P2's trade ratio (creatures killed / creatures lost).
-    pub fn p2_trade_ratio(&self) -> f64 {
-        if self.p2_creatures_lost == 0 {
-            self.p2_creatures_killed as f64
-        } else {
-            self.p2_creatures_killed as f64 / self.p2_creatures_lost as f64
+    ///
+    /// Returns:
+    /// - `None` if no creatures were killed or lost (no trades)
+    /// - `Some(f64::INFINITY)` if killed creatures but lost none (perfect)
+    /// - `Some(ratio)` otherwise
+    pub fn p2_trade_ratio(&self) -> Option<f64> {
+        match (self.p2_creatures_killed, self.p2_creatures_lost) {
+            (0, 0) => None,                    // No trades occurred
+            (_, 0) => Some(f64::INFINITY), // Perfect: killed without losing
+            (kills, losses) => Some(kills as f64 / losses as f64),
         }
     }
 
@@ -454,11 +464,15 @@ mod tests {
         metrics.p1_creatures_killed = 4;
         metrics.p1_creatures_lost = 2;
 
-        assert!((metrics.p1_trade_ratio() - 2.0).abs() < 0.01);
+        assert!((metrics.p1_trade_ratio().unwrap() - 2.0).abs() < 0.01);
 
-        // Zero losses = just return kills
+        // Zero losses with kills = infinity (perfect trade)
         metrics.p1_creatures_lost = 0;
-        assert!((metrics.p1_trade_ratio() - 4.0).abs() < 0.01);
+        assert!(metrics.p1_trade_ratio().unwrap().is_infinite());
+
+        // Zero kills and zero losses = None (no trades)
+        metrics.p1_creatures_killed = 0;
+        assert!(metrics.p1_trade_ratio().is_none());
     }
 
     #[test]

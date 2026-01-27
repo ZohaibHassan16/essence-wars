@@ -124,7 +124,7 @@ impl<'a> AlphaBetaBot<'a> {
     }
 
     /// Load default weights from file, or use hardcoded defaults.
-    /// 
+    ///
     /// Tries in order:
     /// 1. Alpha-Beta specific weights: data/weights/alphabeta/generalist.toml
     /// 2. Shared generalist weights: data/weights/generalist.toml
@@ -134,16 +134,19 @@ impl<'a> AlphaBetaBot<'a> {
         // Try Alpha-Beta specific weights first
         let alphabeta_path = crate::data_dir().join("weights/alphabeta/generalist.toml");
         if let Ok(bot_weights) = BotWeights::load(&alphabeta_path) {
+            log::debug!("AlphaBetaBot: loaded weights from {:?}", alphabeta_path);
             return bot_weights.default.greedy.clone();
         }
-        
+
         // Fallback to shared generalist weights (works well for Alpha-Beta too)
         let generalist_path = crate::data_dir().join("weights/generalist.toml");
         if let Ok(bot_weights) = BotWeights::load(&generalist_path) {
+            log::debug!("AlphaBetaBot: loaded weights from {:?}", generalist_path);
             return bot_weights.default.greedy.clone();
         }
-        
+
         // Final fallback: hardcoded defaults
+        log::debug!("AlphaBetaBot: using hardcoded default weights");
         GreedyWeights::default()
     }
 

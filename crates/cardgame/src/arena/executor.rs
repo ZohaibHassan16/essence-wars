@@ -5,6 +5,12 @@
 
 use std::time::{Duration, Instant};
 
+/// Safety limit for maximum actions per game.
+///
+/// Prevents infinite loops from bugs or degenerate game states.
+/// 1000 actions is approximately 50x the typical game length of ~20 actions.
+const MAX_ACTIONS_PER_GAME: usize = 1000;
+
 use crate::arena::config::{MatchConfig, SequentialConfig};
 use crate::arena::logger::{ActionLogger, ActionRecord, StateSnapshot};
 use crate::arena::stats::MatchStats;
@@ -115,7 +121,7 @@ fn run_single_game_parallel(
         .expect("Failed to start game - commander not found in card database");
 
     // Main game loop
-    let max_actions = 1000;
+    let max_actions = MAX_ACTIONS_PER_GAME;
     let mut action_count = 0;
 
     while !engine.is_game_over() && action_count < max_actions {
@@ -268,7 +274,7 @@ fn run_single_game_sequential(
     }
 
     // Main game loop
-    let max_actions = 1000;
+    let max_actions = MAX_ACTIONS_PER_GAME;
     let mut action_count = 0;
 
     while !engine.is_game_over() && action_count < max_actions {

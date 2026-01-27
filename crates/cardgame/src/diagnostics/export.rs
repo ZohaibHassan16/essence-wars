@@ -190,10 +190,10 @@ pub struct AggregateStatsExport {
     pub p1_avg_face_damage: f64,
     /// P2 average face damage.
     pub p2_avg_face_damage: f64,
-    /// P1 trade ratio.
-    pub p1_trade_ratio: f64,
-    /// P2 trade ratio.
-    pub p2_trade_ratio: f64,
+    /// P1 trade ratio (None if no trades).
+    pub p1_trade_ratio: Option<f64>,
+    /// P2 trade ratio (None if no trades).
+    pub p2_trade_ratio: Option<f64>,
 }
 
 impl AggregateStatsExport {
@@ -309,8 +309,15 @@ fn export_aggregate_csv(path: &Path, stats: &AggregatedStats) -> io::Result<()> 
     writeln!(writer, "p2_resource_efficiency,{:.4}", export.p2_resource_efficiency)?;
     writeln!(writer, "p1_avg_face_damage,{:.2}", export.p1_avg_face_damage)?;
     writeln!(writer, "p2_avg_face_damage,{:.2}", export.p2_avg_face_damage)?;
-    writeln!(writer, "p1_trade_ratio,{:.4}", export.p1_trade_ratio)?;
-    writeln!(writer, "p2_trade_ratio,{:.4}", export.p2_trade_ratio)?;
+    fn format_trade_ratio(ratio: Option<f64>) -> String {
+        match ratio {
+            None => "N/A".to_string(),
+            Some(r) if r.is_infinite() => "Inf".to_string(),
+            Some(r) => format!("{:.4}", r),
+        }
+    }
+    writeln!(writer, "p1_trade_ratio,{}", format_trade_ratio(export.p1_trade_ratio))?;
+    writeln!(writer, "p2_trade_ratio,{}", format_trade_ratio(export.p2_trade_ratio))?;
 
     writer.flush()
 }

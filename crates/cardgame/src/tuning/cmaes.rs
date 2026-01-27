@@ -85,6 +85,11 @@ pub struct CmaEs {
 
     /// Parameter bounds (min, max) per dimension
     bounds: Vec<(f64, f64)>,
+
+    /// Fitness history for stagnation detection
+    fitness_history: Vec<f64>,
+    /// Best fitness seen so far
+    best_fitness: f64,
 }
 
 impl CmaEs {
@@ -156,6 +161,8 @@ impl CmaEs {
             rng: SmallRng::seed_from_u64(config.seed),
             config,
             bounds,
+            fitness_history: Vec::with_capacity(100),
+            best_fitness: f64::NEG_INFINITY,
         }
     }
 
@@ -193,6 +200,10 @@ impl CmaEs {
         if self.sigma < self.config.min_sigma {
             return true;
         }
+        // Stop if fitness has stagnated (no significant improvement over 20 generations)
+        if self.is_stagnated() {
+            return true;
+        }
         false
     }
 
@@ -209,7 +220,34 @@ impl CmaEs {
         if self.sigma < self.config.min_sigma {
             return Some("sigma converged");
         }
+        if self.is_stagnated() {
+            return Some("fitness stagnated");
+        }
         None
+    }
+
+    /// Check if fitness has stagnated (no significant improvement over 20 generations).
+    fn is_stagnated(&self) -> bool {
+        const STAGNATION_WINDOW: usize = 20;
+        const STAGNATION_THRESHOLD: f64 = 0.001;
+
+        if self.generation <= STAGNATION_WINDOW as u32 || self.fitness_history.len() < STAGNATION_WINDOW {
+            return false;
+        }
+
+        let old_fitness = self.fitness_history[self.fitness_history.len() - STAGNATION_WINDOW];
+        let improvement = (self.best_fitness - old_fitness).abs();
+        let threshold = STAGNATION_THRESHOLD * self.best_fitness.abs().max(1.0);
+
+        if improvement < threshold {
+            log::info!(
+                "Gen {}: Stagnation detected (improvement {:.6} < threshold {:.6} over {} generations)",
+                self.generation, improvement, threshold, STAGNATION_WINDOW
+            );
+            return true;
+        }
+
+        false
     }
 
     /// Sample a population of candidates.
@@ -272,6 +310,14 @@ impl CmaEs {
     pub fn update(&mut self, mut evaluated: Vec<(Vec<f64>, f64)>) {
         // Sort by fitness (descending - higher is better)
         evaluated.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+
+        // Update best fitness and history for stagnation detection
+        if let Some((_, best_gen_fitness)) = evaluated.first() {
+            if *best_gen_fitness > self.best_fitness {
+                self.best_fitness = *best_gen_fitness;
+            }
+            self.fitness_history.push(self.best_fitness);
+        }
 
         // Select mu best
         let selected: Vec<&Vec<f64>> = evaluated.iter().take(self.mu).map(|(x, _)| x).collect();
@@ -366,6 +412,10 @@ impl CmaEs {
 
         if max_off_diag < 0.1 {
             // Close to diagonal - just use square root of diagonal
+            log::debug!(
+                "Gen {}: Using diagonal approximation for sqrt_covariance (max_off_diag={:.4})",
+                self.generation, max_off_diag
+            );
             let mut result = vec![vec![0.0; self.dim]; self.dim];
             for (i, row) in result.iter_mut().enumerate().take(self.dim) {
                 row[i] = self.cov[i][i].abs().sqrt().max(0.001);
@@ -380,6 +430,7 @@ impl CmaEs {
     /// Cholesky decomposition of covariance matrix.
     fn cholesky(&self) -> Vec<Vec<f64>> {
         let mut l = vec![vec![0.0; self.dim]; self.dim];
+        let mut had_numerical_issue = false;
 
         for i in 0..self.dim {
             for j in 0..=i {
@@ -388,6 +439,9 @@ impl CmaEs {
                     sum -= l_i * l_j;
                 }
                 if i == j {
+                    if sum <= 0.0 {
+                        had_numerical_issue = true;
+                    }
                     l[i][j] = sum.max(1e-10).sqrt();
                 } else {
                     l[i][j] = sum / l[j][j].max(1e-10);
@@ -395,14 +449,27 @@ impl CmaEs {
             }
         }
 
+        if had_numerical_issue {
+            log::warn!(
+                "Gen {}: Cholesky decomposition encountered non-positive diagonal, matrix repaired",
+                self.generation
+            );
+        }
+
         l
     }
 
     /// Repair covariance matrix to ensure positive definiteness.
     fn repair_covariance(&mut self) {
+        let mut repairs_made = 0u32;
+
         // Enforce symmetry
         for i in 0..self.dim {
             for j in (i + 1)..self.dim {
+                let diff = (self.cov[i][j] - self.cov[j][i]).abs();
+                if diff > 1e-10 {
+                    repairs_made += 1;
+                }
                 let avg = (self.cov[i][j] + self.cov[j][i]) / 2.0;
                 self.cov[i][j] = avg;
                 self.cov[j][i] = avg;
@@ -411,6 +478,9 @@ impl CmaEs {
 
         // Ensure positive diagonal
         for i in 0..self.dim {
+            if self.cov[i][i] <= 1e-10 {
+                repairs_made += 1;
+            }
             self.cov[i][i] = self.cov[i][i].max(1e-10);
         }
 
@@ -419,9 +489,20 @@ impl CmaEs {
             for j in 0..self.dim {
                 if i != j {
                     let max_val = (self.cov[i][i] * self.cov[j][j]).sqrt() * 0.99;
+                    let old_val = self.cov[i][j];
                     self.cov[i][j] = self.cov[i][j].clamp(-max_val, max_val);
+                    if (old_val - self.cov[i][j]).abs() > 1e-10 {
+                        repairs_made += 1;
+                    }
                 }
             }
+        }
+
+        if repairs_made > 0 {
+            log::debug!(
+                "Gen {}: Covariance matrix repaired ({} corrections)",
+                self.generation, repairs_made
+            );
         }
     }
 }

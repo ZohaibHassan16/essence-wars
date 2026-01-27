@@ -396,6 +396,17 @@ impl<'a> Evaluator<'a> {
         let games_per_matchup = (self.config.games_per_eval / matchups.len()).max(3);
         let games_per_opponent = games_per_matchup / 3;
 
+        // Warn if evaluation quality is low due to insufficient games per opponent
+        if games_per_opponent < 2 {
+            log::warn!(
+                "Low evaluation quality: only {} game(s) per opponent type per matchup. \
+                 Consider using --games-per-eval {} or higher for {} matchups.",
+                games_per_opponent,
+                matchups.len() * 15, // Suggest 5 games * 3 opponents
+                matchups.len()
+            );
+        }
+
         let mut random_wins = 0;
         let mut greedy_wins = 0;
         let mut mcts_wins = 0;

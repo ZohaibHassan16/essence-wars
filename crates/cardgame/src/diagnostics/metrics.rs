@@ -63,14 +63,6 @@ pub struct TempoMetrics {
     pub p1_first_creature_turn: Option<u32>,
     /// Turn when P2 played their first creature.
     pub p2_first_creature_turn: Option<u32>,
-    /// Turn when P1 played their first Guard creature.
-    pub p1_first_guard_turn: Option<u32>,
-    /// Turn when P2 played their first Guard creature.
-    pub p2_first_guard_turn: Option<u32>,
-    /// Turn when P1 played their first Rush creature.
-    pub p1_first_rush_turn: Option<u32>,
-    /// Turn when P2 played their first Rush creature.
-    pub p2_first_rush_turn: Option<u32>,
 }
 
 impl TempoMetrics {
@@ -153,20 +145,30 @@ pub struct CombatEfficiency {
 
 impl CombatEfficiency {
     /// Calculate P1's trade ratio (creatures killed / creatures lost).
-    pub fn p1_trade_ratio(&self) -> f64 {
-        if self.p1_creatures_lost == 0 {
-            self.p1_creatures_killed as f64
-        } else {
-            self.p1_creatures_killed as f64 / self.p1_creatures_lost as f64
+    ///
+    /// Returns:
+    /// - `None` if no creatures were killed or lost (no trades)
+    /// - `Some(f64::INFINITY)` if killed creatures but lost none (perfect)
+    /// - `Some(ratio)` otherwise
+    pub fn p1_trade_ratio(&self) -> Option<f64> {
+        match (self.p1_creatures_killed, self.p1_creatures_lost) {
+            (0, 0) => None,                    // No trades occurred
+            (_, 0) => Some(f64::INFINITY), // Perfect: killed without losing
+            (kills, losses) => Some(kills as f64 / losses as f64),
         }
     }
 
     /// Calculate P2's trade ratio (creatures killed / creatures lost).
-    pub fn p2_trade_ratio(&self) -> f64 {
-        if self.p2_creatures_lost == 0 {
-            self.p2_creatures_killed as f64
-        } else {
-            self.p2_creatures_killed as f64 / self.p2_creatures_lost as f64
+    ///
+    /// Returns:
+    /// - `None` if no creatures were killed or lost (no trades)
+    /// - `Some(f64::INFINITY)` if killed creatures but lost none (perfect)
+    /// - `Some(ratio)` otherwise
+    pub fn p2_trade_ratio(&self) -> Option<f64> {
+        match (self.p2_creatures_killed, self.p2_creatures_lost) {
+            (0, 0) => None,                    // No trades occurred
+            (_, 0) => Some(f64::INFINITY), // Perfect: killed without losing
+            (kills, losses) => Some(kills as f64 / losses as f64),
         }
     }
 
@@ -236,6 +238,10 @@ pub struct GameMetrics {
     pub turns_p2_ahead: u32,
     /// Number of turns roughly even.
     pub turns_even: u32,
+    /// Winner of the game (None = draw).
+    pub winner: Option<crate::types::PlayerId>,
+    /// Who got first blood (first to deal damage to opponent).
+    pub first_blood: Option<crate::types::PlayerId>,
 }
 
 impl GameMetrics {
@@ -387,8 +393,20 @@ mod tests {
             ..Default::default()
         };
 
-        assert!((combat.p1_trade_ratio() - 2.0).abs() < 0.01);
-        assert!((combat.p2_trade_ratio() - 0.5).abs() < 0.01);
+        assert!((combat.p1_trade_ratio().unwrap() - 2.0).abs() < 0.01);
+        assert!((combat.p2_trade_ratio().unwrap() - 0.5).abs() < 0.01);
+
+        // Test infinity case (perfect trade)
+        let perfect = CombatEfficiency {
+            p1_creatures_killed: 3,
+            p1_creatures_lost: 0,
+            ..Default::default()
+        };
+        assert!(perfect.p1_trade_ratio().unwrap().is_infinite());
+
+        // Test None case (no trades)
+        let no_trades = CombatEfficiency::default();
+        assert!(no_trades.p1_trade_ratio().is_none());
     }
 
     #[test]

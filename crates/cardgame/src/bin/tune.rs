@@ -136,7 +136,13 @@ fn main() {
     let args = Args::parse();
 
     // Create experiment directory with timestamp
-    let exp_config = ExperimentConfig::new(&args.experiment_dir, "mcts", &args.tag);
+    // Use "alphabeta" category for alpha-beta modes, "mcts" for others
+    let category = if args.mode.starts_with("alphabeta") {
+        "alphabeta"
+    } else {
+        "mcts"
+    };
+    let exp_config = ExperimentConfig::new(&args.experiment_dir, category, &args.tag);
     let experiment = match ExperimentDir::create(&exp_config) {
         Ok(e) => e,
         Err(e) => {

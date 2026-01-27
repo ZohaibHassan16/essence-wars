@@ -37,7 +37,7 @@ mod stats;
 pub use config::{MatchConfig, SequentialConfig};
 
 // Deck utilities
-pub use deck_utils::{create_default_deck, load_deck, validate_faction_deck_binding};
+pub use deck_utils::{load_deck, validate_faction_deck_binding};
 
 // Execution functions
 pub use executor::{run_match_parallel, run_match_sequential};

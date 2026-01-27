@@ -495,6 +495,26 @@ impl<'a> DiagnosticRunner<'a> {
         metrics.tempo = tempo;
         metrics.resource_efficiency = resource_efficiency;
         metrics.combat_efficiency = combat;
+        metrics.winner = engine.winner();
+
+        // Determine first blood: who dealt damage first
+        // If P1 took damage first, P2 dealt it (P2 first blood)
+        // If P2 took damage first, P1 dealt it (P1 first blood)
+        metrics.first_blood = match (first_damage_to_p1_turn, first_damage_to_p2_turn) {
+            (Some(t1), Some(t2)) => {
+                if t1 < t2 {
+                    Some(PlayerId::PLAYER_TWO) // P1 took damage first = P2 first blood
+                } else if t2 < t1 {
+                    Some(PlayerId::PLAYER_ONE) // P2 took damage first = P1 first blood
+                } else {
+                    // Same turn - use the winner as tiebreaker or None
+                    engine.winner()
+                }
+            }
+            (Some(_), None) => Some(PlayerId::PLAYER_TWO), // Only P1 took damage
+            (None, Some(_)) => Some(PlayerId::PLAYER_ONE), // Only P2 took damage
+            (None, None) => None,                          // No damage dealt
+        };
 
         GameDiagnostics {
             seed: seeds.game,

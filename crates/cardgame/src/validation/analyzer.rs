@@ -124,8 +124,12 @@ impl BalanceAnalyzer {
         let mut by_matchup = HashMap::new();
 
         for m in matchups {
-            // P1 wins from both directions
-            let matchup_p1_wins = m.f1_as_p1_wins + (m.total_games / 2 - m.f1_as_p2_wins - m.draws / 2);
+            // P1 wins from both directions (using per-direction draws for accuracy)
+            // Direction 1: faction1 as P1 -> P1 wins = faction1 wins
+            let dir1_p1_wins = m.f1_as_p1_wins;
+            // Direction 2: faction2 as P1 -> P1 wins = games - faction1 wins - draws
+            let dir2_p1_wins = m.f1_as_p2_games - m.f1_as_p2_wins - m.dir2_draws;
+            let matchup_p1_wins = dir1_p1_wins + dir2_p1_wins;
             let matchup_decisive = m.total_games - m.draws;
 
             total_p1_wins += matchup_p1_wins;
@@ -419,6 +423,8 @@ mod tests {
             faction1_total_wins: f1_wins,
             faction2_total_wins: f2_wins,
             draws,
+            dir1_draws: draws / 2,
+            dir2_draws: draws - draws / 2,
             total_games: total,
             faction1_win_rate: if decisive > 0 {
                 f1_wins as f64 / decisive as f64

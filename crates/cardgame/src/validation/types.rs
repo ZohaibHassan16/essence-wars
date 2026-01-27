@@ -79,6 +79,10 @@ pub struct MatchupResult {
     pub faction2_total_wins: u32,
     /// Total draws.
     pub draws: u32,
+    /// Draws in direction 1 (deck1 as P1).
+    pub dir1_draws: u32,
+    /// Draws in direction 2 (deck2 as P1).
+    pub dir2_draws: u32,
     /// Total games played.
     pub total_games: u32,
     /// Win rate for faction 1.
@@ -339,13 +343,24 @@ pub struct MatchupDiagnostics {
 }
 
 impl MatchupDiagnostics {
-    /// Build matchup diagnostics from two direction results.
+    /// Build matchup diagnostics from two direction results and P1 win stats.
+    ///
+    /// # Arguments
+    /// * `dir1` - Diagnostic data from direction 1 (deck1 as P1)
+    /// * `dir2` - Diagnostic data from direction 2 (deck2 as P1)
+    /// * `total_games` - Total games played across both directions
+    /// * `p1_wins` - Total P1 wins across both directions
+    /// * `decisive_games` - Total games excluding draws
     pub fn from_directions(
         dir1: &DirectionDiagnostics,
         dir2: &DirectionDiagnostics,
         total_games: u32,
+        p1_wins: u32,
+        decisive_games: u32,
     ) -> Self {
-        use crate::diagnostics::statistics::{percentile, wilson_score_interval};
+        use crate::diagnostics::statistics::{
+            chi_square_test, percentile, wilson_score_interval,
+        };
 
         // Combine data from both directions
         let p1_first_blood = dir1.p1_first_blood_count + dir2.p1_first_blood_count;
@@ -376,12 +391,27 @@ impl MatchupDiagnostics {
             .collect();
         all_lengths.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
-        // P1 win rate calculation - we need p1_wins from parent context
-        // For now, use first blood as proxy or calculate from direction totals
-        // This will be properly calculated in run_matchup
-        let p1_win_rate = 0.5; // Placeholder - filled in by caller
-        let (p1_ci_lower, p1_ci_upper) = (0.0, 1.0); // Placeholder
-        let (p1_chi, p1_p) = (0.0, 1.0); // Placeholder
+        // P1 win rate with statistical analysis
+        let (p1_win_rate, p1_ci_lower, p1_ci_upper, p1_chi, p1_p, p1_significance) =
+            if decisive_games > 0 {
+                let win_rate = p1_wins as f64 / decisive_games as f64;
+                let (ci_lower, ci_upper) =
+                    wilson_score_interval(p1_wins as usize, decisive_games as usize, 0.95);
+                let (chi, p_value) =
+                    chi_square_test(p1_wins as usize, decisive_games as usize, 0.5);
+                let significance = if p_value < 0.01 {
+                    "highly_significant"
+                } else if p_value < 0.05 {
+                    "significant"
+                } else if p_value < 0.10 {
+                    "marginal"
+                } else {
+                    "not_significant"
+                };
+                (win_rate, ci_lower, ci_upper, chi, p_value, significance)
+            } else {
+                (0.5, 0.0, 1.0, 0.0, 1.0, "no_games")
+            };
 
         // First blood statistics
         let (fb_ci_lower, fb_ci_upper) = if total_first_blood > 0 {
@@ -462,7 +492,7 @@ impl MatchupDiagnostics {
             p1_win_rate_ci_upper: p1_ci_upper,
             p1_chi_square: p1_chi,
             p1_p_value: p1_p,
-            p1_significance: "not_calculated".to_string(),
+            p1_significance: p1_significance.to_string(),
             first_blood_p1_rate,
             first_blood_p1_ci_lower: fb_ci_lower,
             first_blood_p1_ci_upper: fb_ci_upper,
@@ -480,34 +510,5 @@ impl MatchupDiagnostics {
             game_length_p50,
             game_length_p90,
         }
-    }
-
-    /// Update with P1 win rate statistics (called after combining directions).
-    pub fn with_p1_stats(mut self, p1_wins: u32, total_decisive: u32) -> Self {
-        use crate::diagnostics::statistics::{chi_square_test, wilson_score_interval};
-
-        if total_decisive > 0 {
-            self.p1_win_rate = p1_wins as f64 / total_decisive as f64;
-            let (ci_lower, ci_upper) =
-                wilson_score_interval(p1_wins as usize, total_decisive as usize, 0.95);
-            self.p1_win_rate_ci_lower = ci_lower;
-            self.p1_win_rate_ci_upper = ci_upper;
-
-            let (chi, p_value) =
-                chi_square_test(p1_wins as usize, total_decisive as usize, 0.5);
-            self.p1_chi_square = chi;
-            self.p1_p_value = p_value;
-
-            self.p1_significance = if p_value < 0.01 {
-                "highly_significant".to_string()
-            } else if p_value < 0.05 {
-                "significant".to_string()
-            } else if p_value < 0.10 {
-                "marginal".to_string()
-            } else {
-                "not_significant".to_string()
-            };
-        }
-        self
     }
 }

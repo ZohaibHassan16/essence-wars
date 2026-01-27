@@ -1,17 +1,13 @@
 //! Deck loading and validation utilities for arena matches.
 //!
-//! Provides helpers for loading decks from the registry, validating
-//! faction-specialist bindings, and creating default decks.
+//! Provides helpers for loading decks from the registry and validating
+//! faction-specialist bindings.
 
 use crate::bots::BotType;
 use crate::cards::CardDatabase;
 use crate::decks::{DeckDefinition, DeckRegistry};
-use crate::types::CardId;
 
-/// Default commander for default/test decks (The High Artificer).
-const DEFAULT_COMMANDER: u16 = 5000;
-
-/// Load a deck by ID or use default.
+/// Load a deck by ID.
 ///
 /// # Arguments
 /// * `deck_id` - Optional deck ID to load
@@ -21,7 +17,7 @@ const DEFAULT_COMMANDER: u16 = 5000;
 ///
 /// # Returns
 /// * `Ok(DeckDefinition)` - The loaded deck definition (includes commander)
-/// * `Err(String)` - Error message if deck not found or invalid
+/// * `Err(String)` - Error message if deck not specified, not found, or invalid
 pub fn load_deck(
     deck_id: Option<&str>,
     registry: &DeckRegistry,
@@ -41,41 +37,11 @@ pub fn load_deck(
                 id
             )),
         },
-        None => Ok(create_default_deck_definition(player_label)),
+        None => Err(format!(
+            "No deck specified for player {}. Use --deck{} <DECK_ID> to specify a deck, or --list-decks to see available decks.",
+            player_label, player_label
+        )),
     }
-}
-
-/// Create a default deck definition for testing.
-///
-/// Returns a simple deck with default commander for basic testing
-/// when no specific deck is specified.
-fn create_default_deck_definition(player_label: &str) -> DeckDefinition {
-    DeckDefinition {
-        id: format!("default_{}", player_label),
-        name: format!("Default Deck {}", player_label),
-        description: "Default testing deck".to_string(),
-        playstyle: "Aggro".to_string(),
-        commander: DEFAULT_COMMANDER,
-        cards: create_default_deck_cards(),
-        tags: vec!["default".to_string()],
-    }
-}
-
-/// Create default deck cards (without commander).
-fn create_default_deck_cards() -> Vec<u16> {
-    // Aggressive Assault deck from design doc (simplified)
-    // Note: This is 18 cards, not 29 - it's for quick testing only
-    vec![
-        1, 1, // Eager Recruit x2
-        3, 3, // Nimble Scout x2
-        6, 6, // Frontier Ranger x2
-        8, 8, // Shielded Squire x2
-        11, 11, // Centaur Charger x2
-        12, 12, // Blade Dancer x2
-        16, 16, // Piercing Striker x2
-        20, 20, // Siege Breaker x2
-        34, 34, // Lightning Bolt x2
-    ]
 }
 
 /// Validate that specialist agents are paired with their faction's decks.
@@ -137,20 +103,9 @@ pub fn validate_faction_deck_binding(
     }
 }
 
-/// Create a default deck as CardIds (for backwards compatibility).
-pub fn create_default_deck() -> Vec<CardId> {
-    create_default_deck_cards().into_iter().map(CardId).collect()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_create_default_deck_size() {
-        let deck = create_default_deck();
-        assert_eq!(deck.len(), 18);
-    }
 
     #[test]
     fn test_load_deck_not_found() {
@@ -163,15 +118,13 @@ mod tests {
     }
 
     #[test]
-    fn test_load_deck_default() {
+    fn test_load_deck_none_returns_error() {
         let registry = DeckRegistry::new();
         let cards_path = crate::data_dir().join("cards/core_set");
         let card_db = CardDatabase::load_from_directory(cards_path).unwrap();
         let result = load_deck(None, &registry, &card_db, "1");
-        assert!(result.is_ok());
-        let loaded = result.unwrap();
-        assert_eq!(loaded.name, "Default Deck 1");
-        assert_eq!(loaded.cards.len(), 18);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("No deck specified"));
     }
 
     #[test]

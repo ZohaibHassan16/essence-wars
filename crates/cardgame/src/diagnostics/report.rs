@@ -243,11 +243,17 @@ fn print_combat_efficiency(stats: &AggregatedStats) {
     );
 
     // Trade ratios
-    let p1_tr = stats.p1_trade_ratio();
-    let p2_tr = stats.p2_trade_ratio();
+    fn format_trade_ratio(ratio: Option<f64>) -> String {
+        match ratio {
+            None => "N/A".to_string(),
+            Some(r) if r.is_infinite() => "∞".to_string(),
+            Some(r) => format!("{:.2}", r),
+        }
+    }
     println!(
-        "Trade ratio (kills/losses): P1 {:.2}, P2 {:.2}",
-        p1_tr, p2_tr
+        "Trade ratio (kills/losses): P1 {}, P2 {}",
+        format_trade_ratio(stats.p1_trade_ratio()),
+        format_trade_ratio(stats.p2_trade_ratio())
     );
 
     // Total creatures killed/lost

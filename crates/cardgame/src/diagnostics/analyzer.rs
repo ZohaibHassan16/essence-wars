@@ -8,7 +8,7 @@ use crate::types::PlayerId;
 
 use super::collector::{GameDiagnostics, TurnSnapshot};
 use super::metrics::GameMetrics;
-use super::statistics::ProportionStats;
+use super::statistics::{pearson_correlation, ProportionStats};
 
 /// Aggregated statistics across all diagnostic games.
 #[derive(Default)]
@@ -217,9 +217,15 @@ impl AggregatedStats {
             self.earliest_p2_win_seed = Some((diag.seed, diag.total_turns));
         }
 
-        // Resource curves - record at start of each turn
+        // Resource curves - record at start of each turn.
+        //
+        // Design: We only record snapshots at P1's turn start, not P2's.
+        // This provides consistent comparison points: the board state after P2's
+        // full turn, before P1 acts. Recording both turns would create asymmetric
+        // data since P1 acts first on turn 1 (before any P2 snapshot exists).
+        // By recording only P1's turns, we get symmetric measurements that can
+        // fairly compare both players' progress.
         for snapshot in &diag.snapshots {
-            // Only record at start of P1's turn for consistent comparison
             if snapshot.active_player == PlayerId::PLAYER_ONE {
                 self.record_snapshot(snapshot);
             }
@@ -506,20 +512,30 @@ impl AggregatedStats {
     }
 
     /// Get P1's trade ratio (creatures killed / creatures lost).
-    pub fn p1_trade_ratio(&self) -> f64 {
-        if self.p1_total_creatures_lost == 0 {
-            self.p1_total_creatures_killed as f64
-        } else {
-            self.p1_total_creatures_killed as f64 / self.p1_total_creatures_lost as f64
+    ///
+    /// Returns:
+    /// - `None` if no creatures were killed or lost (no trades)
+    /// - `Some(f64::INFINITY)` if killed creatures but lost none (perfect)
+    /// - `Some(ratio)` otherwise
+    pub fn p1_trade_ratio(&self) -> Option<f64> {
+        match (self.p1_total_creatures_killed, self.p1_total_creatures_lost) {
+            (0, 0) => None,                    // No trades occurred
+            (_, 0) => Some(f64::INFINITY), // Perfect: killed without losing
+            (kills, losses) => Some(kills as f64 / losses as f64),
         }
     }
 
     /// Get P2's trade ratio (creatures killed / creatures lost).
-    pub fn p2_trade_ratio(&self) -> f64 {
-        if self.p2_total_creatures_lost == 0 {
-            self.p2_total_creatures_killed as f64
-        } else {
-            self.p2_total_creatures_killed as f64 / self.p2_total_creatures_lost as f64
+    ///
+    /// Returns:
+    /// - `None` if no creatures were killed or lost (no trades)
+    /// - `Some(f64::INFINITY)` if killed creatures but lost none (perfect)
+    /// - `Some(ratio)` otherwise
+    pub fn p2_trade_ratio(&self) -> Option<f64> {
+        match (self.p2_total_creatures_killed, self.p2_total_creatures_lost) {
+            (0, 0) => None,                    // No trades occurred
+            (_, 0) => Some(f64::INFINITY), // Perfect: killed without losing
+            (kills, losses) => Some(kills as f64 / losses as f64),
         }
     }
 
@@ -545,42 +561,73 @@ impl AggregatedStats {
     /// Calculate correlation between first blood and winning.
     ///
     /// Returns the Pearson correlation coefficient if sufficient data is available.
+    /// First blood is coded as 1.0 for P1, 0.0 for P2.
+    /// Winning is coded as 1.0 for P1 win, 0.0 for P2 win (draws excluded).
     pub fn first_blood_win_correlation(&self) -> Option<f64> {
-        if self.game_metrics.is_empty() {
+        // Need at least 10 games for meaningful correlation
+        if self.game_metrics.len() < 10 {
             return None;
         }
 
-        // Build correlation data from raw game data
-        // This requires the per-game diagnostics, but we've aggregated them
-        // We'll compute from the aggregated counts as an approximation
-        // For proper correlation, we'd need individual game results
+        // Build paired data from per-game metrics
+        let pairs: Vec<(f64, f64)> = self
+            .game_metrics
+            .iter()
+            .filter_map(|m| {
+                // Skip games without first blood or without clear winner
+                let fb = if m.first_blood? == PlayerId::PLAYER_ONE {
+                    1.0
+                } else {
+                    0.0
+                };
+                let win = if m.winner? == PlayerId::PLAYER_ONE {
+                    1.0
+                } else {
+                    0.0
+                };
+                Some((fb, win))
+            })
+            .collect();
 
-        // Using aggregated counts, we can estimate:
-        // P(P1 wins | P1 first blood) vs P(P1 wins | P2 first blood)
-        // This is a simplified correlation estimate
-
-        let total_with_fb = self.p1_first_blood + self.p2_first_blood;
-        if total_with_fb == 0 {
+        if pairs.len() < 10 {
             return None;
         }
 
-        // We don't have the cross-tabulation, so return None
-        // A proper implementation would track this in GameDiagnostics
-        None
+        let (x, y): (Vec<f64>, Vec<f64>) = pairs.into_iter().unzip();
+        pearson_correlation(&x, &y)
     }
 
     /// Calculate correlation between board advantage and winning.
     ///
     /// Returns the Pearson correlation coefficient between average board advantage
-    /// and game outcome (1 for P1 win, 0 for draw, -1 for P2 win).
+    /// and game outcome (1.0 for P1 win, 0.0 for P2 win, draws excluded).
     pub fn board_advantage_win_correlation(&self) -> Option<f64> {
-        if self.game_metrics.len() < 3 {
+        // Need at least 10 games for meaningful correlation
+        if self.game_metrics.len() < 10 {
             return None;
         }
 
-        // Extract board advantage scores and outcomes would require storing them
-        // For now, return None as we need the per-game data with outcomes
-        None
+        // Build paired data from per-game metrics
+        let pairs: Vec<(f64, f64)> = self
+            .game_metrics
+            .iter()
+            .filter_map(|m| {
+                // Skip games without clear winner
+                let win = if m.winner? == PlayerId::PLAYER_ONE {
+                    1.0
+                } else {
+                    0.0
+                };
+                Some((m.avg_board_advantage, win))
+            })
+            .collect();
+
+        if pairs.len() < 10 {
+            return None;
+        }
+
+        let (x, y): (Vec<f64>, Vec<f64>) = pairs.into_iter().unzip();
+        pearson_correlation(&x, &y)
     }
 
     /// Get percentiles for game length.
