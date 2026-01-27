@@ -59,8 +59,8 @@ fn play_creature_at_slot(engine: &mut GameEngine, hand_index: u8, slot: Slot) {
 // =============================================================================
 
 #[test]
-fn test_sanctum_healer_grants_health_buff() {
-    // The Sanctum Healer (5001): Your creatures have +0/+3
+fn test_sanctum_healer_grants_ward_and_health() {
+    // The Sanctum Healer (5001): Your creatures have Ward and +0/+2
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
@@ -70,23 +70,29 @@ fn test_sanctum_healer_grants_health_buff() {
     // Play a creature for P1 (Brass Sentinel: 2/5 Guard)
     play_creature_at_slot(&mut engine, 0, Slot(0));
 
-    // Check the creature has +0/+3 health buff
+    // Check the creature has Ward and +0/+2 health buff
     let creature = engine.state.players[0]
         .get_creature(Slot(0))
         .expect("Creature should exist");
 
-    // Brass Sentinel base stats: 2/5, with +0/+3 should be 2/8
+    // Verify Ward is granted
+    assert!(
+        creature.keywords.has_ward(),
+        "Creature should have Ward from Sanctum Healer passive"
+    );
+
+    // Brass Sentinel base stats: 2/5, with +0/+2 should be 2/7
     assert_eq!(
         creature.attack, 2,
         "Creature attack should be 2 (unchanged)"
     );
     assert_eq!(
-        creature.current_health, 8,
-        "Creature health should be 8 (5 base + 3 from Sanctum Healer)"
+        creature.current_health, 7,
+        "Creature health should be 7 (5 base + 2 from Sanctum Healer)"
     );
     assert_eq!(
-        creature.max_health, 8,
-        "Creature max health should be 8 (5 base + 3 from Sanctum Healer)"
+        creature.max_health, 7,
+        "Creature max health should be 7 (5 base + 2 from Sanctum Healer)"
     );
 }
 
@@ -617,16 +623,20 @@ fn test_broodmother_rush_does_not_affect_opponent() {
         "P1's creature should have Rush from The Broodmother"
     );
 
-    // Verify P2's creature does NOT have Rush (but should have +3 health from Sanctum Healer)
+    // Verify P2's creature does NOT have Rush (but should have Ward and +2 health from Sanctum Healer)
     let p2_creature = &engine.state.players[1].creatures[0];
     assert!(
         !p2_creature.keywords.has_rush(),
         "P2's creature should NOT have Rush (wrong commander)"
     );
-    // Brass Sentinel base is 2/5, with Sanctum Healer should be 2/8
+    assert!(
+        p2_creature.keywords.has_ward(),
+        "P2's creature should have Ward from Sanctum Healer"
+    );
+    // Brass Sentinel base is 2/5, with Sanctum Healer should be 2/7
     assert_eq!(
-        p2_creature.current_health, 8,
-        "P2's creature should have +3 health from Sanctum Healer"
+        p2_creature.current_health, 7,
+        "P2's creature should have +2 health from Sanctum Healer"
     );
 }
 
