@@ -91,8 +91,8 @@ fn test_sanctum_healer_grants_health_buff() {
 }
 
 #[test]
-fn test_grand_architect_grants_fortify() {
-    // The Grand Architect (5003): Your creatures have Fortify
+fn test_grand_architect_grants_fortify_and_health() {
+    // The Grand Architect (5003): Your creatures have Fortify and +0/+2
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
@@ -107,6 +107,12 @@ fn test_grand_architect_grants_fortify() {
     assert!(
         creature.keywords.has_fortify(),
         "Creature should have Fortify from Grand Architect passive"
+    );
+
+    // Brass Sentinel base health is 5, with +0/+2 should be 7
+    assert_eq!(
+        creature.current_health, 7,
+        "Creature should have +2 health from Grand Architect passive"
     );
 }
 
@@ -149,8 +155,8 @@ fn test_eternal_grove_buffs_creatures_at_start_of_turn() {
 }
 
 #[test]
-fn test_blood_sovereign_grants_lifesteal() {
-    // The Blood Sovereign (5008): Your creatures have Lifesteal
+fn test_blood_sovereign_grants_lifesteal_and_health() {
+    // The Blood Sovereign (5008): Your creatures have Lifesteal and +0/+1
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
@@ -165,6 +171,12 @@ fn test_blood_sovereign_grants_lifesteal() {
     assert!(
         creature.keywords.has_lifesteal(),
         "Creature should have Lifesteal from Blood Sovereign passive"
+    );
+
+    // Brass Sentinel base health is 5, with +0/+1 should be 6
+    assert_eq!(
+        creature.current_health, 6,
+        "Creature should have +1 health from Blood Sovereign passive"
     );
 }
 

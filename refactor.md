@@ -1,6 +1,6 @@
 # 🔴 Critical Refactoring Candidates
 
-## **1. effect_queue.rs (1,339 lines) - WORST OFFENDER**
+## ✅ [REFACTORED] **1. effect_queue.rs (1,339 lines) - WORST OFFENDER**
 
 **Issues:**
 - **God Object Pattern**: Single file with 26+ methods handling ALL effect types
@@ -25,7 +25,7 @@ core/engine/effects/
 
 ---
 
-## **2. game_engine.rs (1,120 lines) - SECOND WORST**
+## ✅ [REFACTORED] **2. game_engine.rs (1,120 lines) - SECOND WORST**
 
 **Issues:**
 - **Fat interface**: 11 public methods + tons of private helpers all in one impl block

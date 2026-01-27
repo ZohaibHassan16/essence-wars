@@ -9,10 +9,12 @@ commanders:
     faction: Obsidion
     rarity: Legendary
     passive_ability:
-      description: "Your creatures have Lifesteal"
+      description: "Your creatures have Lifesteal and +0/+1"
       effect:
-        type: grant_keyword
+        type: grant_keyword_and_buff
         keyword: Lifesteal
+        attack: 0
+        health: 1
     flavor: "Blood is such an inefficient fuel. Let me show you how to refine it."
 
   - id: 5009

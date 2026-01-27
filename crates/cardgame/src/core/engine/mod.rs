@@ -8,9 +8,16 @@
 
 mod effect_queue;
 mod effect_convert;
+mod effect_context;
+mod handlers;
+mod triggers;
 mod passive;
 mod game_engine;
 mod environment;
+mod actions;
+mod init;
+mod victory;
+mod turn;
 
 // Re-export public API
 pub use effect_queue::EffectQueue;
@@ -19,6 +26,9 @@ pub use effect_convert::{
     effect_def_to_effect_with_target,
     effect_def_to_triggered_effect,
 };
+pub use effect_context::{EffectContext, TargetResolver, ResolvedTargets};
+pub use handlers::{EffectHandler, create_handler};
+pub use triggers::{check_creature_triggers, effect_def_to_effect, process_deaths};
 pub use passive::{
     support_effect_def_to_effect,
     collect_commander_ally_death_effects,
@@ -28,6 +38,10 @@ pub use passive::{
 };
 pub use game_engine::GameEngine;
 pub use environment::GameEnvironment;
+pub use actions::ActionContext;
+pub use init::{initialize_game, initialize_game_raw, draw_card};
+pub use victory::{check_victory_conditions, check_turn_limit_victory, check_life_victory, check_victory_points_victory};
+pub use turn::{start_turn, end_turn};
 
 /// Seeded shuffle using Linear Congruential Generator for deterministic results.
 /// Uses the same constants as PCG for good statistical properties.

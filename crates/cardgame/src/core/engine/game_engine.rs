@@ -1,37 +1,35 @@
 //! Game engine that manages turn flow and action execution.
 //!
-//! The GameEngine orchestrates game flow, processes actions, and manages
-//! the game loop including turn structure and priority.
+//! The GameEngine is a thin facade that delegates to specialized modules:
+//! - `init`: Game initialization
+//! - `turn`: Turn start/end logic
+//! - `actions`: Action execution (play_card, attack, ability)
+//! - `victory`: Victory condition checking
 
 use crate::core::actions::Action;
-use crate::core::cards::{CardDatabase, CardType};
-use crate::core::state::CardInstance;
-use crate::core::combat;
-use crate::core::config::{game, insight, player};
-use crate::core::effects::{EffectSource, Trigger};
+use crate::core::cards::CardDatabase;
+use crate::core::config::insight;
 use crate::core::legal::legal_actions;
-use crate::core::state::{Creature, CreatureStatus, GameMode, GamePhase, GameResult, GameState, Support, WinReason};
+use crate::core::state::{GameMode, GameResult, GameState};
 use crate::core::tracing::{CombatTracer, EffectTracer};
-use crate::core::types::{CardId, PlayerId, Slot};
+use crate::core::types::{PlayerId, Slot};
 use crate::decks::DeckDefinition;
 
+use super::actions::{execute_attack, execute_attack_with_tracers, execute_play_card, execute_use_ability, ActionContext};
 use super::effect_queue::EffectQueue;
-use super::effect_convert::{resolve_spell_target, effect_def_to_effect_with_target, effect_def_to_triggered_effect};
-use super::passive::{
-    apply_all_support_passives_to_creature,
-    apply_commander_passive_to_new_creature,
-    apply_support_passives_to_all_creatures,
-    collect_commander_creature_played_effects,
-    collect_commander_start_of_turn_effects,
-    remove_support_passives_from_all_creatures,
-    support_effect_def_to_effect,
-};
-use super::seeded_shuffle;
+use super::init::{draw_card, initialize_game_raw};
+use super::passive::remove_support_passives_from_all_creatures;
+use super::turn;
+use super::victory;
 
-/// Game engine that manages turn flow and action execution
+/// Game engine that manages turn flow and action execution.
+///
+/// The engine is a thin facade that delegates to specialized modules for
+/// initialization, turn management, action execution, and victory checking.
 pub struct GameEngine<'a> {
     pub state: GameState,
     card_db: &'a CardDatabase,
+    effect_queue: EffectQueue,
 }
 
 impl<'a> GameEngine<'a> {
@@ -40,6 +38,7 @@ impl<'a> GameEngine<'a> {
         Self {
             state: GameState::new(),
             card_db,
+            effect_queue: EffectQueue::new(),
         }
     }
 
@@ -85,74 +84,27 @@ impl<'a> GameEngine<'a> {
     /// Panics if either commander ID is not found in the card database.
     pub fn start_game_raw(
         &mut self,
-        deck1: Vec<CardId>,
-        deck2: Vec<CardId>,
-        commander1: CardId,
-        commander2: CardId,
+        deck1: Vec<crate::core::types::CardId>,
+        deck2: Vec<crate::core::types::CardId>,
+        commander1: crate::core::types::CardId,
+        commander2: crate::core::types::CardId,
         seed: u64,
         mode: GameMode,
     ) {
-        // Validate commanders exist in database
-        if self.card_db.get_commander(commander1).is_none() {
-            panic!("Commander {} not found in card database", commander1.0);
-        }
-        if self.card_db.get_commander(commander2).is_none() {
-            panic!("Commander {} not found in card database", commander2.0);
-        }
-
-        // Reset state
-        self.state = GameState::new();
-        self.state.rng_state = seed;
-        self.state.game_mode = mode;
-
-        // Set commanders
-        self.state.commander_p1 = Some(commander1);
-        self.state.commander_p2 = Some(commander2);
-
-        // Set up player 1's deck
-        let mut deck1_cards: Vec<CardInstance> = deck1.into_iter().map(CardInstance::new).collect();
-        seeded_shuffle(&mut deck1_cards, seed);
-        for card in deck1_cards {
-            if self.state.players[0].deck.len() < game::MAX_DECK_SIZE {
-                self.state.players[0].deck.push(card);
-            }
-        }
-
-        // Set up player 2's deck (use a different seed derived from the original)
-        let seed2 = seed.wrapping_mul(6364136223846793005).wrapping_add(1);
-        let mut deck2_cards: Vec<CardInstance> = deck2.into_iter().map(CardInstance::new).collect();
-        seeded_shuffle(&mut deck2_cards, seed2);
-        for card in deck2_cards {
-            if self.state.players[1].deck.len() < game::MAX_DECK_SIZE {
-                self.state.players[1].deck.push(card);
-            }
-        }
-
-        // Draw initial hands
-        for _ in 0..player::STARTING_HAND_SIZE {
-            self.draw_card(PlayerId::PLAYER_ONE);
-            self.draw_card(PlayerId::PLAYER_TWO);
-        }
-
-        // P2 draws extra cards to compensate for First Player Advantage
-        // Note: Currently P2_BONUS_CARDS is 0, using essence instead for FPA compensation
-        #[allow(clippy::reversed_empty_ranges)]
-        for _ in 0..player::P2_BONUS_CARDS {
-            self.draw_card(PlayerId::PLAYER_TWO);
-        }
-
-        // Set up initial essence (P2 starts higher to compensate for FPA)
-        // Note: start_turn() will add +1, so we set to (target - 1)
-        self.state.players[0].max_essence = player::STARTING_ESSENCE_P1 - 1;
-        self.state.players[1].max_essence = player::STARTING_ESSENCE_P2 - 1;
-
-        // Set up initial game state
-        self.state.current_turn = 0; // Will be incremented to 1 in start_turn
-        self.state.active_player = PlayerId::PLAYER_ONE;
-        self.state.phase = GamePhase::Main;
+        // Delegate to init module
+        initialize_game_raw(
+            &mut self.state,
+            self.card_db,
+            deck1,
+            deck2,
+            commander1,
+            commander2,
+            seed,
+            mode,
+        );
 
         // Start Player 1's first turn
-        self.start_turn();
+        turn::start_turn(&mut self.state, self.card_db, &mut self.effect_queue);
 
         // Validate initial state in debug builds
         self.state.debug_validate();
@@ -168,317 +120,20 @@ impl<'a> GameEngine<'a> {
     /// Draw a card for the specified player.
     /// If deck is empty, nothing happens (no fatigue damage in this game).
     /// If hand is full (10 cards), the drawn card is discarded (overdraw).
-    fn draw_card(&mut self, player: PlayerId) {
-        let player_state = &mut self.state.players[player.index()];
-
-        // Try to draw from deck
-        if let Some(card) = player_state.deck.pop() {
-            // Add to hand if not full
-            if !player_state.is_hand_full() {
-                player_state.hand.push(card);
-            }
-            // If hand is full, card is simply discarded (overdraw)
-        }
-    }
-
-    /// Start the current player's turn.
-    /// - Increment turn counter
-    /// - Increase max essence by 1 (cap at 10)
-    /// - Refill current essence to max
-    /// - Draw a card
-    /// - Restore AP to 3
-    /// - Reset creature attack flags (clear exhausted status)
-    /// - Reset Commander's Insight usage flag
-    fn start_turn(&mut self) {
-        // Increment turn counter
-        self.state.current_turn += 1;
-
-        // Check for turn limit win condition
-        if self.state.current_turn > game::TURN_LIMIT as u16 {
-            self.check_turn_limit_victory();
-            return;
-        }
-
-        let current_player = self.state.active_player;
-        let player_state = &mut self.state.players[current_player.index()];
-
-        // Reset Commander's Insight usage for this turn
-        player_state.used_commander_insight = false;
-
-        // Increase max essence by 1 (capped at MAX_ESSENCE)
-        if player_state.max_essence < player::MAX_ESSENCE {
-            player_state.max_essence += player::ESSENCE_PER_TURN;
-        }
-
-        // Refill current essence to max
-        player_state.current_essence = player_state.max_essence;
-
-        // Draw a card
-        self.draw_card(current_player);
-
-        // Restore AP to 3
-        self.state.players[current_player.index()].action_points = player::AP_PER_TURN;
-
-        // Reset creature attack flags (clear exhausted status)
-        // Creatures that survived a full round can now attack
-        for creature in &mut self.state.players[current_player.index()].creatures {
-            creature.status.set_exhausted(false);
-        }
-
-        // Process Regenerate - creatures with this keyword heal 2 HP at start of turn
-        self.process_regenerate_healing(current_player);
-
-        // Process StartOfTurn triggered effects for supports
-        self.process_support_start_of_turn_triggers(current_player);
-
-        // Process StartOfTurn triggered effects for commander
-        self.process_commander_start_of_turn_triggers(current_player);
-    }
-
-    /// Process StartOfTurn triggered effects for a player's supports.
-    fn process_support_start_of_turn_triggers(&mut self, player: PlayerId) {
-        // Collect support info to avoid borrow conflicts
-        let support_info: Vec<(Slot, CardId)> = self.state.players[player.index()]
-            .supports
-            .iter()
-            .map(|s| (s.slot, s.card_id))
-            .collect();
-
-        let mut effect_queue = EffectQueue::new();
-
-        for (slot, card_id) in support_info {
-            if let Some(card_def) = self.card_db.get(card_id) {
-                if let CardType::Support { triggered_effects, .. } = &card_def.card_type {
-                    for ability in triggered_effects {
-                        if ability.trigger == Trigger::StartOfTurn {
-                            let source = EffectSource::Support { owner: player, slot };
-                            for effect_def in &ability.effects {
-                                // Use support-specific effect conversion
-                                if let Some(effect) = support_effect_def_to_effect(
-                                    effect_def,
-                                    player,
-                                    ability,
-                                ) {
-                                    effect_queue.push(effect, source);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Process all queued effects
-        effect_queue.process_all(&mut self.state, self.card_db);
-    }
-
-    /// Process StartOfTurn triggered effects for a player's commander.
-    fn process_commander_start_of_turn_triggers(&mut self, player: PlayerId) {
-        let mut effect_queue = EffectQueue::new();
-
-        for (effect, source) in collect_commander_start_of_turn_effects(&self.state, player, self.card_db) {
-            effect_queue.push(effect, source);
-        }
-
-        // Process all queued effects
-        effect_queue.process_all(&mut self.state, self.card_db);
-    }
-
-    /// Process Regenerate keyword - heal creatures by 2 HP at start of turn.
-    fn process_regenerate_healing(&mut self, player: PlayerId) {
-        const REGEN_AMOUNT: i8 = 2;
-
-        for creature in &mut self.state.players[player.index()].creatures {
-            // Skip dead/dying creatures (health <= 0) - they'll be removed by death processing
-            if creature.current_health <= 0 {
-                continue;
-            }
-            
-            if creature.keywords.has_regenerate() && creature.current_health < creature.max_health {
-                // Use saturating add to prevent overflow from edge cases
-                creature.current_health =
-                    creature.current_health.saturating_add(REGEN_AMOUNT).min(creature.max_health);
-            }
-        }
-    }
-
-    /// Process Ephemeral keyword - creatures with this keyword die at end of turn.
-    fn process_ephemeral_deaths(&mut self, player: PlayerId) {
-        use crate::core::effects::{EffectSource, EffectTarget, Trigger};
-        use crate::core::engine::effect_queue::EffectQueue;
-        use crate::core::cards::CardType;
-
-        // Collect slots of ephemeral creatures to process
-        let ephemeral_slots: Vec<Slot> = self.state.players[player.index()]
-            .creatures
-            .iter()
-            .filter(|c| c.keywords.has_ephemeral())
-            .map(|c| c.slot)
-            .collect();
-
-        if ephemeral_slots.is_empty() {
-            return;
-        }
-
-        let mut effect_queue = EffectQueue::new();
-
-        // Queue OnDeath triggers for each ephemeral creature before removing them
-        for slot in &ephemeral_slots {
-            if let Some(creature) = self.state.players[player.index()].get_creature(*slot) {
-                let card_id = creature.card_id;
-
-                // Check for OnDeath triggers
-                if let Some(card_def) = self.card_db.get(card_id) {
-                    if let CardType::Creature { abilities, .. } = &card_def.card_type {
-                        for ability in abilities {
-                            if ability.trigger == Trigger::OnDeath {
-                                let source = EffectSource::Creature { owner: player, slot: *slot };
-                                for effect_def in &ability.effects {
-                                    if let Some(effect) = crate::core::engine::effect_convert::effect_def_to_effect_with_target(
-                                        effect_def,
-                                        EffectTarget::Creature { owner: player, slot: *slot },
-                                        player,
-                                    ) {
-                                        effect_queue.push(effect, source);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Remove ephemeral creatures
-        self.state.players[player.index()]
-            .creatures
-            .retain(|c| !c.keywords.has_ephemeral());
-
-        // Process any OnDeath effects
-        effect_queue.process_all(&mut self.state, self.card_db);
+    fn draw_card_internal(&mut self, player: PlayerId) {
+        draw_card(&mut self.state, player);
     }
 
     /// End the current player's turn.
-    /// - Decrement support durability and remove depleted supports
-    /// - Switch to other player
-    /// - Call start_turn for new player
+    ///
+    /// Delegates to the turn module for:
+    /// - Support durability processing
+    /// - Ephemeral death processing
+    /// - Frenzy stack reset
+    /// - Player switch
+    /// - Next player's turn start
     fn end_turn(&mut self) {
-        let current_player = self.state.active_player;
-
-        // Decrement support durability and collect supports to remove
-        let supports_to_remove: Vec<(Slot, CardId)> = {
-            let player_state = &mut self.state.players[current_player.index()];
-            let mut to_remove = Vec::new();
-
-            for support in &mut player_state.supports {
-                support.current_durability = support.current_durability.saturating_sub(1);
-                if support.current_durability == 0 {
-                    to_remove.push((support.slot, support.card_id));
-                }
-            }
-
-            to_remove
-        };
-
-        // Remove depleted supports and their passive effects
-        for (slot, card_id) in supports_to_remove {
-            // Remove passive effects from creatures before removing support
-            remove_support_passives_from_all_creatures(
-                card_id,
-                &mut self.state.players[current_player.index()].creatures,
-                self.card_db,
-            );
-
-            // Remove the support from the board
-            self.state.players[current_player.index()]
-                .supports
-                .retain(|s| s.slot != slot);
-        }
-
-        // Process Ephemeral - creatures with this keyword die at end of turn
-        self.process_ephemeral_deaths(current_player);
-
-        // Reset Frenzy stacks - bonus resets at end of turn
-        for creature in &mut self.state.players[current_player.index()].creatures {
-            creature.frenzy_stacks = 0;
-        }
-
-        // Switch to opponent
-        self.state.active_player = self.state.active_player.opponent();
-
-        // Start opponent's turn
-        self.start_turn();
-    }
-
-    /// Check for turn limit victory condition.
-    /// Player with higher life wins. On tie, Player 1 wins.
-    fn check_turn_limit_victory(&mut self) {
-        let p1_life = self.state.players[0].life;
-        let p2_life = self.state.players[1].life;
-
-        let winner = if p1_life >= p2_life {
-            PlayerId::PLAYER_ONE
-        } else {
-            PlayerId::PLAYER_TWO
-        };
-
-        self.state.result = Some(GameResult::Win {
-            winner,
-            reason: WinReason::TurnLimitHigherLife,
-        });
-        self.state.phase = GamePhase::Ended;
-    }
-
-    /// Check if a player has lost due to life reaching 0.
-    /// If both players reach 0 life simultaneously, the game is a draw.
-    pub fn check_life_victory(&mut self) {
-        let p1_dead = self.state.players[0].life <= 0;
-        let p2_dead = self.state.players[1].life <= 0;
-
-        if p1_dead && p2_dead {
-            // Both players dead simultaneously = draw
-            self.state.result = Some(GameResult::Draw);
-            self.state.phase = GamePhase::Ended;
-        } else if p1_dead {
-            self.state.result = Some(GameResult::Win {
-                winner: PlayerId::PLAYER_TWO,
-                reason: WinReason::LifeReachedZero,
-            });
-            self.state.phase = GamePhase::Ended;
-        } else if p2_dead {
-            self.state.result = Some(GameResult::Win {
-                winner: PlayerId::PLAYER_ONE,
-                reason: WinReason::LifeReachedZero,
-            });
-            self.state.phase = GamePhase::Ended;
-        }
-    }
-
-    /// Check if a player has won via Victory Points (Essence Duel mode only).
-    /// In Essence Duel, first player to deal 50 cumulative face damage wins.
-    pub fn check_victory_points_victory(&mut self) {
-        // Only applies in Essence Duel mode
-        if self.state.game_mode != GameMode::EssenceDuel {
-            return;
-        }
-
-        // Already have a result? Don't override
-        if self.state.result.is_some() {
-            return;
-        }
-
-        for player_idx in 0..2 {
-            let vp = self.state.players[player_idx].total_damage_dealt;
-            if vp >= game::VICTORY_POINTS_THRESHOLD {
-                let winner = PlayerId(player_idx as u8);
-                self.state.result = Some(GameResult::Win {
-                    winner,
-                    reason: WinReason::VictoryPointsReached,
-                });
-                self.state.phase = GamePhase::Ended;
-                return;
-            }
-        }
+        turn::end_turn(&mut self.state, self.card_db, &mut self.effect_queue);
     }
 
     /// Apply an action to the game state.
@@ -497,17 +152,35 @@ impl<'a> GameEngine<'a> {
 
         match action {
             Action::PlayCard { hand_index, slot } => {
-                self.execute_play_card(hand_index as usize, slot)?;
+                let mut ctx = ActionContext::new(
+                    &mut self.state,
+                    self.card_db,
+                    &mut self.effect_queue,
+                    None,
+                );
+                execute_play_card(&mut ctx, hand_index as usize, slot)?;
             }
             Action::Attack { attacker, defender } => {
-                self.execute_attack(attacker, defender)?;
+                let mut ctx = ActionContext::new(
+                    &mut self.state,
+                    self.card_db,
+                    &mut self.effect_queue,
+                    None,
+                );
+                execute_attack(&mut ctx, attacker, defender)?;
             }
             Action::UseAbility {
                 slot,
                 ability_index,
                 target,
             } => {
-                self.execute_use_ability(slot, ability_index, target)?;
+                let mut ctx = ActionContext::new(
+                    &mut self.state,
+                    self.card_db,
+                    &mut self.effect_queue,
+                    None,
+                );
+                execute_use_ability(&mut ctx, slot, ability_index, target)?;
             }
             Action::CommanderInsight => {
                 self.execute_commander_insight()?;
@@ -518,8 +191,7 @@ impl<'a> GameEngine<'a> {
         }
 
         // Check for victory after each action
-        self.check_life_victory();
-        self.check_victory_points_victory();
+        victory::check_victory_conditions(&mut self.state);
 
         // Validate state invariants in debug builds
         self.state.debug_validate();
@@ -535,7 +207,7 @@ impl<'a> GameEngine<'a> {
         &mut self,
         action: Action,
         combat_tracer: Option<&mut CombatTracer>,
-        effect_tracer: Option<&mut EffectTracer>,
+        mut effect_tracer: Option<&mut EffectTracer>,
     ) -> Result<(), String> {
         // Check if game is over
         if self.state.is_terminal() {
@@ -550,22 +222,37 @@ impl<'a> GameEngine<'a> {
 
         match action {
             Action::PlayCard { hand_index, slot } => {
-                // PlayCard doesn't have combat, use regular execution
-                self.execute_play_card(hand_index as usize, slot)?;
+                let mut ctx = ActionContext::new(
+                    &mut self.state,
+                    self.card_db,
+                    &mut self.effect_queue,
+                    effect_tracer.as_deref_mut(),
+                );
+                execute_play_card(&mut ctx, hand_index as usize, slot)?;
             }
             Action::Attack { attacker, defender } => {
-                self.execute_attack_with_tracers(attacker, defender, combat_tracer, effect_tracer)?;
+                let mut ctx = ActionContext::new(
+                    &mut self.state,
+                    self.card_db,
+                    &mut self.effect_queue,
+                    effect_tracer.as_deref_mut(),
+                );
+                execute_attack_with_tracers(&mut ctx, attacker, defender, combat_tracer)?;
             }
             Action::UseAbility {
                 slot,
                 ability_index,
                 target,
             } => {
-                // UseAbility doesn't have combat, use regular execution
-                self.execute_use_ability(slot, ability_index, target)?;
+                let mut ctx = ActionContext::new(
+                    &mut self.state,
+                    self.card_db,
+                    &mut self.effect_queue,
+                    effect_tracer,
+                );
+                execute_use_ability(&mut ctx, slot, ability_index, target)?;
             }
             Action::CommanderInsight => {
-                // CommanderInsight doesn't have combat, use regular execution
                 self.execute_commander_insight()?;
             }
             Action::EndTurn => {
@@ -574,8 +261,7 @@ impl<'a> GameEngine<'a> {
         }
 
         // Check for victory after each action
-        self.check_life_victory();
-        self.check_victory_points_victory();
+        victory::check_victory_conditions(&mut self.state);
 
         // Validate state invariants in debug builds
         self.state.debug_validate();
@@ -583,416 +269,30 @@ impl<'a> GameEngine<'a> {
         Ok(())
     }
 
-    /// Execute a PlayCard action.
+    /// Execute a PlayCard action directly (for testing convenience).
     ///
-    /// Handles creatures, spells, and supports with full effect queue integration:
-    /// - Creatures: Place on board with summoning sickness (unless Rush), trigger OnPlay
-    /// - Spells: Resolve targeting, queue effects, process queue
-    /// - Supports: Place in support slot, trigger OnPlay if present
+    /// This is a convenience method that bypasses action validation. Use
+    /// `apply_action` for normal gameplay which includes legality checking.
     pub fn execute_play_card(&mut self, hand_index: usize, slot: Slot) -> Result<(), String> {
-        let current_player = self.state.active_player;
-
-        // Get the card from hand
-        if hand_index >= self.state.players[current_player.index()].hand.len() {
-            return Err("Invalid hand index".to_string());
-        }
-        let card_instance = self.state.players[current_player.index()].hand.remove(hand_index);
-        let card_id = card_instance.card_id;
-
-        // Look up card definition
-        let card_def = self
-            .card_db
-            .get(card_id)
-            .ok_or_else(|| "Card not found in database".to_string())?;
-
-        // Check and deduct costs
-        // Per design: playing a card costs 1 AP + card's Essence cost
-        let player_state = &mut self.state.players[current_player.index()];
-
-        // Check AP (1 AP per card play)
-        if player_state.action_points < 1 {
-            return Err("Not enough AP".to_string());
-        }
-
-        // Check Essence (card's cost)
-        if card_def.cost > player_state.current_essence {
-            return Err("Not enough Essence".to_string());
-        }
-
-        // Deduct 1 AP for the action
-        player_state.action_points -= 1;
-
-        // Deduct Essence equal to card cost
-        player_state.current_essence -= card_def.cost;
-
-        // Create effect queue for triggered effects
-        let mut effect_queue = EffectQueue::new();
-
-        match &card_def.card_type {
-            CardType::Creature { attack, health, abilities, .. } => {
-                // Create creature instance
-                let instance_id = self.state.next_creature_instance_id();
-                let keywords = card_def.keywords();
-
-                let creature = Creature {
-                    instance_id,
-                    card_id,
-                    owner: current_player,
-                    slot,
-                    attack: *attack as i8,
-                    current_health: *health as i8,
-                    max_health: *health as i8,
-                    base_attack: *attack,
-                    base_health: *health,
-                    keywords,
-                    status: CreatureStatus::default(),
-                    turn_played: self.state.current_turn,
-                    frenzy_stacks: 0,
-                };
-
-                // Add creature to board
-                self.state.players[current_player.index()].creatures.push(creature);
-
-                // Apply passive effects from existing supports to the new creature
-                let supports: Vec<Support> = self.state.players[current_player.index()]
-                    .supports.iter().cloned().collect();
-                if let Some(new_creature) = self.state.players[current_player.index()]
-                    .get_creature_mut(slot) {
-                    apply_all_support_passives_to_creature(new_creature, &supports, self.card_db);
-                }
-
-                // Apply commander passive effects to the new creature
-                let commander_id = self.state.get_commander(current_player);
-                if let Some(new_creature) = self.state.players[current_player.index()]
-                    .get_creature_mut(slot) {
-                    apply_commander_passive_to_new_creature(new_creature, commander_id, self.card_db);
-                }
-
-                // Queue OnPlay triggered effects
-                for ability in abilities {
-                    if ability.trigger == Trigger::OnPlay {
-                        let source = EffectSource::Creature { owner: current_player, slot };
-                        for effect_def in &ability.effects {
-                            if let Some(effect) = effect_def_to_triggered_effect(
-                                effect_def,
-                                current_player,
-                                slot,
-                                ability,
-                            ) {
-                                effect_queue.push(effect, source);
-                            }
-                        }
-                    }
-                }
-
-                // Check for OnAllyPlayed triggers on other friendly creatures
-                let other_creatures: Vec<(Slot, CardId)> = self.state.players[current_player.index()]
-                    .creatures
-                    .iter()
-                    .filter(|c| c.slot != slot && !c.status.is_silenced())
-                    .map(|c| (c.slot, c.card_id))
-                    .collect();
-
-                for (ally_slot, ally_card_id) in other_creatures {
-                    if let Some(ally_card_def) = self.card_db.get(ally_card_id) {
-                        if let Some(ally_abilities) = ally_card_def.creature_abilities() {
-                            for ability in ally_abilities {
-                                if ability.trigger == Trigger::OnAllyPlayed {
-                                    let source = EffectSource::Creature {
-                                        owner: current_player,
-                                        slot: ally_slot,
-                                    };
-                                    for effect_def in &ability.effects {
-                                        if let Some(effect) = effect_def_to_triggered_effect(
-                                            effect_def,
-                                            current_player,
-                                            ally_slot,
-                                            ability,
-                                        ) {
-                                            effect_queue.push(effect, source);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Check for OnCreaturePlayed commander trigger (e.g., The Broodmother)
-                for (effect, source) in collect_commander_creature_played_effects(
-                    &self.state,
-                    current_player,
-                    keywords,
-                    self.card_db,
-                ) {
-                    effect_queue.push(effect, source);
-                }
-            }
-            CardType::Spell { targeting, effects, conditional_effects } => {
-                // Resolve the spell target based on targeting rule and slot parameter
-                let target = resolve_spell_target(targeting, slot, current_player)?;
-                let source = EffectSource::Card(card_id);
-
-                // Queue all spell effects with the resolved target
-                for effect_def in effects {
-                    if let Some(effect) = effect_def_to_effect_with_target(
-                        effect_def,
-                        target,
-                        current_player,
-                    ) {
-                        effect_queue.push(effect, source);
-                    }
-                }
-
-                // If spell has conditional effects, process primary effects first and check conditions
-                if !conditional_effects.is_empty() {
-                    // Reset accumulated result before processing
-                    effect_queue.reset_accumulated_result();
-
-                    // Process primary effects
-                    effect_queue.process_all(&mut self.state, self.card_db);
-
-                    // Check conditions and queue bonus effects (clone to avoid borrow issues)
-                    let result = effect_queue.accumulated_result().clone();
-                    for cond_group in conditional_effects {
-                        if result.check(&cond_group.condition) {
-                            for effect_def in &cond_group.effects {
-                                if let Some(effect) = effect_def_to_effect_with_target(
-                                    effect_def,
-                                    target,
-                                    current_player,
-                                ) {
-                                    effect_queue.push(effect, source);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Spell is consumed (already removed from hand, no discard pile tracking)
-            }
-            CardType::Support { durability, triggered_effects, .. } => {
-                // Create support instance
-                let support = Support {
-                    card_id,
-                    owner: current_player,
-                    slot,
-                    current_durability: *durability,
-                };
-
-                // Add support to board
-                self.state.players[current_player.index()].supports.push(support);
-
-                // Apply passive effects from this support to all existing creatures
-                apply_support_passives_to_all_creatures(
-                    card_id,
-                    &mut self.state.players[current_player.index()].creatures,
-                    self.card_db,
-                );
-
-                // Queue OnPlay triggered effects for support
-                for ability in triggered_effects {
-                    if ability.trigger == Trigger::OnPlay {
-                        let source = EffectSource::Support { owner: current_player, slot };
-                        for effect_def in &ability.effects {
-                            // Use support-specific effect conversion
-                            if let Some(effect) = support_effect_def_to_effect(
-                                effect_def,
-                                current_player,
-                                ability,
-                            ) {
-                                effect_queue.push(effect, source);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Process all queued effects
-        effect_queue.process_all(&mut self.state, self.card_db);
-
-        Ok(())
-    }
-
-    /// Execute an Attack action.
-    ///
-    /// Delegates to the combat module for full keyword resolution including:
-    /// Quick, Ranged, Shield, Piercing, Lethal, and Lifesteal.
-    fn execute_attack(&mut self, attacker_slot: Slot, defender_slot: Slot) -> Result<(), String> {
-        let current_player = self.state.active_player;
-
-        // Validate attacker exists
-        let attacker = self
-            .state
-            .players[current_player.index()]
-            .get_creature(attacker_slot)
-            .ok_or_else(|| "No creature at attacker slot".to_string())?;
-
-        // Validate attacker can attack
-        if !attacker.can_attack(self.state.current_turn) {
-            return Err("Creature cannot attack".to_string());
-        }
-
-        // Create effect queue for triggered effects (OnAttack, OnKill, OnDeath, etc.)
-        let mut effect_queue = EffectQueue::new();
-
-        // Check for commander OnAttack triggers (before combat resolution)
-        let attack_effects =
-            super::passive::collect_commander_attack_effects(&self.state, current_player, self.card_db);
-        for (effect, source) in attack_effects {
-            effect_queue.push(effect, source);
-        }
-
-        // Process OnAttack effects before combat (e.g., Alpha of the Hunt's buff)
-        effect_queue.process_all(&mut self.state, self.card_db);
-
-        // Delegate to combat module for full keyword resolution
-        // Note: Pass None for tracer - use execute_attack_with_tracer for tracing support
-        let _result = combat::resolve_combat(
+        let mut ctx = ActionContext::new(
             &mut self.state,
             self.card_db,
-            &mut effect_queue,
-            current_player,
-            attacker_slot,
-            defender_slot,
-            None, // No tracing by default
+            &mut self.effect_queue,
+            None,
         );
-
-        // Process any triggered effects from combat
-        effect_queue.process_all(&mut self.state, self.card_db);
-
-        Ok(())
+        execute_play_card(&mut ctx, hand_index, slot)
     }
 
-    /// Execute an attack action with optional tracers for debugging.
-    fn execute_attack_with_tracers(
-        &mut self,
-        attacker_slot: Slot,
-        defender_slot: Slot,
-        combat_tracer: Option<&mut CombatTracer>,
-        mut effect_tracer: Option<&mut EffectTracer>,
-    ) -> Result<(), String> {
-        let current_player = self.state.active_player;
-
-        // Validate attacker exists
-        let attacker = self
-            .state
-            .players[current_player.index()]
-            .get_creature(attacker_slot)
-            .ok_or_else(|| "No creature at attacker slot".to_string())?;
-
-        // Validate attacker can attack
-        if !attacker.can_attack(self.state.current_turn) {
-            return Err("Creature cannot attack".to_string());
-        }
-
-        // Create effect queue for triggered effects
-        let mut effect_queue = EffectQueue::new();
-
-        // Check for commander OnAttack triggers (before combat resolution)
-        let attack_effects =
-            super::passive::collect_commander_attack_effects(&self.state, current_player, self.card_db);
-        for (effect, source) in attack_effects {
-            effect_queue.push(effect, source);
-        }
-
-        // Process OnAttack effects before combat (e.g., Alpha of the Hunt's buff)
-        // Reborrow effect_tracer so we can use it again after combat
-        effect_queue.process_all_with_tracer(&mut self.state, self.card_db, effect_tracer.as_deref_mut());
-
-        // Delegate to combat module with tracer
-        let _result = combat::resolve_combat(
-            &mut self.state,
-            self.card_db,
-            &mut effect_queue,
-            current_player,
-            attacker_slot,
-            defender_slot,
-            combat_tracer,
-        );
-
-        // Process any triggered effects from combat with tracer
-        effect_queue.process_all_with_tracer(&mut self.state, self.card_db, effect_tracer);
-
-        Ok(())
+    /// Check if a player has lost due to life reaching 0.
+    /// If both players reach 0 life simultaneously, the game is a draw.
+    pub fn check_life_victory(&mut self) {
+        victory::check_life_victory(&mut self.state);
     }
 
-    /// Execute a UseAbility action.
-    ///
-    /// Uses a creature's ability at the specified slot with the given target.
-    /// The ability is identified by ability_index (0-based).
-    ///
-    /// # Errors
-    /// - Returns error if no creature exists at the slot
-    /// - Returns error if creature is silenced
-    /// - Returns error if ability_index is out of bounds
-    /// - Returns error if the card definition is not found
-    fn execute_use_ability(
-        &mut self,
-        slot: Slot,
-        ability_index: u8,
-        target: crate::actions::Target,
-    ) -> Result<(), String> {
-        use crate::core::actions::Target;
-        use crate::core::effects::EffectTarget;
-
-        let current_player = self.state.active_player;
-
-        // Get creature at slot
-        let creature = self.state.players[current_player.index()]
-            .get_creature(slot)
-            .ok_or("No creature at slot")?;
-
-        // Silenced creatures can't use abilities
-        if creature.status.is_silenced() {
-            return Err("Creature is silenced".to_string());
-        }
-
-        let card_id = creature.card_id;
-
-        // Get card definition
-        let card_def = self.card_db.get(card_id)
-            .ok_or("Card not found")?;
-
-        // Get abilities from card type
-        let abilities = match &card_def.card_type {
-            CardType::Creature { abilities, .. } => abilities,
-            _ => return Err("Not a creature card".to_string()),
-        };
-
-        // Get the specific ability
-        let ability = abilities.get(ability_index as usize)
-            .ok_or("Invalid ability index")?;
-
-        // Convert target to EffectTarget
-        let effect_target = match target {
-            Target::NoTarget => EffectTarget::None,
-            Target::EnemySlot(s) => EffectTarget::Creature {
-                owner: current_player.opponent(),
-                slot: s
-            },
-            Target::Self_ => EffectTarget::Creature {
-                owner: current_player,
-                slot
-            },
-        };
-
-        // Create effect queue and queue ability effects
-        let mut effect_queue = EffectQueue::new();
-        let source = EffectSource::Creature { owner: current_player, slot };
-
-        for effect_def in &ability.effects {
-            // Convert EffectDefinition to Effect with the resolved target
-            if let Some(effect) = effect_def_to_effect_with_target(effect_def, effect_target, current_player) {
-                effect_queue.push(effect, source);
-            }
-        }
-
-        // Process all effects
-        effect_queue.process_all(&mut self.state, self.card_db);
-
-        Ok(())
+    /// Check if a player has won via Victory Points (Essence Duel mode only).
+    /// In Essence Duel, first player to deal 50 cumulative face damage wins.
+    pub fn check_victory_points_victory(&mut self) {
+        victory::check_victory_points_victory(&mut self.state);
     }
 
     /// Execute Commander's Insight action.
@@ -1016,7 +316,7 @@ impl<'a> GameEngine<'a> {
         player_state.used_commander_insight = true;
 
         // Draw a card
-        self.draw_card(current_player);
+        self.draw_card_internal(current_player);
 
         Ok(())
     }
@@ -1142,6 +442,7 @@ impl<'a> GameEngine<'a> {
         GameEngine {
             state: self.state.clone(),
             card_db: self.card_db,
+            effect_queue: EffectQueue::new(),
         }
     }
 

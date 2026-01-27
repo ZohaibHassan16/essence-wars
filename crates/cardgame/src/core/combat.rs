@@ -910,7 +910,7 @@ fn process_creature_death(
 
 /// Check if the game is over due to a player reaching 0 life.
 fn check_game_over(state: &mut GameState) {
-    use crate::core::state::{GameResult, WinReason};
+    use crate::core::state::{GamePhase, GameResult, WinReason};
 
     let p1_dead = state.players[0].life <= 0;
     let p2_dead = state.players[1].life <= 0;
@@ -918,15 +918,18 @@ fn check_game_over(state: &mut GameState) {
     if p1_dead && p2_dead {
         // Both dead simultaneously = draw
         state.result = Some(GameResult::Draw);
+        state.phase = GamePhase::Ended;
     } else if p1_dead {
         state.result = Some(GameResult::Win {
             winner: PlayerId::PLAYER_TWO,
             reason: WinReason::LifeReachedZero,
         });
+        state.phase = GamePhase::Ended;
     } else if p2_dead {
         state.result = Some(GameResult::Win {
             winner: PlayerId::PLAYER_ONE,
             reason: WinReason::LifeReachedZero,
         });
+        state.phase = GamePhase::Ended;
     }
 }

@@ -52,8 +52,10 @@ commanders:
     faction: Argentum
     rarity: Legendary
     passive_ability:
-      description: "Your creatures have Fortify"
+      description: "Your creatures have Fortify and +0/+2"
       effect:
-        type: grant_keyword
+        type: grant_keyword_and_buff
         keyword: Fortify
+        attack: 0
+        health: 2
     flavor: "Every bolt placed with purpose. Every gear turning in harmony."

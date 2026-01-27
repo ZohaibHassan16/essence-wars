@@ -796,6 +796,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 
 ### Phase 11: Release Prep
 - [ ] Discuss Distribution Options, DevOps, Storage Solutions (Assets, the Github Repo is becoming too big)
+- [ ] Containerization?
 - [ ] Build for Windows
 - [ ] Build for Linux
 - [ ] Create Github Releases as Github Actions

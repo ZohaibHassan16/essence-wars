@@ -737,12 +737,12 @@ Command Zone integrated into Tauri UI with faction-specific styling. Face attack
   cargo bench -p cardgame
   ```
   - Ensure no significant regression
-  - Document any changes  
+  - Document any changes in CLAUDE.md
 
 - [ ] **9.4** Automated arena tournaments
   - Run all commander matchups using validate (Alpha-Beta Bot, MCTSBot)
 
-- [ ] **9.5** Analyze tournament results
+- [ ] **9.5** Analyze and diagnose tournament results
   - Calculate win rates per commander
   - Identify outliers (>60% or <40% overall win rate)
   - Document findings

@@ -1,6 +1,6 @@
 id = "sovereign_lifesteal"
 name = "The Blood Sovereign"
-description = "Your creatures gain Lifesteal, turning high-attack minions into sustain engines. Strike hard and heal with every blow as you drain your enemies dry."
+description = "Your creatures gain Lifesteal and +0/+1, making them harder to kill while draining life with every blow. Outlast your enemies as your minions refuse to fall."
 playstyle = "Tempo"
 tags = ["commander", "obsidion"]
 commander = 5008
