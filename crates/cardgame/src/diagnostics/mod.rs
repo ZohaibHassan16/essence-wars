@@ -10,14 +10,23 @@
 //! use cardgame::diagnostics::{
 //!     AggregatedStats, DiagnosticConfig, DiagnosticRunner, print_report
 //! };
-//! use cardgame::types::CardId;
+//! use cardgame::decks::DeckDefinition;
 //!
 //! let card_db = CardDatabase::load_from_directory("data/cards/core_set").unwrap();
-//! let deck: Vec<CardId> = vec![CardId(1000); 30]; // Example deck
+//! // Load a deck definition with commander
+//! let deck = DeckDefinition {
+//!     id: "example".to_string(),
+//!     name: "Example Deck".to_string(),
+//!     description: String::new(),
+//!     playstyle: String::new(),
+//!     commander: 5000,  // Commander ID
+//!     cards: vec![1000; 30],  // 30 cards
+//!     tags: Vec::new(),
+//! };
 //!
 //! let config = DiagnosticConfig::new(deck, 100);
 //! let runner = DiagnosticRunner::new(&card_db);
-//! let games = runner.run(&config);
+//! let games = runner.run(&config).expect("Commander should exist");
 //!
 //! let stats = AggregatedStats::analyze(&games);
 //! print_report(&stats);

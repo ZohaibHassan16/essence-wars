@@ -347,8 +347,8 @@ fn run_coverage_games(
             &deck1_def,
             &deck2_def,
             seed,
-        );
-        
+        ).expect("Game should start successfully");
+
         // Check for game errors/panics (if result has error info)
         if result.turns == 0 {
             // Suspicious - game ended immediately
@@ -654,7 +654,7 @@ fn test_all_decks_exercised() {
                 &deck1_def,
                 &deck2_def,
                 i as u64,
-            );
+            ).expect("Game should start successfully");
 
             decks_used.insert((*deck1_id).to_string());
             decks_used.insert((*deck2_id).to_string());
@@ -737,7 +737,7 @@ fn test_game_determinism_verification() {
             &deck1_def,
             &deck2_def,
             seed,
-        )
+        ).expect("Game should start successfully")
     };
 
     let result1 = run_game(seed, deck1_cards.clone(), deck2_cards.clone());

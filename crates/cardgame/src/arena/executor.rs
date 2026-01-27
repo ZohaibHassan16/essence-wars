@@ -10,16 +10,50 @@ use crate::arena::logger::{ActionLogger, ActionRecord, StateSnapshot};
 use crate::arena::stats::MatchStats;
 use crate::bots::{create_bot, BotType};
 use crate::cards::CardDatabase;
+use crate::engine::GameInitError;
 use crate::core::tracing::{CombatTracer, EffectTracer};
 use crate::engine::GameEngine;
 use crate::execution::{run_batch_parallel, BatchConfig, GameOutcome, GameSeeds, ProgressStyle};
 use crate::types::PlayerId;
 
+/// Validate that commanders exist in the card database before starting games.
+///
+/// # Errors
+/// Returns `GameInitError::CommanderNotFound` if either commander is not found.
+fn validate_commanders(card_db: &CardDatabase, config: &MatchConfig) -> Result<(), GameInitError> {
+    let commander1_id = config.deck1.commander_id();
+    let commander2_id = config.deck2.commander_id();
+
+    if card_db.get_commander(commander1_id).is_none() {
+        return Err(GameInitError::CommanderNotFound {
+            commander_id: commander1_id.0,
+            player: 1,
+        });
+    }
+    if card_db.get_commander(commander2_id).is_none() {
+        return Err(GameInitError::CommanderNotFound {
+            commander_id: commander2_id.0,
+            player: 2,
+        });
+    }
+    Ok(()
+    )
+}
+
 /// Run a match in parallel using the shared execution infrastructure.
 ///
 /// This is the high-performance mode for running many games quickly.
 /// Does not support logging, invariant checking, or tracing.
-pub fn run_match_parallel(card_db: &CardDatabase, config: &MatchConfig) -> MatchStats {
+///
+/// # Errors
+/// Returns `GameInitError` if commanders are not found in the card database.
+pub fn run_match_parallel(
+    card_db: &CardDatabase,
+    config: &MatchConfig,
+) -> Result<MatchStats, GameInitError> {
+    // Validate commanders exist before starting any games
+    validate_commanders(card_db, config)?;
+
     let batch_config = if config.show_progress {
         BatchConfig::new(config.games, config.seed).with_progress(ProgressStyle::Rich)
     } else {
@@ -41,7 +75,7 @@ pub fn run_match_parallel(card_db: &CardDatabase, config: &MatchConfig) -> Match
     }
     stats.set_wall_clock_time(result.wall_clock_time);
 
-    stats
+    Ok(stats)
 }
 
 /// Run a single game for parallel execution.
@@ -102,6 +136,15 @@ fn run_single_game_parallel(
         action_count += 1;
     }
 
+    // Log warning if action limit was hit without game completion
+    if action_count >= max_actions && !engine.is_game_over() {
+        log::warn!(
+            "Game exceeded {} action limit without completion (seed: {})",
+            max_actions,
+            seeds.game
+        );
+    }
+
     GameOutcome::new(engine.winner(), engine.turn_number() as u32, start.elapsed())
 }
 
@@ -109,12 +152,18 @@ fn run_single_game_parallel(
 ///
 /// This mode supports debugging features like logging, invariant checking,
 /// and combat/effect tracing.
+///
+/// # Errors
+/// Returns `GameInitError` if commanders are not found in the card database.
 pub fn run_match_sequential(
     card_db: &CardDatabase,
     config: &MatchConfig,
     seq_config: &SequentialConfig,
     logger: &mut Option<ActionLogger>,
-) -> MatchStats {
+) -> Result<MatchStats, GameInitError> {
+    // Validate commanders exist before starting any games
+    validate_commanders(card_db, config)?;
+
     let mut stats = MatchStats::new(
         config.bot1_type.name().to_string(),
         config.bot2_type.name().to_string(),
@@ -167,7 +216,7 @@ pub fn run_match_sequential(
         );
     }
 
-    stats
+    Ok(stats)
 }
 
 /// Run a single game with full logging and tracing support.
@@ -282,6 +331,15 @@ fn run_single_game_sequential(
         }
 
         action_count += 1;
+    }
+
+    // Log warning if action limit was hit without game completion
+    if action_count >= max_actions && !engine.is_game_over() {
+        log::warn!(
+            "Game exceeded {} action limit without completion (seed: {})",
+            max_actions,
+            seeds.game
+        );
     }
 
     // Log game end
@@ -399,7 +457,7 @@ mod tests {
             42,
         );
 
-        let stats = run_match_parallel(&card_db, &config);
+        let stats = run_match_parallel(&card_db, &config).expect("Game init should succeed");
         assert_eq!(stats.overall.games, 5);
     }
 
@@ -417,7 +475,8 @@ mod tests {
         let seq_config = SequentialConfig::new();
         let mut logger = None;
 
-        let stats = run_match_sequential(&card_db, &config, &seq_config, &mut logger);
+        let stats = run_match_sequential(&card_db, &config, &seq_config, &mut logger)
+            .expect("Game init should succeed");
         assert_eq!(stats.overall.games, 3);
     }
 }

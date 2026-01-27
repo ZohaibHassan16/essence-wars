@@ -6,6 +6,7 @@ use crate::arena::logger::{ActionLogger, ActionRecord, StateSnapshot};
 use crate::arena::stats::MatchStats;
 use crate::bots::Bot;
 use crate::cards::CardDatabase;
+use crate::engine::GameInitError;
 use crate::core::state::GameMode;
 use crate::core::tracing::{CombatTrace, CombatTracer, EffectEvent, EffectTracer};
 use crate::decks::DeckDefinition;
@@ -85,6 +86,9 @@ impl<'a> GameRunner<'a> {
     ///
     /// # Returns
     /// The result of the game including winner, turns, and timing.
+    ///
+    /// # Errors
+    /// Returns `GameInitError` if game initialization fails (e.g., commander not found).
     pub fn run_game(
         &mut self,
         bot1: &mut dyn Bot,
@@ -92,7 +96,7 @@ impl<'a> GameRunner<'a> {
         deck1: &DeckDefinition,
         deck2: &DeckDefinition,
         seed: u64,
-    ) -> GameResult {
+    ) -> Result<GameResult, GameInitError> {
         let start = Instant::now();
         let mut actions = Vec::new();
 
@@ -107,9 +111,7 @@ impl<'a> GameRunner<'a> {
 
         // Create and start game engine
         let mut engine = GameEngine::new(self.card_db);
-        engine
-            .start_game_with_mode(deck1, deck2, seed, self.game_mode)
-            .expect("Failed to start game - commander not found in card database");
+        engine.start_game_with_mode(deck1, deck2, seed, self.game_mode)?;
 
         // Log game start
         if let Some(ref mut logger) = self.logger {
@@ -183,6 +185,15 @@ impl<'a> GameRunner<'a> {
             action_count += 1;
         }
 
+        // Log warning if action limit was hit without game completion
+        if action_count >= max_actions && !engine.is_game_over() {
+            log::warn!(
+                "Game exceeded {} action limit without completion (seed: {})",
+                max_actions,
+                seed
+            );
+        }
+
         // Get final result
         let winner = engine.winner();
         let turns = engine.turn_number() as u32;
@@ -198,7 +209,7 @@ impl<'a> GameRunner<'a> {
             );
         }
 
-        GameResult {
+        Ok(GameResult {
             winner,
             turns,
             seed,
@@ -206,7 +217,7 @@ impl<'a> GameRunner<'a> {
             actions,
             combat_traces: combat_tracer.traces,
             effect_events: effect_tracer.events,
-        }
+        })
     }
 
     /// Run a match (multiple games) between two bots.
@@ -221,6 +232,9 @@ impl<'a> GameRunner<'a> {
     ///
     /// # Returns
     /// Statistics for all games played.
+    ///
+    /// # Errors
+    /// Returns `GameInitError` if any game fails to initialize.
     pub fn run_match(
         &mut self,
         bot1: &mut dyn Bot,
@@ -229,19 +243,22 @@ impl<'a> GameRunner<'a> {
         deck2: &DeckDefinition,
         games: usize,
         base_seed: u64,
-    ) -> MatchStats {
+    ) -> Result<MatchStats, GameInitError> {
         let mut stats = MatchStats::new(bot1.name().to_string(), bot2.name().to_string());
 
         for i in 0..games {
             let seed = base_seed.wrapping_add(i as u64);
-            let result = self.run_game(bot1, bot2, deck1, deck2, seed);
+            let result = self.run_game(bot1, bot2, deck1, deck2, seed)?;
             stats.record_game(result.winner, result.turns, result.duration);
         }
 
-        stats
+        Ok(stats)
     }
 
     /// Run a match without a logger (for performance).
+    ///
+    /// # Errors
+    /// Returns `GameInitError` if any game fails to initialize.
     pub fn run_match_silent(
         card_db: &CardDatabase,
         bot1: &mut dyn Bot,
@@ -250,7 +267,7 @@ impl<'a> GameRunner<'a> {
         deck2: &DeckDefinition,
         games: usize,
         base_seed: u64,
-    ) -> MatchStats {
+    ) -> Result<MatchStats, GameInitError> {
         let mut runner = GameRunner::new(card_db);
         runner.run_match(bot1, bot2, deck1, deck2, games, base_seed)
     }

@@ -267,6 +267,144 @@ fn bench_games_per_second(c: &mut Criterion) {
     group.finish();
 }
 
+/// Benchmark state cloning performance at different game stages.
+/// Critical for MCTS which clones state thousands of times per decision.
+fn bench_state_cloning(c: &mut Criterion) {
+    let card_db = load_card_db();
+    let deck_registry = load_decks();
+    let deck = deck_registry
+        .get("architect_fortify")
+        .expect("Deck should exist");
+
+    let mut group = c.benchmark_group("state_cloning");
+
+    // Early game state (turn 1-2)
+    let mut early_engine = GameEngine::new(&card_db);
+    early_engine.start_game(deck, deck, 42).unwrap();
+    let mut random = RandomBot::new(42);
+    for _ in 0..5 {
+        if early_engine.is_game_over() {
+            break;
+        }
+        let state_tensor = early_engine.get_state_tensor();
+        let legal_mask = early_engine.get_legal_action_mask();
+        let legal_actions = early_engine.get_legal_actions();
+        let action = random.select_action(&state_tensor, &legal_mask, &legal_actions);
+        let _ = early_engine.apply_action(action);
+    }
+
+    // Mid game state (turn 4-6)
+    let mut mid_engine = GameEngine::new(&card_db);
+    mid_engine.start_game(deck, deck, 43).unwrap();
+    let mut random = RandomBot::new(43);
+    for _ in 0..20 {
+        if mid_engine.is_game_over() {
+            break;
+        }
+        let state_tensor = mid_engine.get_state_tensor();
+        let legal_mask = mid_engine.get_legal_action_mask();
+        let legal_actions = mid_engine.get_legal_actions();
+        let action = random.select_action(&state_tensor, &legal_mask, &legal_actions);
+        let _ = mid_engine.apply_action(action);
+    }
+
+    // Late game state (turn 8+)
+    let mut late_engine = GameEngine::new(&card_db);
+    late_engine.start_game(deck, deck, 44).unwrap();
+    let mut random = RandomBot::new(44);
+    for _ in 0..40 {
+        if late_engine.is_game_over() {
+            break;
+        }
+        let state_tensor = late_engine.get_state_tensor();
+        let legal_mask = late_engine.get_legal_action_mask();
+        let legal_actions = late_engine.get_legal_actions();
+        let action = random.select_action(&state_tensor, &legal_mask, &legal_actions);
+        let _ = late_engine.apply_action(action);
+    }
+
+    group.bench_function("early_game", |b| {
+        b.iter(|| black_box(early_engine.fork()))
+    });
+
+    group.bench_function("mid_game", |b| {
+        b.iter(|| black_box(mid_engine.fork()))
+    });
+
+    group.bench_function("late_game", |b| {
+        b.iter(|| black_box(late_engine.fork()))
+    });
+
+    group.finish();
+}
+
+/// Benchmark MCTS parallel scaling with different parallel_trees values.
+/// Validates parallelization benefit for multi-core systems.
+fn bench_mcts_parallel_scaling(c: &mut Criterion) {
+    use criterion::BatchSize;
+
+    let card_db = load_card_db();
+    let deck_registry = load_decks();
+    let deck = deck_registry
+        .get("architect_fortify")
+        .expect("Deck should exist");
+
+    let mut base_engine = GameEngine::new(&card_db);
+    base_engine.start_game(deck, deck, 42).unwrap();
+
+    // Play to an interesting decision point
+    let mut random = RandomBot::new(42);
+    for _ in 0..10 {
+        if base_engine.is_game_over() {
+            break;
+        }
+        let state_tensor = base_engine.get_state_tensor();
+        let legal_mask = base_engine.get_legal_action_mask();
+        let legal_actions = base_engine.get_legal_actions();
+        let action = random.select_action(&state_tensor, &legal_mask, &legal_actions);
+        let _ = base_engine.apply_action(action);
+    }
+
+    let mut group = c.benchmark_group("mcts_parallel_scaling");
+    group.sample_size(10); // Fewer samples since these are slower
+
+    // Fixed simulations budget, vary parallelization
+    let total_simulations = 200;
+
+    for parallel_trees in [1, 2, 4, 8].iter() {
+        group.bench_with_input(
+            BenchmarkId::from_parameter(parallel_trees),
+            parallel_trees,
+            |b, &parallel_trees| {
+                let config = MctsConfig {
+                    simulations: total_simulations,
+                    exploration: 1.414,
+                    max_rollout_depth: 50,
+                    parallel_trees,
+                    leaf_rollouts: 1,
+                };
+
+                b.iter_batched(
+                    || {
+                        // Setup: create bot (not timed)
+                        (
+                            MctsBot::with_config(&card_db, config.clone(), 42),
+                            base_engine.clone(),
+                        )
+                    },
+                    |(mut mcts, engine)| {
+                        // Benchmark: actual MCTS decision (timed)
+                        black_box(mcts.select_action_with_engine(&engine))
+                    },
+                    BatchSize::SmallInput,
+                )
+            },
+        );
+    }
+
+    group.finish();
+}
+
 criterion_group!(
     benches,
     bench_random_game,
@@ -276,5 +414,7 @@ criterion_group!(
     bench_engine_fork,
     bench_mcts_simulations,
     bench_games_per_second,
+    bench_state_cloning,
+    bench_mcts_parallel_scaling,
 );
 criterion_main!(benches);

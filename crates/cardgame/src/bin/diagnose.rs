@@ -178,7 +178,13 @@ fn main() {
         }
     }
 
-    let diagnostics = runner.run(&config);
+    let diagnostics = match runner.run(&config) {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("Error: {}", e);
+            process::exit(1);
+        }
+    };
 
     if !args.progress {
         eprintln!("\rProgress: {}/{}", num_games, num_games);

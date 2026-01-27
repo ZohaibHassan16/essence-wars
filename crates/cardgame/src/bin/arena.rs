@@ -426,13 +426,25 @@ fn main() {
 
     // Run the match
     let stats = if parallel {
-        run_match_parallel(&game_data.card_db, &config)
+        match run_match_parallel(&game_data.card_db, &config) {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("Error: {}", e);
+                process::exit(1);
+            }
+        }
     } else {
         let seq_config = SequentialConfig::new()
             .with_invariants(args.invariants)
             .with_combat_tracing(trace_combat)
             .with_effect_tracing(trace_effects);
-        run_match_sequential(&game_data.card_db, &config, &seq_config, &mut logger)
+        match run_match_sequential(&game_data.card_db, &config, &seq_config, &mut logger) {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("Error: {}", e);
+                process::exit(1);
+            }
+        }
     };
 
     // Print results

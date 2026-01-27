@@ -13,11 +13,12 @@ use rayon::prelude::*;
 use crate::bots::{AlphaBetaBot, AlphaBetaConfig, Bot, GreedyBot, GreedyWeights, MctsBot, MctsConfig, RandomBot};
 use crate::cards::CardDatabase;
 use crate::core::state::GameMode;
+use crate::decks::DeckDefinition;
 use crate::engine::GameEngine;
 use crate::types::{CardId, PlayerId};
 
-/// Default commander for tuning (The High Artificer).
-/// TODO: Evaluator should use deck definitions with commanders.
+/// Default commander for simple evaluation modes (VsRandom, VsGreedy, MultiOpponent).
+/// These modes use the default deck which doesn't have a specific commander.
 const DEFAULT_COMMANDER: CardId = CardId(5000);
 
 /// Type of bot to use as the candidate during tuning.
@@ -44,20 +45,20 @@ pub enum TuningMode {
     MultiOpponent,
     /// Optimize weights across multiple deck matchups (generalist)
     Generalist {
-        /// List of (deck1, deck2) matchups to evaluate
-        matchups: Vec<(Vec<CardId>, Vec<CardId>)>,
+        /// List of (deck1, deck2) matchups to evaluate (includes commander info)
+        matchups: Vec<(DeckDefinition, DeckDefinition)>,
     },
     /// Optimize weights for a specific deck matchup (specialist)
     Specialist {
-        /// Our deck
-        deck: Vec<CardId>,
-        /// Opponent's deck
-        opponent_deck: Vec<CardId>,
+        /// Our deck (includes commander)
+        deck: Box<DeckDefinition>,
+        /// Opponent's deck (includes commander)
+        opponent_deck: Box<DeckDefinition>,
     },
     /// Optimize weights for Alpha-Beta bot against MCTS across matchups
     AlphaBetaVsMcts {
-        /// List of (deck1, deck2) matchups to evaluate
-        matchups: Vec<(Vec<CardId>, Vec<CardId>)>,
+        /// List of (deck1, deck2) matchups to evaluate (includes commander info)
+        matchups: Vec<(DeckDefinition, DeckDefinition)>,
         /// Alpha-Beta search depth
         ab_depth: u32,
     },
@@ -388,7 +389,8 @@ impl<'a> Evaluator<'a> {
     }
 
     /// Evaluate across multiple matchups (generalist).
-    fn evaluate_generalist(&self, weights: &GreedyWeights, matchups: &[(Vec<CardId>, Vec<CardId>)]) -> (f64, f64, usize, f64) {
+    /// Uses commanders from deck definitions.
+    fn evaluate_generalist(&self, weights: &GreedyWeights, matchups: &[(DeckDefinition, DeckDefinition)]) -> (f64, f64, usize, f64) {
         // Enhanced generalist: test each deck matchup against all 3 opponent types
         // Distributes games: 1/3 each for Random, Greedy, MCTS per matchup
         let games_per_matchup = (self.config.games_per_eval / matchups.len()).max(3);
@@ -410,7 +412,7 @@ impl<'a> Evaluator<'a> {
             // Process all matchups in parallel
             let results: Vec<_> = matchups.par_iter().enumerate().map(|(matchup_idx, (deck1, deck2))| {
                 let matchup_seed = base_seed.wrapping_add((matchup_idx * 10000) as u64);
-                
+
                 // vs Random
                 let random_results: Vec<(bool, u32)> = (0..games_per_opponent).into_par_iter().map(|i| {
                     let seed = matchup_seed.wrapping_add(i as u64);
@@ -437,11 +439,11 @@ impl<'a> Evaluator<'a> {
                 random_wins += random_results.iter().filter(|(won, _)| *won).count();
                 greedy_wins += greedy_results.iter().filter(|(won, _)| *won).count();
                 mcts_wins += mcts_results.iter().filter(|(won, _)| *won).count();
-                
+
                 total_turns += random_results.iter().map(|(_, t)| t).sum::<u32>();
                 total_turns += greedy_results.iter().map(|(_, t)| t).sum::<u32>();
                 total_turns += mcts_results.iter().map(|(_, t)| t).sum::<u32>();
-                
+
                 total_games += random_results.len() + greedy_results.len() + mcts_results.len();
             }
         } else {
@@ -496,7 +498,8 @@ impl<'a> Evaluator<'a> {
     }
 
     /// Evaluate for a specific matchup (specialist).
-    fn evaluate_specialist(&self, weights: &GreedyWeights, deck: &[CardId], opponent_deck: &[CardId]) -> (f64, f64, usize, f64) {
+    /// Uses commanders from deck definitions.
+    fn evaluate_specialist(&self, weights: &GreedyWeights, deck: &DeckDefinition, opponent_deck: &DeckDefinition) -> (f64, f64, usize, f64) {
         // Enhanced specialist: test against Random, Greedy, AND MCTS (like generalist)
         // Distributes games: 1/3 each for Random, Greedy, MCTS
         let games_per_opponent = self.config.games_per_eval / 3;
@@ -758,12 +761,20 @@ impl<'a> Evaluator<'a> {
     // ============================================================================
 
     /// Run game vs Random with custom decks (non-static version).
-    fn run_game_vs_random_with_decks(&self, weights: &GreedyWeights, deck1: &[CardId], deck2: &[CardId], seed: u64) -> (Option<PlayerId>, u32) {
+    /// Uses commanders from the deck definitions.
+    fn run_game_vs_random_with_decks(&self, weights: &GreedyWeights, deck1: &DeckDefinition, deck2: &DeckDefinition, seed: u64) -> (Option<PlayerId>, u32) {
         let mut greedy_bot = GreedyBot::with_weights(self.card_db, weights.clone(), seed);
         let mut random_bot = RandomBot::new(seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
+        engine.start_game_raw(
+            deck1.to_card_ids(),
+            deck2.to_card_ids(),
+            CardId(deck1.commander),
+            CardId(deck2.commander),
+            seed,
+            GameMode::default(),
+        ).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < self.config.max_actions {
@@ -788,12 +799,20 @@ impl<'a> Evaluator<'a> {
     }
 
     /// Run game vs Greedy with custom decks (non-static version).
-    fn run_game_vs_greedy_with_decks(&self, weights: &GreedyWeights, deck1: &[CardId], deck2: &[CardId], seed: u64) -> (Option<PlayerId>, u32) {
+    /// Uses commanders from the deck definitions.
+    fn run_game_vs_greedy_with_decks(&self, weights: &GreedyWeights, deck1: &DeckDefinition, deck2: &DeckDefinition, seed: u64) -> (Option<PlayerId>, u32) {
         let mut candidate_bot = GreedyBot::with_weights(self.card_db, weights.clone(), seed);
         let mut baseline_bot = GreedyBot::new(self.card_db, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
+        engine.start_game_raw(
+            deck1.to_card_ids(),
+            deck2.to_card_ids(),
+            CardId(deck1.commander),
+            CardId(deck2.commander),
+            seed,
+            GameMode::default(),
+        ).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < self.config.max_actions {
@@ -815,7 +834,8 @@ impl<'a> Evaluator<'a> {
     }
 
     /// Run game vs MCTS with custom decks (non-static version).
-    fn run_game_vs_mcts_with_decks(&self, weights: &GreedyWeights, deck1: &[CardId], deck2: &[CardId], seed: u64) -> (Option<PlayerId>, u32) {
+    /// Uses commanders from the deck definitions.
+    fn run_game_vs_mcts_with_decks(&self, weights: &GreedyWeights, deck1: &DeckDefinition, deck2: &DeckDefinition, seed: u64) -> (Option<PlayerId>, u32) {
         let mut candidate_bot = GreedyBot::with_weights(self.card_db, weights.clone(), seed);
         let mcts_config = MctsConfig {
             simulations: self.config.mcts_sims,
@@ -827,7 +847,14 @@ impl<'a> Evaluator<'a> {
         let mut mcts_bot = MctsBot::with_config(self.card_db, mcts_config, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(self.card_db);
-        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
+        engine.start_game_raw(
+            deck1.to_card_ids(),
+            deck2.to_card_ids(),
+            CardId(deck1.commander),
+            CardId(deck2.commander),
+            seed,
+            GameMode::default(),
+        ).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < self.config.max_actions {
@@ -848,13 +875,13 @@ impl<'a> Evaluator<'a> {
         (engine.winner(), engine.turn_number() as u32)
     }
 
-    /// Run a single game with specific decks against default GreedyBot (static version for parallel).
     /// Run game vs Random with custom decks (static version for parallel).
+    /// Uses commanders from the deck definitions.
     fn run_game_vs_random_with_decks_static(
         card_db: &CardDatabase,
         weights: &GreedyWeights,
-        deck1: &[CardId],
-        deck2: &[CardId],
+        deck1: &DeckDefinition,
+        deck2: &DeckDefinition,
         seed: u64,
         max_actions: usize,
     ) -> (bool, u32) {
@@ -862,7 +889,14 @@ impl<'a> Evaluator<'a> {
         let mut random_bot = RandomBot::new(seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(card_db);
-        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
+        engine.start_game_raw(
+            deck1.to_card_ids(),
+            deck2.to_card_ids(),
+            CardId(deck1.commander),
+            CardId(deck2.commander),
+            seed,
+            GameMode::default(),
+        ).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < max_actions {
@@ -888,11 +922,12 @@ impl<'a> Evaluator<'a> {
     }
 
     /// Run game vs Greedy with custom decks (static version for parallel).
+    /// Uses commanders from the deck definitions.
     fn run_game_vs_greedy_with_decks_static(
         card_db: &CardDatabase,
         weights: &GreedyWeights,
-        deck1: &[CardId],
-        deck2: &[CardId],
+        deck1: &DeckDefinition,
+        deck2: &DeckDefinition,
         seed: u64,
         max_actions: usize,
     ) -> (bool, u32) {
@@ -900,7 +935,14 @@ impl<'a> Evaluator<'a> {
         let mut baseline_bot = GreedyBot::new(card_db, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(card_db);
-        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
+        engine.start_game_raw(
+            deck1.to_card_ids(),
+            deck2.to_card_ids(),
+            CardId(deck1.commander),
+            CardId(deck2.commander),
+            seed,
+            GameMode::default(),
+        ).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < max_actions {
@@ -923,11 +965,12 @@ impl<'a> Evaluator<'a> {
     }
 
     /// Run game vs MCTS with custom decks (static version for parallel).
+    /// Uses commanders from the deck definitions.
     fn run_game_vs_mcts_with_decks_static(
         card_db: &CardDatabase,
         weights: &GreedyWeights,
-        deck1: &[CardId],
-        deck2: &[CardId],
+        deck1: &DeckDefinition,
+        deck2: &DeckDefinition,
         seed: u64,
         max_actions: usize,
         mcts_sims: u32,
@@ -943,7 +986,14 @@ impl<'a> Evaluator<'a> {
         let mut mcts_bot = MctsBot::with_config(card_db, mcts_config, seed.wrapping_add(1000));
 
         let mut engine = GameEngine::new(card_db);
-        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
+        engine.start_game_raw(
+            deck1.to_card_ids(),
+            deck2.to_card_ids(),
+            CardId(deck1.commander),
+            CardId(deck2.commander),
+            seed,
+            GameMode::default(),
+        ).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < max_actions {
@@ -973,7 +1023,7 @@ impl<'a> Evaluator<'a> {
     fn evaluate_alphabeta_vs_mcts(
         &self,
         weights: &GreedyWeights,
-        matchups: &[(Vec<CardId>, Vec<CardId>)],
+        matchups: &[(DeckDefinition, DeckDefinition)],
         ab_depth: u32,
     ) -> (f64, f64, usize, f64) {
         let games_per_matchup = (self.config.games_per_eval / matchups.len()).max(1);
@@ -1036,11 +1086,12 @@ impl<'a> Evaluator<'a> {
     }
 
     /// Run a single game: Alpha-Beta (candidate) vs MCTS (opponent).
+    /// Uses commanders from the deck definitions.
     fn run_alphabeta_vs_mcts_static(
         card_db: &CardDatabase,
         weights: &GreedyWeights,
-        deck1: &[CardId],
-        deck2: &[CardId],
+        deck1: &DeckDefinition,
+        deck2: &DeckDefinition,
         seed: u64,
         config: &MatchConfig,
     ) -> (bool, u32) {
@@ -1066,7 +1117,14 @@ impl<'a> Evaluator<'a> {
 
         // Create and start game
         let mut engine = GameEngine::new(card_db);
-        engine.start_game_raw(deck1.to_vec(), deck2.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
+        engine.start_game_raw(
+            deck1.to_card_ids(),
+            deck2.to_card_ids(),
+            CardId(deck1.commander),
+            CardId(deck2.commander),
+            seed,
+            GameMode::default(),
+        ).expect("Failed to start game");
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < config.max_actions {

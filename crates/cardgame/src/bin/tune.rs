@@ -11,20 +11,17 @@
 use std::io::Write;
 use std::path::PathBuf;
 use std::process;
-use std::str::FromStr;
 use std::time::Instant;
 
 use clap::Parser;
 
 use cardgame::bots::{BotWeights, GreedyWeights};
 use cardgame::cards::CardDatabase;
-use cardgame::decks::{DeckRegistry, Faction};
+use cardgame::decks::{DeckDefinition, DeckRegistry, Faction};
 use cardgame::tuning::{
     deploy_weights, CmaEs, CmaEsConfig, Evaluator, EvaluatorConfig, ExperimentConfig,
     ExperimentDir, TuningMode,
 };
-use cardgame::types::CardId;
-use cardgame::validation::MatchupBuilder;
 use cardgame::version;
 
 /// Weight tuning CLI using CMA-ES optimization
@@ -198,7 +195,7 @@ fn main() {
             let opponent_id = args.opponent.as_ref().expect("--opponent required for specialist mode");
 
             let deck = match deck_registry.get(deck_id) {
-                Some(d) => d.to_card_ids(),
+                Some(d) => d.clone(),
                 None => {
                     eprintln!("Deck '{}' not found", deck_id);
                     process::exit(1);
@@ -206,7 +203,7 @@ fn main() {
             };
 
             let opponent_deck = match deck_registry.get(opponent_id) {
-                Some(d) => d.to_card_ids(),
+                Some(d) => d.clone(),
                 None => {
                     eprintln!("Opponent deck '{}' not found", opponent_id);
                     process::exit(1);
@@ -216,7 +213,7 @@ fn main() {
             println!("Specialist mode: {} vs {}", deck_id, opponent_id);
             println!("  Testing vs Random, Greedy, AND MCTS");
             println!("  Total games per evaluation: {}", args.games);
-            TuningMode::Specialist { deck, opponent_deck }
+            TuningMode::Specialist { deck: Box::new(deck), opponent_deck: Box::new(opponent_deck) }
         }
         "faction-specialist" => {
             eprintln!("Warning: faction-specialist mode is deprecated. Consider using --mode archetype instead.");
@@ -318,30 +315,38 @@ fn main() {
             TuningMode::AlphaBetaVsMcts { matchups, ab_depth: args.ab_depth }
         }
         "alphabeta-specialist" => {
-            let faction = args.faction.as_ref().expect("--faction required for alphabeta-specialist mode");
-            let faction_enum = Faction::from_str(faction).expect("Invalid faction name");
-            
-            // Build matchups for the specified faction vs all other factions
-            let builder = MatchupBuilder::new(&deck_registry, &card_db);
-            let all_matchups = builder.build_all_deck_matchups();
-            let faction_matchups: Vec<_> = all_matchups
-                .into_iter()
-                .filter(|m| m.faction1 == faction_enum || m.faction2 == faction_enum)
-                .collect();
-            
-            if faction_matchups.is_empty() {
-                eprintln!("No valid matchups found for faction {}", faction);
+            let faction_str = args.faction.as_ref().expect("--faction required for alphabeta-specialist mode");
+            let faction: Faction = faction_str.parse().unwrap_or_else(|e| {
+                eprintln!("{}", e);
+                process::exit(1);
+            });
+
+            // Get all decks for this faction
+            let faction_decks = deck_registry.decks_for_faction(faction);
+            if faction_decks.is_empty() {
+                eprintln!("No decks found for faction '{}'", faction);
                 process::exit(1);
             }
-            
-            // Convert MatchupDefinition to (Vec<CardId>, Vec<CardId>)
-            let matchups: Vec<_> = faction_matchups
-                .into_iter()
-                .map(|m| (m.deck1_cards, m.deck2_cards))
+
+            // Get opponent decks from other factions
+            let opponent_decks: Vec<_> = Faction::all_factions()
+                .iter()
+                .filter(|f| **f != faction)
+                .flat_map(|f| deck_registry.decks_for_faction(*f))
                 .collect();
-            
+
+            if opponent_decks.is_empty() {
+                eprintln!("No opponent decks found for alphabeta-specialist mode");
+                process::exit(1);
+            }
+
+            // Create matchups: each faction deck vs each opponent deck
+            let matchups = create_faction_matchups(&faction_decks, &opponent_decks, &card_db);
+
             println!("Alpha-Beta Faction Specialist mode:");
-            println!("  Faction: {:?}", faction_enum);
+            println!("  Faction: {:?}", faction);
+            println!("  {} faction decks", faction_decks.len());
+            println!("  {} opponent decks", opponent_decks.len());
             println!("  {} deck matchups", matchups.len());
             println!("  Alpha-Beta depth: {}", args.ab_depth);
             println!("  Testing vs MCTS-{}", args.mcts_sims);
@@ -591,7 +596,7 @@ Best win rate: {:.1}%\n",
 }
 
 /// Create matchups for generalist mode using all available decks.
-fn create_generalist_matchups(registry: &DeckRegistry, card_db: &CardDatabase) -> Vec<(Vec<CardId>, Vec<CardId>)> {
+fn create_generalist_matchups(registry: &DeckRegistry, card_db: &CardDatabase) -> Vec<(DeckDefinition, DeckDefinition)> {
     let mut matchups = Vec::new();
 
     let decks: Vec<_> = registry.decks()
@@ -601,7 +606,7 @@ fn create_generalist_matchups(registry: &DeckRegistry, card_db: &CardDatabase) -
     // Create all pairs
     for deck1 in &decks {
         for deck2 in &decks {
-            matchups.push((deck1.to_card_ids(), deck2.to_card_ids()));
+            matchups.push(((*deck1).clone(), (*deck2).clone()));
         }
     }
 
@@ -612,10 +617,10 @@ fn create_generalist_matchups(registry: &DeckRegistry, card_db: &CardDatabase) -
 ///
 /// Creates all combinations of faction decks vs opponent decks.
 fn create_faction_matchups(
-    faction_decks: &[&cardgame::decks::DeckDefinition],
-    opponent_decks: &[&cardgame::decks::DeckDefinition],
+    faction_decks: &[&DeckDefinition],
+    opponent_decks: &[&DeckDefinition],
     card_db: &CardDatabase,
-) -> Vec<(Vec<CardId>, Vec<CardId>)> {
+) -> Vec<(DeckDefinition, DeckDefinition)> {
     let mut matchups = Vec::new();
 
     for faction_deck in faction_decks {
@@ -628,7 +633,7 @@ fn create_faction_matchups(
                 continue;
             }
 
-            matchups.push((faction_deck.to_card_ids(), opponent_deck.to_card_ids()));
+            matchups.push(((*faction_deck).clone(), (*opponent_deck).clone()));
         }
     }
 
@@ -639,10 +644,10 @@ fn create_faction_matchups(
 ///
 /// Creates all combinations of archetype decks vs opponent decks.
 fn create_archetype_matchups(
-    archetype_decks: &[&cardgame::decks::DeckDefinition],
-    opponent_decks: &[&cardgame::decks::DeckDefinition],
+    archetype_decks: &[&DeckDefinition],
+    opponent_decks: &[&DeckDefinition],
     card_db: &CardDatabase,
-) -> Vec<(Vec<CardId>, Vec<CardId>)> {
+) -> Vec<(DeckDefinition, DeckDefinition)> {
     let mut matchups = Vec::new();
 
     for arch_deck in archetype_decks {
@@ -655,7 +660,7 @@ fn create_archetype_matchups(
                 continue;
             }
 
-            matchups.push((arch_deck.to_card_ids(), opponent_deck.to_card_ids()));
+            matchups.push(((*arch_deck).clone(), (*opponent_deck).clone()));
         }
     }
 

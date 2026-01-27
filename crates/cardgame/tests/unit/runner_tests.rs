@@ -45,7 +45,7 @@ fn test_run_single_game() {
         &deck,
         &deck,
         12345,
-    );
+    ).expect("Game should start successfully");
 
     assert!(result.turns > 0);
     assert_eq!(result.seed, 12345);
@@ -72,7 +72,7 @@ fn test_game_determinism() {
         &deck,
         &deck,
         12345,
-    );
+    ).expect("Game should start successfully");
 
     let mut bot1b = RandomBot::new(100);
     let mut bot2b = RandomBot::new(200);
@@ -82,7 +82,7 @@ fn test_game_determinism() {
         &deck,
         &deck,
         12345,
-    );
+    ).expect("Game should start successfully");
 
     assert_eq!(result1.winner, result2.winner);
     assert_eq!(result1.turns, result2.turns);
@@ -109,7 +109,7 @@ fn test_run_match() {
         &deck,
         10,
         1000,
-    );
+    ).expect("Match should start successfully");
 
     assert_eq!(stats.overall.games, 10);
     assert_eq!(

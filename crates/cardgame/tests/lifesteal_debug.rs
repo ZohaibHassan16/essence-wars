@@ -80,7 +80,7 @@ fn debug_lifesteal_investigation() {
             &deck1,
             &deck2,
             seed,
-        );
+        ).expect("Game should start successfully");
 
         // Check combat traces for Lifesteal
         let mut this_game_lifesteal = false;
@@ -162,7 +162,7 @@ fn debug_game_length_and_mana() {
             &deck1,
             &deck2,
             seed,
-        );
+        ).expect("Game should start successfully");
 
         if result.winner == Some(PlayerId::PLAYER_ONE) {
             p1_wins += 1;

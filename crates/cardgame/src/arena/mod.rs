@@ -47,6 +47,9 @@ pub use crate::core::tracing::{
     CombatPhase, CombatStep, CombatTrace, CombatTracer, EffectEvent, EffectEventType, EffectTracer,
 };
 
+// Re-export game initialization error for callers
+pub use crate::engine::GameInitError;
+
 // Logger types
 pub use logger::{
     ActionLogger, ActionRecord, CombatTrace as LoggerCombatTrace, CreatureSnapshot, LogOutput,

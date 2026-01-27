@@ -61,7 +61,8 @@ fn run_traced_match(
 
     for i in 0..games {
         let seed = base_seed.wrapping_add(i as u64);
-        let result = runner.run_game(bot1, bot2, &deck1_def, &deck2_def, seed);
+        let result = runner.run_game(bot1, bot2, &deck1_def, &deck2_def, seed)
+            .expect("Game should start successfully");
         results.push(result);
     }
 
@@ -380,7 +381,7 @@ fn test_all_deck_combinations() {
                 deck2,
                 10,
                 4000,
-            );
+            ).expect("Match should start successfully");
 
             println!(
                 "{} vs {}: P1 wins {}, P2 wins {}, draws {}",

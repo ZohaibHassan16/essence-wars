@@ -173,7 +173,13 @@ fn main() {
         .with_alphabeta_depth(args.ab_depth)
         .with_progress(show_progress);
 
-    let matchup_results = executor.run_all(&matchups, &archetype_weights, args.games, args.seed);
+    let matchup_results = match executor.run_all(&matchups, &archetype_weights, args.games, args.seed) {
+        Ok(results) => results,
+        Err(e) => {
+            eprintln!("Error: {}", e);
+            process::exit(1);
+        }
+    };
     let total_time = start_time.elapsed();
 
     // Analyze balance

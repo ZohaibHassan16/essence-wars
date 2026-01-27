@@ -10,7 +10,7 @@ use rayon::prelude::*;
 
 use crate::bots::{create_bot, AlphaBetaConfig, BotType, MctsConfig};
 use crate::cards::CardDatabase;
-use crate::engine::GameEngine;
+use crate::engine::{GameEngine, GameInitError};
 use crate::execution::{GameSeeds, ProgressReporter, ProgressStyle, UnifiedMatchup};
 use crate::types::PlayerId;
 
@@ -69,13 +69,19 @@ impl<'a> ValidationExecutor<'a> {
 
     /// Run all matchups and return results.
     /// Uses parallel execution to maximize CPU utilization.
+    ///
+    /// # Errors
+    /// Returns `GameInitError` if any commander is not found in the card database.
     pub fn run_all(
         &self,
         matchups: &[UnifiedMatchup],
         archetype_weights: &ArchetypeWeights,
         games_per_matchup: usize,
         base_seed: u64,
-    ) -> Vec<MatchupResult> {
+    ) -> Result<Vec<MatchupResult>, GameInitError> {
+        // Validate all commanders exist before starting any games
+        self.validate_matchup_commanders(matchups)?;
+
         // Set up progress reporting for matchups
         let progress = if self.show_progress {
             Some(
@@ -115,7 +121,29 @@ impl<'a> ValidationExecutor<'a> {
 
         // Sort by original index to maintain deterministic order
         results.sort_by_key(|(idx, _)| *idx);
-        results.into_iter().map(|(_, result)| result).collect()
+        Ok(results.into_iter().map(|(_, result)| result).collect())
+    }
+
+    /// Validate that all commanders in the matchups exist in the card database.
+    fn validate_matchup_commanders(&self, matchups: &[UnifiedMatchup]) -> Result<(), GameInitError> {
+        for matchup in matchups {
+            let commander1 = matchup.commander1();
+            let commander2 = matchup.commander2();
+
+            if self.card_db.get_commander(commander1).is_none() {
+                return Err(GameInitError::CommanderNotFound {
+                    commander_id: commander1.0,
+                    player: 1,
+                });
+            }
+            if self.card_db.get_commander(commander2).is_none() {
+                return Err(GameInitError::CommanderNotFound {
+                    commander_id: commander2.0,
+                    player: 2,
+                });
+            }
+        }
+        Ok(())
     }
 
     /// Run a single matchup (both player orders).
@@ -385,6 +413,15 @@ impl<'a> ValidationExecutor<'a> {
                 break;
             }
             action_count += 1;
+        }
+
+        // Log warning if action limit was hit without game completion
+        if action_count >= max_actions && !engine.is_game_over() {
+            log::warn!(
+                "Game exceeded {} action limit without completion (seed: {})",
+                max_actions,
+                seeds.game
+            );
         }
 
         // Final state capture

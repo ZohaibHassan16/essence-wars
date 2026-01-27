@@ -5,7 +5,7 @@
 use crate::bots::{create_bot, AlphaBetaConfig, BotType, MctsConfig};
 use crate::cards::CardDatabase;
 use crate::decks::DeckDefinition;
-use crate::engine::GameEngine;
+use crate::engine::{GameEngine, GameInitError};
 use crate::execution::GameSeeds;
 use crate::types::{CardId, PlayerId};
 
@@ -224,8 +224,32 @@ impl<'a> DiagnosticRunner<'a> {
     /// The parallel execution infrastructure (BatchConfig, run_batch_parallel) is
     /// available but returns only GameOutcome, not the full diagnostics we need.
     /// TODO: Optimize with parallel collection if performance is an issue.
-    pub fn run(&self, config: &DiagnosticConfig) -> Vec<GameDiagnostics> {
-        self.run_sequential(config)
+    ///
+    /// # Errors
+    /// Returns `GameInitError` if commanders are not found in the card database.
+    pub fn run(&self, config: &DiagnosticConfig) -> Result<Vec<GameDiagnostics>, GameInitError> {
+        self.validate_commanders(config)?;
+        Ok(self.run_sequential(config))
+    }
+
+    /// Validate that commanders exist in the card database.
+    fn validate_commanders(&self, config: &DiagnosticConfig) -> Result<(), GameInitError> {
+        let commander1 = crate::types::CardId(config.deck1.commander);
+        let commander2 = crate::types::CardId(config.deck2.commander);
+
+        if self.card_db.get_commander(commander1).is_none() {
+            return Err(GameInitError::CommanderNotFound {
+                commander_id: commander1.0,
+                player: 1,
+            });
+        }
+        if self.card_db.get_commander(commander2).is_none() {
+            return Err(GameInitError::CommanderNotFound {
+                commander_id: commander2.0,
+                player: 2,
+            });
+        }
+        Ok(())
     }
 
     /// Run games sequentially to collect full diagnostic data.
@@ -446,6 +470,15 @@ impl<'a> DiagnosticRunner<'a> {
             action_count += 1;
         }
 
+        // Log warning if action limit was hit without game completion
+        if action_count >= max_actions && !engine.is_game_over() {
+            log::warn!(
+                "Game exceeded {} action limit without completion (seed: {})",
+                max_actions,
+                seeds.game
+            );
+        }
+
         // Final snapshot
         snapshots.push(TurnSnapshot::capture(&engine));
 
@@ -519,7 +552,7 @@ mod tests {
         let config = DiagnosticConfig::new(deck, 3).with_seed(42);
 
         let runner = DiagnosticRunner::new(&data.card_db);
-        let results = runner.run(&config);
+        let results = runner.run(&config).expect("Diagnostic run should succeed");
 
         assert_eq!(results.len(), 3);
         for diag in &results {
@@ -538,7 +571,7 @@ mod tests {
 
         let config = DiagnosticConfig::new(deck.clone(), 1).with_seed(42);
         let runner = DiagnosticRunner::new(&data.card_db);
-        let results = runner.run(&config);
+        let results = runner.run(&config).expect("Diagnostic run should succeed");
 
         assert_eq!(results.len(), 1);
         // The test verifies the game runs successfully with the deck's commander
