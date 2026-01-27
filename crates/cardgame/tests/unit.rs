@@ -56,3 +56,5 @@ mod serialization_tests;
 mod client_api_tests;
 #[path = "unit/commander_tests.rs"]
 mod commander_tests;
+#[path = "unit/tracing_tests.rs"]
+mod tracing_tests;
