@@ -27,7 +27,7 @@ fn setup_game_with_commanders(
     seed: u64,
 ) {
     // Use minimal decks with just a few creatures
-    // Brass Sentinel (1000) - 2/4 Guard creature, costs 2 essence
+    // Brass Sentinel (1000) - 2/5 Guard creature, costs 2 essence
     let deck1: Vec<CardId> = vec![CardId(1000); 30];
     let deck2: Vec<CardId> = vec![CardId(1000); 30];
 
@@ -102,22 +102,40 @@ fn test_grand_architect_grants_fortify() {
 }
 
 #[test]
-fn test_eternal_grove_grants_regenerate() {
-    // The Eternal Grove (5007): Your creatures have Regenerate
+fn test_eternal_grove_buffs_creatures_at_start_of_turn() {
+    // The Eternal Grove (5007): At start of turn, give all creatures +1/+1
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
     setup_game_with_commanders(&mut engine, 5007, 5000, 42);
 
+    // Play a creature (Brass Sentinel: 2/5)
     play_creature_at_slot(&mut engine, 0, Slot(0));
 
+    // Check initial stats (no buff yet - trigger is at START of turn)
+    let creature = engine.state.players[0]
+        .get_creature(Slot(0))
+        .expect("Creature should exist");
+    assert_eq!(creature.attack, 2, "Initial attack should be base 2");
+    assert_eq!(creature.current_health, 5, "Initial health should be base 5");
+
+    // End P1's turn, then P2's turn -> back to P1's turn (triggers buff)
+    engine.apply_action(Action::EndTurn).expect("P1 end turn");
+    engine.apply_action(Action::EndTurn).expect("P2 end turn");
+
+    // Now at start of P1's turn, creatures should have +1/+1
     let creature = engine.state.players[0]
         .get_creature(Slot(0))
         .expect("Creature should exist");
 
-    assert!(
-        creature.keywords.has_regenerate(),
-        "Creature should have Regenerate from Eternal Grove passive"
+    // Brass Sentinel base: 2/5, after one StartOfTurn buff: 3/6
+    assert_eq!(
+        creature.attack, 3,
+        "Creature should have +1 attack from Eternal Grove trigger (base 2 + 1 = 3)"
+    );
+    assert_eq!(
+        creature.current_health, 6,
+        "Creature should have +1 health from Eternal Grove trigger (base 5 + 1 = 6)"
     );
 }
 
@@ -214,7 +232,7 @@ fn test_siege_marshal_vex_grants_attack_bonus() {
 
 #[test]
 fn test_alpha_of_the_hunt_grants_attack_bonus() {
-    // Alpha of the Hunt (5006): Your creatures have +1 Attack
+    // Alpha of the Hunt (5006): When a creature attacks, give all your creatures +1/+0
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
@@ -223,16 +241,39 @@ fn test_alpha_of_the_hunt_grants_attack_bonus() {
     let brass_sentinel = card_db.get(CardId(1000)).expect("Card should exist");
     let base_attack = brass_sentinel.attack().expect("Should have attack");
 
+    // P1 plays a creature
     play_creature_at_slot(&mut engine, 0, Slot(0));
 
+    // Creature should have base attack (no passive bonus)
     let creature = engine.state.players[0]
         .get_creature(Slot(0))
         .expect("Creature should exist");
+    assert_eq!(
+        creature.attack, base_attack as i8,
+        "Creature should have base attack before any attack triggers"
+    );
 
+    // End P1 turn, P2 plays nothing and ends turn
+    engine.apply_action(Action::EndTurn).expect("End turn");
+    engine.apply_action(Action::EndTurn).expect("End turn");
+
+    // Now P1's creature can attack (summoning sickness is gone)
+    // Attack empty slot (face attack)
+    engine
+        .apply_action(Action::Attack {
+            attacker: Slot(0),
+            defender: Slot(0), // Empty slot = face attack
+        })
+        .expect("Attack should succeed");
+
+    // After the attack, creature should have +1 Attack from OnAttack trigger
+    let creature = engine.state.players[0]
+        .get_creature(Slot(0))
+        .expect("Creature should still exist");
     assert_eq!(
         creature.attack,
         base_attack as i8 + 1,
-        "Creature should have +1 Attack from Alpha of the Hunt passive"
+        "Creature should have +1 Attack after attacking (Alpha of the Hunt OnAttack trigger)"
     );
 }
 
@@ -525,8 +566,9 @@ fn test_broodmother_summons_broodling_when_rush_creature_played() {
 }
 
 #[test]
-fn test_broodmother_does_not_summon_when_non_rush_creature_played() {
-    // Verify Broodmother only triggers on Rush creatures
+fn test_broodmother_summons_on_any_creature_played() {
+    // Verify Broodmother triggers on ANY creature played (not just Rush)
+    // This was buffed from Rush-only to any creature in v0.8.0
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
@@ -551,13 +593,20 @@ fn test_broodmother_does_not_summon_when_non_rush_creature_played() {
     let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
     engine.apply_action(action).expect("Failed to play creature");
 
-    // Check P1 has only 1 creature (no token summoned)
+    // Check P1 has 2 creatures (the played creature + Broodling token)
     let p1_creatures = &engine.state.players[0].creatures;
     assert_eq!(
         p1_creatures.len(),
-        1,
-        "P1 should have only 1 creature (no Broodling summoned for non-Rush creature)"
+        2,
+        "P1 should have 2 creatures (played creature + Broodling token)"
     );
+
+    // Verify the Broodling was summoned (1/1 with Rush)
+    // Brass Sentinel is 2/4 with Guard, Broodling is 1/1 with Rush
+    let broodling = p1_creatures.iter().find(|c| {
+        c.attack == 1 && c.current_health == 1 && c.keywords.has_rush()
+    });
+    assert!(broodling.is_some(), "Broodling token should be summoned");
 }
 
 #[test]
@@ -621,26 +670,26 @@ fn test_plague_sovereign_deals_damage_on_ally_death() {
         "P1's creature should have died in combat"
     );
 
-    // Check P2's health decreased by 1 from Plague Sovereign trigger
+    // Check P2's health decreased by 2 from Plague Sovereign trigger (buffed from 1 to 2 in v0.8.0)
     let p2_health_after = engine.state.players[1].life;
     assert_eq!(
         p2_health_after,
-        initial_p2_health - 1,
-        "P2 should have taken 1 damage from Plague Sovereign trigger (was {}, now {})",
+        initial_p2_health - 2,
+        "P2 should have taken 2 damage from Plague Sovereign trigger (was {}, now {})",
         initial_p2_health,
         p2_health_after
     );
 }
 
 #[test]
-fn test_shadow_emperor_kael_draws_on_enemy_death() {
-    // Shadow Emperor Kael (5009): When an enemy creature dies, draw a card
+fn test_shadow_emperor_kael_deals_damage_on_kill() {
+    // Shadow Emperor Kael (5009): When one of your creatures kills an enemy, deal 1 damage to enemy commander
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
-    // P1 needs to kill P2's creatures
-    // Use high-attack creatures for P1
-    let deck1: Vec<CardId> = vec![CardId(1000); 30]; // Brass Sentinel 2/4 Guard
+    // P1 (Kael) uses strong creatures that will kill enemies
+    // P2 uses weaker creatures
+    let deck1: Vec<CardId> = vec![CardId(1000); 30]; // Brass Sentinel 2/4 Guard (strong)
     let deck2: Vec<CardId> = vec![CardId(4031); 30]; // Eager Sellsword 2/1 Rush (weak)
 
     engine.start_game_raw(
@@ -652,72 +701,60 @@ fn test_shadow_emperor_kael_draws_on_enemy_death() {
         GameMode::default(),
     );
 
-    // Advance to turn 2 so P1 has enough essence
-    engine.apply_action(Action::EndTurn).expect("P1 end turn");
-    engine.apply_action(Action::EndTurn).expect("P2 end turn");
+    // Record P2's initial health
+    let initial_p2_health = engine.state.players[1].life;
 
-    // P1 plays Brass Sentinel
-    let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
-    engine.apply_action(action).expect("P1 plays creature");
-
+    // Turn 1: P1 ends turn (need essence for 2-cost creature)
     engine.apply_action(Action::EndTurn).expect("P1 end turn");
 
-    // P2 plays Eager Sellsword (1 cost, 2/1 Rush - can attack immediately)
+    // Turn 1 P2: plays Eager Sellsword (1 cost, 2/1 Rush)
     let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
     engine.apply_action(action).expect("P2 plays creature");
+    engine.apply_action(Action::EndTurn).expect("P2 end turn");
 
-    // P2's Rush creature attacks P1's Brass Sentinel
-    // P2's 2/1 attacks P1's 2/4 - P2's creature will die, P1's creature survives with 2 HP
+    // Turn 2 P1: plays Brass Sentinel (2 cost, 2/4 Guard)
+    let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
+    engine.apply_action(action).expect("P1 plays creature");
+    engine.apply_action(Action::EndTurn).expect("P1 end turn");
+
+    // Turn 2 P2: End turn
+    engine.apply_action(Action::EndTurn).expect("P2 end turn");
+
+    // Turn 3 P1: attack P2's Eager Sellsword
+    // P1's 2/4 attacks P2's 2/1 - P2's creature dies, P1's creature survives with 2 HP
     let attack_action = Action::Attack {
         attacker: Slot(0),
         defender: Slot(0),
     };
     engine.apply_action(attack_action).expect("Attack should succeed");
 
-    // P2's creature should have died
+    // P2's creature should have died (P1 killed it)
     assert!(
         engine.state.players[1].get_creature(Slot(0)).is_none(),
         "P2's creature should have died in combat"
     );
 
-    // Now check P1's hand size
-    // P1 should have drawn a card from Shadow Emperor Kael trigger
-    // Initial hand: 4 cards (or 5 for P2 adjustment), played 1, so 3 cards
-    // After kill: should have drawn 1, so 4 cards
-    // But we need to track the hand size before/after
-
-    // Actually, let's verify more directly - look at P1's hand
-    // The test passes if P1's hand has the expected number of cards
-
-    engine.apply_action(Action::EndTurn).expect("P2 end turn");
-
-    // On P1's turn, let's verify they got their draw plus the trigger draw
-    // P1's initial hand was 4, played 1 = 3, but on next turn draws 1 = 4
-    // Plus Kael trigger draw = 5 total (or thereabouts depending on timing)
-
-    // Let me just verify the creature died and the trigger logic is working
-    // The simplest verification is that P1 drew more cards than they would have without Kael
-
-    // For a cleaner test, let's just verify P1 has more cards than if no trigger fired
-    // We can check by playing another kill and counting cards
-
-    // Actually let's just ensure the test structure is correct
-    // The trigger should have added a card to P1's hand
-    assert!(
-        engine.state.players[0].hand.len() >= 4,
-        "P1 should have at least 4 cards in hand after Kael trigger (initial 4 - 1 played + 1 turn draw + 1 Kael draw)"
+    // P2 should have taken 1 damage from Shadow Emperor Kael OnKill trigger
+    let p2_health_after = engine.state.players[1].life;
+    assert_eq!(
+        p2_health_after,
+        initial_p2_health - 1,
+        "P2 should have taken 1 damage from Kael OnKill trigger (was {}, now {})",
+        initial_p2_health,
+        p2_health_after
     );
 }
 
 #[test]
-fn test_shadow_emperor_kael_multiple_deaths_multiple_draws() {
-    // Verify Kael draws for each enemy death (in separate combats)
+fn test_shadow_emperor_kael_multiple_kills_multiple_damage() {
+    // Verify Kael deals damage for each kill (in separate combats)
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
-    // Use a stronger creature for P1 that survives attacks
-    let deck1: Vec<CardId> = vec![CardId(1000); 30]; // Brass Sentinel 2/4
-    let deck2: Vec<CardId> = vec![CardId(4031); 30]; // Eager Sellsword 2/1 Rush
+    // P1 (Kael) uses strong creatures that will kill enemies
+    // P2 uses weaker creatures
+    let deck1: Vec<CardId> = vec![CardId(1000); 30]; // Brass Sentinel 2/4 Guard (strong)
+    let deck2: Vec<CardId> = vec![CardId(4031); 30]; // Eager Sellsword 2/1 Rush (weak)
 
     engine.start_game_raw(
         deck1,
@@ -728,67 +765,64 @@ fn test_shadow_emperor_kael_multiple_deaths_multiple_draws() {
         GameMode::default(),
     );
 
-    // Setup: Both players place creatures across multiple turns
+    // Record P2's initial health
+    let initial_p2_health = engine.state.players[1].life;
 
     // Turn 1: P1 ends turn
     engine.apply_action(Action::EndTurn).expect("P1 end turn");
 
-    // P2 turn 1: play Eager Sellsword at slot 0
+    // Turn 1 P2: plays two Eager Sellswords (1 cost each, has 1 essence)
     let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
     engine.apply_action(action).expect("P2 plays creature 1");
     engine.apply_action(Action::EndTurn).expect("P2 end turn");
 
-    // Turn 2: P1 plays Brass Sentinel at slot 0
+    // Turn 2 P1: plays Brass Sentinel (2 cost)
     let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
     engine.apply_action(action).expect("P1 plays creature 1");
     engine.apply_action(Action::EndTurn).expect("P1 end turn");
 
-    // P2 turn 2: play another Eager Sellsword at slot 1
+    // Turn 2 P2: plays second Eager Sellsword
     let action = Action::PlayCard { hand_index: 0, slot: Slot(1) };
     engine.apply_action(action).expect("P2 plays creature 2");
     engine.apply_action(Action::EndTurn).expect("P2 end turn");
 
-    // Turn 3: P1 plays second Brass Sentinel at slot 1
+    // Turn 3 P1: plays second Brass Sentinel
     let action = Action::PlayCard { hand_index: 0, slot: Slot(1) };
     engine.apply_action(action).expect("P1 plays creature 2");
     engine.apply_action(Action::EndTurn).expect("P1 end turn");
 
-    // P2 turn 3: pass
+    // Turn 3 P2: End turn
     engine.apply_action(Action::EndTurn).expect("P2 end turn");
 
-    // Turn 4: Both P1 creatures can attack (not exhausted)
-    // Record hand size before combat
-    let hand_size_before_combat = engine.state.players[0].hand.len();
-
-    // P1 attacks P2's creature at slot 0 with P1's creature at slot 0
-    // P1's 2/4 kills P2's 2/1, P1's creature survives with 2 HP
+    // Turn 4 P1: attack and kill first enemy
+    // P1's 2/4 attacks P2's 2/1 - P2's creature dies
     let attack_action = Action::Attack {
         attacker: Slot(0),
         defender: Slot(0),
     };
     engine.apply_action(attack_action).expect("P1 attack 1");
 
-    // P1 should have drawn from Kael trigger
-    let hand_size_after_first_kill = engine.state.players[0].hand.len();
+    // P2 should have taken 1 damage from Kael OnKill trigger
+    let p2_health_after_first = engine.state.players[1].life;
     assert_eq!(
-        hand_size_after_first_kill,
-        hand_size_before_combat + 1,
-        "P1 should have drawn 1 card from first enemy death"
+        p2_health_after_first,
+        initial_p2_health - 1,
+        "P2 should have taken 1 damage from first kill"
     );
 
-    // P1 attacks P2's creature at slot 1 with P1's creature at slot 1
-    // P1's 2/4 kills P2's 2/1, P1's creature survives with 2 HP
+    // P1 attacks and kills second enemy
+    // P1's 2/4 attacks P2's 2/1 - P2's creature dies
     let attack_action = Action::Attack {
         attacker: Slot(1),
         defender: Slot(1),
     };
     engine.apply_action(attack_action).expect("P1 attack 2");
 
-    // P1 should have drawn again from Kael trigger
-    let hand_size_after_second_kill = engine.state.players[0].hand.len();
+    // P2 should have taken another 1 damage from Kael OnKill trigger (total 2)
+    let p2_health_after_second = engine.state.players[1].life;
     assert_eq!(
-        hand_size_after_second_kill,
-        hand_size_after_first_kill + 1,
-        "P1 should have drawn 1 card from second enemy death"
+        p2_health_after_second,
+        initial_p2_health - 2,
+        "P2 should have taken 2 damage total from two kills"
     );
 }

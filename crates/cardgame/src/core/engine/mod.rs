@@ -23,6 +23,8 @@ pub use passive::{
     support_effect_def_to_effect,
     collect_commander_ally_death_effects,
     collect_commander_enemy_death_effects,
+    collect_commander_any_death_effects,
+    collect_commander_kill_effects,
 };
 pub use game_engine::GameEngine;
 pub use environment::GameEnvironment;

@@ -27,10 +27,10 @@ commanders:
     rarity: Legendary
     triggered_ability:
       trigger: OnAllyDeath
-      description: "When one of your creatures dies, deal 1 damage to the enemy commander"
+      description: "When one of your creatures dies, deal 2 damage to the enemy commander"
       effects:
         - type: damage
-          amount: 1
+          amount: 2
           target: EnemyCommander
     flavor: "Every death feeds the plague."
 
@@ -39,12 +39,13 @@ commanders:
     card_type: commander
     faction: Symbiote
     rarity: Legendary
-    passive_ability:
-      description: "Your creatures have +1 Attack"
-      effect:
-        type: buff_stats
-        attack: 1
-        health: 0
+    triggered_ability:
+      trigger: OnAttack
+      description: "When a creature attacks, give all your creatures +1/+0"
+      effects:
+        - type: buff_stats
+          attack: 1
+          health: 0
     flavor: "The pack hunts as one. The Alpha strikes first."
 
   - id: 5007
@@ -52,11 +53,11 @@ commanders:
     card_type: commander
     faction: Symbiote
     rarity: Legendary
-    passive_ability:
-      description: "Your creatures have Regenerate and +0/+1"
-      effect:
-        type: grant_keyword_and_buff
-        keyword: Regenerate
-        attack: 0
-        health: 1
-    flavor: "The forest remembers. The forest endures."
+    triggered_ability:
+      trigger: StartOfTurn
+      description: "At the start of your turn, give all your creatures +1/+1"
+      effects:
+        - type: buff_stats
+          attack: 1
+          health: 1
+    flavor: "The forest remembers. The forest grows."

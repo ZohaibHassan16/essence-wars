@@ -21,11 +21,12 @@ commanders:
     faction: Obsidion
     rarity: Legendary
     triggered_ability:
-      trigger: OnEnemyDeath
-      description: "When an enemy creature dies, draw a card"
+      trigger: OnKill
+      description: "When one of your creatures kills an enemy, deal 1 damage to the enemy commander"
       effects:
-        - type: draw
-          count: 1
+        - type: damage
+          amount: 1
+          target: EnemyCommander
     flavor: "You never see him twice. Once is enough."
 
   - id: 5010

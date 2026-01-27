@@ -472,3 +472,66 @@ pub fn collect_commander_enemy_death_effects(
         Vec::new()
     }
 }
+
+/// Collect OnAttack trigger effects for a player's commander.
+///
+/// Called when a friendly creature attacks.
+pub fn collect_commander_attack_effects(
+    state: &GameState,
+    attacker_owner: PlayerId,
+    card_db: &CardDatabase,
+) -> Vec<(Effect, EffectSource)> {
+    if let Some(commander_id) = state.get_commander(attacker_owner) {
+        collect_commander_trigger_effects(
+            commander_id,
+            attacker_owner,
+            CommanderTrigger::OnAttack,
+            card_db,
+            |_| true, // No condition for OnAttack
+        )
+    } else {
+        Vec::new()
+    }
+}
+
+/// Collect OnAnyDeath trigger effects for a player's commander.
+///
+/// Called when any creature dies (ally or enemy).
+pub fn collect_commander_any_death_effects(
+    state: &GameState,
+    commander_owner: PlayerId,
+    card_db: &CardDatabase,
+) -> Vec<(Effect, EffectSource)> {
+    if let Some(commander_id) = state.get_commander(commander_owner) {
+        collect_commander_trigger_effects(
+            commander_id,
+            commander_owner,
+            CommanderTrigger::OnAnyDeath,
+            card_db,
+            |_| true, // No condition for OnAnyDeath
+        )
+    } else {
+        Vec::new()
+    }
+}
+
+/// Collect OnKill trigger effects for a player's commander.
+///
+/// Called when a friendly creature kills an enemy creature.
+pub fn collect_commander_kill_effects(
+    state: &GameState,
+    killer_owner: PlayerId,
+    card_db: &CardDatabase,
+) -> Vec<(Effect, EffectSource)> {
+    if let Some(commander_id) = state.get_commander(killer_owner) {
+        collect_commander_trigger_effects(
+            commander_id,
+            killer_owner,
+            CommanderTrigger::OnKill,
+            card_db,
+            |_| true, // No condition for OnKill
+        )
+    } else {
+        Vec::new()
+    }
+}

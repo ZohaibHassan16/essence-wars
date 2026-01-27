@@ -1,34 +1,36 @@
 id = "shadow_weaver"
 name = "The Shadow Weaver"
-description = "Your creatures gain Stealth, making non-Stealth creatures deadly assassins. Lifesteal creatures heal while striking unseen, creating an unstoppable shadow army."
+description = "Non-Stealth creatures become invisible assassins. High-attack creatures, Lifesteal bruisers, and burst damage units all gain Stealth to attack safely and drain the enemy."
 playstyle = "Stealth Aggro"
 tags = ["commander", "obsidion"]
 commander = 5010
 
+# Rebuilt with NON-Stealth creatures (v0.8.0) - commander grants Stealth!
 cards = [
-    # Low-cost Quick creatures (amazing with granted Stealth)
-    3015, 3015, 3015,  # Phantom Striker x3 (1c 2/3 Quick)
+    # 1-cost (5 cards) - aggressive openers
+    3015, 3015, 3015,  # Phantom Striker x3 (1c 2/3 Quick) - Quick + Stealth = immediate safe damage
+    4031, 4031,        # Eager Sellsword x2 (1c 2/1 Rush) - Rush + Stealth = burst damage
 
-    # Lifesteal creatures (heal while striking from stealth)
-    3002, 3002, 3002,  # Blood Acolyte x3 (2c 2/3 Quick+Lifesteal)
-    3047, 3047, 3047,  # Blood Cultist x3 (2c 2/3 Lifesteal)
-    3038, 3038,        # Soul Collector x2 (3c 3/3 Lifesteal)
-    3017, 3017,        # Blood Seeker x2 (3c 3/3 Lifesteal)
+    # 2-cost (5 cards) - tempo creatures
+    3002, 3002, 3002,  # Blood Acolyte x3 (2c 2/3 Quick+Lifesteal) - sustain while invisible
+    4007, 4007,        # Reckless Charger x2 (2c 4/1 Charge+Rush) - 4 damage burst, protected by Stealth!
 
-    # Mid-range threats
-    3023, 3023,        # Blood Ritualist x2 (3c 3/4)
-    3004,              # Hemomancer (4c 4/4 Lifesteal)
-    3020,              # Soul Reaver (5c 4/4 Quick+Lifesteal+Regenerate)
+    # 3-cost (8 cards) - midrange threats
+    3017, 3017,        # Blood Seeker x2 (3c 3/3 Lifesteal) - solid body + lifesteal
+    3038, 3038,        # Soul Collector x2 (3c 3/3 Lifesteal) - lifesteal sustain
+    3058, 3058,        # Void Initiate x2 (3c 3/2 Quick) - quick strikes while hidden
+    4036, 4036,        # Contract Killer x2 (3c 3/2 Lethal) - Lethal + Stealth = guaranteed kills
 
-    # Removal spells
-    3010, 3010,        # Shadow Strike x2
-    3008, 3008,        # Soul Drain x2
-    3025,              # Life Tap
+    # 4-cost (6 cards) - finishers
+    3004, 3004,        # Hemomancer x2 (4c 4/4 Lifesteal) - big lifesteal body
+    3051, 3051,        # Crimson Harvester x2 (4c 3/4 Lifesteal+Quick) - quick lifesteal
+    3006, 3006,        # Ritual Master x2 (4c 4/4 OnPlay: 3dmg+3heal) - removal on a body
 
-    # Neutral - Aggressive creatures (gain Stealth)
-    4007, 4007,        # Reckless Charger x2 (2c 4/1 Charge+Rush)
-    4031, 4031,        # Eager Sellsword x2 (1c 2/1 Rush)
-    4000,              # Bounty Hunter (2c 2/2 Ranged)
-    4003,              # Hired Blade
-    4012,              # Supply Depot
+    # 5-cost (2 cards) - top-end
+    3020,              # Soul Reaver (5c 4/4 Quick+Lifesteal+Regen) - unkillable threat
+    3022,              # Twilight Executioner (6c 6/5 Quick+Lethal) - ultimate finisher
+
+    # Removal (4 cards) - clear blockers
+    3010, 3010,        # Shadow Strike x2 (1c 2 damage)
+    3008, 3008,        # Soul Drain x2 (2c 3 damage)
 ]

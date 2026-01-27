@@ -5,11 +5,46 @@ playstyle = "Regenerating Midrange"
 tags = ["commander", "symbiote"]
 commander = 5007
 
+# Rebuilt for better early game curve (v0.8.0)
+# Removed: Hive Mind Nexus, Brood Pit, Frenzy Pack Leader, Volatile Matriarch, Arena Champion, Mercenary Camp
+# Added: 2x Spore Crawler, 2x Venom Fang, 2x Rabid Charger, 2x Brood Tender
 cards = [
-    2052, 2053, 2058, 2066, 2034,
-    2050, 2002, 2004, 2011, 2072,
-    2009, 2007, 2047, 2041, 2008,
-    2022, 2027, 2059, 2000, 2003,
-    2006, 2018, 4040, 4050, 4053,
-    4060, 4061, 4062, 4073,
+    # 1-cost (5 cards) - early game presence
+    2000, 2000,  # Spore Crawler x2 (1/3 - durable)
+    2003,        # Broodling (2/2 Rush)
+    2006,        # Parasitic Larva (1/2 Lethal)
+    2018,        # Unstable Spore (1/1 Volatile)
+
+    # 2-cost (7 cards) - early/mid transition
+    2001, 2001,  # Venom Fang x2 (2/3 Lethal - defensive trades)
+    2023, 2023,  # Rabid Charger x2 (1/3 Frenzy Charge - durable)
+    2046, 2046,  # Brood Tender x2 (1/3, heals ally on play)
+    2050,        # Regenerating Spawn (2/2 Regenerate)
+
+    # 3-cost (3 cards) - midrange core
+    2002,        # Regenerating Ooze (3/4 Regenerate)
+    2007,        # Evolution Chamber (2/4, buffs ally)
+    2047,        # Spore Colony (2/4)
+
+    # 4-cost (8 cards) - midrange power
+    2004,        # Hive Guardian (3/6 Guard Regenerate)
+    2011,        # Carapace Warrior (2/6 Regenerate)
+    2041,        # Spawn Caller (2/4)
+    2052,        # Brood Protector (2/5 Guard)
+    2053,        # Brood Caller (2/3, summons token)
+    2058,        # Hive Network (support - draw)
+    2072,        # Grove Warden (3/5 Regenerate)
+    4040,        # Runebound Guardian (3/5 Ward)
+
+    # 5-cost (2 cards) - finishers
+    2008,        # Alpha Predator (5/5 Rush Lethal)
+    4060,        # Bounty Hunter (3/3 Rush)
+
+    # 6-cost (2 cards) - late game
+    2009,        # Swarm Mother (4/6 Regenerate, +1/0 each turn)
+    2059,        # Brood Overlord (5/6, grants Rush to allies)
+
+    # Utility (2 cards)
+    4050,        # Mercenary Ambush (spell - 3 damage + 2 AoE)
+    4053,        # Sanctuary (support - heal 2/turn)
 ]

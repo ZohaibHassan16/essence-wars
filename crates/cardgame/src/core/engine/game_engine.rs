@@ -826,6 +826,16 @@ impl<'a> GameEngine<'a> {
         // Create effect queue for triggered effects (OnAttack, OnKill, OnDeath, etc.)
         let mut effect_queue = EffectQueue::new();
 
+        // Check for commander OnAttack triggers (before combat resolution)
+        let attack_effects =
+            super::passive::collect_commander_attack_effects(&self.state, current_player, self.card_db);
+        for (effect, source) in attack_effects {
+            effect_queue.push(effect, source);
+        }
+
+        // Process OnAttack effects before combat (e.g., Alpha of the Hunt's buff)
+        effect_queue.process_all(&mut self.state, self.card_db);
+
         // Delegate to combat module for full keyword resolution
         // Note: Pass None for tracer - use execute_attack_with_tracer for tracing support
         let _result = combat::resolve_combat(
@@ -850,7 +860,7 @@ impl<'a> GameEngine<'a> {
         attacker_slot: Slot,
         defender_slot: Slot,
         combat_tracer: Option<&mut CombatTracer>,
-        effect_tracer: Option<&mut EffectTracer>,
+        mut effect_tracer: Option<&mut EffectTracer>,
     ) -> Result<(), String> {
         let current_player = self.state.active_player;
 
@@ -868,6 +878,17 @@ impl<'a> GameEngine<'a> {
 
         // Create effect queue for triggered effects
         let mut effect_queue = EffectQueue::new();
+
+        // Check for commander OnAttack triggers (before combat resolution)
+        let attack_effects =
+            super::passive::collect_commander_attack_effects(&self.state, current_player, self.card_db);
+        for (effect, source) in attack_effects {
+            effect_queue.push(effect, source);
+        }
+
+        // Process OnAttack effects before combat (e.g., Alpha of the Hunt's buff)
+        // Reborrow effect_tracer so we can use it again after combat
+        effect_queue.process_all_with_tracer(&mut self.state, self.card_db, effect_tracer.as_mut().map(|r| &mut **r));
 
         // Delegate to combat module with tracer
         let _result = combat::resolve_combat(

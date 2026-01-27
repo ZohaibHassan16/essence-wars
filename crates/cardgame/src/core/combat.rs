@@ -18,7 +18,7 @@
 
 use crate::core::cards::CardDatabase;
 use crate::core::effects::{EffectSource, Trigger};
-use crate::core::engine::{collect_commander_ally_death_effects, collect_commander_enemy_death_effects};
+use crate::core::engine::{collect_commander_ally_death_effects, collect_commander_enemy_death_effects, collect_commander_any_death_effects, collect_commander_kill_effects};
 use crate::core::engine::EffectQueue;
 use crate::core::keywords::Keywords;
 use crate::core::state::GameState;
@@ -742,6 +742,12 @@ fn trigger_on_kill(
     player: PlayerId,
     slot: Slot,
 ) {
+    // Trigger commander OnKill effects (e.g., Shadow Emperor Kael)
+    for (effect, source) in collect_commander_kill_effects(state, player, card_db) {
+        effect_queue.push(effect, source);
+    }
+
+    // Trigger creature OnKill effects
     let creature = match state.players[player.index()].get_creature(slot) {
         Some(c) => c,
         None => return,
@@ -879,9 +885,17 @@ fn process_creature_death(
         effect_queue.push(effect, source);
     }
 
-    // Trigger OnEnemyDeath commander trigger (e.g., Shadow Emperor Kael)
+    // Trigger OnEnemyDeath commander trigger (e.g., Shadow Emperor Kael with old ability)
     // When a creature dies, the opponent's commander may have OnEnemyDeath trigger
     for (effect, source) in collect_commander_enemy_death_effects(state, player, card_db) {
+        effect_queue.push(effect, source);
+    }
+
+    // Trigger OnAnyDeath commander triggers for both players (e.g., Shadow Emperor Kael)
+    for (effect, source) in collect_commander_any_death_effects(state, player, card_db) {
+        effect_queue.push(effect, source);
+    }
+    for (effect, source) in collect_commander_any_death_effects(state, player.opponent(), card_db) {
         effect_queue.push(effect, source);
     }
 

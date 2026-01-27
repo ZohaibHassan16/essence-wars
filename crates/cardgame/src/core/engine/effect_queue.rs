@@ -11,7 +11,7 @@ use crate::core::state::{CardInstance, Creature, GameResult, GameState, WinReaso
 use crate::core::tracing::EffectTracer;
 use crate::core::types::{CardId, PlayerId, Slot};
 
-use super::passive::{collect_commander_ally_death_effects, collect_commander_enemy_death_effects};
+use super::passive::{collect_commander_ally_death_effects, collect_commander_enemy_death_effects, collect_commander_any_death_effects};
 
 /// Effect queue for processing game effects in FIFO order.
 ///
@@ -1317,9 +1317,17 @@ impl EffectQueue {
                     self.push(effect, source);
                 }
 
-                // Queue OnEnemyDeath commander trigger (e.g., Shadow Emperor Kael)
+                // Queue OnEnemyDeath commander trigger (e.g., Shadow Emperor Kael with old ability)
                 // This triggers for the opponent when one of your creatures dies
                 for (effect, source) in collect_commander_enemy_death_effects(state, owner, card_db) {
+                    self.push(effect, source);
+                }
+
+                // Queue OnAnyDeath commander triggers for both players (e.g., Shadow Emperor Kael)
+                for (effect, source) in collect_commander_any_death_effects(state, owner, card_db) {
+                    self.push(effect, source);
+                }
+                for (effect, source) in collect_commander_any_death_effects(state, owner.opponent(), card_db) {
                     self.push(effect, source);
                 }
 

@@ -219,6 +219,12 @@ pub enum CommanderTrigger {
     OnAllyDeath,
     /// When an enemy creature dies
     OnEnemyDeath,
+    /// When a friendly creature attacks
+    OnAttack,
+    /// When any creature dies (ally or enemy)
+    OnAnyDeath,
+    /// When a friendly creature kills an enemy creature
+    OnKill,
 }
 
 /// Commander triggered ability
