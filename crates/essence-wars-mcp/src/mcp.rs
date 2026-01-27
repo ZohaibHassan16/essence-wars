@@ -151,7 +151,7 @@ impl McpServer {
     /// Handle initialize request
     fn handle_initialize(&self, _params: &Option<Value>) -> Result<Value, JsonRpcError> {
         Ok(json!({
-            "protocolVersion": "2024-11-05",
+            "protocolVersion": "2025-11-25",
             "capabilities": {
                 "tools": {}
             },
