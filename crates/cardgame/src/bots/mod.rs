@@ -17,7 +17,11 @@ pub use greedy::GreedyBot;
 pub use mcts::{MctsBot, MctsConfig, MctsNode};
 pub use alphabeta::{AlphaBetaBot, AlphaBetaConfig, SearchStats};
 pub use weights::{BotWeights, GreedyWeights, WeightSet};
-pub use factory::{BotType, BotTypeParseError, create_bot, resolve_weights, resolve_weights_verbose, WeightResolutionError};
+pub use factory::{
+    BotType, BotTypeParseError, WeightResolutionError,
+    create_bot, resolve_weights, resolve_weights_verbose,
+    resolve_archetype_weights, resolve_weights_with_archetype, resolve_weights_with_archetype_verbose,
+};
 pub use introspection::{
     BotDecision, IntrospectionConfig, MctsNodeStats, MctsTreeSnapshot, PolicyOutput, PolicySource,
 };

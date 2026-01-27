@@ -718,45 +718,36 @@ Command Zone integrated into Tauri UI with faction-specific styling. Face attack
 
 ### Tasks
 
-- [x] **9.1** Run full test suite
+- [ ] **9.1** Run full test suite
   ```bash
   cargo nextest run --status-level=fail
   ```
   - All ~629+ tests must pass
   - No new warnings
 
-- [x] **9.2** Run Clippy
+- [ ] **9.2** Run Clippy
   ```bash
   ./scripts/run-clippy.sh
   ```
-  - No new warnings or errors
+  - No  warnings or errors
 
-- [ ] **9.3** Automated arena tournaments
-  - Run all commander matchups using validate (Alpha-Beta Bot, MCTSBot)
-
-- [ ] **9.4** Analyze tournament results
-  - Calculate win rates per commander
-  - Identify outliers (>60% or <40% overall win rate)
-  - Document findings
-
-- [ ] **9.5** Balance adjustments (if needed)
-  - Tweak commander abilities if severe imbalance found
-  - Re-run affected matchups to validate
-
-- [ ] **9.6** Manual playtesting in Tauri app
-  - Play several games with each commander
-  - Verify UI displays correctly
-  - Check for edge cases
-
-- [x] **9.7** Performance validation
+- [ ] **9.3** Performance validation
   - Run benchmarks
   ```bash
   cargo bench -p cardgame
   ```
   - Ensure no significant regression
-  - Document any changes
+  - Document any changes  
 
-- [ ] **9.8** Update version to 0.8.0
+- [ ] **9.4** Automated arena tournaments
+  - Run all commander matchups using validate (Alpha-Beta Bot, MCTSBot)
+
+- [ ] **9.5** Analyze tournament results
+  - Calculate win rates per commander
+  - Identify outliers (>60% or <40% overall win rate)
+  - Document findings
+
+- [ ] **9.6** Update version to 0.8.0
   - Root `Cargo.toml`: `version = "0.8.0"`
   - `crates/cardgame/src/version.rs`: Update test
   - Verify with `cargo test`
@@ -767,7 +758,6 @@ Command Zone integrated into Tauri UI with faction-specific styling. Face attack
 - [ ] Clippy clean
 - [ ] Arena tournaments complete
 - [ ] No severe balance issues (or documented/addressed)
-- [ ] Manual playtesting complete
 - [ ] No performance regression
 - [ ] Version bumped to 0.8.0
 - [ ] Documentation complete

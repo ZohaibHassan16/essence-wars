@@ -1,7 +1,7 @@
 id = "broodmother_swarm"
 name = "The Broodmother"
 description = "Unleash the hive's fury before enemies can react. Rush creatures flood the board in waves, overwhelming defenses through sheer numbers and relentless aggression."
-playstyle = "Rush Swarm"
+playstyle = "Aggro"
 tags = ["commander", "symbiote"]
 commander = 5004
 

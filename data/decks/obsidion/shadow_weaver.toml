@@ -1,7 +1,7 @@
 id = "shadow_weaver"
 name = "The Shadow Weaver"
 description = "Non-Stealth creatures become invisible assassins. High-attack creatures, Lifesteal bruisers, and burst damage units all gain Stealth to attack safely and drain the enemy."
-playstyle = "Stealth Aggro"
+playstyle = "Aggro"
 tags = ["commander", "obsidion"]
 commander = 5010
 

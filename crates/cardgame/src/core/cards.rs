@@ -189,6 +189,17 @@ pub enum CommanderPassiveEffect {
         attack: i8,
         health: i8,
     },
+    /// Buff stats only for creatures that have a specific keyword
+    BuffStatsIfKeyword {
+        required_keyword: String,
+        attack: i8,
+        health: i8,
+    },
+    /// Grant a keyword only to creatures that have another specific keyword
+    GrantKeywordIfKeyword {
+        required_keyword: String,
+        granted_keyword: String,
+    },
 }
 
 /// Commander passive ability (always active)

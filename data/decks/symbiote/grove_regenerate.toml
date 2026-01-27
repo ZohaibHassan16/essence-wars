@@ -1,7 +1,7 @@
 id = "grove_regenerate"
 name = "The Eternal Grove"
 description = "The forest endures all. Regenerating creatures shrug off damage turn after turn, while patient growth slowly overwhelms opponents with inevitable nature."
-playstyle = "Regenerating Midrange"
+playstyle = "Midrange"
 tags = ["commander", "symbiote"]
 commander = 5007
 

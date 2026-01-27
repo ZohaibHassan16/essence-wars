@@ -38,7 +38,8 @@ struct Args {
     /// Available modes:
     /// - generalist: Train across all deck matchups (vs Random/Greedy/MCTS)
     /// - specialist: Train for specific deck matchup (requires --deck and --opponent)
-    /// - faction-specialist: Train for a faction (requires --faction)
+    /// - faction-specialist: Train for a faction (requires --faction) [DEPRECATED]
+    /// - archetype: Train for an archetype (requires --archetype: aggro/control/tempo/midrange)
     /// - alphabeta: Train Alpha-Beta weights across all decks (uses --ab-depth)
     /// - alphabeta-specialist: Train Alpha-Beta weights for a faction (requires --faction and --ab-depth)
     #[arg(long, default_value = "generalist")]
@@ -51,6 +52,10 @@ struct Args {
     /// Faction for faction-specialist mode: argentum, symbiote, obsidion
     #[arg(long, requires_if("faction-specialist", "mode"))]
     faction: Option<String>,
+
+    /// Archetype for archetype mode: aggro, control, tempo, midrange
+    #[arg(long)]
+    archetype: Option<String>,
 
     /// Deck ID for specialist mode (our deck)
     #[arg(long, requires_if("specialist", "mode"))]
@@ -213,6 +218,7 @@ fn main() {
             TuningMode::Specialist { deck, opponent_deck }
         }
         "faction-specialist" => {
+            eprintln!("Warning: faction-specialist mode is deprecated. Consider using --mode archetype instead.");
             let faction_str = args.faction.as_ref().expect("--faction required for faction-specialist mode");
             let faction: Faction = faction_str.parse().unwrap_or_else(|e| {
                 eprintln!("{}", e);
@@ -244,6 +250,53 @@ fn main() {
             println!("Faction Specialist mode: {}", faction);
             println!("  {} faction decks", faction_decks.len());
             println!("  {} opponent decks (from other factions)", opponent_decks.len());
+            println!("  {} total matchups", matchups.len());
+            println!("  Testing vs Random, Greedy, AND MCTS per matchup");
+            println!("  Total games per evaluation: {}", args.games);
+            TuningMode::Generalist { matchups }
+        }
+        "archetype" => {
+            let archetype_str = args.archetype.as_ref().expect("--archetype required for archetype mode");
+            let archetype_lower = archetype_str.to_lowercase();
+
+            // Validate archetype
+            if !matches!(archetype_lower.as_str(), "aggro" | "control" | "tempo" | "midrange") {
+                eprintln!("Invalid archetype: {}. Valid archetypes: aggro, control, tempo, midrange", archetype_str);
+                process::exit(1);
+            }
+
+            // Get all decks with this archetype (matching playstyle field)
+            let archetype_decks: Vec<_> = deck_registry
+                .decks()
+                .filter(|d| d.playstyle.eq_ignore_ascii_case(archetype_str))
+                .collect();
+
+            if archetype_decks.is_empty() {
+                eprintln!("No decks found with archetype '{}'", archetype_str);
+                eprintln!("Available playstyles in decks:");
+                for deck in deck_registry.decks() {
+                    eprintln!("  {} -> {}", deck.id, deck.playstyle);
+                }
+                process::exit(1);
+            }
+
+            // Get opponent decks (all other archetypes)
+            let opponent_decks: Vec<_> = deck_registry
+                .decks()
+                .filter(|d| !d.playstyle.eq_ignore_ascii_case(archetype_str))
+                .collect();
+
+            if opponent_decks.is_empty() {
+                eprintln!("No opponent decks found for archetype mode");
+                process::exit(1);
+            }
+
+            // Create matchups: each archetype deck vs each opponent deck
+            let matchups = create_archetype_matchups(&archetype_decks, &opponent_decks, &card_db);
+
+            println!("Archetype mode: {}", archetype_str);
+            println!("  {} {} decks", archetype_decks.len(), archetype_str);
+            println!("  {} opponent decks (other archetypes)", opponent_decks.len());
             println!("  {} total matchups", matchups.len());
             println!("  Testing vs Random, Greedy, AND MCTS per matchup");
             println!("  Total games per evaluation: {}", args.games);
@@ -296,7 +349,7 @@ fn main() {
             TuningMode::AlphaBetaVsMcts { matchups, ab_depth: args.ab_depth }
         }
         _ => {
-            eprintln!("Unknown mode: {}. Available modes: generalist, specialist, faction-specialist, alphabeta, alphabeta-specialist", args.mode);
+            eprintln!("Unknown mode: {}. Available modes: generalist, specialist, archetype, faction-specialist, alphabeta, alphabeta-specialist", args.mode);
             process::exit(1);
         }
     };
@@ -474,6 +527,9 @@ Best win rate: {:.1}%\n",
         let weight_name = if args.mode == "faction-specialist" {
             let faction_str = args.faction.as_ref().expect("faction should be set");
             format!("agent_{}", faction_str.to_lowercase())
+        } else if args.mode == "archetype" {
+            let archetype_str = args.archetype.as_ref().expect("archetype should be set");
+            format!("archetype_{}", archetype_str.to_lowercase())
         } else if args.mode == "agent-generalist" {
             "agent_generalist".to_string()
         } else {
@@ -493,11 +549,13 @@ Best win rate: {:.1}%\n",
         }
 
         // Auto-deploy: Copy weights to data/weights/ for easy access
+        // For archetype mode, pass the archetype; otherwise pass faction
+        let deploy_key = args.archetype.as_deref().or(args.faction.as_deref());
         match deploy_weights(
             &tuned_weights,
             &weight_name,
             &args.mode,
-            args.faction.as_deref(),
+            deploy_key,
             args.deck.as_deref(),
         ) {
             Ok(Some(path)) => {
@@ -570,6 +628,33 @@ fn create_faction_matchups(
             }
 
             matchups.push((faction_deck.to_card_ids(), opponent_deck.to_card_ids()));
+        }
+    }
+
+    matchups
+}
+
+/// Create matchups for archetype mode.
+///
+/// Creates all combinations of archetype decks vs opponent decks.
+fn create_archetype_matchups(
+    archetype_decks: &[&cardgame::decks::DeckDefinition],
+    opponent_decks: &[&cardgame::decks::DeckDefinition],
+    card_db: &CardDatabase,
+) -> Vec<(Vec<CardId>, Vec<CardId>)> {
+    let mut matchups = Vec::new();
+
+    for arch_deck in archetype_decks {
+        if arch_deck.validate(card_db).is_err() {
+            continue;
+        }
+
+        for opponent_deck in opponent_decks {
+            if opponent_deck.validate(card_db).is_err() {
+                continue;
+            }
+
+            matchups.push((arch_deck.to_card_ids(), opponent_deck.to_card_ids()));
         }
     }
 

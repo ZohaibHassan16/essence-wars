@@ -1,7 +1,7 @@
 id = "sanctum_healer"
 name = "The Sanctum Healer"
 description = "Outlast your enemies through divine restoration. Your creatures gain Regenerate, healing faster than they fall and grinding opponents into submission."
-playstyle = "Sustain Control"
+playstyle = "Control"
 tags = ["commander", "argentum"]
 commander = 5001
 

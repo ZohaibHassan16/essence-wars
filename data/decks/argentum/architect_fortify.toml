@@ -1,7 +1,7 @@
 id = "architect_fortify"
 name = "The Grand Architect"
 description = "Build an impenetrable fortress of steel and shields. Your creatures gain Fortify, making Guard units nearly unkillable walls that methodically outlast opponents."
-playstyle = "Fortified Control"
+playstyle = "Control"
 tags = ["commander", "argentum"]
 commander = 5003
 

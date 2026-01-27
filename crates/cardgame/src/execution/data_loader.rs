@@ -7,12 +7,12 @@ use std::path::Path;
 
 use crate::cards::CardDatabase;
 use crate::decks::DeckRegistry;
-use crate::validation::FactionWeights;
+use crate::validation::ArchetypeWeights;
 
 /// All game data needed for execution.
 ///
 /// This struct consolidates the loading of cards, commanders, decks, and
-/// faction-specific weights into a single operation, eliminating code
+/// archetype-specific weights into a single operation, eliminating code
 /// duplication across binaries.
 ///
 /// # Example
@@ -36,8 +36,8 @@ pub struct GameData {
     pub card_db: CardDatabase,
     /// Registry of all available decks.
     pub deck_registry: DeckRegistry,
-    /// Faction-specific bot weights.
-    pub faction_weights: FactionWeights,
+    /// Archetype-specific bot weights (Aggro, Control, Tempo, Midrange).
+    pub archetype_weights: ArchetypeWeights,
 }
 
 impl GameData {
@@ -68,12 +68,12 @@ impl GameData {
         let deck_registry = DeckRegistry::load_from_directory(decks_dir)
             .map_err(|e| GameDataError::DeckLoadError(e.to_string()))?;
 
-        let faction_weights = FactionWeights::load_from_directory(weights_dir, quiet);
+        let archetype_weights = ArchetypeWeights::load_from_directory(weights_dir, quiet);
 
         Ok(Self {
             card_db,
             deck_registry,
-            faction_weights,
+            archetype_weights,
         })
     }
 

@@ -16,18 +16,17 @@ commanders:
     flavor: "Blood is such an inefficient fuel. Let me show you how to refine it."
 
   - id: 5009
-    name: "Shadow Emperor Kael"
+    name: "The Deathmaster"
     card_type: commander
     faction: Obsidion
     rarity: Legendary
-    triggered_ability:
-      trigger: OnKill
-      description: "When one of your creatures kills an enemy, deal 1 damage to the enemy commander"
-      effects:
-        - type: damage
-          amount: 1
-          target: EnemyCommander
-    flavor: "You never see him twice. Once is enough."
+    passive_ability:
+      description: "Your creatures with Lethal have Quick"
+      effect:
+        type: grant_keyword_if_keyword
+        required_keyword: Lethal
+        granted_keyword: Quick
+    flavor: "Every blade finds its mark."
 
   - id: 5010
     name: "The Shadow Weaver"

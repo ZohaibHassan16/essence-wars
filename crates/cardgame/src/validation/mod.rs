@@ -6,7 +6,7 @@
 //! ## Overview
 //!
 //! This module is used to validate that the game is balanced across factions
-//! and player positions. It runs MCTS agents against each other in all
+//! and player positions. It runs bots against each other in all
 //! faction combinations and analyzes the results.
 //!
 //! ## Usage
@@ -14,16 +14,19 @@
 //! ```ignore
 //! use cardgame::validation::{
 //!     MatchupBuilder, ValidationExecutor, BalanceAnalyzer,
-//!     FactionWeights, ValidationConfig, ValidationResults,
+//!     ArchetypeWeights, ValidationConfig, ValidationResults,
 //! };
 //!
 //! // Build matchups
-//! let builder = MatchupBuilder::new(&deck_registry, &card_db);
-//! let matchups = builder.build_faction_matchups();
+//! let builder = MatchupBuilder::new(&deck_registry);
+//! let matchups = builder.build_inter_faction_matchups();
+//!
+//! // Load archetype weights
+//! let archetype_weights = ArchetypeWeights::load_from_directory(&weights_dir, false);
 //!
 //! // Run validation
 //! let executor = ValidationExecutor::new(&card_db, 100);
-//! let results = executor.run_all(&matchups, &faction_weights, 500, 42);
+//! let results = executor.run_all(&matchups, &archetype_weights, 500, 42);
 //!
 //! // Analyze balance
 //! let analyzer = BalanceAnalyzer::new();
@@ -39,7 +42,7 @@ mod types;
 
 // Re-export types
 pub use types::{
-    BalanceStatus, BalanceSummary, DirectionDiagnostics, DirectionResults, FactionWeights,
+    ArchetypeWeights, BalanceStatus, BalanceSummary, DirectionDiagnostics, DirectionResults,
     MatchupDefinition, MatchupDiagnostics, MatchupP1Stats, MatchupResult, P1P2Summary,
     ValidationConfig, ValidationResults,
 };

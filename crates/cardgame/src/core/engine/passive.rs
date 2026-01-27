@@ -234,6 +234,32 @@ pub(super) fn apply_commander_passive_to_creature(
                 creature.max_health = creature.max_health.saturating_add(*health);
             }
         }
+        CommanderPassiveEffect::BuffStatsIfKeyword {
+            required_keyword,
+            attack,
+            health,
+        } => {
+            // Only apply buff if creature has the required keyword
+            let required_kw = Keywords::from_names(&[required_keyword.as_str()]);
+            if creature.keywords.has(required_kw.0) {
+                creature.attack = creature.attack.saturating_add(*attack);
+                if *health != 0 {
+                    creature.current_health = creature.current_health.saturating_add(*health);
+                    creature.max_health = creature.max_health.saturating_add(*health);
+                }
+            }
+        }
+        CommanderPassiveEffect::GrantKeywordIfKeyword {
+            required_keyword,
+            granted_keyword,
+        } => {
+            // Only grant keyword if creature has the required keyword
+            let required_kw = Keywords::from_names(&[required_keyword.as_str()]);
+            if creature.keywords.has(required_kw.0) {
+                let granted_kw = Keywords::from_names(&[granted_keyword.as_str()]);
+                creature.keywords.add(granted_kw.0);
+            }
+        }
     }
 }
 

@@ -16,7 +16,7 @@ use crate::types::PlayerId;
 
 use super::game_diagnostics::{GameDiagnosticCollector, GameDiagnosticData};
 use super::types::{
-    DirectionDiagnostics, DirectionResults, FactionWeights, MatchupDiagnostics, MatchupResult,
+    ArchetypeWeights, DirectionDiagnostics, DirectionResults, MatchupDiagnostics, MatchupResult,
 };
 
 /// Executor for running validation matchups.
@@ -71,7 +71,7 @@ impl<'a> ValidationExecutor<'a> {
     pub fn run_all(
         &self,
         matchups: &[UnifiedMatchup],
-        faction_weights: &FactionWeights,
+        archetype_weights: &ArchetypeWeights,
         games_per_matchup: usize,
         base_seed: u64,
     ) -> Vec<MatchupResult> {
@@ -96,7 +96,7 @@ impl<'a> ValidationExecutor<'a> {
                 let matchup_seed = base_seed.wrapping_add((matchup_idx * 1_000_000) as u64);
 
                 let result =
-                    self.run_matchup(matchup, faction_weights, games_per_matchup, matchup_seed);
+                    self.run_matchup(matchup, archetype_weights, games_per_matchup, matchup_seed);
 
                 // Increment progress counter
                 if let Some(ref c) = counter {
@@ -118,20 +118,18 @@ impl<'a> ValidationExecutor<'a> {
     }
 
     /// Run a single matchup (both player orders).
+    ///
+    /// Uses archetype weights based on deck playstyle.
     pub fn run_matchup(
         &self,
         matchup: &UnifiedMatchup,
-        faction_weights: &FactionWeights,
+        archetype_weights: &ArchetypeWeights,
         games_per_side: usize,
         base_seed: u64,
     ) -> MatchupResult {
-        // Get weights for each faction (if available)
-        let weights1 = matchup
-            .faction1()
-            .and_then(|f| faction_weights.get(f));
-        let weights2 = matchup
-            .faction2()
-            .and_then(|f| faction_weights.get(f));
+        // Get weights for each deck based on archetype
+        let weights1 = archetype_weights.get(&matchup.deck1.playstyle);
+        let weights2 = archetype_weights.get(&matchup.deck2.playstyle);
 
         // Run Direction 1: Deck1 as P1 vs Deck2 as P2
         let dir1_results = self.run_direction(
@@ -415,9 +413,9 @@ mod tests {
 
         // Use GreedyBot for fast test execution
         let executor = ValidationExecutor::new(&data.card_db, 10).with_bot_type(BotType::Greedy);
-        let faction_weights = FactionWeights::new();
+        let archetype_weights = ArchetypeWeights::new();
 
-        let result = executor.run_matchup(matchup, &faction_weights, 2, 42);
+        let result = executor.run_matchup(matchup, &archetype_weights, 2, 42);
 
         assert_eq!(result.total_games, 4); // 2 games each direction
         assert!(result.faction1_win_rate >= 0.0 && result.faction1_win_rate <= 1.0);
@@ -451,20 +449,20 @@ mod tests {
 
         // Run a game and verify result has correct commander info
         let executor = ValidationExecutor::new(&data.card_db, 10).with_bot_type(BotType::Greedy);
-        let faction_weights = FactionWeights::new();
-        let result = executor.run_matchup(&matchup, &faction_weights, 1, 42);
+        let archetype_weights = ArchetypeWeights::new();
+        let result = executor.run_matchup(&matchup, &archetype_weights, 1, 42);
 
         assert_eq!(result.commander1_id, argentum_decks[0].commander);
         assert_eq!(result.commander2_id, symbiote_decks[0].commander);
     }
 
     #[test]
-    fn test_faction_weights_loading() {
+    fn test_archetype_weights_loading() {
         let weights_path = crate::data_dir().join("weights");
-        let weights = FactionWeights::load_from_directory(&weights_path, true);
+        let weights = ArchetypeWeights::load_from_directory(&weights_path, true);
 
-        // Should have loaded at least some weights (if files exist)
-        // This test just verifies the loading doesn't crash
-        assert!(weights.get(Faction::Neutral).is_none());
+        // Should have loaded at least some archetype weights
+        // This test verifies the loading doesn't crash
+        assert!(weights.get("aggro").is_some() || weights.get("control").is_some());
     }
 }

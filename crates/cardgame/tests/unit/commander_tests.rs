@@ -682,147 +682,88 @@ fn test_plague_sovereign_deals_damage_on_ally_death() {
 }
 
 #[test]
-fn test_shadow_emperor_kael_deals_damage_on_kill() {
-    // Shadow Emperor Kael (5009): When one of your creatures kills an enemy, deal 1 damage to enemy commander
+fn test_deathmaster_grants_quick_to_lethal_creatures() {
+    // The Deathmaster (5009): Your creatures with Lethal have Quick
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
-    // P1 (Kael) uses strong creatures that will kill enemies
-    // P2 uses weaker creatures
-    let deck1: Vec<CardId> = vec![CardId(1000); 30]; // Brass Sentinel 2/4 Guard (strong)
-    let deck2: Vec<CardId> = vec![CardId(4031); 30]; // Eager Sellsword 2/1 Rush (weak)
+    // P1 (Deathmaster) uses Lethal creatures
+    // Contract Killer (4036): 3 cost, 3/2 Lethal - should gain Quick
+    let deck1: Vec<CardId> = vec![CardId(4036); 30]; // Contract Killer 3/2 Lethal
+    let deck2: Vec<CardId> = vec![CardId(4031); 30]; // Eager Sellsword 2/1 Rush
 
     engine.start_game_raw(
         deck1,
         deck2,
-        CardId(5009), // Shadow Emperor Kael
+        CardId(5009), // The Deathmaster
         CardId(5001), // Sanctum Healer
         42,
         GameMode::default(),
     );
 
-    // Record P2's initial health
-    let initial_p2_health = engine.state.players[1].life;
-
-    // Turn 1: P1 ends turn (need essence for 2-cost creature)
+    // Turn 1: P1 ends turn (need 3 essence for Contract Killer)
     engine.apply_action(Action::EndTurn).expect("P1 end turn");
-
-    // Turn 1 P2: plays Eager Sellsword (1 cost, 2/1 Rush)
-    let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
-    engine.apply_action(action).expect("P2 plays creature");
     engine.apply_action(Action::EndTurn).expect("P2 end turn");
 
-    // Turn 2 P1: plays Brass Sentinel (2 cost, 2/4 Guard)
+    // Turn 2 P1: still need more essence
+    engine.apply_action(Action::EndTurn).expect("P1 end turn");
+    engine.apply_action(Action::EndTurn).expect("P2 end turn");
+
+    // Turn 3 P1: plays Contract Killer (3 cost, 3/2 Lethal)
     let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
     engine.apply_action(action).expect("P1 plays creature");
-    engine.apply_action(Action::EndTurn).expect("P1 end turn");
 
-    // Turn 2 P2: End turn
-    engine.apply_action(Action::EndTurn).expect("P2 end turn");
-
-    // Turn 3 P1: attack P2's Eager Sellsword
-    // P1's 2/4 attacks P2's 2/1 - P2's creature dies, P1's creature survives with 2 HP
-    let attack_action = Action::Attack {
-        attacker: Slot(0),
-        defender: Slot(0),
-    };
-    engine.apply_action(attack_action).expect("Attack should succeed");
-
-    // P2's creature should have died (P1 killed it)
+    // Verify the Lethal creature got Quick from Deathmaster
+    let creature = engine.state.players[0].get_creature(Slot(0)).expect("Creature should exist");
     assert!(
-        engine.state.players[1].get_creature(Slot(0)).is_none(),
-        "P2's creature should have died in combat"
+        creature.keywords.has_quick(),
+        "Contract Killer should have Quick from Deathmaster passive"
     );
-
-    // P2 should have taken 1 damage from Shadow Emperor Kael OnKill trigger
-    let p2_health_after = engine.state.players[1].life;
-    assert_eq!(
-        p2_health_after,
-        initial_p2_health - 1,
-        "P2 should have taken 1 damage from Kael OnKill trigger (was {}, now {})",
-        initial_p2_health,
-        p2_health_after
+    assert!(
+        creature.keywords.has_lethal(),
+        "Contract Killer should still have Lethal"
     );
+    // Stats should be unchanged (no buff)
+    assert_eq!(creature.attack, 3, "Contract Killer attack should be 3");
+    assert_eq!(creature.current_health, 2, "Contract Killer health should be 2 (base)");
 }
 
 #[test]
-fn test_shadow_emperor_kael_multiple_kills_multiple_damage() {
-    // Verify Kael deals damage for each kill (in separate combats)
+fn test_deathmaster_does_not_grant_quick_to_non_lethal_creatures() {
+    // Verify The Deathmaster only grants Quick to creatures with Lethal
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
-    // P1 (Kael) uses strong creatures that will kill enemies
-    // P2 uses weaker creatures
-    let deck1: Vec<CardId> = vec![CardId(1000); 30]; // Brass Sentinel 2/4 Guard (strong)
-    let deck2: Vec<CardId> = vec![CardId(4031); 30]; // Eager Sellsword 2/1 Rush (weak)
+    // P1 (Deathmaster) uses non-Lethal creatures
+    // Brass Sentinel (1000): 2 cost, 2/5 Guard - should NOT get Quick
+    let deck1: Vec<CardId> = vec![CardId(1000); 30]; // Brass Sentinel 2/5 Guard
+    let deck2: Vec<CardId> = vec![CardId(4031); 30]; // Eager Sellsword 2/1 Rush
 
     engine.start_game_raw(
         deck1,
         deck2,
-        CardId(5009), // Shadow Emperor Kael
+        CardId(5009), // The Deathmaster
         CardId(5001), // Sanctum Healer
         42,
         GameMode::default(),
     );
 
-    // Record P2's initial health
-    let initial_p2_health = engine.state.players[1].life;
-
-    // Turn 1: P1 ends turn
+    // Turn 1: P1 ends turn (need 2 essence)
     engine.apply_action(Action::EndTurn).expect("P1 end turn");
+    engine.apply_action(Action::EndTurn).expect("P2 end turn");
 
-    // Turn 1 P2: plays two Eager Sellswords (1 cost each, has 1 essence)
+    // Turn 2 P1: plays Brass Sentinel (2 cost, 2/5 Guard - no Lethal)
     let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
-    engine.apply_action(action).expect("P2 plays creature 1");
-    engine.apply_action(Action::EndTurn).expect("P2 end turn");
+    engine.apply_action(action).expect("P1 plays creature");
 
-    // Turn 2 P1: plays Brass Sentinel (2 cost)
-    let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
-    engine.apply_action(action).expect("P1 plays creature 1");
-    engine.apply_action(Action::EndTurn).expect("P1 end turn");
-
-    // Turn 2 P2: plays second Eager Sellsword
-    let action = Action::PlayCard { hand_index: 0, slot: Slot(1) };
-    engine.apply_action(action).expect("P2 plays creature 2");
-    engine.apply_action(Action::EndTurn).expect("P2 end turn");
-
-    // Turn 3 P1: plays second Brass Sentinel
-    let action = Action::PlayCard { hand_index: 0, slot: Slot(1) };
-    engine.apply_action(action).expect("P1 plays creature 2");
-    engine.apply_action(Action::EndTurn).expect("P1 end turn");
-
-    // Turn 3 P2: End turn
-    engine.apply_action(Action::EndTurn).expect("P2 end turn");
-
-    // Turn 4 P1: attack and kill first enemy
-    // P1's 2/4 attacks P2's 2/1 - P2's creature dies
-    let attack_action = Action::Attack {
-        attacker: Slot(0),
-        defender: Slot(0),
-    };
-    engine.apply_action(attack_action).expect("P1 attack 1");
-
-    // P2 should have taken 1 damage from Kael OnKill trigger
-    let p2_health_after_first = engine.state.players[1].life;
-    assert_eq!(
-        p2_health_after_first,
-        initial_p2_health - 1,
-        "P2 should have taken 1 damage from first kill"
+    // Verify the non-Lethal creature did NOT get Quick
+    let creature = engine.state.players[0].get_creature(Slot(0)).expect("Creature should exist");
+    assert!(
+        !creature.keywords.has_quick(),
+        "Brass Sentinel should NOT have Quick (no Lethal = no Quick from Deathmaster)"
     );
-
-    // P1 attacks and kills second enemy
-    // P1's 2/4 attacks P2's 2/1 - P2's creature dies
-    let attack_action = Action::Attack {
-        attacker: Slot(1),
-        defender: Slot(1),
-    };
-    engine.apply_action(attack_action).expect("P1 attack 2");
-
-    // P2 should have taken another 1 damage from Kael OnKill trigger (total 2)
-    let p2_health_after_second = engine.state.players[1].life;
-    assert_eq!(
-        p2_health_after_second,
-        initial_p2_health - 2,
-        "P2 should have taken 2 damage total from two kills"
+    assert!(
+        creature.keywords.has_guard(),
+        "Brass Sentinel should still have Guard"
     );
 }

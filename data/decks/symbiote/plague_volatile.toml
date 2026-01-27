@@ -1,7 +1,7 @@
 id = "plague_volatile"
 name = "Plague Sovereign"
 description = "Turn death itself into a weapon. Volatile creatures explode on destruction, and every loss becomes devastating damage against your foes. Win through attrition."
-playstyle = "Attrition"
+playstyle = "Control"
 tags = ["commander", "symbiote"]
 commander = 5005
 

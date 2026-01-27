@@ -780,15 +780,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] Audio settings store with persistence
 - [x] Wire sounds to game events
 
-### Phase 9: Polish & Testing
-- [x] Settings screen
-- [x] Keyboard shortcuts
-- [x] Window resize handling
-- [x] Error handling and recovery
-- [x] Performance optimization
-- [x] Bug fixing
-
-### Phase 9.5 Tutorial and Onboarding
+### Phase 9 Tutorial and Onboarding
 - [x] Create Ingame Tutorials (Using Highlighting and Focus to show the Player/User where to look and click, like Unity Editor Pathway Tutorial in the Editor works):
   - [x] Human vs AI Mode
     - Explaining the Rules, how the game works, turns, etc 
@@ -796,30 +788,21 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] Players can play a game without having to read any rulebook
 - [x] Researchers can watch Ai vs Ai without needing to undersand the rules
 
-### Phase 9.6 Final Art Asset Sprint 
-- [x] Add Game Art to Main menu using local FLUX Stable-Diffusion.cpp (Chris can use gemini image / Nanon Banana 3 for Collages for the Big 2560x Background images, Claude can provide guidance and prompts)
-- [x] Create 20 to 30 rotating / random Backgrounds for the Main Menu
-- [x] Source good Music for the Main Menu, Atmospheric Music for Battle Mode and Spectator Mode
-- [x] Source high quality SFX to replace the current sound effects
-- [x] Add Rules Submenu, that explains the rules, keywords etc (with custom artwork to make it snappy and visually interesting)
-- [x] Remove MCP Sync View so that the menu item can be hidden / removed, while preserving the functionality
-- [x] hide the console window that gets opened in release mode (keep for dev / debg mode)
-
-### Phase 9.7 'This Time for real' Final Final Art Pass
-
+### Phase 10: Art Pass
 - Generate better backgrounds that fit the art direction of the game, replace existing ones
 - Use Flux Schnell to create decorations and props, populate the Menus with thoughtful additions (not plastering it, but making it look nice)
 - Overhall all Menus and Boards etc to be visually stunning and professional
 - Audit SFX Library, current creature sounds are a bit unfitting 😅 Web Search for a consistent art asset pack that fits our theme and replace the existing ones.
 
-### Phase 10: Release Prep
+### Phase 11: Release Prep
+- [ ] Discuss Distribution Options, DevOps, Storage Solutions (Assets, the Github Repo is becoming too big)
 - [ ] Build for Windows
 - [ ] Build for Linux
 - [ ] Create Github Releases as Github Actions
 - [ ] Installer/package creation
 - [ ] Final testing on both platforms
 - [ ] Documentation
-- [ ] Disuss Hosting Providers (Github,itch.io, Google Drive, ...)
+- [ ] Disuss Hosting Providers (itch.io, Google Drive, ...)
 
 ---
 

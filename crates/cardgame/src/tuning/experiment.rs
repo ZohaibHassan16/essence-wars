@@ -118,9 +118,10 @@ impl ExperimentDir {
 
 /// Auto-deploy weights to the canonical location in data/weights/.
 ///
-/// Determines the deploy path based on mode and faction:
+/// Determines the deploy path based on mode and faction/archetype:
 /// - generalist -> data/weights/generalist.toml
-/// - faction-specialist -> data/weights/specialists/{faction}.toml
+/// - archetype -> data/weights/archetypes/{archetype}.toml
+/// - faction-specialist -> data/weights/specialists/{faction}.toml (deprecated)
 /// - specialist -> data/weights/specialists/{faction}.toml (inferred from deck name)
 /// - alphabeta -> data/weights/alphabeta/generalist.toml
 /// - alphabeta-specialist -> data/weights/alphabeta/specialists/{faction}.toml
@@ -128,18 +129,27 @@ pub fn deploy_weights(
     weights: &GreedyWeights,
     name: &str,
     mode: &str,
-    faction: Option<&str>,
+    faction_or_archetype: Option<&str>,
     deck: Option<&str>,
 ) -> io::Result<Option<PathBuf>> {
     let deploy_path = match mode {
         "generalist" | "agent-generalist" => Some(PathBuf::from("data/weights/generalist.toml")),
+        "archetype" => {
+            if let Some(archetype_str) = faction_or_archetype {
+                let archetypes_dir = PathBuf::from("data/weights/archetypes");
+                fs::create_dir_all(&archetypes_dir)?;
+                Some(archetypes_dir.join(format!("{}.toml", archetype_str.to_lowercase())))
+            } else {
+                None
+            }
+        }
         "alphabeta" => {
             let alphabeta_dir = PathBuf::from("data/weights/alphabeta");
             fs::create_dir_all(&alphabeta_dir)?;
             Some(alphabeta_dir.join("generalist.toml"))
         }
         "alphabeta-specialist" => {
-            if let Some(faction_str) = faction {
+            if let Some(faction_str) = faction_or_archetype {
                 let alphabeta_specialists_dir = PathBuf::from("data/weights/alphabeta/specialists");
                 fs::create_dir_all(&alphabeta_specialists_dir)?;
                 Some(alphabeta_specialists_dir.join(format!("{}.toml", faction_str.to_lowercase())))
@@ -148,7 +158,7 @@ pub fn deploy_weights(
             }
         }
         "faction-specialist" => {
-            if let Some(faction_str) = faction {
+            if let Some(faction_str) = faction_or_archetype {
                 let specialists_dir = PathBuf::from("data/weights/specialists");
                 fs::create_dir_all(&specialists_dir)?;
                 Some(specialists_dir.join(format!("{}.toml", faction_str.to_lowercase())))

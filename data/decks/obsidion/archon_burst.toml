@@ -1,7 +1,7 @@
 id = "archon_burst"
 name = "Void Archon"
 description = "Your creatures gain Quick, striking first in every combat. Lethal assassins become unstoppable killers, and high-attack creatures dominate the board."
-playstyle = "First Strike Aggro"
+playstyle = "Aggro"
 tags = ["commander", "obsidion"]
 commander = 5011
 

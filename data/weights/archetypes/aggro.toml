@@ -1,0 +1,34 @@
+name = "archetype_aggro"
+version = 1
+
+[default.greedy]
+own_life = 1.6904163360595703
+enemy_life_damage = 2.711033821105957
+own_creature_attack = 0.2301008403301239
+own_creature_health = 0.7592588663101196
+enemy_creature_attack = -1.6488299369812012
+enemy_creature_health = -1.8707724809646606
+creature_count = 2.4488468170166016
+board_advantage = 1.0214804410934448
+cards_in_hand = 1.2421702146530151
+action_points = 0.29041820764541626
+keyword_guard = 2.8987627029418945
+keyword_lethal = 4.49440336227417
+keyword_lifesteal = 3.2373814582824707
+keyword_rush = 1.4301291704177856
+keyword_ranged = 2.1172499656677246
+keyword_piercing = 0.6174993515014648
+keyword_shield = 4.1434454917907715
+keyword_quick = 1.234758973121643
+keyword_ephemeral = -2.56323504447937
+keyword_regenerate = 2.2239744663238525
+keyword_stealth = 2.2406716346740723
+keyword_charge = 1.8749383687973022
+keyword_frenzy = 2.6396408081054688
+keyword_volatile = 3.5737504959106445
+keyword_fortify = 3.512155055999756
+keyword_ward = 2.044343948364258
+win_bonus = 999.8599243164063
+lose_penalty = -1001.31689453125
+
+[deck_specific]

@@ -270,10 +270,11 @@ fn main() {
     // Get current working directory for weight resolution
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
 
-    // Resolve weights for both bots
-    let weights1 = match cardgame::bots::resolve_weights_verbose(
+    // Resolve weights for both bots (with archetype fallback based on deck playstyle)
+    let weights1 = match cardgame::bots::resolve_weights_with_archetype_verbose(
         &bot1_type,
         args.weights1.as_deref(),
+        Some(deck1.playstyle.as_str()),
         &cwd,
         "Bot 1",
     ) {
@@ -283,9 +284,10 @@ fn main() {
             process::exit(1);
         }
     };
-    let weights2 = match cardgame::bots::resolve_weights_verbose(
+    let weights2 = match cardgame::bots::resolve_weights_with_archetype_verbose(
         &bot2_type,
         args.weights2.as_deref(),
+        Some(deck2.playstyle.as_str()),
         &cwd,
         "Bot 2",
     ) {

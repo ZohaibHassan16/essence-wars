@@ -1,7 +1,7 @@
 id = "vex_piercing"
 name = "Siege Marshal Vex"
 description = "No defense can stand against the Combine's siege engines. Your creatures gain +1 Attack, turning even small units into lethal threats that cleave through guards."
-playstyle = "Aggressive Piercing"
+playstyle = "Aggro"
 tags = ["commander", "argentum"]
 commander = 5002
 

@@ -20,8 +20,8 @@ use clap::Parser;
 use cardgame::bots::BotType;
 use cardgame::execution::{configure_thread_pool, GameData, MatchupBuilder};
 use cardgame::validation::{
-    export_json, print_results, save_validation_results, BalanceAnalyzer, BalanceStatus,
-    FactionWeights, ValidationConfig, ValidationExecutor, ValidationResults,
+    export_json, print_results, save_validation_results, ArchetypeWeights, BalanceAnalyzer,
+    BalanceStatus, ValidationConfig, ValidationExecutor, ValidationResults,
 };
 use cardgame::version::{self, VersionInfo};
 
@@ -125,8 +125,8 @@ fn main() {
         }
     };
 
-    // Load faction weights for bots
-    let faction_weights = FactionWeights::load_from_directory(&args.weights, !show_progress);
+    // Load archetype weights for bots
+    let archetype_weights = ArchetypeWeights::load_from_directory(&args.weights, !show_progress);
 
     // Build matchups using new MatchupBuilder (preserves commander info)
     let builder = MatchupBuilder::new(&game_data.deck_registry);
@@ -172,7 +172,7 @@ fn main() {
         .with_alphabeta_depth(args.ab_depth)
         .with_progress(show_progress);
 
-    let matchup_results = executor.run_all(&matchups, &faction_weights, args.games, args.seed);
+    let matchup_results = executor.run_all(&matchups, &archetype_weights, args.games, args.seed);
     let total_time = start_time.elapsed();
 
     // Analyze balance

@@ -1,7 +1,7 @@
 id = "alpha_frenzy"
 name = "Alpha of the Hunt"
 description = "Attack with primal fury. Frenzy creatures strike twice each combat, and the Alpha's aura transforms every minion into a relentless, bloodthirsty predator."
-playstyle = "Frenzy Aggro"
+playstyle = "Aggro"
 tags = ["commander", "symbiote"]
 commander = 5006
 

@@ -224,6 +224,73 @@ pub fn resolve_weights(
     Ok(None)
 }
 
+/// Resolve weights based on deck archetype (playstyle field).
+///
+/// This function loads archetype-specific weights based on the deck's playstyle.
+/// Valid archetypes: "Aggro", "Control", "Tempo", "Midrange" (case-insensitive).
+///
+/// # Arguments
+/// * `archetype` - The deck's playstyle/archetype string
+/// * `base_dir` - Base directory for resolving relative paths
+///
+/// # Returns
+/// * `Ok(Some(weights))` - Archetype weights loaded successfully
+/// * `Ok(None)` - Unknown archetype or weights not found (use defaults)
+/// * `Err(error)` - Failed to load weights file
+pub fn resolve_archetype_weights(
+    archetype: &str,
+    base_dir: &Path,
+) -> Result<Option<BotWeights>, WeightResolutionError> {
+    let archetype_lower = archetype.to_lowercase();
+    let weight_file = match archetype_lower.as_str() {
+        "aggro" => "aggro.toml",
+        "control" => "control.toml",
+        "tempo" => "tempo.toml",
+        "midrange" => "midrange.toml",
+        _ => return Ok(None), // Unknown archetype, use defaults
+    };
+
+    let full_path = base_dir.join("data/weights/archetypes").join(weight_file);
+    match BotWeights::load(&full_path) {
+        Ok(w) => Ok(Some(w)),
+        Err(_) => Ok(None), // Archetype weights are optional
+    }
+}
+
+/// Resolve weights with archetype fallback.
+///
+/// Resolution order:
+/// 1. Explicit path (if provided)
+/// 2. Agent-specific weights (if bot is an Agent type)
+/// 3. Archetype weights (if archetype provided and recognized)
+/// 4. None (use built-in defaults)
+///
+/// # Arguments
+/// * `bot_type` - The bot type
+/// * `explicit_path` - Explicitly specified weights path (takes precedence)
+/// * `archetype` - Optional deck archetype/playstyle for weight selection
+/// * `base_dir` - Base directory for resolving relative paths
+pub fn resolve_weights_with_archetype(
+    bot_type: &BotType,
+    explicit_path: Option<&Path>,
+    archetype: Option<&str>,
+    base_dir: &Path,
+) -> Result<Option<BotWeights>, WeightResolutionError> {
+    // First try explicit path and agent weights
+    if let Some(weights) = resolve_weights(bot_type, explicit_path, base_dir)? {
+        return Ok(Some(weights));
+    }
+
+    // Then try archetype weights
+    if let Some(arch) = archetype {
+        if let Some(weights) = resolve_archetype_weights(arch, base_dir)? {
+            return Ok(Some(weights));
+        }
+    }
+
+    Ok(None)
+}
+
 /// Resolve weights with verbose output to stdout.
 ///
 /// Same as `resolve_weights` but prints status messages.
@@ -270,6 +337,36 @@ pub fn resolve_weights_verbose(
         }
     }
 
+    Ok(None)
+}
+
+/// Resolve weights with archetype fallback and verbose output.
+///
+/// Same as `resolve_weights_with_archetype` but prints status messages.
+pub fn resolve_weights_with_archetype_verbose(
+    bot_type: &BotType,
+    explicit_path: Option<&Path>,
+    archetype: Option<&str>,
+    base_dir: &Path,
+    bot_label: &str,
+) -> Result<Option<BotWeights>, WeightResolutionError> {
+    // First try explicit path and agent weights (verbose)
+    if let Some(weights) = resolve_weights_verbose(bot_type, explicit_path, base_dir, bot_label)? {
+        return Ok(Some(weights));
+    }
+
+    // Then try archetype weights
+    if let Some(arch) = archetype {
+        if let Some(weights) = resolve_archetype_weights(arch, base_dir)? {
+            println!(
+                "Auto-loaded archetype weights for {}: {} (archetype: {})",
+                bot_label, weights.name, arch
+            );
+            return Ok(Some(weights));
+        }
+    }
+
+    println!("Note: {} using built-in default weights", bot_label);
     Ok(None)
 }
 

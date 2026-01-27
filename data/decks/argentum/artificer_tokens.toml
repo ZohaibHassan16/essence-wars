@@ -1,7 +1,7 @@
 id = "artificer_tokens"
 name = "The High Artificer"
 description = "Command an army of clockwork constructs. Every turn, your mechanical servants multiply, overwhelming enemies with ceaseless industry."
-playstyle = "Token Swarm"
+playstyle = "Tempo"
 tags = ["commander", "argentum"]
 commander = 5000
 
