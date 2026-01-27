@@ -59,7 +59,7 @@ fn run_game_with_seed(card_db: &CardDatabase, seed: u64) -> GameOutcome {
     let mut engine = GameEngine::new(card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
 
     let mut rng = SimpleRng::new(seed);
     let mut action_indices = Vec::new();
@@ -166,7 +166,7 @@ fn test_different_seeds_different_initial_states() {
     let initial_hands: Vec<Vec<u16>> = (0u64..20)
         .map(|seed| {
             let mut engine = GameEngine::new(&card_db);
-            engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+            engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
             // Get card IDs from hand
             engine.state.players[0]
                 .hand
@@ -199,7 +199,7 @@ fn test_fork_isolation() {
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     let mut rng = SimpleRng::new(12345);
 
@@ -256,7 +256,7 @@ fn test_fork_identical_with_same_actions() {
         let mut engine = GameEngine::new(&card_db);
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
-        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
 
         let mut rng = SimpleRng::new(seed);
 
@@ -321,7 +321,7 @@ fn test_tensor_determinism() {
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 55555, GameMode::default());
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 55555, GameMode::default()).unwrap();
 
     let mut rng = SimpleRng::new(55555);
 
@@ -364,7 +364,7 @@ fn test_tensor_reflects_state_changes() {
     let mut engine = GameEngine::new(&card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 33333, GameMode::default());
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 33333, GameMode::default()).unwrap();
 
     let tensor_before = engine.get_state_tensor();
 
@@ -393,7 +393,7 @@ fn test_greedy_bot_determinism() {
         let mut engine = GameEngine::new(&card_db);
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
-        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
 
         // Create two identical bots
         let mut bot1 = GreedyBot::new(&card_db, seed);
@@ -452,7 +452,7 @@ fn run_greedy_game(card_db: &CardDatabase, seed: u64) -> GameOutcome {
     let mut engine = GameEngine::new(card_db);
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
 
     let mut bot1 = GreedyBot::new(card_db, seed);
     let mut bot2 = GreedyBot::new(card_db, seed + 1000);
@@ -507,8 +507,8 @@ fn test_deck_shuffle_determinism() {
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
 
-        engine1.start_game_raw(deck1.clone(), deck2.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
-        engine2.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine1.start_game_raw(deck1.clone(), deck2.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
+        engine2.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
 
         // Decks should be in same order
         assert_eq!(

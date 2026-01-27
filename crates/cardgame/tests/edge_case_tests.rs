@@ -88,7 +88,7 @@ fn test_edge_case_zero_attack_creature_cannot_attack() {
     let deck2 = create_test_deck(&[regular_card]);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Give P1 enough essence to play the card
     engine.state.players[0].max_essence = 10;
@@ -175,7 +175,7 @@ fn test_edge_case_ranged_bypasses_guard() {
 
     let mut engine = GameEngine::new(&card_db);
     // Use passive commander to avoid token summoning at turn start
-    engine.start_game_raw(deck1, deck2, PASSIVE_COMMANDER, PASSIVE_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(deck1, deck2, PASSIVE_COMMANDER, PASSIVE_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Give both players max essence
     engine.state.players[0].max_essence = 10;
@@ -258,7 +258,7 @@ fn test_edge_case_hand_overflow_discards() {
     let deck = create_test_deck(&[cheap_card]);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Record initial hand size (should be around 3-4)
     let initial_hand_size = engine.state.players[0].hand.len();
@@ -307,7 +307,7 @@ fn test_edge_case_empty_deck_no_fatigue() {
     let deck = create_test_deck(&[card]);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Empty P1's deck
     engine.state.players[0].deck.clear();
@@ -365,7 +365,7 @@ fn test_edge_case_simultaneous_death_effects() {
     let deck2 = create_test_deck(&[c2]);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Give essence and play creatures
     engine.state.players[0].max_essence = 10;
@@ -464,7 +464,7 @@ fn test_edge_case_turn_30_limit_resolution() {
     let deck = create_test_deck(&[card]);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Fast forward to turn 29
     while engine.turn_number() < 29 && !engine.is_game_over() {
@@ -576,7 +576,7 @@ fn test_edge_case_support_durability() {
     let deck2 = create_test_deck(&[creature]);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Give essence
     engine.state.players[0].max_essence = 10;

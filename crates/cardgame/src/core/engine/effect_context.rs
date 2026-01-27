@@ -230,7 +230,7 @@ mod tests {
                 assert_eq!(owner, PlayerId::PLAYER_ONE);
                 assert_eq!(slot, Slot(0));
             }
-            _ => panic!("Expected Single target"),
+            _ => unreachable!("test helper - expected Single target"),
         }
     }
 
@@ -251,7 +251,7 @@ mod tests {
 
         match result {
             ResolvedTargets::Player(player) => assert_eq!(player, PlayerId::PLAYER_TWO),
-            _ => panic!("Expected Player target"),
+            _ => unreachable!("test helper - expected Player target"),
         }
     }
 
@@ -269,7 +269,7 @@ mod tests {
             ResolvedTargets::Multiple(creatures) => {
                 assert_eq!(creatures.len(), 3);
             }
-            _ => panic!("Expected Multiple targets"),
+            _ => unreachable!("test helper - expected Multiple targets"),
         }
     }
 
@@ -288,7 +288,7 @@ mod tests {
                 assert_eq!(creatures.len(), 2);
                 assert!(creatures.iter().all(|(owner, _)| *owner == PlayerId::PLAYER_ONE));
             }
-            _ => panic!("Expected Multiple targets"),
+            _ => unreachable!("test helper - expected Multiple targets"),
         }
     }
 
@@ -307,7 +307,7 @@ mod tests {
                 assert_eq!(creatures.len(), 2);
                 assert!(creatures.iter().all(|(owner, _)| *owner == PlayerId::PLAYER_TWO));
             }
-            _ => panic!("Expected Multiple targets"),
+            _ => unreachable!("test helper - expected Multiple targets"),
         }
     }
 }

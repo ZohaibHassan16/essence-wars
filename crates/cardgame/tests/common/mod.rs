@@ -449,14 +449,16 @@ pub fn start_test_game(
     deck2: Vec<CardId>,
     seed: u64,
 ) {
-    engine.start_game_raw(
-        deck1,
-        deck2,
-        DEFAULT_COMMANDER,
-        DEFAULT_COMMANDER,
-        seed,
-        GameMode::default(),
-    );
+    engine
+        .start_game_raw(
+            deck1,
+            deck2,
+            DEFAULT_COMMANDER,
+            DEFAULT_COMMANDER,
+            seed,
+            GameMode::default(),
+        )
+        .unwrap();
 }
 
 /// Helper to start a game with default commanders and a specific mode.
@@ -467,12 +469,14 @@ pub fn start_test_game_with_mode(
     seed: u64,
     mode: GameMode,
 ) {
-    engine.start_game_raw(
-        deck1,
-        deck2,
-        DEFAULT_COMMANDER,
-        DEFAULT_COMMANDER,
-        seed,
-        mode,
-    );
+    engine
+        .start_game_raw(
+            deck1,
+            deck2,
+            DEFAULT_COMMANDER,
+            DEFAULT_COMMANDER,
+            seed,
+            mode,
+        )
+        .unwrap();
 }

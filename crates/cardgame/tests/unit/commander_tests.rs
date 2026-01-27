@@ -38,7 +38,7 @@ fn setup_game_with_commanders(
         CardId(commander2_id),
         seed,
         GameMode::default(),
-    );
+    ).unwrap();
 
     // Advance to turn 2 so P1 has 2 essence (enough to play Brass Sentinel)
     // Turn 1: P1 has 1 essence, P1 ends turn
@@ -562,7 +562,7 @@ fn test_broodmother_grants_rush_to_all_creatures() {
         CardId(5000), // High Artificer
         42,
         GameMode::default(),
-    );
+    ).unwrap();
 
     // Advance to turn 2 so P1 has 2 essence for Brass Sentinel
     engine.apply_action(Action::EndTurn).expect("P1 end turn");
@@ -601,7 +601,7 @@ fn test_broodmother_rush_does_not_affect_opponent() {
         CardId(5001), // Sanctum Healer (P2) - grants +0/+3
         42,
         GameMode::default(),
-    );
+    ).unwrap();
 
     // Advance to turn 2 so both players have 2 essence
     engine.apply_action(Action::EndTurn).expect("P1 end turn");
@@ -658,7 +658,7 @@ fn test_plague_sovereign_deals_damage_on_ally_death() {
         CardId(5001), // Sanctum Healer (passive, no tokens)
         42,
         GameMode::default(),
-    );
+    ).unwrap();
 
     let initial_p2_health = engine.state.players[1].life;
 
@@ -730,7 +730,7 @@ fn test_deathmaster_grants_quick_to_lethal_creatures() {
         CardId(5001), // Sanctum Healer
         42,
         GameMode::default(),
-    );
+    ).unwrap();
 
     // Turn 1: P1 ends turn (need 3 essence for Contract Killer)
     engine.apply_action(Action::EndTurn).expect("P1 end turn");
@@ -777,7 +777,7 @@ fn test_deathmaster_does_not_grant_quick_to_non_lethal_creatures() {
         CardId(5001), // Sanctum Healer
         42,
         GameMode::default(),
-    );
+    ).unwrap();
 
     // Turn 1: P1 ends turn (need 2 essence)
     engine.apply_action(Action::EndTurn).expect("P1 end turn");

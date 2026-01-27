@@ -58,7 +58,7 @@ fn test_get_state_tensor_returns_correct_size() {
 fn test_legal_action_mask_has_correct_indices() {
     let db = test_card_db();
     let mut engine = GameEngine::new(&db);
-    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     let mask = engine.get_legal_action_mask();
 
@@ -85,7 +85,7 @@ fn test_legal_action_mask_has_correct_indices() {
 fn test_apply_action_by_index_works() {
     let db = test_card_db();
     let mut engine = GameEngine::new(&db);
-    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     // EndTurn is index 255
     let result = engine.apply_action_by_index(255);
@@ -99,7 +99,7 @@ fn test_apply_action_by_index_works() {
 fn test_apply_action_by_index_invalid() {
     let db = test_card_db();
     let mut engine = GameEngine::new(&db);
-    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     // An attack action that's not legal (no creatures on board)
     // Index 50 is Attack(0, 0)
@@ -111,7 +111,7 @@ fn test_apply_action_by_index_invalid() {
 fn test_fork_creates_independent_game() {
     let db = test_card_db();
     let mut engine = GameEngine::new(&db);
-    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     // Fork the engine
     let mut forked = engine.fork();
@@ -130,7 +130,7 @@ fn test_fork_creates_independent_game() {
 fn test_reward_values_correct_for_win_loss() {
     let db = test_card_db();
     let mut engine = GameEngine::new(&db);
-    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     // Game ongoing - both players should get 0 reward
     assert_eq!(engine.get_reward(PlayerId::PLAYER_ONE), 0.0);
@@ -149,7 +149,7 @@ fn test_reward_values_correct_for_win_loss() {
 fn test_reward_for_draw() {
     let db = test_card_db();
     let mut engine = GameEngine::new(&db);
-    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     // Manually set game result to draw
     engine.state.result = Some(GameResult::Draw);
@@ -163,7 +163,7 @@ fn test_reward_for_draw() {
 fn test_current_player_and_turn_number() {
     let db = test_card_db();
     let mut engine = GameEngine::new(&db);
-    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     assert_eq!(engine.current_player(), PlayerId::PLAYER_ONE);
     assert_eq!(engine.turn_number(), 1);
@@ -178,7 +178,7 @@ fn test_current_player_and_turn_number() {
 fn test_is_game_over() {
     let db = test_card_db();
     let mut engine = GameEngine::new(&db);
-    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     assert!(!engine.is_game_over());
 
@@ -193,7 +193,7 @@ fn test_is_game_over() {
 fn test_game_environment_trait() {
     let db = test_card_db();
     let mut engine = GameEngine::new(&db);
-    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     // get_state
     let state = engine.get_state();
@@ -222,7 +222,7 @@ fn test_game_environment_trait() {
 fn test_legal_actions_consistent_with_mask() {
     let db = test_card_db();
     let mut engine = GameEngine::new(&db);
-    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(simple_deck(), simple_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     let actions = engine.get_legal_actions();
     let mask = engine.get_legal_action_mask();

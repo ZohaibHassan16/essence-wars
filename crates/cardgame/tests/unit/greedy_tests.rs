@@ -39,7 +39,7 @@ fn test_state_evaluation() {
 
     // Create a simple game state
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     let score = bot.evaluate_state(&engine.state, PlayerId::PLAYER_ONE);
 
@@ -53,7 +53,7 @@ fn test_action_evaluation() {
     let bot = GreedyBot::new(&card_db, 42);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     // EndTurn should have a valid score
     let score = bot.evaluate_action(&engine, Action::EndTurn);
@@ -67,7 +67,7 @@ fn test_greedy_vs_random_game() {
     // Run multiple games and verify GreedyBot doesn't crash
     for seed in 0..5 {
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
 
         let mut greedy = GreedyBot::new(&card_db, seed);
 

@@ -69,7 +69,7 @@ fn test_mcts_search_returns_valid_action() {
     let mut bot = MctsBot::with_config(&card_db, config, 42);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     let action = bot.search(&engine);
     let legal = engine.get_legal_actions();
@@ -85,7 +85,7 @@ fn test_mcts_completes_game() {
     let mut bot = MctsBot::with_config(&card_db, config, 42);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     let mut actions = 0;
     while !engine.is_game_over() && actions < 200 {
@@ -110,7 +110,7 @@ fn test_mcts_parallel_search() {
     let mut bot = MctsBot::with_config(&card_db, config, 42);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     let action = bot.search(&engine);
     let legal = engine.get_legal_actions();
@@ -145,7 +145,7 @@ fn test_mcts_leaf_parallel_search() {
     let mut bot = MctsBot::with_config(&card_db, config, 42);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     let action = bot.search(&engine);
     let legal = engine.get_legal_actions();
@@ -183,7 +183,7 @@ fn test_mcts_select_action_with_engine_trait_method() {
     let mut bot = MctsBot::with_config(&card_db, MctsConfig::fast(), 42);
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(test_deck(), test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     // Call through the trait method (as GameRunner does)
     let action = bot.select_action_with_engine(&engine);

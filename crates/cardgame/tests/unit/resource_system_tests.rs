@@ -163,7 +163,7 @@ fn test_essence_starts_at_zero() {
 fn test_first_turn_gives_one_essence() {
     let card_db = resource_test_db();
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // After first turn starts (P1's turn), P1 should have 1 essence
     assert_eq!(engine.state.players[0].max_essence, 1);
@@ -179,7 +179,7 @@ fn test_first_turn_gives_one_essence() {
 fn test_essence_grows_each_turn() {
     let card_db = resource_test_db();
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Turn 1: P1 has 1 essence
     assert_eq!(engine.state.players[0].max_essence, 1);
@@ -206,7 +206,7 @@ fn test_essence_grows_each_turn() {
 fn test_essence_caps_at_max() {
     let card_db = resource_test_db();
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Simulate many turns to reach max essence
     for _ in 0..25 {
@@ -228,7 +228,7 @@ fn test_essence_caps_at_max() {
 fn test_essence_refills_each_turn() {
     let card_db = resource_test_db();
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Advance to turn where we have 3 essence
     for _ in 0..4 {
@@ -279,7 +279,7 @@ fn test_ap_per_turn_is_three() {
 fn test_ap_given_each_turn() {
     let card_db = resource_test_db();
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // P1 should have 3 AP on first turn
     assert_eq!(engine.state.players[0].action_points, 3);
@@ -297,7 +297,7 @@ fn test_ap_given_each_turn() {
 fn test_action_costs_one_ap() {
     let card_db = resource_test_db();
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Give player enough essence
     engine.state.players[0].max_essence = 10;
@@ -329,7 +329,7 @@ fn test_action_costs_one_ap() {
 fn test_cannot_act_with_zero_ap() {
     let card_db = resource_test_db();
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Give player enough essence but 0 AP
     engine.state.players[0].max_essence = 10;
@@ -356,7 +356,7 @@ fn test_cannot_act_with_zero_ap() {
 fn test_card_cost_deducts_from_essence() {
     let card_db = resource_test_db();
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Set up resources
     engine.state.players[0].max_essence = 10;
@@ -382,7 +382,7 @@ fn test_card_cost_deducts_from_essence() {
 fn test_cannot_play_without_enough_essence() {
     let card_db = resource_test_db();
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Set up: 3 AP but only 1 essence
     engine.state.players[0].max_essence = 1;
@@ -406,7 +406,7 @@ fn test_cannot_play_without_enough_essence() {
 fn test_can_play_with_exact_essence() {
     let card_db = resource_test_db();
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Set up: exactly 2 essence for a cost-2 card
     engine.state.players[0].max_essence = 2;
@@ -431,7 +431,7 @@ fn test_can_play_with_exact_essence() {
 fn test_can_play_multiple_cards_if_resources_allow() {
     let card_db = resource_test_db();
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Set up: 3 AP and 5 essence
     engine.state.players[0].max_essence = 5;
@@ -462,7 +462,7 @@ fn test_can_play_multiple_cards_if_resources_allow() {
 fn test_ap_limits_actions_even_with_essence() {
     let card_db = resource_test_db();
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Set up: only 2 AP but lots of essence
     engine.state.players[0].max_essence = 10;
@@ -561,7 +561,7 @@ fn test_legal_actions_with_mixed_costs() {
 fn test_full_turn_cycle_resources() {
     let card_db = resource_test_db();
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Turn 1: P1 has 1 essence, 3 AP
     assert_eq!(engine.state.players[0].current_essence, 1);
@@ -586,7 +586,7 @@ fn test_full_turn_cycle_resources() {
 fn test_high_cost_cards_playable_late_game() {
     let card_db = resource_test_db();
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Add a cost-5 card to P1's hand
     engine.state.players[0].hand.clear();
@@ -623,7 +623,7 @@ fn test_multiple_games_consistent_resources() {
     // Run 5 games with different seeds, verify resource consistency
     for seed in [1, 42, 100, 999, 12345] {
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(simple_test_deck(), simple_test_deck(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
 
         // Turn 1: P1 should always have 1 essence, 3 AP
         assert_eq!(engine.state.players[0].current_essence, 1, "Seed {}: P1 essence should be 1", seed);

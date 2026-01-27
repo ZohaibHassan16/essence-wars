@@ -135,6 +135,7 @@ struct Args {
 }
 
 fn main() {
+    env_logger::init();
     let args = Args::parse();
 
     // Create experiment directory with timestamp

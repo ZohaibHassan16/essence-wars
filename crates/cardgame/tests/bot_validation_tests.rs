@@ -410,7 +410,7 @@ fn test_edge_case_quick_lethal_vs_shield() {
     // Create a game and manually set up the edge case
     let mut engine = GameEngine::new(&card_db);
     let deck = arena_test_deck();
-    engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     // Find cards with specific keywords to create the scenario
     // For now, just verify we can run games that might encounter this
@@ -559,7 +559,7 @@ fn test_edge_case_guard_enforcement() {
     // Create game engine to check legal actions
     let mut engine = GameEngine::new(&card_db);
     let deck = arena_test_deck();
-    engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 99000, GameMode::default());
+    engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 99000, GameMode::default()).unwrap();
 
     // Play until we have creatures on board
     let mut guard_scenarios_checked = 0;

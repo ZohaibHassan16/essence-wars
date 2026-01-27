@@ -35,7 +35,7 @@ fn bench_random_game(c: &mut Criterion) {
     c.bench_function("random_game", |b| {
         b.iter(|| {
             let mut engine = GameEngine::new(&card_db);
-            engine.start_game(deck, deck, 42);
+            engine.start_game(deck, deck, 42).unwrap();
 
             let mut random1 = RandomBot::new(42);
             let mut random2 = RandomBot::new(43);
@@ -71,7 +71,7 @@ fn bench_greedy_game(c: &mut Criterion) {
     c.bench_function("greedy_game", |b| {
         b.iter(|| {
             let mut engine = GameEngine::new(&card_db);
-            engine.start_game(deck, deck, 42);
+            engine.start_game(deck, deck, 42).unwrap();
 
             let mut greedy1 = GreedyBot::new(&card_db, 42);
             let mut greedy2 = GreedyBot::new(&card_db, 43);
@@ -101,7 +101,7 @@ fn bench_state_tensor(c: &mut Criterion) {
         .expect("Deck should exist");
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(deck, deck, 42);
+    engine.start_game(deck, deck, 42).unwrap();
 
     // Play a few turns to get a more complex state
     let mut random = RandomBot::new(42);
@@ -130,7 +130,7 @@ fn bench_legal_actions(c: &mut Criterion) {
         .expect("Deck should exist");
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(deck, deck, 42);
+    engine.start_game(deck, deck, 42).unwrap();
 
     // Play a few turns to get a more complex state
     let mut random = RandomBot::new(42);
@@ -159,7 +159,7 @@ fn bench_engine_fork(c: &mut Criterion) {
         .expect("Deck should exist");
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(deck, deck, 42);
+    engine.start_game(deck, deck, 42).unwrap();
 
     // Play a few turns to get a more complex state
     let mut random = RandomBot::new(42);
@@ -186,7 +186,7 @@ fn bench_mcts_simulations(c: &mut Criterion) {
         .expect("Deck should exist");
 
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game(deck, deck, 42);
+    engine.start_game(deck, deck, 42).unwrap();
 
     // Play a few turns to get to an interesting decision point
     let mut random = RandomBot::new(42);
@@ -239,7 +239,7 @@ fn bench_games_per_second(c: &mut Criterion) {
         b.iter(|| {
             for seed in 0..10u64 {
                 let mut engine = GameEngine::new(&card_db);
-                engine.start_game(deck, deck, seed);
+                engine.start_game(deck, deck, seed).unwrap();
 
                 let mut random1 = RandomBot::new(seed);
                 let mut random2 = RandomBot::new(seed + 1000);

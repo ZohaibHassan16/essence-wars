@@ -31,7 +31,7 @@ fn trace_single_game_detailed() {
 
     // Create engine directly to observe state
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(deck1_cards.clone(), deck2_cards.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(deck1_cards.clone(), deck2_cards.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     let mut bot1 = GreedyBot::new(&card_db, 42);
     let mut bot2 = GreedyBot::new(&card_db, 43);
@@ -175,7 +175,7 @@ fn check_vampire_lord_in_starting_hands() {
 
     for seed in 0..100 {
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game_raw(deck1_cards.clone(), deck2_cards.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck1_cards.clone(), deck2_cards.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
 
         // Check P1's starting hand
         let has_lifesteal = engine.state.players[0].hand.iter()

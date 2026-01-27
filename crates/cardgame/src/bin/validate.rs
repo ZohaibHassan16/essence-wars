@@ -93,6 +93,7 @@ struct Args {
 }
 
 fn main() {
+    env_logger::init();
     let args = Args::parse();
 
     // Handle deprecated --interactive flag

@@ -27,7 +27,7 @@ fn test_complete_game_simulation() {
     let deck2 = valid_yaml_deck();
 
     // Start game with seed
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
     // Verify initial state
     assert_eq!(engine.turn_number(), 1);
@@ -65,7 +65,7 @@ fn test_neural_network_interface() {
 
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Get state tensor
     let tensor = engine.get_state_tensor();
@@ -118,7 +118,7 @@ fn test_mcts_tree_search_scenario() {
 
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 99, GameMode::default());
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 99, GameMode::default()).unwrap();
 
     // Save initial state
     let initial_turn = engine.turn_number();
@@ -178,7 +178,7 @@ fn test_game_determinism() {
         let mut engine = GameEngine::new(&card_db);
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
-        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default());
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
         // Play deterministically (always first action)
         let mut actions_taken = Vec::new();
@@ -206,7 +206,7 @@ fn test_different_seeds_different_games() {
         let mut engine = GameEngine::new(&card_db);
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
-        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
 
         // Record initial hands (which depend on shuffle)
         let p1_hand: Vec<CardId> = engine.state.players[0].hand.iter()
@@ -230,7 +230,7 @@ fn test_multiple_games_no_panics() {
         let mut engine = GameEngine::new(&card_db);
         let deck1 = valid_yaml_deck();
         let deck2 = valid_yaml_deck();
-        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
 
         let mut action_count = 0;
         while !engine.is_game_over() && action_count < 300 {
@@ -262,7 +262,7 @@ fn test_rewards_during_gameplay() {
 
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 77777, GameMode::default());
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 77777, GameMode::default()).unwrap();
 
     // During gameplay, both rewards should be 0
     let mut action_count = 0;
@@ -317,7 +317,7 @@ fn test_tensor_validity_throughout_game() {
 
     let deck1 = valid_yaml_deck();
     let deck2 = valid_yaml_deck();
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 54321, GameMode::default());
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 54321, GameMode::default()).unwrap();
 
     let mut action_count = 0;
     while !engine.is_game_over() && action_count < 100 {
@@ -358,7 +358,7 @@ fn test_keyword_combat_in_game() {
     let valid_ids = [1, 2, 3, 4, 5, 6, 7, 8, 11, 12, 13, 15];
     let deck1: Vec<CardId> = (0..20).map(|i| CardId(valid_ids[i % valid_ids.len()] as u16)).collect();
     let deck2: Vec<CardId> = (0..20).map(|i| CardId(valid_ids[i % valid_ids.len()] as u16)).collect();
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 88888, GameMode::default());
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 88888, GameMode::default()).unwrap();
 
     // Play for a bit to build up a board
     let mut action_count = 0;

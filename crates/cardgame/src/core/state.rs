@@ -208,7 +208,18 @@ pub enum GameResult {
     Draw,
 }
 
-/// Complete game state - everything needed to continue a game
+/// Complete game state - everything needed to continue a game.
+///
+/// The `GameState` struct is designed for efficient cloning, which is critical for
+/// MCTS tree search. It uses stack-allocated `ArrayVec` collections for all variable-size
+/// data (creatures, supports, hands, decks) to minimize heap allocations.
+///
+/// # Structure
+/// - Two `PlayerState` instances (one per player)
+/// - Turn and phase tracking
+/// - Random number generator state (for deterministic replay)
+/// - Optional game result (set when the game ends)
+/// - Commander IDs for each player
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GameState {
     pub players: [PlayerState; 2],

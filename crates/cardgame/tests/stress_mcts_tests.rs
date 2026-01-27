@@ -155,7 +155,7 @@ fn run_bot_game(
 ) -> Option<PlayerId> {
     let mut engine = GameEngine::new(card_db);
     let deck = arena_test_deck();
-    engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+    engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
 
     let mut action_count = 0;
     let max_actions = 500;
@@ -427,7 +427,7 @@ fn stress_test_mcts_fork_integrity() {
     for seed in 0..NUM_GAMES {
         let mut engine = GameEngine::new(&card_db);
         let deck = arena_test_deck();
-        engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck.clone(), deck, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
 
         let mut mcts_bot = MctsBot::with_config(&card_db, mcts_config(100), seed);
 

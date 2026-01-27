@@ -77,7 +77,7 @@ fn test_no_creatures_survive_with_zero_health() {
         let deck2 = valid_yaml_deck();
         
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
         
         // Play 50 actions checking state after each
         for _ in 0..50 {
@@ -118,7 +118,7 @@ fn test_all_decks_playable_without_crashes() {
         let deck2 = valid_yaml_deck();
         
         let mut engine = GameEngine::new(&card_db);
-        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default());
+        engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
         
         // Play 20 actions
         for _ in 0..20 {
@@ -185,7 +185,7 @@ fn test_weaken_card_exists_and_is_playable() {
     let deck2 = valid_yaml_deck();
     
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default());
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 42, GameMode::default()).unwrap();
 
     // Play 30 actions to increase chance of seeing Weaken
     for _ in 0..30 {
@@ -222,7 +222,7 @@ fn test_vampiric_cards_with_health_zero_buffs() {
     let deck2 = valid_yaml_deck();
     
     let mut engine = GameEngine::new(&card_db);
-    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 99999, GameMode::default());
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 99999, GameMode::default()).unwrap();
 
     // Play 40 actions to increase chance of seeing vampiric cards
     for _ in 0..40 {

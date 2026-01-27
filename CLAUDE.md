@@ -39,6 +39,21 @@ cargo run --release --bin diagnose -- 200
 
 # Benchmarks
 cargo bench -p cardgame
+
+# Enable logging (optional)
+RUST_LOG=info cargo run --release --bin arena -- --bot1 greedy --bot2 random --games 10
+RUST_LOG=debug cargo run --release --bin validate -- --games 10  # More verbose
+```
+
+## Logging
+
+The library uses `log` crate for diagnostic messages (weight loading, errors). CLIs initialize `env_logger` automatically.
+
+```bash
+# Log levels: error, warn, info, debug, trace
+RUST_LOG=info cargo run --release --bin arena -- ...    # See weight loading info
+RUST_LOG=warn cargo run --release --bin validate -- ... # Only warnings/errors
+RUST_LOG=debug cargo run --release --bin tune -- ...    # Verbose debugging
 ```
 
 ## Project Structure
