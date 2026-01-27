@@ -548,7 +548,7 @@ fn process_combat_deaths(
     use crate::core::engine::collect_commander_kill_effects;
 
     if result.defender_died {
-        // Trigger commander OnKill effects (e.g., Shadow Emperor Kael)
+        // Trigger commander OnKill effects
         for (effect, source) in collect_commander_kill_effects(state, attacker_player, card_db) {
             effect_queue.push(effect, source);
         }

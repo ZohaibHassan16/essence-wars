@@ -961,18 +961,18 @@ commanders:
 
 | ID | Name | Faction | Ability Type | Ability |
 |----|------|---------|--------------|---------|
-| 1056 | The High Artificer | Argentum | Triggered | StartOfTurn: Summon 1/1 Brass Cog |
-| 1057 | The Sanctum Healer | Argentum | Passive | Creatures have Regenerate |
-| 1058 | Siege Marshal Vex | Argentum | Passive | Creatures have +1 Attack |
-| 1059 | The Grand Architect | Argentum | Passive | Creatures have Fortify |
-| 2060 | The Broodmother | Symbiote | Triggered | OnCreaturePlayed (Rush): Summon 1/1 Rush Broodling |
-| 2061 | Plague Sovereign | Symbiote | Triggered | OnAllyDeath: 1 damage to enemy commander |
-| 2062 | Alpha of the Hunt | Symbiote | Passive | Creatures have +1 Attack |
-| 2063 | The Eternal Grove | Symbiote | Passive | Creatures have Regenerate |
-| 3055 | The Blood Sovereign | Obsidion | Passive | Creatures have Lifesteal |
-| 3056 | Shadow Emperor Kael | Obsidion | Triggered | OnEnemyDeath: Draw a card |
-| 3057 | The Shadow Weaver | Obsidion | Passive | Creatures have Stealth |
-| 3058 | Void Archon | Obsidion | Passive | Creatures have Quick |
+| 5000 | The High Artificer | Argentum | Triggered | StartOfTurn: Summon 2/2 Brass Cog |
+| 5001 | The Sanctum Healer | Argentum | Passive | Creatures have Ward and +0/+2 |
+| 5002 | Siege Marshal Vex | Argentum | Passive | Creatures have +2 Attack |
+| 5003 | The Grand Architect | Argentum | Passive | Creatures have Fortify and +0/+2 |
+| 5004 | The Broodmother | Symbiote | Passive | All creatures have Rush |
+| 5005 | Plague Sovereign | Symbiote | Triggered | OnAllyDeath: 2 damage to enemy commander |
+| 5006 | Alpha of the Hunt | Symbiote | Triggered | OnAttack: Give all creatures +1/+0 |
+| 5007 | The Eternal Grove | Symbiote | Triggered | StartOfTurn: Give all creatures +1/+1 |
+| 5008 | The Blood Sovereign | Obsidion | Passive | Creatures have Lifesteal and +0/+1 |
+| 5009 | The Deathmaster | Obsidion | Passive | Creatures with Lethal have Quick |
+| 5010 | The Shadow Weaver | Obsidion | Passive | Creatures have Stealth |
+| 5011 | Void Archon | Obsidion | Passive | Creatures have Quick |
 
 ---
 

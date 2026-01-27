@@ -74,8 +74,8 @@ class RunningMeanStd:
 
 # Faction to deck mapping
 FACTION_DECKS: dict[str, list[str]] = {
-    "argentum": ["architect_fortify", "artificer_tokens", "colossus_wall", "vex_piercing"],
-    "obsidion": ["archon_burst", "kael_assassin", "shadow_weaver", "sovereign_lifesteal"],
+    "argentum": ["architect_fortify", "artificer_tokens", "sanctum_healer", "vex_piercing"],
+    "obsidion": ["archon_burst", "deathmaster_assassin", "shadow_weaver", "sovereign_lifesteal"],
     "symbiote": ["alpha_frenzy", "broodmother_swarm", "grove_regenerate", "plague_volatile"],
 }
 

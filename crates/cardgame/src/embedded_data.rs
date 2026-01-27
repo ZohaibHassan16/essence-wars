@@ -30,7 +30,7 @@ const SYMBIOTE_PLAGUE_TOML: &str = include_str!("../../../data/decks/symbiote/pl
 // Obsidion decks
 const OBSIDION_SHADOW_WEAVER_TOML: &str = include_str!("../../../data/decks/obsidion/shadow_weaver.toml");
 const OBSIDION_SOVEREIGN_TOML: &str = include_str!("../../../data/decks/obsidion/sovereign_lifesteal.toml");
-const OBSIDION_KAEL_TOML: &str = include_str!("../../../data/decks/obsidion/kael_assassin.toml");
+const OBSIDION_DEATHMASTER_TOML: &str = include_str!("../../../data/decks/obsidion/deathmaster_assassin.toml");
 const OBSIDION_ARCHON_TOML: &str = include_str!("../../../data/decks/obsidion/archon_burst.toml");
 
 /// Wrapper struct for the faction card file format.
@@ -105,7 +105,7 @@ pub fn load_embedded_decks() -> Result<DeckRegistry, String> {
         // Obsidion
         ("shadow_weaver", OBSIDION_SHADOW_WEAVER_TOML),
         ("sovereign_lifesteal", OBSIDION_SOVEREIGN_TOML),
-        ("kael_assassin", OBSIDION_KAEL_TOML),
+        ("deathmaster_assassin", OBSIDION_DEATHMASTER_TOML),
         ("archon_burst", OBSIDION_ARCHON_TOML),
     ];
 
@@ -150,7 +150,7 @@ pub fn get_embedded_deck_ids() -> &'static [&'static str] {
         // Obsidion
         "shadow_weaver",
         "sovereign_lifesteal",
-        "kael_assassin",
+        "deathmaster_assassin",
         "archon_burst",
     ]
 }

@@ -147,7 +147,7 @@ fn trigger_commander_death_effects(
         effect_queue.push(effect, source);
     }
 
-    // Trigger OnAnyDeath commander triggers for both players (e.g., Shadow Emperor Kael)
+    // Trigger OnAnyDeath commander triggers for both players
     for (effect, source) in collect_commander_any_death_effects(state, player, card_db) {
         effect_queue.push(effect, source);
     }

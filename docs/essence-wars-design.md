@@ -1,7 +1,7 @@
 # ESSENCE WARS
 ## A Strategic Card Game Design Document
 
-**Version:** 1.3 (New Horizons Edition)
+**Version:** 1.6 (New Horizons Edition)
 **Last Updated:** January 2026
 
 ---
@@ -26,9 +26,8 @@
 16. [Card Database](#16-card-database)
 17. [Commander Decks](#17-commander-decks)
 18. [Faction System](#18-faction-system)
-19. [AI Agent Architecture](#19-ai-agent-architecture)
-20. [Glossary](#20-glossary)
-21. [Quick Reference](#21-quick-reference)
+19. [Glossary](#19-glossary)
+20. [Quick Reference](#20-quick-reference)
 
 ---
 
@@ -156,19 +155,19 @@ The New Horizons Edition contains **300 cards** organized across three factions 
 | Resource | Player 1 | Player 2 | Notes |
 |----------|----------|----------|-------|
 | Life | 30 | 30 | |
-| Maximum Essence | 0 (→1 T1) | 1 (→2 T1) | **FPA Compensation** |
+| Maximum Essence | 0 (→1 T1) | 0 (→1 T1) | Both start equal |
 | Current Essence | 0 | 0 | Refills to max each turn |
 | Action Points | 0 | 0 | Becomes 3 on turn 1 |
-| Hand Size | 4 cards | 4 cards | |
+| Hand Size | 4 cards | 6 cards | **FPA Compensation** |
 
 ### First Player Advantage (FPA) Compensation
 
 The player going first has a natural advantage due to earlier board development. To balance this:
 
-- **Player 2 starts with +1 Maximum Essence** (2 essence on Turn 1 vs P1's 1 essence)
-- This allows P2 to deploy a stronger creature or two 1-cost creatures on their first turn
-- Testing shows this brings cross-faction win rates into the 45-55% target range
-- The +1 essence advantage narrows over time as both players approach the 10 essence cap
+- **Player 2 draws 2 bonus cards** (6 cards vs P1's 4 cards)
+- This gives P2 more options and flexibility to respond to P1's early plays
+- Testing shows this brings win rates into the 45-55% target range
+- The card advantage provides immediate flexibility without affecting the essence curve
 
 ---
 
@@ -330,14 +329,16 @@ During the Main Phase, you may take actions by spending Action Points (AP) and E
 | Play a Creature | 1 AP | Card's Essence cost |
 | Play a Spell | 1 AP | Card's Essence cost |
 | Play a Support | 1 AP | Card's Essence cost |
-| Attack with a Creature | 1 AP | None |
+| Attack with a Creature | **0 AP** | None (free action) |
 | End Turn | 0 AP | None |
+
+**Key Rule:** Attacks are free! Only playing cards costs AP. This allows aggressive plays where you attack with all your creatures AND play cards.
 
 ### Action Order
 You may take actions in any order. For example:
-- Play a creature, attack with a different creature, play a spell
-- Attack, attack, play a creature
-- Play three cards (if you have the Essence)
+- Play a creature, attack with all your creatures, play another creature
+- Attack, attack, attack, play a card
+- Play three cards (if you have the Essence), then attack with existing creatures
 
 ### Ending Your Turn
 You may end your turn at any time, even if you have remaining Action Points. Say "End turn" or "Pass" to signal this.
@@ -359,8 +360,7 @@ Essence is the primary resource used to play cards. Unlike some other card games
 
 ## 7.2 Essence Generation
 
-- **Starting Essence (P1):** 0 Maximum / 0 Current → 1/1 after first turn start
-- **Starting Essence (P2):** 1 Maximum / 0 Current → 2/2 after first turn start *(FPA compensation)*
+- **Starting Essence:** 0 Maximum / 0 Current → 1/1 after first turn start (both players equal)
 - **Per Turn Gain:** +1 Maximum Essence (gained at the start of your turn)
 - **Maximum Cap:** 10 Essence
 - **Refill:** Current Essence refills to Maximum at the start of each turn
@@ -368,20 +368,18 @@ Essence is the primary resource used to play cards. Unlike some other card games
 
 ## 7.3 Essence Curve
 
-| Turn | P1 Max Essence | P2 Max Essence | Notes |
-|------|----------------|----------------|-------|
-| 1 | 1 | 2 | P2 has FPA compensation |
-| 2 | 2 | 3 | Gap narrows |
-| 3 | 3 | 4 | |
-| 4 | 4 | 5 | |
-| 5 | 5 | 6 | |
-| 6 | 6 | 7 | |
-| 7 | 7 | 8 | |
-| 8 | 8 | 9 | |
-| 9 | 9 | 10 | P2 caps first |
-| 10+ | 10 | 10 | Both capped, parity reached |
+| Turn | Max Essence | Notes |
+|------|-------------|-------|
+| 1 | 1 | Early game - cheap creatures |
+| 2 | 2 | |
+| 3 | 3 | Mid-game begins |
+| 4 | 4 | |
+| 5 | 5 | |
+| 6 | 6 | Late-game threshold |
+| 7-9 | 7-9 | |
+| 10+ | 10 | Capped |
 
-*Note: P2's essence advantage diminishes as both players approach the 10 essence cap. By turn 10, both players have equal maximum essence.*
+*Note: Both players follow the same essence curve. FPA compensation is via bonus cards, not essence (see Section 4.2).*
 
 ## 7.4 Design Rationale
 
@@ -411,9 +409,11 @@ Action Points (AP) limit how many things you can do each turn. This creates mean
 | Action | AP Cost | Essence Cost |
 |--------|---------|--------------|
 | Play any card | 1 AP | Card's essence cost |
-| Attack with a creature | 1 AP | None |
+| Attack with a creature | **0 AP** | None |
 | Commander's Insight | 0 AP | 4 Essence |
 | End turn early | 0 AP | None |
+
+**Note:** Attacks are free actions! This is a key design choice that enables aggressive board-wide attacks while still limiting card plays.
 
 ## 8.4 Commander's Insight (Catch-Up Mechanic)
 
@@ -443,15 +443,15 @@ Commander's Insight is a special action available in the late game to help strug
 
 ## 8.5 Strategic Implications
 
-With only 3 AP per turn, players must choose between:
-- Playing multiple cheap cards vs. one expensive card + an attack
-- Attacking with multiple creatures vs. developing their board
-- Saving AP (impossible) vs. using all actions efficiently
+With only 3 AP per turn (and free attacks), players must choose between:
+- Playing multiple cheap cards vs. one expensive card
+- Developing board vs. holding cards for later
+- AP is the limiting factor for card plays, not attacks
 
 **Example Turn Decisions:**
-- *Aggressive:* Attack, Attack, Attack (3 creatures attack)
-- *Developmental:* Play creature, Play creature, Attack
-- *Defensive:* Play creature with Guard, Play removal spell, hold position
+- *Aggressive:* Play a creature, attack with ALL your creatures (attacks are free!)
+- *Developmental:* Play creature, Play creature, Play creature, attack with existing creatures
+- *Defensive:* Play creature with Guard, Play removal spell, attack opportunistically
 
 ---
 
@@ -697,272 +697,100 @@ Actually, let me re-read. The enemy has creatures in Slots 1 and 3, not Slot 2.
 
 # 12. KEYWORDS
 
-Keywords are special abilities that modify how creatures behave. Each keyword has a specific, consistent effect.
+Keywords are special abilities that modify how creatures behave.
 
 ## 12.1 Combat Keywords
 
 ### RUSH
 **"This creature can attack the turn it is played."**
-
-- Rush creatures ignore Summoning Sickness
-- They can attack immediately after being played
-- Rush does not grant additional attacks; the creature still becomes Exhausted after attacking
-
-**Strategic Use:** Rush creatures provide immediate impact. Use them to remove threats or push damage when you need something to happen NOW.
+- Ignores Summoning Sickness
+- Does not grant additional attacks
 
 ### RANGED
-**"This creature can attack any enemy creature, regardless of lane position."**
-
-- Ranged creatures are not limited to adjacent lanes
-- A Ranged creature in Slot 1 can attack an enemy in Slot 5
-- Ranged creatures BYPASS Guard (they can ignore Guard creatures and attack other targets)
-- Face attack rules still apply: can only attack face if your direct lane is empty
-
-**Strategic Use:** Ranged creatures are precision tools. Use them to eliminate key threats that are protected by positioning or Guard creatures.
+**"This creature can attack any enemy creature. Does not take counter-attack damage."**
+- Can target any slot (not just adjacent lanes)
+- **Still respects Guard** — must attack Guard creatures if present
+- Does not take counter-attack damage in combat
 
 ### PIERCING
 **"When this creature kills an enemy creature, excess damage is dealt to the enemy player."**
-
-- Only triggers when the defending creature dies
-- Excess damage = Attacker's Attack minus Defender's remaining Health
-- Does not trigger if the defender survives
-
-**Example:**
-> Your 5/3 Piercing attacks enemy 2/2
-> - Enemy takes 5 damage, has 2 Health → Dies
-> - Excess damage: 5 - 2 = 3
-> - Enemy player takes 3 damage!
-
-**Strategic Use:** Piercing creatures punish chump-blocking. Even if the enemy throws creatures in front of your attacker, damage still gets through.
+- Excess = Attack minus Defender's remaining Health
+- Only triggers when defender dies
 
 ### GUARD
 **"Enemy creatures in adjacent lanes must attack this creature first."**
-
-- Guard only affects enemies that could attack this creature (within lane range)
-- If a Guard is in your attack range, you MUST attack it (cannot attack other creatures or face)
-- If multiple Guards are in range, you may choose which Guard to attack
-- Ranged creatures ignore Guard
-
-**Lane Protection Zones:**
-
-| Guard in Slot | Protects Against Enemies in Slots |
-|---------------|-----------------------------------|
-| 1 | 1, 2 |
-| 2 | 1, 2, 3 |
-| 3 | 2, 3, 4 (best coverage!) |
-| 4 | 3, 4, 5 |
-| 5 | 4, 5 |
-
-**Strategic Use:** Place Guard creatures in the center (Slot 3) for maximum protection. Use Guards to protect valuable creatures or your life total.
+- If a Guard is in range, you MUST attack it
+- Multiple Guards: attacker chooses which to attack
+- Slot 3 has best coverage (protects against slots 2, 3, 4)
 
 ## 12.2 Utility Keywords
 
 ### LIFESTEAL
-**"When this creature deals combat damage, heal your hero for that amount."**
-
-- Triggers on any combat damage (to creatures or face)
-- Heals for the full damage dealt, even if overkilling
-- Cannot heal above maximum life (30)
-
-**Example:**
-> Your 4/3 Lifesteal attacks and kills an enemy 2/2
-> - You deal 4 damage
-> - You heal for 4 life
-
-**Strategic Use:** Lifesteal creatures help you race. You deal damage while healing, making it hard for aggressive decks to keep up.
+**"When this creature deals combat damage, heal your commander for that amount."**
+- Triggers on any combat damage (creatures or face)
+- Cannot heal above 30 life
 
 ### LETHAL
 **"Any damage this creature deals to another creature destroys it."**
-
 - Works on any amount of damage (even 1)
 - Only affects creatures, not players
-- Triggers on combat damage
-- The creature still takes damage normally from the defender
-
-**Example:**
-> Your 1/1 Lethal attacks enemy 10/10
-> - Your creature deals 1 damage with Lethal → Enemy is destroyed!
-> - Enemy deals 10 damage → Your creature is destroyed
-> - Both die, but you traded a 1-cost for a 10-cost!
-
-**Strategic Use:** Lethal creatures are the great equalizers. A tiny Lethal creature threatens the biggest enemies. Use them to remove expensive threats efficiently.
+- Creature still takes counter-attack damage
 
 ### SHIELD
 **"The first time this creature would take damage, prevent that damage and remove Shield."**
-
-- Absorbs the first instance of damage completely (even 100 damage becomes 0)
-- After absorbing damage once, Shield is removed
-- Shield does not regenerate (unless granted again by an effect)
-- Works against combat damage AND spell damage
-
-**Example:**
-> Enemy 3/3 attacks your 2/2 Shield
-> - Your creature would take 3 damage
-> - Shield absorbs all 3 damage → Your creature takes 0 damage
-> - Shield is removed
-> - Your creature deals 2 damage to the attacker
-> - Result: Your creature survives at 2/2 (no Shield), enemy is at 3/1
-
-**Strategic Use:** Shield guarantees your creature survives at least one combat. Use it to protect key creatures or to win trades.
+- Blocks first damage instance completely
+- Works against combat AND spell damage
 
 ### QUICK
 **"This creature deals combat damage before creatures without Quick."**
-
-- Quick creatures strike first in combat
-- If the Quick creature kills the defender, the defender deals no damage back
-- If both creatures have Quick, damage is simultaneous
-- Only affects creature combat, not face damage
-
-**Example:**
-> Your 3/2 Quick attacks enemy 4/4
-> - Your Quick creature deals 3 damage first → Enemy becomes 4/1
-> - Enemy survives, deals 4 damage back → Your creature becomes 3/-2 → Dies
-> - Result: You died, but dealt your damage first (didn't help here)
-
-**Better Example:**
-> Your 3/2 Quick attacks enemy 2/2
-> - Your Quick creature deals 3 damage first → Enemy becomes 2/-1 → Dies
-> - Enemy is dead, deals no damage back
-> - Result: Your creature survives at 3/2!
-
-**Strategic Use:** Quick lets you trade up efficiently. A Quick creature can kill something and survive when it normally would have died in mutual combat.
+- If Quick creature kills defender, no counter-attack
+- Both Quick: simultaneous damage
 
 ### EPHEMERAL
 **"This creature is destroyed at the end of your turn."**
-
-- Triggers at the end of the owner's turn, not immediately
-- Death triggers (OnDeath effects) still fire normally
-- Can still attack if it has Rush
-- Excellent for burst damage or one-time effects
-
-**Example:**
-> You play a 3/3 Rush + Ephemeral creature for only 1 mana
-> - It attacks immediately for 3 damage
-> - At end of turn, it dies
-> - Great value for burst damage, no board presence next turn
-
-**Strategic Use:** Ephemeral creatures trade lasting board presence for immediate impact. Use them for surprise attacks or when you need to close out a game.
+- Death triggers still fire normally
+- Often paired with Rush for burst damage
 
 ### REGENERATE
 **"At the start of your turn, this creature heals 2 health."**
-
-- Triggers at the start of the owner's turn
 - Cannot heal above maximum health
-- Makes the creature very hard to remove through gradual damage
-- Does not trigger if the creature is already at full health
-
-**Example:**
-> Your 2/4 Regenerate takes 3 damage, is now at 2/1
-> - At start of your next turn: heals 2, becomes 2/3
-> - Survives another attack!
-
-**Strategic Use:** Regenerate creatures are excellent for attrition battles. They force opponents to either kill them in one hit or waste resources on repeated attacks.
 
 ### STEALTH
-**"This creature cannot be targeted by enemy attacks or abilities. Stealth is removed when this creature attacks."**
-
-- Enemy creatures cannot attack this creature
-- Enemy targeted spells/abilities cannot target this creature
-- YOUR OWN spells/abilities CAN still target it (friendly targeting allowed)
-- Stealth is removed (broken) when the creature declares an attack
-- Stealth masks Guard (a stealthed Guard cannot force enemies to attack it)
-
-**Example:**
-> You play a 3/2 Stealth creature
-> - Enemy cannot attack it directly
-> - Enemy cannot use "Deal 2 damage to target creature" on it
-> - On your next turn, you attack → Stealth is removed
-> - Now the creature can be targeted normally
-
-**Strategic Use:** Stealth creatures guarantee at least one attack. Use them to set up powerful attacks or to protect key creatures until you're ready to strike.
+**"This creature cannot be targeted by enemy attacks or abilities. Removed when attacking."**
+- Enemy cannot attack or target with spells
+- YOUR spells can still target it
+- Stealth masks Guard
 
 ### CHARGE
 **"This creature deals +2 attack damage when attacking."**
-
-- Bonus applies when this creature attacks (not when defending)
-- The bonus damage applies to both creature and face attacks
-- Works with Piercing (excess damage includes the Charge bonus)
-- Does not increase the creature's displayed Attack stat
-
-**Example:**
-> Your 2/3 Charge attacks an enemy creature
-> - Base attack: 2
-> - Charge bonus: +2
-> - Total damage dealt: 4
-
-**Strategic Use:** Charge creatures hit harder than their stats suggest. They're excellent for trading up or pushing face damage.
+- Only when attacking (not defending)
+- Works with Piercing
 
 ### FRENZY
-**"This creature gains +1 attack after each attack it makes this turn."**
-
-- Stacking bonus that resets at end of turn
-- Works with Quick (creature can attack twice, gaining +1 after first attack)
-- Pairs well with effects that ready creatures
-- Primarily a Symbiote keyword
-
-**Example:**
-> Your 3/4 Frenzy creature attacks twice (via Quick or readying effect)
-> - First attack: deals 3 damage
-> - Frenzy triggers: gains +1 attack (now 4/4)
-> - Second attack: deals 4 damage
-
-**Strategic Use:** Frenzy creatures reward multiple attacks per turn. Build around effects that ready creatures or grant Quick.
+**"This creature gains +1 attack after each attack this turn."**
+- Resets at end of turn
+- Pairs with readying effects
 
 ### VOLATILE
 **"When this creature dies, deal 2 damage to all enemy creatures."**
-
-- Triggers on death from any source (combat, spells, effects)
-- Damage is dealt before the creature leaves the board
-- Does not damage the enemy player, only creatures
-- Can chain with other Volatile creatures dying
-- Primarily a Symbiote keyword
-
-**Example:**
-> Your 2/2 Volatile creature dies in combat
-> - Death trigger: deals 2 damage to ALL enemy creatures
-> - Enemy board of 3/1, 2/1, 4/3 becomes 3/-1 (dead), 2/-1 (dead), 4/1
-
-**Strategic Use:** Volatile creatures punish board-wide strategies. Even when killed, they take enemies down with them.
+- Triggers on death from any source
+- Does not damage enemy player
 
 ### FORTIFY
 **"This creature takes 1 less damage from all sources (minimum 1)."**
-
-- Reduces ALL incoming damage by 1
-- Minimum damage is 1 (cannot reduce damage to 0)
-- Stacks with other damage reduction effects
-- Primarily an Argentum keyword
-
-**Example:**
-> Your 2/5 Fortify creature is attacked by a 3/3
-> - Normal damage would be 3
-> - Fortify reduces by 1 → takes 2 damage
-> - Your creature survives at 2/3
-
-**Strategic Use:** Fortify creatures are excellent tanks. They survive multiple small attacks and trade favorably against most threats.
+- Cannot reduce damage to 0
 
 ### WARD
 **"The first spell or ability that would target this creature has no effect. Ward is then removed."**
-
-- Only blocks the FIRST targeted effect
-- Does not block untargeted effects (AoE damage)
-- Does not block combat damage
-- Similar to Shield but for spells/abilities instead of damage
-- Primarily an Obsidion keyword (for protecting key pieces)
-
-**Example:**
-> Your 4/4 Ward creature is targeted by "Deal 5 damage"
-> - Ward absorbs the spell → no damage dealt
-> - Ward is removed
-> - Next spell will affect the creature normally
-
-**Strategic Use:** Ward protects valuable creatures from removal. Force opponents to waste a spell before using their real removal.
+- Does not block AoE or combat damage
+- Similar to Shield but for targeted effects
 
 ## 12.3 Keyword Summary Table
 
 | Keyword | Effect | Stat Cost* | Primary Faction |
 |---------|--------|------------|-----------------|
 | Rush | Attack immediately when played | ~1.0 stats | Symbiote |
-| Ranged | Attack any enemy creature, bypass Guard | ~1.0-1.5 stats | Free-Walker |
+| Ranged | Attack any slot, no counter-attack | ~1.0-1.5 stats | Free-Walker |
 | Piercing | Excess damage to face when killing | ~0.5-1.0 stats | Argentum |
 | Guard | Adjacent enemies must attack this | ~0.5 stats | Argentum |
 | Lifesteal | Heal when dealing combat damage | ~1.0-1.5 stats | Obsidion |
@@ -984,167 +812,34 @@ Keywords are special abilities that modify how creatures behave. Each keyword ha
 
 # 13. KEYWORD INTERACTIONS
 
-When multiple keywords interact, follow these rules:
+## 13.1 Key Interactions
 
-## 13.1 Ranged + Guard
+| Combination | Result |
+|-------------|--------|
+| **Ranged + Guard** | Ranged does NOT bypass Guard. Must still attack Guards. Benefit: global range + no counter-attack |
+| **Quick + Lethal** | **COMBO!** Strike first, kill with any damage, survive. A 1/1 can kill a 10/10 |
+| **Piercing + Lethal** | No synergy. Piercing calculates from actual health, not Lethal's instant kill |
+| **Charge + Piercing** | **COMBO!** +2 Charge damage counts toward Piercing excess |
+| **Ephemeral + Rush** | **COMBO!** Attack immediately, die anyway. Allows aggressive stats at low cost |
+| **Ephemeral + Volatile** | **COMBO!** Guaranteed 2 AoE damage at end of turn |
+| **Fortify + Guard** | **COMBO!** Extremely durable wall |
+| **Fortify + Regenerate** | **COMBO!** Takes less damage AND heals back |
+| **Stealth + Guard** | Stealth MASKS Guard. Guard inactive until Stealth breaks |
+| **Stealth + Ward** | **COMBO!** Protected from targeting, then spell immunity |
 
-**Ranged BYPASSES Guard.**
+## 13.2 Shield Blocks Keywords
 
-A Ranged creature can attack any enemy creature, even if Guard creatures are within range. This makes Ranged a direct counter to Guard-based defensive strategies.
+Shield prevents damage entirely, which affects:
 
-## 13.2 Quick + Lethal
+| Attacker Has | Result |
+|--------------|--------|
+| Lethal | Lethal doesn't trigger (no damage dealt) |
+| Piercing | No kill, no piercing |
+| Lifesteal | No damage, no healing |
 
-**EXTREMELY POWERFUL COMBINATION!**
+## 13.3 Quick + Shield
 
-A creature with both Quick and Lethal can:
-1. Strike first (Quick)
-2. Kill the defender with any damage (Lethal)
-3. The defender dies before dealing damage back
-4. Your creature survives!
-
-A 1/1 Quick+Lethal can kill a 10/10 and walk away unharmed.
-
-*Design Note: This combination should be rare and expensive.*
-
-## 13.3 Piercing + Lethal
-
-**Does NOT combo as strongly as you might think.**
-
-Piercing calculates excess damage based on the defender's actual Health, not the Lethal effect. 
-
-**Example:**
-> Your 2/1 Piercing+Lethal attacks enemy 8/8
-> - Lethal triggers: Enemy is destroyed
-> - Piercing check: Your Attack (2) - Enemy Health (8) = -6 → No piercing damage
-> - Result: Enemy dies but no face damage (Piercing doesn't benefit from Lethal)
-
-## 13.4 Shield Interactions
-
-Shield prevents damage, which affects several keywords:
-
-| Attacker Has | Result When Hitting Shield |
-|--------------|---------------------------|
-| Lethal | No damage dealt → Lethal doesn't trigger → Defender survives (without Shield) |
-| Piercing | No damage dealt → No kill → No piercing damage |
-| Lifesteal | No damage dealt → No healing |
-
-**Example:**
-> Your 1/1 Lethal attacks enemy 2/2 Shield
-> - Shield absorbs the 1 damage → 0 damage dealt
-> - Lethal requires damage to be dealt → Doesn't trigger
-> - Enemy survives at 2/2 (without Shield)
-> - Enemy deals 2 damage → Your creature dies
-
-## 13.5 Quick + Shield
-
-Quick creature attacks Shield creature:
-1. Quick deals damage first
-2. Shield absorbs the damage
-3. Shield is removed
-4. Defender survives, deals damage back (not blocked by Quick since they survived)
-
-## 13.6 Complete Interaction Matrix (Core 8 Keywords)
-
-```
-             │ Rush │Ranged│Pierce│Guard │LifeS │Lethal│Shield│Quick │
-─────────────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┼──────┤
-Rush         │  -   │  ✓   │  ✓   │  ✓   │  ✓   │  ✓   │  ✓   │  ✓   │
-Ranged       │  ✓   │  -   │  ✓   │BYPASS│  ✓   │  ✓   │  ✓   │  ✓   │
-Piercing     │  ✓   │  ✓   │  -   │  ✓   │  ✓   │  x   │  x   │  ✓   │
-Guard        │  ✓   │BYPSD │  ✓   │  -   │  ✓   │  ✓   │  ✓   │  ✓   │
-Lifesteal    │  ✓   │  ✓   │  ✓   │  ✓   │  -   │  ✓   │  x   │  ✓   │
-Lethal       │  ✓   │  ✓   │  x   │  ✓   │  ✓   │  -   │BLOCKED│COMBO!│
-Shield       │  ✓   │  ✓   │BLOCKS│  ✓   │BLOCKS│BLOCKS│  -   │  ✓   │
-Quick        │  ✓   │  ✓   │  ✓   │  ✓   │  ✓   │COMBO!│  ✓   │  -   │
-
-Legend:
-✓ = Works independently, no special interaction
-x = Does not combo effectively
-BYPASS/BYPSD = One keyword bypasses the other
-BLOCKS/BLOCKED = One keyword blocks/is blocked by the other
-COMBO! = Especially powerful combination
-```
-
-## 13.6.1 Extended Keyword Interactions
-
-### Frenzy Interactions
-
-| Keyword | Interaction |
-|---------|-------------|
-| Quick | **COMBO!** Quick + Frenzy can attack twice per turn if creature readies; second attack gets +1 |
-| Rush | Works independently; Frenzy creature can attack turn 1 but only once |
-| Lifesteal | Works well; each attack heals AND increases next attack |
-
-### Volatile Interactions
-
-| Keyword | Interaction |
-|---------|-------------|
-| Ephemeral | **COMBO!** Ephemeral dies at end of turn, triggering Volatile damage guaranteed |
-| Lethal | Works independently; Lethal kills attackers, Volatile punishes board-wide |
-| Shield | Volatile damage is blocked by Shield (one instance) |
-
-### Fortify Interactions
-
-| Keyword | Interaction |
-|---------|-------------|
-| Guard | **COMBO!** Fortify + Guard creates an extremely durable wall |
-| Regenerate | **COMBO!** Takes less damage AND heals; very hard to remove |
-| Lethal | Fortify does NOT reduce Lethal to 0; Lethal still kills |
-| Shield | Works independently; Shield blocks first hit entirely, Fortify reduces subsequent |
-
-### Ward Interactions
-
-| Keyword | Interaction |
-|---------|-------------|
-| Stealth | **COMBO!** Stealth prevents targeting until attack, Ward blocks first spell after |
-| Shield | Works independently; Ward blocks abilities, Shield blocks damage |
-| Guard | Works well; Ward protects your Guard from removal spells |
-
-## 13.7 Stealth + Guard
-
-**Stealth MASKS Guard.**
-
-A creature with both Stealth and Guard cannot be targeted by enemies while stealthed. The Guard keyword is effectively inactive until Stealth is broken (when the creature attacks).
-
-**Example:**
-> You play a creature with Stealth + Guard
-> - Enemies cannot target it (Stealth)
-> - Guard does NOT force enemies to attack it (masked by Stealth)
-> - When it attacks, Stealth breaks
-> - NOW Guard is active and enemies must attack it
-
-## 13.8 Ephemeral + Rush
-
-**POWERFUL BURST COMBO!**
-
-Ephemeral + Rush creatures can attack immediately and die at end of turn anyway. This allows for extremely aggressive stats at low cost, since the creature was going to die regardless.
-
-**Example:**
-> Ghost Wolf (1-cost 3/3 Rush + Ephemeral)
-> - Play for just 1 mana
-> - Attack immediately for 3 damage
-> - Dies at end of turn
-> - Incredible burst value!
-
-## 13.9 Charge + Piercing
-
-**ENHANCED PIERCING DAMAGE!**
-
-When a Charge creature kills a defender, the excess damage for Piercing includes the +2 Charge bonus.
-
-**Example:**
-> Your 3/3 Charge + Piercing attacks enemy 2/2
-> - Damage dealt: 3 + 2 (Charge) = 5
-> - Enemy has 2 health → Dies
-> - Piercing excess: 5 - 2 = 3 damage to face!
-
-## 13.10 Regenerate + Damage Trading
-
-**EXCELLENT FOR ATTRITION!**
-
-Regenerate creatures are very efficient in repeated small trades. They heal 2 HP at start of your turn, making them hard to remove through chip damage.
-
-**Counter Strategy:** Kill Regenerate creatures in one hit, or they'll keep coming back.
+When Quick creature attacks Shield creature: Quick deals damage → Shield absorbs → Defender survives → Defender hits back (Quick doesn't help since defender lived)
 
 ---
 
@@ -1170,11 +865,11 @@ This prevents stalemates where both players are at low life but unable to finish
 
 If the game reaches Turn 30 (meaning each player has taken 15 turns), the game ends immediately:
 - The player with higher life wins
-- If life totals are equal, the game is a draw
+- **If life totals are equal, Player 1 wins** (slight first-player advantage as tiebreaker)
 
 ## 14.4 Simultaneous Events
 
-If both players would win at the same time (e.g., both reduced to 0 life in the same combat), the game is a **draw**.
+If both players would reach 0 life in the same combat, the game is a **draw**.
 
 ## 14.5 Win Condition Summary
 
@@ -1182,160 +877,43 @@ If both players would win at the same time (e.g., both reduced to 0 life in the 
 |-----------|-------------|----------|
 | Life to Zero | Reduce opponent to 0 life | Checked immediately |
 | Victory Points | Deal 50 total damage | Checked immediately |
-| Turn Limit | Higher life after Turn 30 | End of Turn 30 |
-| Draw | Equal conditions | Fallback |
+| Turn Limit | Higher life after Turn 30; P1 wins ties | End of Turn 30 |
+| Draw | Both reach 0 life simultaneously | Only on mutual death |
 
 ---
 
 # 15. CARD ANATOMY
 
-## 15.1 Creature Card Layout
+## 15.1 Creature Cards
 
-```
-╔═════════════════════════════════════════════════════════════╗
-║                                                             ║
-║   CARD NAME                              ESSENCE COST       ║
-║   ───────────────────────────────────    ┌─────────────┐   ║
-║                                          │     💎      │   ║
-║                                          │     5       │   ║
-║                                          └─────────────┘   ║
-║   ┌───────────────────────────────────────────────────┐    ║
-║   │                                                   │    ║
-║   │                                                   │    ║
-║   │                                                   │    ║
-║   │                  [ARTWORK]                        │    ║
-║   │                                                   │    ║
-║   │                                                   │    ║
-║   │                                                   │    ║
-║   └───────────────────────────────────────────────────┘    ║
-║                                                             ║
-║   TYPE: Creature — Tag                                      ║
-║                                                             ║
-║   ┌─────────────────────────────────────────────────────┐  ║
-║   │                                                     │  ║
-║   │   [KEYWORDS]                                        │  ║
-║   │                                                     │  ║
-║   │   Ability text goes here. Describes what the        │  ║
-║   │   creature does when certain conditions are met.    │  ║
-║   │                                                     │  ║
-║   └─────────────────────────────────────────────────────┘  ║
-║                                                             ║
-║   ┌───────────┐                           ┌───────────┐    ║
-║   │  ATTACK   │                           │  HEALTH   │    ║
-║   │    ⚔️     │                           │    ❤️     │    ║
-║   │    4      │                           │    5      │    ║
-║   └───────────┘                           └───────────┘    ║
-║                                                             ║
-╚═════════════════════════════════════════════════════════════╝
-```
+| Element | Description |
+|---------|-------------|
+| Card Name | The creature's name |
+| Essence Cost | Cost to play |
+| Type Line | "Creature — [Tags]" |
+| Keywords | Special abilities (Rush, Guard, etc.) |
+| Ability Text | Triggered or activated abilities |
+| Attack | Damage dealt in combat |
+| Health | Damage required to destroy |
 
-### Creature Card Elements
+## 15.2 Spell Cards
 
-| Element | Location | Description |
-|---------|----------|-------------|
-| Card Name | Top Left | The creature's name |
-| Essence Cost | Top Right | Cost to play (in blue gem) |
-| Artwork | Center | Illustration of the creature |
-| Type Line | Below Art | "Creature — [Tags]" |
-| Keywords | Text Box Top | Bolded keywords in brackets |
-| Ability Text | Text Box | Description of special abilities |
-| Attack | Bottom Left | Red sword/axe icon with number |
-| Health | Bottom Right | Green/red heart icon with number |
+| Element | Description |
+|---------|-------------|
+| Card Name | The spell's name |
+| Essence Cost | Cost to play |
+| Type Line | "Spell" |
+| Effect Text | What happens when cast (then discarded) |
 
-## 15.2 Spell Card Layout
+## 15.3 Support Cards
 
-```
-╔═════════════════════════════════════════════════════════════╗
-║                                                             ║
-║   CARD NAME                              ESSENCE COST       ║
-║   ───────────────────────────────────    ┌─────────────┐   ║
-║                                          │     💎      │   ║
-║                                          │     3       │   ║
-║                                          └─────────────┘   ║
-║   ┌───────────────────────────────────────────────────┐    ║
-║   │                                                   │    ║
-║   │                                                   │    ║
-║   │                                                   │    ║
-║   │                  [ARTWORK]                        │    ║
-║   │                                                   │    ║
-║   │                                                   │    ║
-║   │                                                   │    ║
-║   └───────────────────────────────────────────────────┘    ║
-║                                                             ║
-║   TYPE: Spell                                               ║
-║                                                             ║
-║   ┌─────────────────────────────────────────────────────┐  ║
-║   │                                                     │  ║
-║   │   Effect text goes here. Describes exactly what     │  ║
-║   │   happens when this spell is cast.                  │  ║
-║   │                                                     │  ║
-║   │                                                     │  ║
-║   │                                                     │  ║
-║   └─────────────────────────────────────────────────────┘  ║
-║                                                             ║
-╚═════════════════════════════════════════════════════════════╝
-```
-
-### Spell Card Elements
-
-| Element | Location | Description |
-|---------|----------|-------------|
-| Card Name | Top Left | The spell's name |
-| Essence Cost | Top Right | Cost to play (in blue gem) |
-| Artwork | Center | Illustration of the spell effect |
-| Type Line | Below Art | "Spell" |
-| Effect Text | Text Box | What the spell does when played |
-
-## 15.3 Support Card Layout
-
-```
-╔═════════════════════════════════════════════════════════════╗
-║                                                             ║
-║   CARD NAME                              ESSENCE COST       ║
-║   ───────────────────────────────────    ┌─────────────┐   ║
-║                                          │     💎      │   ║
-║                                          │     4       │   ║
-║                                          └─────────────┘   ║
-║   ┌───────────────────────────────────────────────────┐    ║
-║   │                                                   │    ║
-║   │                                                   │    ║
-║   │                                                   │    ║
-║   │                  [ARTWORK]                        │    ║
-║   │                                                   │    ║
-║   │                                                   │    ║
-║   │                                                   │    ║
-║   └───────────────────────────────────────────────────┘    ║
-║                                                             ║
-║   TYPE: Support                                             ║
-║                                                             ║
-║   ┌─────────────────────────────────────────────────────┐  ║
-║   │                                                     │  ║
-║   │   Effect text goes here. Describes the ongoing      │  ║
-║   │   benefit this support provides while in play.      │  ║
-║   │                                                     │  ║
-║   │                                                     │  ║
-║   │                                                     │  ║
-║   └─────────────────────────────────────────────────────┘  ║
-║                                                             ║
-║                                           ┌───────────┐    ║
-║                                           │DURABILITY │    ║
-║                                           │    ⏳     │    ║
-║                                           │    3      │    ║
-║                                           └───────────┘    ║
-║                                                             ║
-╚═════════════════════════════════════════════════════════════╝
-```
-
-### Support Card Elements
-
-| Element | Location | Description |
-|---------|----------|-------------|
-| Card Name | Top Left | The support's name |
-| Essence Cost | Top Right | Cost to play (in blue gem) |
-| Artwork | Center | Illustration of the support |
-| Type Line | Below Art | "Support" |
-| Effect Text | Text Box | The ongoing effect or trigger |
-| Durability | Bottom Right | Hourglass icon with number |
+| Element | Description |
+|---------|-------------|
+| Card Name | The support's name |
+| Essence Cost | Cost to play |
+| Type Line | "Support" |
+| Effect Text | Ongoing effect or trigger |
+| Durability | Turns remaining before removal |
 
 ---
 
@@ -1365,36 +943,54 @@ data/cards/core_set/
 | Obsidion Syndicate | 3000-3999 | Future expansions |
 | Free-Walkers (Neutral) | 4000-4999 | Future expansions |
 
-## 16.3 Legendary Commanders
+## 16.3 Commander System
 
-Each faction has **4 Legendary Commanders** designed to be deck-building centerpieces:
+Commanders are a special card type that defines your deck's identity. Unlike regular creatures, commanders exist in a **Command Zone** and provide persistent abilities throughout the game.
+
+### Commander Rules
+
+- **Command Zone:** Commanders are not on the battlefield — they exist in a separate Command Zone
+- **Commander Life = Player Life:** Your commander's life total is your life total (30). Face attacks damage the commander/player.
+- **Cannot be Targeted:** Commanders cannot be targeted by attacks, spells, or abilities
+- **Persistent Abilities:** Commanders provide either **Passive** abilities (always active) or **Triggered** abilities (fire on specific events)
+- **Not in Deck:** Commanders are chosen separately from your deck and do not count toward deck size
+
+### Commander ID Range
+
+Commanders use a separate ID range: **5000-5011** (not part of the regular card set).
+
+| Faction | Commander IDs |
+|---------|---------------|
+| Argentum Combine | 5000-5003 |
+| Symbiote Circles | 5004-5007 |
+| Obsidion Syndicate | 5008-5011 |
 
 ### Argentum Combine Commanders
 
-| ID | Name | Cost | Stats | Keywords | Ability |
-|----|------|------|-------|----------|---------|
-| 1056 | The High Artificer | 6 | 3/5 | — | OnPlay: Summon two 2/2 Construct tokens |
-| 1057 | The Sanctum Healer | 6 | 2/7 | Regenerate | All friendly creatures have Regenerate |
-| 1058 | Siege Marshal Vex | 6 | 5/4 | Piercing | OnAttack: Deal 2 damage to enemy player |
-| 1059 | The Grand Architect | 6 | 3/6 | Fortify | All friendly creatures have Fortify |
+| ID | Name | Ability Type | Effect |
+|----|------|--------------|--------|
+| 5000 | The High Artificer | Triggered | StartOfTurn: Summon a 2/2 Brass Cog |
+| 5001 | The Sanctum Healer | Passive | Creatures have Ward and +0/+2 |
+| 5002 | Siege Marshal Vex | Passive | Creatures have +2 Attack |
+| 5003 | The Grand Architect | Passive | Creatures have Fortify and +0/+2 |
 
 ### Symbiote Circles Commanders
 
-| ID | Name | Cost | Stats | Keywords | Ability |
-|----|------|------|-------|----------|---------|
-| 2060 | The Broodmother | 6 | 3/5 | Rush | OnAttack: Summon a 2/2 Rush Broodling |
-| 2061 | Plague Sovereign | 6 | 4/4 | Volatile | OnAllyDeath: Deal 1 damage to enemy player |
-| 2062 | Alpha of the Hunt | 5 | 4/3 | Frenzy | All friendly creatures have +1 Attack |
-| 2063 | The Eternal Grove | 6 | 2/8 | Regenerate | All friendly creatures have Regenerate |
+| ID | Name | Ability Type | Effect |
+|----|------|--------------|--------|
+| 5004 | The Broodmother | Passive | All creatures have Rush |
+| 5005 | Plague Sovereign | Triggered | OnAllyDeath: Deal 2 damage to enemy commander |
+| 5006 | Alpha of the Hunt | Triggered | OnAttack: Give all your creatures +1/+0 |
+| 5007 | The Eternal Grove | Triggered | StartOfTurn: Give all your creatures +1/+1 |
 
 ### Obsidion Syndicate Commanders
 
-| ID | Name | Cost | Stats | Keywords | Ability |
-|----|------|------|-------|----------|---------|
-| 3055 | The Blood Sovereign | 6 | 4/5 | Lifesteal | All friendly creatures have Lifesteal |
-| 3056 | Shadow Emperor Kael | 6 | 5/4 | Stealth, Quick | OnKill: Return this to hand |
-| 3057 | The Shadow Weaver | 6 | 3/4 | Stealth | OnPlay: Summon two 2/2 Ephemeral Stealth Shadow Clones |
-| 3058 | Void Archon | 5 | 4/4 | Quick | All friendly creatures have Quick |
+| ID | Name | Ability Type | Effect |
+|----|------|--------------|--------|
+| 5008 | The Blood Sovereign | Passive | Creatures have Lifesteal and +0/+1 |
+| 5009 | The Deathmaster | Passive | Creatures with Lethal have Quick |
+| 5010 | The Shadow Weaver | Passive | All creatures have Stealth |
+| 5011 | Void Archon | Passive | All creatures have Quick |
 
 ## 16.4 Card Rarity Distribution
 
@@ -1414,52 +1010,36 @@ The New Horizons Edition features **12 pre-built Commander Decks** — each buil
 
 ## 17.1 Deck Construction Rules
 
-- **Deck Size:** 30 cards (standard competitive format)
-- **Card Copies:** Maximum 2 copies of any non-Legendary card per deck
-- **Legendary Limit:** 1 copy of each Legendary card
-- **Composition:** ~21 faction cards + ~9 neutral splash cards (70/30 split)
+- **Deck Size:** 29 cards + 1 commander = 30 total
+- **Commander:** Chosen separately, not part of the 29-card deck
+- **Card Copies:** Maximum 2 copies of any card per deck
+- **Composition:** Typically ~21 faction cards + ~8 neutral splash cards (70/30 split)
 
 ## 17.2 Argentum Combine Decks (4)
 
 ### 🏗️ The High Artificer — Token/Construct
 
 **Deck ID:** `artificer_tokens`
-**Commander:** The High Artificer (1056) — 6-cost 3/5, OnPlay: Summon two 2/2 Constructs
+**Commander:** The High Artificer (5000) — StartOfTurn: Summon 2/2 Brass Cog
 **Strategy:** Flood the board with Construct tokens, buff them with support cards
 
-| Archetype | Key Cards | Gameplan |
-|-----------|-----------|----------|
-| Token Swarm | Assembly Line, Construct tokens | Build wide board, overwhelm with numbers |
+### 💚 The Sanctum Healer — Ward/Tank
 
-### 💚 The Sanctum Healer — Regenerate/Healing
+**Deck ID:** `sanctum_healer`
+**Commander:** The Sanctum Healer (5001) — Creatures have Ward and +0/+2
+**Strategy:** Spell-immune creatures with massive health pools
 
-**Deck ID:** `colossus_wall`
-**Commander:** The Sanctum Healer (1057) — 6-cost 2/7 Regenerate, All allies have Regenerate
-**Strategy:** Create an impenetrable wall of high-HP Guards
-
-| Archetype | Key Cards | Gameplan |
-|-----------|-----------|----------|
-| Defensive Wall | Shield Bearer, Fortress Golem | Wall up, outlast, win through attrition |
-
-### ⚔️ Siege Marshal Vex — Piercing/Aggro
+### ⚔️ Siege Marshal Vex — Aggro
 
 **Deck ID:** `vex_piercing`
-**Commander:** Siege Marshal Vex (1058) — 6-cost 5/4 Piercing, OnAttack: 2 face damage
-**Strategy:** Aggressive Piercing damage that bypasses blockers
-
-| Archetype | Key Cards | Gameplan |
-|-----------|-----------|----------|
-| Piercing Aggro | Steam Knight, Siege Cannon | Push damage through Guards, finish with commander |
+**Commander:** Siege Marshal Vex (5002) — Creatures have +2 Attack
+**Strategy:** Aggressive damage with heavily buffed creatures
 
 ### 🔧 The Grand Architect — Fortify/Control
 
 **Deck ID:** `architect_fortify`
-**Commander:** The Grand Architect (1059) — 6-cost 3/6 Fortify, All allies have Fortify
-**Strategy:** Damage reduction makes every creature a durable threat
-
-| Archetype | Key Cards | Gameplan |
-|-----------|-----------|----------|
-| Fortify Control | Armored Sentinel, Field Medic | Reduce incoming damage, grind out value |
+**Commander:** The Grand Architect (5003) — Creatures have Fortify and +0/+2
+**Strategy:** Damage reduction + health buff makes every creature extremely durable
 
 ---
 
@@ -1468,42 +1048,26 @@ The New Horizons Edition features **12 pre-built Commander Decks** — each buil
 ### 🐛 The Broodmother — Rush/Swarm
 
 **Deck ID:** `broodmother_swarm`
-**Commander:** The Broodmother (2060) — 6-cost 3/5 Rush, OnAttack: Summon 2/2 Rush Broodling
-**Strategy:** Aggressive Rush creatures, token generation, overwhelming tempo
+**Commander:** The Broodmother (5004) — All creatures have Rush
+**Strategy:** Every creature attacks immediately; overwhelming aggression
 
-| Archetype | Key Cards | Gameplan |
-|-----------|-----------|----------|
-| Rush Swarm | Broodling x3, Pack Hunter x3 | Fast pressure, generate tokens, never let up |
-
-### ☠️ Plague Sovereign — Volatile/Death
+### ☠️ Plague Sovereign — Death Triggers
 
 **Deck ID:** `plague_volatile`
-**Commander:** Plague Sovereign (2061) — 6-cost 4/4 Volatile, OnAllyDeath: 1 face damage
+**Commander:** Plague Sovereign (5005) — OnAllyDeath: Deal 2 damage to enemy commander
 **Strategy:** Death triggers and board-wide punishment
-
-| Archetype | Key Cards | Gameplan |
-|-----------|-----------|----------|
-| Death Triggers | Volatile Spore, Plague Carrier | Trade aggressively, punish enemy board |
 
 ### 🐺 Alpha of the Hunt — Frenzy/Aggro
 
 **Deck ID:** `alpha_frenzy`
-**Commander:** Alpha of the Hunt (2062) — 5-cost 4/3 Frenzy, All allies +1 Attack
-**Strategy:** Attack buffs and Frenzy creatures for snowballing damage
+**Commander:** Alpha of the Hunt (5006) — OnAttack: Give all creatures +1/+0
+**Strategy:** Snowballing attack buffs with every combat
 
-| Archetype | Key Cards | Gameplan |
-|-----------|-----------|----------|
-| Frenzy Aggro | Feral Stalker, Rabid Hunter | Stack attack buffs, multiple attacks per turn |
-
-### 🌳 The Eternal Grove — Regenerate/Midrange
+### 🌳 The Eternal Grove — Growth/Midrange
 
 **Deck ID:** `grove_regenerate`
-**Commander:** The Eternal Grove (2063) — 6-cost 2/8 Regenerate, All allies Regenerate
-**Strategy:** Outlast through healing, impossible to remove through chip damage
-
-| Archetype | Key Cards | Gameplan |
-|-----------|-----------|----------|
-| Regenerate Value | Regenerating Ooze, Hive Guardian | Trade efficiently, heal back, win the long game |
+**Commander:** The Eternal Grove (5007) — StartOfTurn: Give all creatures +1/+1
+**Strategy:** Creatures grow stronger every turn; inevitable late-game dominance
 
 ---
 
@@ -1512,42 +1076,26 @@ The New Horizons Edition features **12 pre-built Commander Decks** — each buil
 ### 🩸 The Blood Sovereign — Lifesteal/Sustain
 
 **Deck ID:** `sovereign_lifesteal`
-**Commander:** The Blood Sovereign (3055) — 6-cost 4/5 Lifesteal, All allies Lifesteal
-**Strategy:** Sustain through combat, race opponents while healing
+**Commander:** The Blood Sovereign (5008) — Creatures have Lifesteal and +0/+1
+**Strategy:** Sustain through combat while dealing damage
 
-| Archetype | Key Cards | Gameplan |
-|-----------|-----------|----------|
-| Lifesteal Control | Blood Acolyte, Vampire Lord | Attack for damage AND healing, outlast aggro |
+### 🗡️ The Deathmaster — Lethal Assassins
 
-### 🗡️ Shadow Emperor Kael — Stealth/Assassin
+**Deck ID:** `deathmaster_assassin`
+**Commander:** The Deathmaster (5009) — Creatures with Lethal have Quick
+**Strategy:** Lethal creatures strike first, killing enemies without taking damage
 
-**Deck ID:** `kael_assassin`
-**Commander:** Shadow Emperor Kael (3056) — 6-cost 5/4 Stealth, Quick, OnKill: Bounce
-**Strategy:** Untargetable assassins, precision removal, hit-and-run tactics
-
-| Archetype | Key Cards | Gameplan |
-|-----------|-----------|----------|
-| Stealth Assassin | Shadow Blade, Silent Assassin | Strike from stealth, remove key threats |
-
-### 👤 The Shadow Weaver — Shadow Clone
+### 👤 The Shadow Weaver — Stealth
 
 **Deck ID:** `shadow_weaver`
-**Commander:** The Shadow Weaver (3057) — 6-cost 3/4 Stealth, OnPlay: Summon 2 Shadow Clones
-**Strategy:** Ephemeral shadow tokens, hit-and-run tactics
-
-| Archetype | Key Cards | Gameplan |
-|-----------|-----------|----------|
-| Shadow Tokens | Shadow Clone tokens, Stealth creatures | Burst damage from clones, disappear before retaliation |
+**Commander:** The Shadow Weaver (5010) — All creatures have Stealth
+**Strategy:** Untargetable creatures for safe attacks
 
 ### ⚡ Void Archon — Quick/Burst
 
 **Deck ID:** `archon_burst`
-**Commander:** Void Archon (3058) — 5-cost 4/4 Quick, All allies Quick
-**Strategy:** Strike first in every combat, win all trades
-
-| Archetype | Key Cards | Gameplan |
-|-----------|-----------|----------|
-| Quick Burst | Blood Seeker, Ritual Master | Every creature strikes first, dominate combat |
+**Commander:** Void Archon (5011) — All creatures have Quick
+**Strategy:** Strike first in every combat
 
 ---
 
@@ -1559,7 +1107,7 @@ All decks are defined in TOML files organized by faction:
 data/decks/
 ├── argentum/
 │   ├── artificer_tokens.toml
-│   ├── colossus_wall.toml
+│   ├── sanctum_healer.toml
 │   ├── vex_piercing.toml
 │   └── architect_fortify.toml
 ├── symbiote/
@@ -1569,7 +1117,7 @@ data/decks/
 │   └── grove_regenerate.toml
 └── obsidion/
     ├── sovereign_lifesteal.toml
-    ├── kael_assassin.toml
+    ├── deathmaster_assassin.toml
     ├── shadow_weaver.toml
     └── archon_burst.toml
 ```
@@ -1759,186 +1307,7 @@ STANDARD DECK: 20 cards
 
 ---
 
-# 19. AI AGENT ARCHITECTURE
-
-## 19.1 Overview
-
-Essence Wars is designed for AI research, with a comprehensive agent architecture that supports both specialized and generalized play.
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         AGENT HIERARCHY                                  │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│   SPECIALISTS (Faction-Optimized)                                        │
-│   ├── Agent-Argentum   → Tuned for defensive, high-HP strategies        │
-│   ├── Agent-Symbiote   → Tuned for aggressive tempo strategies          │
-│   └── Agent-Obsidion   → Tuned for burst/control strategies             │
-│                                                                          │
-│   GENERALIST (Cross-Faction)                                             │
-│   └── Agent-Generalist → Balanced across all factions                   │
-│       - Can play any deck competently                                    │
-│       - Benchmark for specialist comparison                              │
-│       - Trained against all specialists + mirror play                    │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
-```
-
-## 19.2 Agent Types
-
-### Specialist Agents
-
-Specialist agents are **optimized for a specific faction**. They have weights/policies tuned to maximize performance with that faction's deck and playstyle.
-
-| Agent | Faction | Deck Binding | Optimization Focus |
-|-------|---------|--------------|-------------------|
-| Agent-Argentum | Argentum Combine | `argentum_*` decks only | Guard value, HP preservation, survival |
-| Agent-Symbiote | Symbiote Circles | `symbiote_*` decks only | Rush value, Lethal trades, board presence |
-| Agent-Obsidion | Obsidion Syndicate | `obsidion_*` decks only | Lifesteal value, burst damage, Stealth setup |
-
-**Key Rule:** Specialists are **bound to their faction's decks**. An Argentum specialist should not play a Symbiote deck—this would be suboptimal and wastes computation.
-
-### Generalist Agent
-
-The Generalist agent is **balanced across all factions**. It can play any deck competently and serves as a benchmark.
-
-| Property | Value |
-|----------|-------|
-| Deck Binding | Any deck |
-| Training | Against all specialists equally + mirror play |
-| Purpose | Benchmark, flexible opponent, "universal player" |
-
-## 19.3 Training Pipeline
-
-### Specialist Training
-
-Each specialist is trained against its optimal opponents:
-
-```
-SPECIALIST TRAINING
-├── Agent-Argentum trains vs:
-│   ├── Agent-Symbiote (cross-faction)
-│   ├── Agent-Obsidion (cross-faction)
-│   └── Agent-Argentum (mirror, for robustness)
-│
-├── Agent-Symbiote trains vs:
-│   ├── Agent-Argentum (cross-faction)
-│   ├── Agent-Obsidion (cross-faction)
-│   └── Agent-Symbiote (mirror)
-│
-└── Agent-Obsidion trains vs:
-    ├── Agent-Argentum (cross-faction)
-    ├── Agent-Symbiote (cross-faction)
-    └── Agent-Obsidion (mirror)
-```
-
-### Generalist Training
-
-The Generalist trains against **all specialists equally plus itself**:
-
-```
-GENERALIST TRAINING
-Agent-Generalist trains vs:
-├── Agent-Argentum (25%)
-├── Agent-Symbiote (25%)
-├── Agent-Obsidion (25%)
-└── Agent-Generalist (25%, mirror play)
-```
-
-This ensures the Generalist:
-- Can handle any faction's playstyle
-- Doesn't overfit to one opponent type
-- Learns robust, general strategies
-
-## 19.4 Agent Implementation
-
-This architecture applies to **all agent types**:
-
-| Agent Type | MCTS | PPO | AlphaZero |
-|------------|------|-----|-----------|
-| Argentum Specialist | Weight file | Policy network | Value+Policy network |
-| Symbiote Specialist | Weight file | Policy network | Value+Policy network |
-| Obsidion Specialist | Weight file | Policy network | Value+Policy network |
-| Generalist | Weight file | Policy network | Value+Policy network |
-
-### File Organization
-
-```
-data/weights/                     # MCTS/Greedy weights
-├── specialists/
-│   ├── argentum.toml
-│   ├── symbiote.toml
-│   └── obsidion.toml
-└── generalist.toml
-
-models/                           # Trained neural networks
-├── ppo/
-│   ├── specialists/
-│   │   ├── argentum/
-│   │   ├── symbiote/
-│   │   └── obsidion/
-│   └── generalist/
-└── alphazero/
-    ├── specialists/
-    │   ├── argentum/
-    │   ├── symbiote/
-    │   └── obsidion/
-    └── generalist/
-```
-
-## 19.5 Balance Testing Matrix
-
-### Test Configurations
-
-| Test Type | Purpose | Configuration |
-|-----------|---------|---------------|
-| **Deck Balance** | Are faction decks balanced? | Generalist vs Generalist, all deck matchups |
-| **Specialist Quality** | Do specialists outperform generalists? | Specialist vs Generalist, same deck |
-| **Meta Health** | Overall competitive landscape | Full specialist tournament |
-
-### Standard Test Suite
-
-**Quick Balance Check** (during development):
-```
-3 decks × 3 decks = 9 matchups
-Agent: Generalist only
-Games: 50-100 per matchup
-Time: ~5 minutes
-```
-
-**Specialist Validation** (after training):
-```
-Specialist vs Specialist round-robin
-3 matchups (Arg vs Sym, Arg vs Obs, Sym vs Obs)
-Games: 100 per matchup
-Time: ~10 minutes
-```
-
-**Full Tournament** (nightly/weekly):
-```
-All meaningful permutations:
-├── 9 deck matchups (3×3 including mirrors)
-├── 3 agent configurations per matchup:
-│   ├── Generalist vs Generalist (baseline)
-│   ├── Specialist vs Specialist (optimal)
-│   └── Specialist vs Generalist (advantage test)
-└── Total: 27 test cases
-Games: 100 per test case
-Time: ~30-60 minutes
-```
-
-## 19.6 Success Metrics
-
-| Metric | Target | Meaning |
-|--------|--------|---------|
-| Faction Balance | 45-55% win rates | No dominant faction |
-| Specialist Advantage | >5% vs Generalist | Specialization is rewarded |
-| Training Convergence | Stable fitness | Agent has learned |
-| Meta Diversity | All factions viable | Healthy competitive landscape |
-
----
-
-# 20. GLOSSARY
+# 19. GLOSSARY
 
 | Term | Definition |
 |------|------------|
@@ -1994,9 +1363,9 @@ Time: ~30-60 minutes
 
 ---
 
-# 21. QUICK REFERENCE
+# 20. QUICK REFERENCE
 
-## 21.1 Turn Structure
+## 20.1 Turn Structure
 
 1. **START PHASE**
    - +1 Maximum Essence (cap 10)
@@ -2016,16 +1385,16 @@ Time: ~30-60 minutes
    - Resolve end-of-turn effects
    - Pass to opponent
 
-## 21.2 Action Costs
+## 20.2 Action Costs
 
 | Action | Cost |
 |--------|------|
 | Play any card | 1 AP + Essence Cost |
-| Attack with creature | 1 AP |
+| Attack with creature | **0 AP** (free!) |
 | Commander's Insight | 0 AP + 4 Essence (late game catch-up) |
 | End turn | Free |
 
-## 21.3 Lane Attack Ranges
+## 20.3 Lane Attack Ranges
 
 | Your Slot | Attack Range |
 |-----------|--------------|
@@ -2035,12 +1404,12 @@ Time: ~30-60 minutes
 | 4 | Slots 3, 4, 5 |
 | 5 | Slots 4, 5 |
 
-## 21.4 Keyword Quick Reference
+## 20.4 Keyword Quick Reference
 
 | Keyword | One-Line Summary | Faction |
 |---------|------------------|---------|
 | Rush | Attack immediately when played | Symbiote |
-| Ranged | Attack any enemy, bypass Guard | Free-Walker |
+| Ranged | Attack any slot, no counter-attack | Free-Walker |
 | Piercing | Overkill damage hits face | Argentum |
 | Guard | Force adjacent enemies to attack this | Argentum |
 | Lifesteal | Heal when dealing damage | Obsidion |
@@ -2056,40 +1425,11 @@ Time: ~30-60 minutes
 | Fortify | Take 1 less damage (min 1) | Argentum |
 | Ward | Block first targeted spell/ability | Obsidion |
 
-## 21.5 Win Conditions
+## 20.5 Win Conditions
 
 1. **Enemy life ≤ 0** → You win
 2. **50 Victory Points** → You win
-3. **Turn 30** → Higher life wins (draw if tied)
-
----
-
-# APPENDIX A: DESIGN NOTES FOR DEVELOPERS
-
-## A.1 Balance Philosophy
-
-- Vanilla creatures follow the formula: **Total Stats ≈ (Cost × 2) + 1**
-- Keywords "cost" stat points (Rush ≈ 1 point, Guard ≈ 0.5 points, etc.)
-- Combat keywords (Rush, Ranged, Piercing, Guard) are worth less than utility keywords
-- The Quick+Lethal combination should be rare and expensive
-
-## A.2 Suggested Expansions
-
-Future expansions could introduce:
-- New keywords (carefully limited to maintain clarity)
-- Multi-color or faction systems
-- Legendary unique cards (one per deck)
-- Environment or terrain effects
-- Alternative game modes
-
-## A.3 Physical Component Recommendations
-
-For production as a physical card game:
-- **Card size:** Standard poker size (63mm × 88mm)
-- **Card stock:** 300+ gsm with linen finish
-- **Token types:** Damage (1s, 3s, 5s), Status (Exhausted, Shield), Buff/Debuff (+1/+1)
-- **Life/Essence trackers:** Spin-down dice or sliding track
-- **Game board:** Foldable playmat with clearly marked zones
+3. **Turn 30** → Higher life wins (P1 wins ties)
 
 ---
 
@@ -2097,7 +1437,7 @@ For production as a physical card game:
 
 **ESSENCE WARS: NEW HORIZONS EDITION** — A Game of Perfect Information and Strategic Depth
 
-© 2026 — Game Design Document v1.2
+© 2026 — Game Design Document v1.6
 
 ---
 
@@ -2108,4 +1448,7 @@ For production as a physical card game:
 | 1.0 | 2025-01 | Initial design document (43 cards, 12 keywords) |
 | 1.1 | 2025-06 | Added faction system, AI architecture |
 | 1.2 | 2026-01 | **New Horizons Edition** — 300 cards, 16 keywords, 12 Commander Decks, Phase 4 engine features |
-| 1.3 | 2026-01-27 | Added **Commander's Insight** catch-up mechanic (Section 8.4) — late-game card draw for struggling players |
+| 1.3 | 2026-01-27 | Added **Commander's Insight** catch-up mechanic (Section 8.4) |
+| 1.4 | 2026-01-27 | **Doc sync**: Fixed FPA, attack AP, Ranged+Guard, tie rules, Commander IDs, deck size |
+| 1.5 | 2026-01-27 | **Trimmed doc**: Removed AI Architecture (see CLAUDE.md), ASCII art, verbose examples. ~600 lines saved |
+| 1.6 | 2026-01-27 | **Commander sync**: Updated all 12 commanders to match code (10 were outdated). Renamed kael_assassin → deathmaster_assassin |

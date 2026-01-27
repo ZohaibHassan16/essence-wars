@@ -32,7 +32,7 @@ pub enum Trigger {
     OnAllyPlayed,
     /// When another friendly creature dies
     OnAllyDeath,
-    /// When an enemy creature dies (for commanders like Shadow Emperor Kael)
+    /// When an enemy creature dies
     OnEnemyDeath,
     /// When owner plays a creature (for commanders like The Broodmother)
     OnCreaturePlayed,

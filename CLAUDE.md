@@ -246,16 +246,16 @@ Commanders are the player's persona in battle. They define deck identity and pro
 
 | Commander | Faction | Ability Type | Ability |
 |-----------|---------|--------------|---------|
-| The High Artificer | Argentum | Triggered | StartOfTurn: Summon 1/1 Brass Cog |
-| The Sanctum Healer | Argentum | Passive | Creatures have Regenerate |
-| Siege Marshal Vex | Argentum | Passive | Creatures have +1 Attack |
-| The Grand Architect | Argentum | Passive | Creatures have Fortify |
-| The Broodmother | Symbiote | Triggered | OnCreaturePlayed (Rush): Summon 1/1 Rush Broodling |
-| Plague Sovereign | Symbiote | Triggered | OnAllyDeath: 1 damage to enemy commander |
-| Alpha of the Hunt | Symbiote | Passive | Creatures have +1 Attack |
-| The Eternal Grove | Symbiote | Passive | Creatures have Regenerate |
-| The Blood Sovereign | Obsidion | Passive | Creatures have Lifesteal |
-| Shadow Emperor Kael | Obsidion | Triggered | OnEnemyDeath: Draw a card |
+| The High Artificer | Argentum | Triggered | StartOfTurn: Summon 2/2 Brass Cog |
+| The Sanctum Healer | Argentum | Passive | Creatures have Ward and +0/+2 |
+| Siege Marshal Vex | Argentum | Passive | Creatures have +2 Attack |
+| The Grand Architect | Argentum | Passive | Creatures have Fortify and +0/+2 |
+| The Broodmother | Symbiote | Passive | All creatures have Rush |
+| Plague Sovereign | Symbiote | Triggered | OnAllyDeath: 2 damage to enemy commander |
+| Alpha of the Hunt | Symbiote | Triggered | OnAttack: Give all creatures +1/+0 |
+| The Eternal Grove | Symbiote | Triggered | StartOfTurn: Give all creatures +1/+1 |
+| The Blood Sovereign | Obsidion | Passive | Creatures have Lifesteal and +0/+1 |
+| The Deathmaster | Obsidion | Passive | Creatures with Lethal have Quick |
 | The Shadow Weaver | Obsidion | Passive | Creatures have Stealth |
 | Void Archon | Obsidion | Passive | Creatures have Quick |
 

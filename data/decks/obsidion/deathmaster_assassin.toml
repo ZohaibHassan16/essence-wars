@@ -1,4 +1,4 @@
-id = "kael_assassin"
+id = "deathmaster_assassin"
 name = "The Deathmaster"
 description = "Swift assassins that strike first. Lethal creatures gain Quick, allowing them to kill enemies before taking counter-damage. Every blade finds its mark."
 playstyle = "Tempo"
@@ -6,7 +6,7 @@ tags = ["commander", "obsidion"]
 commander = 5009
 
 cards = [
-    # LETHAL CORE - All get +0/+2 from commander
+    # LETHAL CORE - Lethal creatures gain Quick from commander
     3001, 3001, 3001,  # Shadow Blade x3 (2c 3/2→3/4 Stealth+Lethal) - survives 3-attack
     4036, 4036, 4036,  # Contract Killer x3 (3c 3/2→3/4 Lethal) - neutral assassin
     3064, 3064, 3064,  # Nightblade x3 (4c 4/2→4/4 Stealth+Lethal) - survives most trades

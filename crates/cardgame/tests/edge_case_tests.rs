@@ -17,9 +17,6 @@ use common::load_real_card_db;
 /// Default commander for tests (The High Artificer) - has triggered ability that summons tokens.
 const DEFAULT_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5000);
 
-/// Passive commander for tests that need empty board (The Sanctum Healer) - grants Regenerate.
-const PASSIVE_COMMANDER: cardgame::types::CardId = cardgame::types::CardId(5001);
-
 fn create_test_db() -> CardDatabase {
     load_real_card_db()
 }
@@ -139,111 +136,9 @@ fn test_edge_case_zero_attack_creature_cannot_attack() {
     }
 }
 
-#[test]
-fn test_edge_case_ranged_bypasses_guard() {
-    let card_db = create_test_db();
-
-    // Find a ranged creature
-    let ranged_card = find_card_by_criteria(&card_db, |c| {
-        matches!(c.card_type, CardType::Creature { .. }) && c.keywords().has_ranged()
-    });
-
-    // Find a guard creature
-    let guard_card = find_card_by_criteria(&card_db, |c| {
-        matches!(c.card_type, CardType::Creature { .. }) && c.keywords().has_guard()
-    });
-
-    // Find a regular creature (no guard)
-    let regular_card = find_card_by_criteria(&card_db, |c| {
-        matches!(c.card_type, CardType::Creature { .. })
-            && !c.keywords().has_guard()
-            && !c.keywords().has_ranged()
-    });
-
-    if ranged_card.is_none() || guard_card.is_none() || regular_card.is_none() {
-        println!("Required cards not found, skipping test");
-        return;
-    }
-
-    let ranged = ranged_card.unwrap();
-    let guard = guard_card.unwrap();
-    let regular = regular_card.unwrap();
-
-    // P1 has ranged creature, P2 has guard and regular creature
-    let deck1 = create_test_deck(&[ranged]);
-    let deck2 = create_test_deck(&[guard, regular]);
-
-    let mut engine = GameEngine::new(&card_db);
-    // Use passive commander to avoid token summoning at turn start
-    engine.start_game_raw(deck1, deck2, PASSIVE_COMMANDER, PASSIVE_COMMANDER, 42, GameMode::default()).unwrap();
-
-    // Give both players max essence
-    engine.state.players[0].max_essence = 10;
-    engine.state.players[0].current_essence = 10;
-    engine.state.players[1].max_essence = 10;
-    engine.state.players[1].current_essence = 10;
-
-    // P1 plays ranged creature with Rush (or wait a turn)
-    engine
-        .apply_action(Action::PlayCard {
-            hand_index: 0,
-            slot: Slot(0),
-        })
-        .unwrap();
-    engine.apply_action(Action::EndTurn).unwrap();
-
-    // P2 plays guard creature in slot 0
-    engine
-        .apply_action(Action::PlayCard {
-            hand_index: 0,
-            slot: Slot(0),
-        })
-        .unwrap();
-    // P2 plays regular creature in slot 1
-    if engine.state.players[1].hand.len() > 0 {
-        let _ = engine.apply_action(Action::PlayCard {
-            hand_index: 0,
-            slot: Slot(1),
-        });
-    }
-    engine.apply_action(Action::EndTurn).unwrap();
-
-    // P1's turn - ranged creature should be able to attack the regular creature
-    // even though guard is present
-    let legal_actions = engine.get_legal_actions();
-
-    // Count valid attack targets
-    let mut can_attack_guard_slot = false;
-    let mut can_attack_behind_guard = false;
-
-    for action in &legal_actions {
-        if let Action::Attack { attacker, defender } = action {
-            if attacker.0 == 0 {
-                // Slot 0 has the Guard creature
-                if defender.0 == 0 {
-                    can_attack_guard_slot = true;
-                }
-                // Slot 1 has the regular creature (behind Guard)
-                if defender.0 == 1 {
-                    can_attack_behind_guard = true;
-                }
-            }
-        }
-    }
-
-    // Ranged should be able to attack any creature (bypass guard)
-    // The key property is that Ranged can attack creatures behind Guard
-    assert!(
-        can_attack_behind_guard || engine.state.players[1].creatures.len() < 2,
-        "Ranged creature should be able to attack non-Guard creatures even when Guard is present"
-    );
-
-    // Ranged can also attack the Guard itself if it chooses
-    assert!(
-        can_attack_guard_slot || engine.state.players[1].creatures.is_empty(),
-        "Ranged creature should be able to attack the Guard as well"
-    );
-}
+// NOTE: Ranged vs Guard behavior is tested in unit/legal_tests.rs::test_guard_enforcement_ranged
+// That test uses direct creature placement for reliability.
+// Ranged creatures must still respect Guard - they can attack ANY slot but cannot bypass Guard.
 
 #[test]
 fn test_edge_case_hand_overflow_discards() {
