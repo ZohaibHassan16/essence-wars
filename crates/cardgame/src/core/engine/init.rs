@@ -100,6 +100,7 @@ pub fn initialize_game_raw(
     setup_player_deck(&mut state.players[0].deck, deck1, seed);
 
     // Set up player 2's deck (use a different seed derived from the original)
+    // Uses PCG multiplier to ensure P2's shuffle is independent but deterministic
     let seed2 = seed.wrapping_mul(6364136223846793005).wrapping_add(1);
     setup_player_deck(&mut state.players[1].deck, deck2, seed2);
 

@@ -5,6 +5,8 @@
 
 use std::path::{Path, PathBuf};
 
+use thiserror::Error;
+
 use crate::cards::CardDatabase;
 use crate::decks::Faction;
 
@@ -29,16 +31,9 @@ pub enum BotType {
 }
 
 /// Error type for parsing BotType from string.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Error)]
+#[error("unknown bot type: '{0}'")]
 pub struct BotTypeParseError(String);
-
-impl std::fmt::Display for BotTypeParseError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "unknown bot type: '{}'", self.0)
-    }
-}
-
-impl std::error::Error for BotTypeParseError {}
 
 impl std::str::FromStr for BotType {
     type Err = BotTypeParseError;

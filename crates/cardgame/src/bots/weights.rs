@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
+use thiserror::Error;
 
 /// Complete weight configuration for a bot.
 ///
@@ -362,25 +363,19 @@ impl Default for GreedyWeights {
     }
 }
 
-/// Errors that can occur when loading/saving weights.
-#[derive(Debug)]
+/// Error type for weight loading and saving operations.
+#[derive(Debug, Clone, Error)]
 pub enum WeightError {
+    /// Failed to read or write weight file.
+    #[error("IO error: {0}")]
     Io(String),
+    /// Failed to parse weight file (invalid TOML).
+    #[error("Parse error: {0}")]
     Parse(String),
+    /// Failed to serialize weights to TOML.
+    #[error("Serialize error: {0}")]
     Serialize(String),
 }
-
-impl std::fmt::Display for WeightError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            WeightError::Io(e) => write!(f, "IO error: {}", e),
-            WeightError::Parse(e) => write!(f, "Parse error: {}", e),
-            WeightError::Serialize(e) => write!(f, "Serialize error: {}", e),
-        }
-    }
-}
-
-impl std::error::Error for WeightError {}
 
 /// Holder for archetype-specific weights.
 ///

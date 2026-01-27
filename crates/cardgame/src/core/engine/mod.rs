@@ -44,11 +44,17 @@ pub use victory::{check_victory_conditions, check_turn_limit_victory, check_life
 pub use turn::{start_turn, end_turn};
 
 /// Seeded shuffle using Linear Congruential Generator for deterministic results.
-/// Uses the same constants as PCG for good statistical properties.
+///
+/// Uses PCG (Permuted Congruential Generator) constants for excellent statistical properties:
+/// - Multiplier: 6364136223846793005 (from PCG paper by Melissa O'Neill)
+/// - Increment: 1442695040888963407 (from PCG paper)
+///
+/// These constants ensure full-period generation and good distribution across the u64 range.
+/// The Fisher-Yates shuffle algorithm ensures uniform permutation probability.
 pub fn seeded_shuffle<T>(items: &mut [T], seed: u64) {
     let mut rng = seed;
     for i in (1..items.len()).rev() {
-        // LCG: next = (a * current + c) mod m
+        // LCG step: next = (multiplier * current + increment) mod 2^64
         rng = rng.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
         let j = (rng as usize) % (i + 1);
         items.swap(i, j);
