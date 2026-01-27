@@ -52,6 +52,10 @@ pub struct PlayerConfig {
     pub deck: Vec<CardId>,
     /// Optional deck name/ID.
     pub deck_name: Option<String>,
+    /// Commander used by the player.
+    /// Optional for backwards compatibility with old replay files.
+    #[serde(default)]
+    pub commander: Option<CardId>,
 }
 
 /// A single action in the replay with metadata.

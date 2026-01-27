@@ -10,8 +10,7 @@ use crate::core::state::GameState;
 use crate::core::types::CardId;
 use crate::replay::types::GameReplay;
 
-/// Default commander for replays (The High Artificer).
-/// TODO: PlayerConfig should include commander ID.
+/// Default commander for legacy replays without commander field (The High Artificer).
 const DEFAULT_COMMANDER: CardId = CardId(5000);
 
 /// Error type for replay operations.
@@ -84,13 +83,14 @@ impl<'a> ReplayIterator<'a> {
         }
 
         let mut engine = GameEngine::new(self.card_db);
-        // TODO: Use actual commanders from replay once PlayerConfig includes them
+        let commander1 = self.replay.player1.commander.unwrap_or(DEFAULT_COMMANDER);
+        let commander2 = self.replay.player2.commander.unwrap_or(DEFAULT_COMMANDER);
         engine
             .start_game_raw(
                 self.replay.player1.deck.clone(),
                 self.replay.player2.deck.clone(),
-                DEFAULT_COMMANDER,
-                DEFAULT_COMMANDER,
+                commander1,
+                commander2,
                 self.replay.header.seed,
                 self.replay.header.mode,
             )
@@ -203,13 +203,14 @@ pub fn replay_to_end(
     card_db: &CardDatabase,
 ) -> Result<GameState, ReplayError> {
     let mut engine = GameEngine::new(card_db);
-    // TODO: Use actual commanders from replay once PlayerConfig includes them
+    let commander1 = replay.player1.commander.unwrap_or(DEFAULT_COMMANDER);
+    let commander2 = replay.player2.commander.unwrap_or(DEFAULT_COMMANDER);
     engine
         .start_game_raw(
             replay.player1.deck.clone(),
             replay.player2.deck.clone(),
-            DEFAULT_COMMANDER,
-            DEFAULT_COMMANDER,
+            commander1,
+            commander2,
             replay.header.seed,
             replay.header.mode,
         )

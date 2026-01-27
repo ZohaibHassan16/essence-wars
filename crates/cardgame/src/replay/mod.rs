@@ -12,13 +12,26 @@
 //!
 //! ```ignore
 //! use cardgame::replay::{GameReplay, PlayerConfig, ReplayBuilder};
+//! use cardgame::core::types::CardId;
 //!
-//! // Create a replay builder
+//! // Create a replay builder with commander information
 //! let mut builder = ReplayBuilder::new(
 //!     seed,
 //!     GameMode::Attrition,
-//!     PlayerConfig { name: "Player 1".into(), player_type: "human".into(), deck: deck1, deck_name: None },
-//!     PlayerConfig { name: "Bot".into(), player_type: "mcts".into(), deck: deck2, deck_name: None },
+//!     PlayerConfig {
+//!         name: "Player 1".into(),
+//!         player_type: "human".into(),
+//!         deck: deck1,
+//!         deck_name: Some("my_deck".into()),
+//!         commander: Some(CardId(5000)),  // The High Artificer
+//!     },
+//!     PlayerConfig {
+//!         name: "Bot".into(),
+//!         player_type: "mcts".into(),
+//!         deck: deck2,
+//!         deck_name: None,
+//!         commander: Some(CardId(5003)),  // The Broodmother
+//!     },
 //! );
 //!
 //! // Record actions as they happen
