@@ -781,18 +781,15 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] Wire sounds to game events
 
 ### Phase 9 Tutorial and Onboarding
-- [x] Create Ingame Tutorials (Using Highlighting and Focus to show the Player/User where to look and click, like Unity Editor Pathway Tutorial in the Editor works):
-  - [x] Human vs AI Mode
-    - Explaining the Rules, how the game works, turns, etc 
-  - [x] AI vs AI Mode
-- [x] Players can play a game without having to read any rulebook
-- [x] Researchers can watch Ai vs Ai without needing to undersand the rules
+- [ ] Update Ingame Tutorial (Human vs AI Mode)
+    - Explaining the Rules, how the game works, turns, Commanders, using seeded game, etc 
+- [ ] Players can play a game without having to read any rulebook
 
 ### Phase 10: Art Pass
 - Generate better backgrounds that fit the art direction of the game, replace existing ones
 - Use Flux Schnell to create decorations and props, populate the Menus with thoughtful additions (not plastering it, but making it look nice)
 - Overhall all Menus and Boards etc to be visually stunning and professional
-- Audit SFX Library, current creature sounds are a bit unfitting 😅 Web Search for a consistent art asset pack that fits our theme and replace the existing ones.
+- Audit SFX Library, current creature sounds are placeholders. Web Search for a consistent art asset pack that fits our theme and replace the existing ones.
 
 ### Phase 11: Release Prep
 - [ ] Discuss Distribution Options, DevOps, Storage Solutions (Assets, the Github Repo is becoming too big)
