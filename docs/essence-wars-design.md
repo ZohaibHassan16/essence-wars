@@ -1436,19 +1436,3 @@ STANDARD DECK: 20 cards
 *End of Document*
 
 **ESSENCE WARS: NEW HORIZONS EDITION** — A Game of Perfect Information and Strategic Depth
-
-© 2026 — Game Design Document v1.6
-
----
-
-## Document History
-
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | 2025-01 | Initial design document (43 cards, 12 keywords) |
-| 1.1 | 2025-06 | Added faction system, AI architecture |
-| 1.2 | 2026-01 | **New Horizons Edition** — 300 cards, 16 keywords, 12 Commander Decks, Phase 4 engine features |
-| 1.3 | 2026-01-27 | Added **Commander's Insight** catch-up mechanic (Section 8.4) |
-| 1.4 | 2026-01-27 | **Doc sync**: Fixed FPA, attack AP, Ranged+Guard, tie rules, Commander IDs, deck size |
-| 1.5 | 2026-01-27 | **Trimmed doc**: Removed AI Architecture (see CLAUDE.md), ASCII art, verbose examples. ~600 lines saved |
-| 1.6 | 2026-01-27 | **Commander sync**: Updated all 12 commanders to match code (10 were outdated). Renamed kael_assassin → deathmaster_assassin |

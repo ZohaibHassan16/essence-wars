@@ -389,10 +389,10 @@ fn bench_mcts_parallel_scaling(c: &mut Criterion) {
                         // Setup: create bot (not timed)
                         (
                             MctsBot::with_config(&card_db, config.clone(), 42),
-                            base_engine.clone(),
+                            base_engine.fork(),
                         )
                     },
-                    |(mut mcts, engine)| {
+                    |(mut mcts, engine): (MctsBot<'_>, GameEngine<'_>)| {
                         // Benchmark: actual MCTS decision (timed)
                         black_box(mcts.select_action_with_engine(&engine))
                     },
