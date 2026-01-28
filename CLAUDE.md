@@ -348,7 +348,7 @@ Benchmarks use real 30-card decks with commanders (v0.8.0+).
 |-----------|--------|-------|
 | Random game | ~33k/sec | ~30 µs/game |
 | Greedy game | ~4.3k/sec | ~230 µs/game |
-| Engine fork | ~107 ns | State cloning |
+| Engine fork | ~245 ns | State cloning |
 | State tensor | ~158 ns | 328-float encoding |
 | Legal actions | ~55 ns | Action enumeration |
 | Throughput | ~18k games/sec | 10-game batches |

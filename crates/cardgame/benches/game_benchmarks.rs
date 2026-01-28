@@ -24,6 +24,30 @@ fn load_decks() -> DeckRegistry {
         .expect("Failed to load decks")
 }
 
+/// Advance the game to a state with multiple legal actions (at least `min_actions`).
+/// This ensures MCTS benchmarks actually run simulations instead of early-exiting.
+fn advance_to_decision_point(engine: &mut GameEngine, min_actions: usize, seed: u64) {
+    let mut random = RandomBot::new(seed);
+    let mut iterations = 0;
+    const MAX_ITERATIONS: usize = 200;
+
+    while !engine.is_game_over() && iterations < MAX_ITERATIONS {
+        let legal_actions = engine.get_legal_actions();
+
+        // Stop if we have enough legal actions for a meaningful decision
+        if legal_actions.len() >= min_actions {
+            break;
+        }
+
+        // Play a random action
+        let state_tensor = engine.get_state_tensor();
+        let legal_mask = engine.get_legal_action_mask();
+        let action = random.select_action(&state_tensor, &legal_mask, &legal_actions);
+        let _ = engine.apply_action(action);
+        iterations += 1;
+    }
+}
+
 /// Benchmark single game with random bots.
 fn bench_random_game(c: &mut Criterion) {
     let card_db = load_card_db();
@@ -188,18 +212,8 @@ fn bench_mcts_simulations(c: &mut Criterion) {
     let mut engine = GameEngine::new(&card_db);
     engine.start_game(deck, deck, 42).unwrap();
 
-    // Play a few turns to get to an interesting decision point
-    let mut random = RandomBot::new(42);
-    for _ in 0..10 {
-        if engine.is_game_over() {
-            break;
-        }
-        let state_tensor = engine.get_state_tensor();
-        let legal_mask = engine.get_legal_action_mask();
-        let legal_actions = engine.get_legal_actions();
-        let action = random.select_action(&state_tensor, &legal_mask, &legal_actions);
-        let _ = engine.apply_action(action);
-    }
+    // Advance to a state with at least 5 legal actions so MCTS actually runs
+    advance_to_decision_point(&mut engine, 5, 42);
 
     let mut group = c.benchmark_group("mcts_simulations");
     group.sample_size(20); // Fewer samples for slower benchmarks
@@ -352,18 +366,8 @@ fn bench_mcts_parallel_scaling(c: &mut Criterion) {
     let mut base_engine = GameEngine::new(&card_db);
     base_engine.start_game(deck, deck, 42).unwrap();
 
-    // Play to an interesting decision point
-    let mut random = RandomBot::new(42);
-    for _ in 0..10 {
-        if base_engine.is_game_over() {
-            break;
-        }
-        let state_tensor = base_engine.get_state_tensor();
-        let legal_mask = base_engine.get_legal_action_mask();
-        let legal_actions = base_engine.get_legal_actions();
-        let action = random.select_action(&state_tensor, &legal_mask, &legal_actions);
-        let _ = base_engine.apply_action(action);
-    }
+    // Advance to a state with at least 5 legal actions so MCTS actually runs
+    advance_to_decision_point(&mut base_engine, 5, 42);
 
     let mut group = c.benchmark_group("mcts_parallel_scaling");
     group.sample_size(10); // Fewer samples since these are slower
