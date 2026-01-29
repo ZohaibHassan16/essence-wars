@@ -20,6 +20,8 @@
   import RulesScreen from "$lib/components/RulesScreen.svelte";
   import LoreScreen from "$lib/components/LoreScreen.svelte";
   import MatchStatsSummary from "$lib/components/stats/MatchStatsSummary.svelte";
+  import MatchCompareView from "$lib/components/stats/MatchCompareView.svelte";
+  import { comparisonStore } from "$lib/stores/comparisonState.svelte";
   import { audioSettings } from "$lib/stores/audioSettings.svelte";
 
   // Overlay screen states
@@ -210,6 +212,9 @@
   <RulesScreen onBack={() => showRules = false} />
 {:else if showLore}
   <LoreScreen onBack={() => showLore = false} />
+<!-- Comparison mode -->
+{:else if comparisonStore.phase !== "idle"}
+  <MatchCompareView />
 <!-- MCP Sync mode takes top precedence when active -->
 {:else if mcpSyncStore.phase === "watching" || mcpSyncStore.phase === "disconnected"}
   <McpSyncView />

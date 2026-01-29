@@ -2,6 +2,7 @@
   import type { SpectatorMatch } from "$lib/api/types";
   import type { MatchStatistics } from "$lib/stats/types";
   import { downloadJson, downloadCsv } from "$lib/stats/export";
+  import { comparisonStore } from "$lib/stores/comparisonState.svelte";
   import StatsOverviewPanel from "./panels/StatsOverviewPanel.svelte";
   import StatsActionPanel from "./panels/StatsActionPanel.svelte";
   import StatsCombatPanel from "./panels/StatsCombatPanel.svelte";
@@ -45,6 +46,13 @@
     showExportMenu = false;
   }
 
+  async function handleCompare() {
+    // Load this match into slot 1 and start comparison mode
+    comparisonStore.loadFromSpectatorMatch(1, match);
+    await comparisonStore.startComparison();
+    onClose();
+  }
+
   // Handle escape key
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === "Escape") {
@@ -82,6 +90,19 @@
       </div>
 
       <div class="flex items-center gap-3">
+        <!-- Compare button -->
+        <button
+          class="px-4 py-2 bg-purple-600/20 text-purple-400 rounded-lg font-semibold text-sm
+                 border border-purple-500/50 hover:bg-purple-600 hover:text-white transition-colors flex items-center gap-2"
+          onclick={handleCompare}
+          title="Compare with another match"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          </svg>
+          Compare
+        </button>
+
         <!-- Export dropdown -->
         <div class="relative">
           <button

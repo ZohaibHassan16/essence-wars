@@ -1,5 +1,6 @@
 <script lang="ts">
   import { replayStore } from "$lib/stores/replayState.svelte";
+  import { comparisonStore } from "$lib/stores/comparisonState.svelte";
   import type { ReplayInfo } from "$lib/api/types";
 
   let sortBy = $state<"date" | "turns" | "deck">("date");
@@ -41,6 +42,10 @@
   function goBack() {
     replayStore.reset();
   }
+
+  async function startComparison() {
+    await comparisonStore.startComparison();
+  }
 </script>
 
 <div class="min-h-screen flex flex-col items-center justify-center p-8">
@@ -48,6 +53,21 @@
   <p class="text-ui-text-dim mb-8">Watch your past games</p>
 
   <div class="max-w-4xl w-full bg-ui-panel rounded-xl p-8 shadow-2xl">
+    <!-- Compare button at top -->
+    {#if replayStore.replays.length >= 2}
+      <div class="mb-6 flex justify-end">
+        <button
+          class="px-4 py-2 bg-purple-600/20 text-purple-400 rounded-lg font-semibold text-sm
+                 border border-purple-500/50 hover:bg-purple-600 hover:text-white transition-colors flex items-center gap-2"
+          onclick={startComparison}
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+          </svg>
+          Compare Matches
+        </button>
+      </div>
+    {/if}
     {#if replayStore.error}
       <div class="mb-4 p-4 bg-damage/20 border border-damage rounded text-damage">
         {replayStore.error}
