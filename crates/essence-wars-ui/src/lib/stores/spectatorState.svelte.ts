@@ -27,6 +27,8 @@ import {
 } from "$lib/audio";
 import type { CommentaryEntry } from "$lib/commentary/types";
 import { generateCommentaryForAction, resetCommentaryState } from "$lib/commentary/generator";
+import type { MatchStatistics } from "$lib/stats/types";
+import { computeMatchStatistics } from "$lib/stats/statsComputer";
 
 export type SpectatorPhase = "setup" | "computing" | "watching" | "finished" | "gameOver";
 
@@ -62,6 +64,11 @@ class SpectatorStore {
   // Loading/error
   isComputing = $state<boolean>(false);
   error = $state<string | null>(null);
+
+  // Match statistics
+  matchStatistics = $state<MatchStatistics | null>(null);
+  showStatsSummary = $state<boolean>(false);
+  private statsAutoPopupTimer: ReturnType<typeof setTimeout> | null = null;
 
   // ============================================================================
   // Computed Properties
@@ -172,10 +179,20 @@ class SpectatorStore {
   // Playback Controls
   // ============================================================================
 
+  /** Transition to finished state and compute statistics */
+  private transitionToFinished() {
+    const wasFinished = this.phase === "finished";
+    this.phase = "finished";
+    // Only call onMatchFinished once
+    if (!wasFinished && !this.matchStatistics) {
+      this.onMatchFinished();
+    }
+  }
+
   /** Start/resume playback */
   play() {
     if (this.isAtEnd) {
-      this.phase = "finished";
+      this.transitionToFinished();
       return;
     }
     this.isPlaying = true;
@@ -196,7 +213,7 @@ class SpectatorStore {
     if (!this.isPlaying || this.isAtEnd) {
       this.isPlaying = false;
       if (this.isAtEnd) {
-        this.phase = "finished";
+        this.transitionToFinished();
       }
       return;
     }
@@ -233,7 +250,7 @@ class SpectatorStore {
 
     // Check if we reached the end - show finished state with result badge
     if (this.isAtEnd) {
-      this.phase = "finished";
+      this.transitionToFinished();
     }
   }
 
@@ -268,7 +285,7 @@ class SpectatorStore {
   jumpToEnd() {
     this.pause();
     this.currentActionIndex = this.totalActions - 1;
-    this.phase = "finished";
+    this.transitionToFinished();
   }
 
   /** Jump to a specific action index */
@@ -277,7 +294,7 @@ class SpectatorStore {
     this.pause();
     this.currentActionIndex = index;
     if (index >= this.totalActions - 1) {
-      this.phase = "finished";
+      this.transitionToFinished();
     } else if (this.phase === "finished" || this.phase === "gameOver") {
       this.phase = "watching";
     }
@@ -352,6 +369,7 @@ class SpectatorStore {
     this.error = null;
     this.watchLive = false;
     this.resetCommentary();
+    this.resetStatistics();
   }
 
   /** Clear current error */
@@ -368,6 +386,7 @@ class SpectatorStore {
     this.isPlaying = false;
     this.error = null;
     this.resetCommentary();
+    this.resetStatistics();
   }
 
   /** Show the game over screen with full results */
@@ -379,6 +398,66 @@ class SpectatorStore {
   /** Go back to watching from game over screen */
   backToWatching() {
     this.phase = "watching";
+  }
+
+  // ============================================================================
+  // Statistics Management
+  // ============================================================================
+
+  /** Compute statistics for the current match (called when match finishes) */
+  private computeStatistics() {
+    if (!this.match) return;
+
+    try {
+      this.matchStatistics = computeMatchStatistics(this.match);
+    } catch (e) {
+      console.error("Failed to compute match statistics:", e);
+      this.matchStatistics = null;
+    }
+  }
+
+  /** Called when the match reaches the finished state */
+  private onMatchFinished() {
+    // Compute statistics
+    this.computeStatistics();
+
+    // Start auto-popup timer (5 seconds)
+    this.clearStatsAutoPopupTimer();
+    this.statsAutoPopupTimer = setTimeout(() => {
+      // Only auto-show if we're still in the finished state
+      if (this.phase === "finished" && this.matchStatistics) {
+        this.showStatsSummary = true;
+      }
+    }, 5000);
+  }
+
+  /** Open the statistics summary modal */
+  openStatsSummary() {
+    this.clearStatsAutoPopupTimer();
+    if (this.matchStatistics) {
+      this.showStatsSummary = true;
+    }
+  }
+
+  /** Close the statistics summary modal */
+  closeStatsSummary() {
+    this.clearStatsAutoPopupTimer();
+    this.showStatsSummary = false;
+  }
+
+  /** Clear the auto-popup timer */
+  private clearStatsAutoPopupTimer() {
+    if (this.statsAutoPopupTimer) {
+      clearTimeout(this.statsAutoPopupTimer);
+      this.statsAutoPopupTimer = null;
+    }
+  }
+
+  /** Reset statistics state */
+  private resetStatistics() {
+    this.clearStatsAutoPopupTimer();
+    this.matchStatistics = null;
+    this.showStatsSummary = false;
   }
 
   // ============================================================================

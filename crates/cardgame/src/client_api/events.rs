@@ -179,6 +179,23 @@ pub enum GameEvent {
         defender_died: bool,
     },
 
+    /// A keyword ability was activated during combat or effect resolution.
+    /// Used for statistics tracking (e.g., Shield blocked damage, Lifesteal healed).
+    KeywordActivated {
+        /// Player whose creature activated the keyword
+        player: PlayerId,
+        /// Slot of the creature that activated the keyword
+        slot: Slot,
+        /// The keyword that was activated
+        keyword: KeywordType,
+        /// Context-specific value (damage blocked, healing done, overflow damage, etc.)
+        value: u8,
+        /// Target player (if the keyword affected another player, e.g., Piercing face damage)
+        target_player: Option<PlayerId>,
+        /// Target slot (if the keyword affected another creature)
+        target_slot: Option<Slot>,
+    },
+
     // =========================================================================
     // SUPPORTS
     // =========================================================================
@@ -310,6 +327,44 @@ pub enum LifeChangeSource {
     Healing,
     /// Lifesteal from combat.
     Lifesteal,
+    /// Piercing overflow damage.
+    Piercing,
+}
+
+/// Type of keyword that was activated during combat or effect resolution.
+/// Used for detailed statistics tracking.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum KeywordType {
+    /// Rush: Creature attacked immediately after being played.
+    Rush,
+    /// Ranged: Creature attacked without receiving counter-damage.
+    Ranged,
+    /// Piercing: Overflow damage was dealt to the enemy commander.
+    Piercing,
+    /// Guard: Creature blocked an attack intended for another target.
+    Guard,
+    /// Lifesteal: Creature healed its controller for damage dealt.
+    Lifesteal,
+    /// Lethal: Creature killed another creature with any amount of damage.
+    Lethal,
+    /// Shield: Creature absorbed damage that would have been dealt.
+    Shield,
+    /// Quick: Creature struck first in combat.
+    Quick,
+    /// Fortify: Creature reduced incoming damage.
+    Fortify,
+    /// Ward: Creature blocked a spell or ability targeting it.
+    Ward,
+    /// Stealth: Creature avoided being attacked.
+    Stealth,
+    /// Charge: Creature gained bonus attack.
+    Charge,
+    /// Frenzy: Creature gained attack from taking damage.
+    Frenzy,
+    /// Regenerate: Creature healed at start of turn.
+    Regenerate,
+    /// Volatile: Creature dealt damage to enemies on death.
+    Volatile,
 }
 
 impl GameEvent {
@@ -338,6 +393,7 @@ impl GameEvent {
             GameEvent::AbilityTriggered { source_player, .. } => Some(*source_player),
             GameEvent::CombatStarted { attacker_player, .. } => Some(*attacker_player),
             GameEvent::CombatResolved { .. } => None,
+            GameEvent::KeywordActivated { player, .. } => Some(*player),
             GameEvent::SpellEffectApplied { .. } => None,
             GameEvent::GameStarted { .. } => None,
             GameEvent::GameEnded { .. } => None,

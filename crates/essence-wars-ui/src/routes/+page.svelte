@@ -19,6 +19,7 @@
   import SettingsScreen from "$lib/components/SettingsScreen.svelte";
   import RulesScreen from "$lib/components/RulesScreen.svelte";
   import LoreScreen from "$lib/components/LoreScreen.svelte";
+  import MatchStatsSummary from "$lib/components/stats/MatchStatsSummary.svelte";
   import { audioSettings } from "$lib/stores/audioSettings.svelte";
 
   // Overlay screen states
@@ -170,6 +171,7 @@
         await api.saveSpectatorReplay(match);
       } : undefined,
       onReviewMatch: () => spectatorStore.backToWatching(),
+      onViewStatistics: spectatorStore.matchStatistics ? () => spectatorStore.openStatsSummary() : undefined,
     };
   }
 
@@ -236,4 +238,13 @@
   <GameBoard />
 {:else if gameStore.phase === "gameOver"}
   <GameOverScreen {...getPlayerGameOverProps()} />
+{/if}
+
+<!-- Statistics modal (overlay for spectator mode) -->
+{#if spectatorStore.showStatsSummary && spectatorStore.match && spectatorStore.matchStatistics}
+  <MatchStatsSummary
+    match={spectatorStore.match}
+    statistics={spectatorStore.matchStatistics}
+    onClose={() => spectatorStore.closeStatsSummary()}
+  />
 {/if}

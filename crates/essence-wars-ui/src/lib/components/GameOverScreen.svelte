@@ -18,6 +18,7 @@
     onMainMenu: () => void;
     onSaveReplay?: () => Promise<void>;
     onReviewMatch?: () => void;
+    onViewStatistics?: () => void;
     replaySaved?: boolean;
   }
 
@@ -32,6 +33,7 @@
     onMainMenu,
     onSaveReplay,
     onReviewMatch,
+    onViewStatistics,
     replaySaved = false,
   }: Props = $props();
 
@@ -258,6 +260,17 @@
             onclick={onReviewMatch}
           >
             Review Match
+          </button>
+        {/if}
+
+        <!-- View Statistics button -->
+        {#if onViewStatistics}
+          <button
+            class="px-6 py-2 bg-purple-600/20 text-purple-400 rounded-lg font-semibold text-sm
+                   border border-purple-500/50 hover:bg-purple-600 hover:text-white transition-all"
+            onclick={onViewStatistics}
+          >
+            View Statistics
           </button>
         {/if}
       </div>

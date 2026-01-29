@@ -21,7 +21,8 @@
     "@tauri-apps/plugin-opener": "^2",
     "gsap": "^3.12.5",
     "jsfxr": "^1.4.0",
-    "lucide-svelte": "^0.563.0"
+    "lucide-svelte": "^0.563.0",
+    "uplot": "^1.6.32"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.6",

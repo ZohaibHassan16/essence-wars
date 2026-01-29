@@ -496,12 +496,24 @@ pub fn game_event_to_dto(event: &GameEvent) -> GameEventDto {
             "creature_died",
             serde_json::json!({ "player": player.0, "slot": slot.0, "card_id": card_id.0 }),
         ),
-        GameEvent::LifeChanged { player, old_life, new_life, .. } => (
+        GameEvent::LifeChanged { player, old_life, new_life, source } => (
             "life_changed",
             serde_json::json!({
                 "player": player.0,
                 "old": old_life,
-                "new": new_life
+                "new": new_life,
+                "source": format!("{:?}", source)
+            }),
+        ),
+        GameEvent::KeywordActivated { player, slot, keyword, value, target_player, target_slot } => (
+            "keyword_activated",
+            serde_json::json!({
+                "player": player.0,
+                "slot": slot.0,
+                "keyword": format!("{:?}", keyword),
+                "value": value,
+                "target_player": target_player.map(|p| p.0),
+                "target_slot": target_slot.map(|s| s.0)
             }),
         ),
         GameEvent::GameEnded { result, final_turn } => {

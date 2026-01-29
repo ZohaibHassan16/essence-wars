@@ -247,6 +247,17 @@
           View Summary
         </button>
 
+        <!-- View Statistics button -->
+        {#if spectatorStore.matchStatistics}
+          <button
+            class="px-4 py-2 bg-purple-600/20 text-purple-400 rounded-lg font-semibold
+                   border border-purple-500/50 hover:bg-purple-600 hover:text-white transition-all"
+            onclick={() => spectatorStore.openStatsSummary()}
+          >
+            View Statistics
+          </button>
+        {/if}
+
         <!-- Save Replay button -->
         <div class="flex items-center gap-2">
           {#if saveSuccess}
