@@ -175,7 +175,7 @@ class SpectatorStore {
   /** Start/resume playback */
   play() {
     if (this.isAtEnd) {
-      this.phase = "gameOver";
+      this.phase = "finished";
       return;
     }
     this.isPlaying = true;
@@ -196,7 +196,7 @@ class SpectatorStore {
     if (!this.isPlaying || this.isAtEnd) {
       this.isPlaying = false;
       if (this.isAtEnd) {
-        this.phase = "gameOver";
+        this.phase = "finished";
       }
       return;
     }
@@ -231,9 +231,9 @@ class SpectatorStore {
       this.generateCommentary(action, prevState);
     }
 
-    // Check if we reached the end - go to game over screen
+    // Check if we reached the end - show finished state with result badge
     if (this.isAtEnd) {
-      this.phase = "gameOver";
+      this.phase = "finished";
     }
   }
 
@@ -268,7 +268,7 @@ class SpectatorStore {
   jumpToEnd() {
     this.pause();
     this.currentActionIndex = this.totalActions - 1;
-    this.phase = "gameOver";
+    this.phase = "finished";
   }
 
   /** Jump to a specific action index */
@@ -277,7 +277,7 @@ class SpectatorStore {
     this.pause();
     this.currentActionIndex = index;
     if (index >= this.totalActions - 1) {
-      this.phase = "gameOver";
+      this.phase = "finished";
     } else if (this.phase === "finished" || this.phase === "gameOver") {
       this.phase = "watching";
     }
