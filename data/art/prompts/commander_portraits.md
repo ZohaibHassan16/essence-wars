@@ -7,9 +7,9 @@
 
 ## Argentum Combine Commanders (Order & Industry)
 
-1. **The High Artificer (ID: 1056)**
-   
-   ![The High Artificer](/home/chris/ai-cardgame/crates/essence-wars-ui/static/cards/core_set/1056.webp)
+1. **The High Artificer (ID: 5000)**
+
+   ![The High Artificer](/home/chris/ai-cardgame/crates/essence-wars-ui/static/portrait/the_high_artificer.webp)
 
    **WAIST-UP PORTRAIT PROMPT:**
 Three-quarter view waist-up portrait of a brilliant female artificer commander,
@@ -30,9 +30,9 @@ painted fantasy illustration with classical portrait composition.
    LoRA: rutkowski:0.4, classical-painting:0.7
    Negative: organic, soft, natural, blurry, low quality, full body, legs
 
-2. **The Sanctum Healer (ID: 1057)**
-   
-   ![The Sanctum Healer](/home/chris/ai-cardgame/crates/essence-wars-ui/static/cards/core_set/1057.webp)
+2. **The Sanctum Healer (ID: 5001)**
+
+   ![The Sanctum Healer](/home/chris/ai-cardgame/crates/essence-wars-ui/static/portrait/the_sanctum_healer.webp)
 
    **WAIST-UP PORTRAIT PROMPT:**
 Three-quarter view waist-up portrait of a graceful female healing artificer commander,
@@ -54,9 +54,9 @@ classical lighting and soft healing aura.
    LoRA: rutkowski:0.4, classical-painting:0.7
    Negative: organic, soft, natural, blurry, low quality, full body, legs, dark, aggressive
 
-3. **Siege Marshal Vex (ID: 1058)**
-   
-   ![Siege Marshal Vex](/home/chris/ai-cardgame/crates/essence-wars-ui/static/cards/core_set/1058.webp)
+3. **Siege Marshal Vex (ID: 5002)**
+
+   ![Siege Marshal Vex](/home/chris/ai-cardgame/crates/essence-wars-ui/static/portrait/siege_marshal_vex.webp)
 
    **WAIST-UP PORTRAIT PROMPT:**
 Three-quarter view waist-up portrait of a battle-hardened male military commander,
@@ -76,9 +76,9 @@ art, gritty painted fantasy illustration with dynamic brushwork.
    LoRA: frazetta:0.4, classical-painting:0.6
    Negative: organic, soft, natural, blurry, low quality, full body, legs
 
-4. **The Grand Architect (ID: 1059)**
-   
-   ![The Grand Architect](/home/chris/ai-cardgame/crates/essence-wars-ui/static/cards/core_set/1059.webp)
+4. **The Grand Architect (ID: 5003)**
+
+   ![The Grand Architect](/home/chris/ai-cardgame/crates/essence-wars-ui/static/portrait/the_grand_architect.webp)
 
    **WAIST-UP PORTRAIT PROMPT:**
 Three-quarter view waist-up portrait of an elegant female architect commander,
@@ -102,9 +102,9 @@ classical painted portrait with refined Renaissance-style lighting.
 
 ## Symbiote Circles Commanders (Evolution & Adaptation)
 
-5. **The Broodmother (ID: 2060)**
-   
-   ![The Broodmother](/home/chris/ai-cardgame/crates/essence-wars-ui/static/cards/core_set/2060.webp)
+5. **The Broodmother (ID: 5004)**
+
+   ![The Broodmother](/home/chris/ai-cardgame/crates/essence-wars-ui/static/portrait/the_broodmother.webp)
 
    **WAIST-UP PORTRAIT PROMPT:**
 Three-quarter view waist-up portrait of a fierce female druid queen commander,
@@ -126,9 +126,9 @@ with vibrant organic textures.
    LoRA: frazetta:0.5, classical-painting:0.5
    Negative: mechanical, industrial, blurry, low quality, full body, legs
 
-6. **Plague Sovereign (ID: 2061)**
-   
-   ![Plague Sovereign](/home/chris/ai-cardgame/crates/essence-wars-ui/static/cards/core_set/2061.webp)
+6. **Plague Sovereign (ID: 5005)**
+
+   ![Plague Sovereign](/home/chris/ai-cardgame/crates/essence-wars-ui/static/portrait/plague_sovereign.webp)
 
    **WAIST-UP PORTRAIT PROMPT:**
 Three-quarter view waist-up portrait of a regal female plague queen commander,
@@ -150,9 +150,9 @@ portrait with unsettling beauty.
    LoRA: frazetta:0.5, classical-painting:0.5
    Negative: mechanical, industrial, blurry, low quality, full body, legs
 
-7. **Alpha of the Hunt (ID: 2062)**
-   
-   ![Alpha of the Hunt](/home/chris/ai-cardgame/crates/essence-wars-ui/static/cards/core_set/2062.webp)
+7. **Alpha of the Hunt (ID: 5006)**
+
+   ![Alpha of the Hunt](/home/chris/ai-cardgame/crates/essence-wars-ui/static/portrait/alpha_of_the_hunt.webp)
 
    **WAIST-UP PORTRAIT PROMPT:**
 Three-quarter view waist-up portrait of a savage male pack alpha commander,
@@ -175,9 +175,9 @@ card art, dynamic painted fantasy illustration with aggressive energy.
    LoRA: frazetta:0.5, classical-painting:0.5
    Negative: mechanical, industrial, blurry, low quality, full body, legs
 
-8. **The Eternal Grove (ID: 2063)**
-   
-   ![The Eternal Grove](/home/chris/ai-cardgame/crates/essence-wars-ui/static/cards/core_set/2063.webp)
+8. **The Eternal Grove (ID: 5007)**
+
+   ![The Eternal Grove](/home/chris/ai-cardgame/crates/essence-wars-ui/static/portrait/the_eternal_grove.webp)
 
    **WAIST-UP PORTRAIT PROMPT:**
 Three-quarter view waist-up portrait of a massive sentient tree-creature commander,
@@ -204,9 +204,9 @@ portrait with spiritual gravitas.
 
 ## Obsidion Syndicate Commanders (Shadow & Domination)
 
-9. **The Blood Sovereign (ID: 3055)**
-   
-   ![The Blood Sovereign](/home/chris/ai-cardgame/crates/essence-wars-ui/static/cards/core_set/3055.webp)
+9. **The Blood Sovereign (ID: 5008)**
+
+   ![The Blood Sovereign](/home/chris/ai-cardgame/crates/essence-wars-ui/static/portrait/the_blood_sovereign.webp)
 
    **WAIST-UP PORTRAIT PROMPT:**
 Three-quarter view waist-up portrait of an alluring vampire queen commander,
@@ -230,34 +230,34 @@ painting with romantic darkness.
    LoRA: classical-painting:0.5, frazetta:0.4
    Negative: organic nature, bright, cheerful, blurry, low quality, full body, legs
 
-10. **Shadow Emperor Kael (ID: 3056)**
-    
-    ![Shadow Emperor Kael](/home/chris/ai-cardgame/crates/essence-wars-ui/static/cards/core_set/3056.webp)
+10. **The Deathmaster (ID: 5009)**
+
+    ![The Deathmaster](/home/chris/ai-cardgame/crates/essence-wars-ui/static/portrait/the_deathmaster.webp)
 
     **WAIST-UP PORTRAIT PROMPT:**
-Three-quarter view waist-up portrait of a regal male assassin-emperor commander,
-showing from head to waist as he emerges from living darkness. Ornate black armor
-with crimson trim covering his torso, shoulder plates, and gauntlets - geometric
-gothic patterns etched across every surface. Pale aristocratic features with sharp
-angular face, eyes that seem to pierce through shadows with cold calculation and
-imperial authority. Crown of black iron and crimson gems sitting on his head,
-marking his sovereignty over shadow. Both hands visible - one holding twin daggers
-that drip with void energy near his chest, the other extended in a lethal striking
-pose. His entire form subtly dissolving at the edges into darkness and shadow
-tendrils that writhe with malevolent life. Expression is regal yet ruthless, a
-ruler who commands through fear, precision, and the threat of instant death.
-Poised stance ready to vanish into shadow after delivering judgment. Gothic throne
-room with shadows bending unnaturally toward him, obeying his will in the
-background. Dramatic lighting with his face and armor emerging from darkness,
-crimson highlights from his crown, armor trim, and the gems pulsing with power.
-90s Magic the Gathering card art, dark gothic portrait with noir atmosphere.
+Three-quarter view waist-up portrait of a deadly female assassin guildmaster commander,
+showing from head to waist with lethal poise and coiled readiness. Elegant black leather
+armor with dark crimson accents covering her torso, form-fitting yet practical for swift
+movement. Multiple concealed blade sheaths visible at her shoulders, forearms, and waist,
+each dagger coated with a faint green venomous glow. Beautiful pale features with sharp
+cheekbones and cold calculating eyes that have witnessed countless deaths, thin cruel
+smile suggesting she already knows how you'll die. Dark hair pulled back tightly in a
+functional style, revealing elegant pointed ears suggesting elven heritage. One gloved
+hand raised near her face holding a perfectly balanced throwing knife between her fingers,
+the other hand resting on a sheathed blade at her hip. Her posture suggests supernatural
+speed - ready to strike before her target can react. Expression is confident and
+predatory, a master of death who ensures every poisoned blade finds its mark. Faint
+wisps of shadow curl around her form like loyal servants. Gothic assassin's guild hall
+with weapon racks and training dummies softly blurred in background. Dramatic side
+lighting creating sharp shadows on her face, neon blue essence light glinting off her
+many blades. 90s Magic the Gathering card art, dark gothic portrait with lethal elegance.
 
     LoRA: frazetta:0.5, classical-painting:0.5
     Negative: organic nature, bright, cheerful, blurry, low quality, full body, legs
 
-11. **The Shadow Weaver (ID: 3057)**
-    
-    ![The Shadow Weaver](/home/chris/ai-cardgame/crates/essence-wars-ui/static/cards/core_set/3057.webp)
+11. **The Shadow Weaver (ID: 5010)**
+
+    ![The Shadow Weaver](/home/chris/ai-cardgame/crates/essence-wars-ui/static/portrait/the_shadow_weaver.webp)
 
     **WAIST-UP PORTRAIT PROMPT:**
 Three-quarter view waist-up portrait of a mysterious female shadow-shifter commander,
@@ -283,9 +283,9 @@ fantasy portrait with supernatural energy.
     LoRA: frazetta:0.5, classical-painting:0.5
     Negative: organic nature, bright, cheerful, blurry, low quality, full body, legs, static, solid
 
-12. **Void Archon (ID: 3058)**
-    
-    ![Void Archon](/home/chris/ai-cardgame/crates/essence-wars-ui/static/cards/core_set/3058.webp)
+12. **Void Archon (ID: 5011)**
+
+    ![Void Archon](/home/chris/ai-cardgame/crates/essence-wars-ui/static/portrait/void_archon.webp)
 
     **WAIST-UP PORTRAIT PROMPT:**
 Three-quarter view waist-up portrait of a powerful female time mage commander,
@@ -350,18 +350,18 @@ temporal energy.
 
 | # | Faction | ID | Name | Archetype |
 |---|---------|-----|------|-----------|
-| 1 | Argentum | 1056 | The High Artificer | Token/Construct generation |
-| 2 | Argentum | 1057 | The Sanctum Healer | Regenerate/Healing |
-| 3 | Argentum | 1058 | Siege Marshal Vex | Piercing/Aggro |
-| 4 | Argentum | 1059 | The Grand Architect | Fortify/Control |
-| 5 | Symbiote | 2060 | The Broodmother | Rush/Swarm |
-| 6 | Symbiote | 2061 | Plague Sovereign | Volatile/Death triggers |
-| 7 | Symbiote | 2062 | Alpha of the Hunt | Frenzy/Aggro |
-| 8 | Symbiote | 2063 | The Eternal Grove | Regenerate/Midrange |
-| 9 | Obsidion | 3055 | The Blood Sovereign | Lifesteal/Sustain |
-| 10 | Obsidion | 3056 | Shadow Emperor Kael | Stealth/Assassin |
-| 11 | Obsidion | 3057 | The Shadow Weaver | Shadow Clone/Copy |
-| 12 | Obsidion | 3058 | Void Archon | Quick/Burst |
+| 1 | Argentum | 5000 | The High Artificer | Token/Construct generation |
+| 2 | Argentum | 5001 | The Sanctum Healer | Ward/Healing |
+| 3 | Argentum | 5002 | Siege Marshal Vex | Attack buff/Aggro |
+| 4 | Argentum | 5003 | The Grand Architect | Fortify/Control |
+| 5 | Symbiote | 5004 | The Broodmother | Rush/Swarm |
+| 6 | Symbiote | 5005 | Plague Sovereign | Death triggers |
+| 7 | Symbiote | 5006 | Alpha of the Hunt | Frenzy/Aggro |
+| 8 | Symbiote | 5007 | The Eternal Grove | Buff/Midrange |
+| 9 | Obsidion | 5008 | The Blood Sovereign | Lifesteal/Sustain |
+| 10 | Obsidion | 5009 | The Deathmaster | Lethal+Quick/Assassin |
+| 11 | Obsidion | 5010 | The Shadow Weaver | Stealth |
+| 12 | Obsidion | 5011 | Void Archon | Quick/Burst |
 
 ---
 

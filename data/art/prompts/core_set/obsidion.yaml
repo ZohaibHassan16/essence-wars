@@ -6,7 +6,7 @@ set: core_set
 
 cards:
   # === COMMANDERS ===
-  - id: 3055
+  - id: 5008
     name: "The Blood Sovereign"
     card_type: creature
     is_commander: true
@@ -103,7 +103,7 @@ cards:
     lora: "classical-painting:0.5, frazetta:0.4"
     negative: "organic nature, bright, cheerful, blurry, low quality"
 
-  - id: 3058
+  - id: 5011
     name: "Void Archon"
     card_type: creature
     tags: [Commander, Mage]
@@ -262,22 +262,23 @@ cards:
 
 # === ADDITIONAL COMMANDERS ===
 
-  - id: 3056
-    name: "Shadow Emperor Kael"
+  - id: 5009
+    name: "The Deathmaster"
     card_type: creature
     is_commander: true
     tags: [Commander, Assassin]
     prompt: >
-      A regal male assassin-emperor in ornate black armor with crimson trim, pale
-      aristocratic features with eyes that pierce through shadows, emerging from
-      darkness with twin daggers that drip with void energy, his form partially
-      dissolved into shadow ready to vanish after his kill, crown of black iron
-      and crimson gems, gothic throne room with shadows bending toward him, 90s
-      Magic the Gathering card art, dark fantasy illustration
+      A deadly female assassin guildmaster in elegant black leather armor with dark
+      crimson accents, multiple concealed blade sheaths with daggers coated in green
+      venomous glow, beautiful pale features with sharp cheekbones and cold calculating
+      eyes, thin cruel smile, dark hair pulled back tightly revealing pointed elven ears,
+      one gloved hand holding a perfectly balanced throwing knife, posture suggesting
+      supernatural speed ready to strike, gothic assassin's guild hall background,
+      90s Magic the Gathering card art, dark fantasy illustration
     lora: "frazetta:0.5, classical-painting:0.5"
     negative: "organic nature, bright, cheerful, blurry, low quality"
 
-  - id: 3057
+  - id: 5010
     name: "The Shadow Weaver"
     card_type: creature
     is_commander: true

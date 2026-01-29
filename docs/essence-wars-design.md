@@ -1233,28 +1233,7 @@ Essence Wars features a **faction-based card system** that provides thematic ide
 
 **Role:** Free-Walker cards are **neutral utility cards** that can be added to any faction deck. They fill gaps, provide answers, and add flexibility without diluting faction identity.
 
-## 18.3 Deck Composition
-
-Standard deck construction follows the **Faction Core + Neutral Splash** model:
-
-```
-STANDARD DECK: 20 cards
-├── Faction Core: 14 cards (70%)    ← Primary faction identity
-└── Neutral Splash: 6 cards (30%)   ← Free-Walker utility
-```
-
-| Deck Type | Composition | Strategy |
-|-----------|-------------|----------|
-| `argentum_control` | 14 Argentum + 6 FW | Wall up, outlast, utility removal |
-| `symbiote_aggro` | 14 Symbiote + 6 FW | Fast pressure, Charge finishers |
-| `obsidion_burst` | 14 Obsidion + 6 FW | Setup + burst, Ranged precision |
-
-**Why 14/6 Split?**
-- **70% Faction Core:** Maintains clear faction identity and keyword focus
-- **30% Neutral Splash:** Provides flexibility without diluting theme
-- Free-Walkers fill gaps that factions intentionally lack
-
-## 18.4 Keyword Distribution by Faction
+## 18.3 Keyword Distribution by Faction
 
 | Keyword | Argentum | Symbiote | Obsidion | Free-Walker |
 |---------|:--------:|:--------:|:--------:|:-----------:|
@@ -1282,7 +1261,7 @@ STANDARD DECK: 20 cards
 - **Fortify** is Argentum's signature defensive mechanic (damage reduction)
 - **Ward** protects key Obsidion pieces from removal
 
-## 18.5 Balance Philosophy
+## 18.4 Balance Philosophy
 
 ### Design Goals
 
@@ -1301,7 +1280,6 @@ STANDARD DECK: 20 cards
 
 ### What We Avoid
 
-- **"Anti-X" Decks:** No deck should exist solely to counter another faction
 - **Dominant Strategies:** No single faction/deck should exceed 60% win rate
 - **Unplayable Factions:** No faction should fall below 40% win rate
 

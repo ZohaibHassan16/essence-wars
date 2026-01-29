@@ -782,7 +782,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 
 ### Phase 9 Tutorial and Onboarding
 - [ ] Update Ingame Tutorial (Human vs AI Mode)
-    - Explaining the Rules, how the game works, turns, Commanders, using seeded game, etc 
+    - Explaining the Rules, how the game works, turns, Commanders, using seeded game replay game, etc 
 - [ ] Players can play a game without having to read any rulebook
 
 ### Phase 10: Art Pass
