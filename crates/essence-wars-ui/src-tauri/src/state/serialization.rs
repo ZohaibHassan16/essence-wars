@@ -16,7 +16,7 @@ pub struct DeckInfo {
     pub id: String,
     pub name: String,
     pub description: String,
-    /// Short playstyle tag (e.g., "Token Swarm", "Aggressive Piercing")
+    /// Short playstyle tag (e.g., "Token Pack", "Aggressive Piercing")
     pub playstyle: String,
     pub faction: String,
     pub card_count: usize,

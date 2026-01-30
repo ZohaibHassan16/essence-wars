@@ -110,6 +110,24 @@ fn execute_token_ability(
                     source,
                 );
             }
+            TokenEffect::Debuff { attack, health } => {
+                // Debuff uses BuffStats with negative values on the target creature
+                ctx.effect_queue.push(
+                    Effect::BuffStats {
+                        target: effect_target,
+                        attack: *attack,
+                        health: *health,
+                        filter: None,
+                    },
+                    source,
+                );
+            }
+            TokenEffect::HealSelf { amount } => {
+                // Heal the ability owner's commander directly (capped at 30)
+                let owner_idx = current_player.index();
+                ctx.state.players[owner_idx].life =
+                    (ctx.state.players[owner_idx].life + *amount as i16).min(30);
+            }
         }
     }
 

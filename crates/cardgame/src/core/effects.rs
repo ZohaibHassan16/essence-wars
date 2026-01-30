@@ -99,6 +99,10 @@ pub enum TokenEffect {
     DestroySelf,
     /// Deal damage to target
     Damage { amount: u8 },
+    /// Apply a stat debuff to target (negative values reduce stats)
+    Debuff { attack: i8, health: i8 },
+    /// Heal the ability owner's commander
+    HealSelf { amount: u8 },
 }
 
 impl TokenDefinition {

@@ -73,6 +73,10 @@ pub enum TokenEffectDef {
     DestroySelf,
     /// Deal damage to target
     Damage { amount: u8 },
+    /// Apply a stat debuff to target (negative values reduce stats)
+    Debuff { attack: i8, health: i8 },
+    /// Heal the ability owner's commander
+    HealSelf { amount: u8 },
 }
 
 impl TokenDef {
@@ -108,6 +112,8 @@ impl TokenEffectDef {
         match self {
             TokenEffectDef::DestroySelf => TokenEffect::DestroySelf,
             TokenEffectDef::Damage { amount } => TokenEffect::Damage { amount: *amount },
+            TokenEffectDef::Debuff { attack, health } => TokenEffect::Debuff { attack: *attack, health: *health },
+            TokenEffectDef::HealSelf { amount } => TokenEffect::HealSelf { amount: *amount },
         }
     }
 }

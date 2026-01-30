@@ -4,7 +4,7 @@ export interface DeckInfo {
   id: string;
   name: string;
   description: string;
-  /** Short playstyle tag (e.g., "Token Swarm", "Aggressive Piercing") */
+  /** Short playstyle tag (e.g., "Token Pack", "Aggressive Piercing") */
   playstyle: string;
   faction: string;
   cardCount: number;

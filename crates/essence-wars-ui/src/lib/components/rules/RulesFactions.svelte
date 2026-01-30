@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Cog, Bug, Skull, Compass } from "lucide-svelte";
+  import { Cog, PawPrint, Skull, Compass } from "lucide-svelte";
 </script>
 
 <div class="space-y-8">
@@ -60,20 +60,20 @@
   <section>
     <div class="flex items-center gap-3 mb-4">
       <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-green-800 to-purple-600 flex items-center justify-center">
-        <Bug size={28} class="text-green-400" />
+        <PawPrint size={28} class="text-green-400" />
       </div>
       <div>
         <h3 class="text-xl font-semibold text-ui-text">The Symbiote Circles</h3>
-        <p class="text-green-400 text-sm">"Adapt or Perish."</p>
+        <p class="text-green-400 text-sm">"The Pack Endures. Hunt as One."</p>
       </div>
     </div>
 
     <div class="bg-ui-bg rounded-lg p-4 space-y-4 border-l-4 border-green-500">
       <p class="text-ui-text-dim">
-        A civilization where the line between person and creature has been erased.
-        They don't build machines - they <span class="text-ui-text">grow</span> them.
-        Living cities of coral and Spire Trees house warriors bonded with symbiotic organisms,
-        their chitin armor fused directly to skin.
+        A civilization where the bond between humanoid and beast has been elevated to sacred art.
+        They don't build machines - they <span class="text-ui-text">grow with</span> the forest.
+        Ancient groves and living tree-cities house warriors bonded with wolves, great cats, and serpents,
+        their leather and fur armor marking their pack allegiance.
       </p>
 
       <div>
@@ -88,13 +88,13 @@
       <div>
         <p class="text-ui-text font-semibold text-sm mb-2">Playstyle</p>
         <p class="text-ui-text-dim text-sm">
-          Aggressive tempo. Swarm the board with cheap creatures, push damage early with Rush,
-          and use Lethal creatures to remove threats. Overwhelm before opponents stabilize.
+          Aggressive tempo. Flood the board with pack creatures, push damage early with Rush,
+          and use Lethal predators to remove threats. Overwhelm before opponents stabilize.
         </p>
       </div>
 
       <p class="text-ui-text-dim text-xs italic border-t border-gray-700 pt-3">
-        "Evolution is not chaos. It is the universe whispering what you could become."
+        "In the pack, there is no 'us' and 'them.' There is only the hunt, and those who run together."
       </p>
     </div>
   </section>

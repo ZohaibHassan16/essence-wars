@@ -187,23 +187,27 @@ fn test_blood_sovereign_grants_lifesteal_and_health() {
 }
 
 #[test]
-fn test_shadow_weaver_grants_stealth() {
-    // The Shadow Weaver (5010): Your creatures have Stealth
+fn test_shadow_weaver_spawns_shades_with_stealth() {
+    // The Shadow Weaver (5010): At start of turn, summon 1/1 Shade with Stealth
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
     setup_game_with_commanders(&mut engine, 5010, 5000, 42);
 
-    play_creature_at_slot(&mut engine, 0, Slot(0));
+    // After setup at turn 2, P1 should have 2 Shades (turn 1 + turn 2 start)
+    let p1_creatures = &engine.state.players[0].creatures;
+    assert!(p1_creatures.len() >= 1, "P1 should have at least 1 Shade");
 
-    let creature = engine.state.players[0]
-        .get_creature(Slot(0))
-        .expect("Creature should exist");
-
+    // The Shade should have Stealth keyword
+    let shade = &p1_creatures[0];
     assert!(
-        creature.keywords.has_stealth(),
-        "Creature should have Stealth from Shadow Weaver passive"
+        shade.keywords.has_stealth(),
+        "Shade token should have Stealth"
     );
+
+    // Verify stats (1/1)
+    assert_eq!(shade.attack, 1, "Shade should have 1 attack");
+    assert_eq!(shade.current_health, 1, "Shade should have 1 health");
 }
 
 #[test]
@@ -641,74 +645,45 @@ fn test_broodmother_rush_does_not_affect_opponent() {
 }
 
 #[test]
-fn test_plague_sovereign_deals_damage_on_ally_death() {
-    // Plague Sovereign (5005): When one of your creatures dies, deal 1 damage to enemy commander
+fn test_plague_sovereign_spawns_sporelings() {
+    // Plague Sovereign (5005): At start of turn, summon 1/1 Sporeling with Fungal Rot
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
 
-    // Use low-health creatures that will die in combat
-    // Eager Sellsword (4031) - 1 cost, 2/1 Rush
-    let deck1: Vec<CardId> = vec![CardId(4031); 30]; // Rush creatures that will die easily
-    let deck2: Vec<CardId> = vec![CardId(1000); 30]; // Brass Sentinel 2/4 Guard
+    // Use minimal decks
+    let deck1: Vec<CardId> = vec![CardId(1000); 30];
+    let deck2: Vec<CardId> = vec![CardId(1000); 30];
 
     engine.start_game_raw(
         deck1,
         deck2,
         CardId(5005), // Plague Sovereign
-        CardId(5001), // Sanctum Healer (passive, no tokens)
+        CardId(5001), // Sanctum Healer
         42,
         GameMode::default(),
     ).unwrap();
 
-    let initial_p2_health = engine.state.players[1].life;
-
-    // Turn 1: P1 plays a 1-cost Rush creature (can attack immediately)
-    let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
-    engine.apply_action(action).expect("P1 plays creature");
-
-    // End turn
+    // Advance to turn 2
     engine.apply_action(Action::EndTurn).expect("P1 end turn");
-
-    // P2 turn 1: P2 only has 2 essence (first-player adjustment), need turn 2 to play 2-cost
     engine.apply_action(Action::EndTurn).expect("P2 end turn");
 
-    // Turn 2: P1 can attack, but let's wait for P2 to have a creature
-    engine.apply_action(Action::EndTurn).expect("P1 end turn");
-
-    // P2 turn 2: now has 3 essence, can play Brass Sentinel (2 cost)
-    let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
-    engine.apply_action(action).expect("P2 plays creature");
-
-    engine.apply_action(Action::EndTurn).expect("P2 end turn");
-
-    // Turn 3: P1 attacks with their 2/1 Rush creature against P2's 2/4 Guard
-    // P1's creature will die (has 1 health, takes 2 damage from Sentinel)
-    // Plague Sovereign should trigger, dealing 1 damage to P2
-
-    // First, check P1's creature exists and can attack
-    assert!(engine.state.players[0].get_creature(Slot(0)).is_some(), "P1 creature should exist");
-
-    // Attack P2's Brass Sentinel
-    let attack_action = Action::Attack {
-        attacker: Slot(0),
-        defender: Slot(0),
-    };
-    engine.apply_action(attack_action).expect("Attack should succeed");
-
-    // P1's creature (2/1) should have died from Brass Sentinel's 2 attack
-    assert!(
-        engine.state.players[0].get_creature(Slot(0)).is_none(),
-        "P1's creature should have died in combat"
+    // After turn 2 start, P1 should have 2 Sporelings (turn 1 + turn 2)
+    let p1_creatures = &engine.state.players[0].creatures;
+    assert_eq!(
+        p1_creatures.len(),
+        2,
+        "P1 should have 2 Sporelings after turn 2 start"
     );
 
-    // Check P2's health decreased by 2 from Plague Sovereign trigger (buffed from 1 to 2 in v0.8.0)
-    let p2_health_after = engine.state.players[1].life;
-    assert_eq!(
-        p2_health_after,
-        initial_p2_health - 2,
-        "P2 should have taken 2 damage from Plague Sovereign trigger (was {}, now {})",
-        initial_p2_health,
-        p2_health_after
+    // Verify Sporeling stats (1/1)
+    let sporeling = &p1_creatures[0];
+    assert_eq!(sporeling.attack, 1, "Sporeling should have 1 attack");
+    assert_eq!(sporeling.current_health, 1, "Sporeling should have 1 health");
+
+    // Verify Sporeling has token abilities (Fungal Rot)
+    assert!(
+        sporeling.token_abilities.is_some(),
+        "Sporeling should have token abilities (Fungal Rot)"
     );
 }
 

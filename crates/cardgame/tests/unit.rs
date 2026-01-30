@@ -58,3 +58,5 @@ mod client_api_tests;
 mod commander_tests;
 #[path = "unit/tracing_tests.rs"]
 mod tracing_tests;
+#[path = "unit/ability_tests.rs"]
+mod ability_tests;
