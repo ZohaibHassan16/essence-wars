@@ -2,7 +2,7 @@
 
 use cardgame::actions::Action;
 use cardgame::cards::{CardDatabase, CardDefinition, CardType};
-use cardgame::effects::TargetingRule;
+use cardgame::effects::{TargetingRule, TokenAbility, TokenEffect};
 use cardgame::keywords::Keywords;
 use cardgame::legal::{legal_action_mask, legal_actions};
 use cardgame::state::{CardInstance, Creature, CreatureStatus, GameState};
@@ -733,4 +733,245 @@ fn test_commander_insight_available_with_one_card() {
 
     assert!(actions.contains(&Action::CommanderInsight),
         "Commander's Insight should be available with exactly 1 card in hand");
+}
+
+// ========================================
+// Token Ability Tests
+// ========================================
+
+#[test]
+fn test_token_ability_generates_use_ability_action() {
+    let card_db = CardDatabase::empty();
+    let mut state = GameState::new();
+
+    // Give player resources
+    setup_resources(&mut state, 0, 3, 5);
+
+    // Create a token creature with an activated ability
+    let token_abilities = vec![TokenAbility {
+        name: "Volatile Overload".to_string(),
+        essence_cost: 1,
+        targeting: TargetingRule::TargetAny,
+        effects: vec![
+            TokenEffect::DestroySelf,
+            TokenEffect::Damage { amount: 2 },
+        ],
+    }];
+
+    let token = Creature {
+        instance_id: CreatureInstanceId(0),
+        card_id: CardId(0), // Token marker
+        owner: PlayerId::PLAYER_ONE,
+        slot: Slot(0),
+        attack: 2,
+        current_health: 2,
+        max_health: 2,
+        base_attack: 2,
+        base_health: 2,
+        keywords: Keywords::none(),
+        status: CreatureStatus::default(),
+        turn_played: 1, // Not summoning sick
+        frenzy_stacks: 0,
+        token_abilities: Some(token_abilities),
+    };
+    state.players[0].creatures.push(token);
+
+    let actions = legal_actions(&state, &card_db);
+
+    // Should have UseAbility action with TargetAny -> targets face (NoTarget)
+    // No enemy creatures, so only face target available
+    let use_ability_count = actions
+        .iter()
+        .filter(|a| matches!(a, Action::UseAbility { .. }))
+        .count();
+
+    assert!(
+        use_ability_count > 0,
+        "Should have UseAbility actions for token ability. Got actions: {:?}",
+        actions
+    );
+}
+
+#[test]
+fn test_token_ability_requires_essence() {
+    let card_db = CardDatabase::empty();
+    let mut state = GameState::new();
+
+    // Give player AP but NO essence
+    state.players[0].action_points = 3;
+    state.players[0].max_essence = 0;
+    state.players[0].current_essence = 0;
+
+    // Create a token with ability that costs 1 essence
+    let token_abilities = vec![TokenAbility {
+        name: "Volatile Overload".to_string(),
+        essence_cost: 1,
+        targeting: TargetingRule::NoTarget,
+        effects: vec![TokenEffect::DestroySelf],
+    }];
+
+    let token = Creature {
+        instance_id: CreatureInstanceId(0),
+        card_id: CardId(0),
+        owner: PlayerId::PLAYER_ONE,
+        slot: Slot(0),
+        attack: 2,
+        current_health: 2,
+        max_health: 2,
+        base_attack: 2,
+        base_health: 2,
+        keywords: Keywords::none(),
+        status: CreatureStatus::default(),
+        turn_played: 1,
+        frenzy_stacks: 0,
+        token_abilities: Some(token_abilities),
+    };
+    state.players[0].creatures.push(token);
+
+    let actions = legal_actions(&state, &card_db);
+
+    // Should NOT have UseAbility action (not enough essence)
+    let use_ability_count = actions
+        .iter()
+        .filter(|a| matches!(a, Action::UseAbility { .. }))
+        .count();
+
+    assert_eq!(
+        use_ability_count, 0,
+        "Should NOT have UseAbility actions without enough essence"
+    );
+}
+
+#[test]
+fn test_silenced_token_cannot_use_ability() {
+    let card_db = CardDatabase::empty();
+    let mut state = GameState::new();
+
+    setup_resources(&mut state, 0, 3, 5);
+
+    // Create a SILENCED token with ability
+    let token_abilities = vec![TokenAbility {
+        name: "Volatile Overload".to_string(),
+        essence_cost: 1,
+        targeting: TargetingRule::NoTarget,
+        effects: vec![TokenEffect::DestroySelf],
+    }];
+
+    let mut token = Creature {
+        instance_id: CreatureInstanceId(0),
+        card_id: CardId(0),
+        owner: PlayerId::PLAYER_ONE,
+        slot: Slot(0),
+        attack: 2,
+        current_health: 2,
+        max_health: 2,
+        base_attack: 2,
+        base_health: 2,
+        keywords: Keywords::none(),
+        status: CreatureStatus::default(),
+        turn_played: 1,
+        frenzy_stacks: 0,
+        token_abilities: Some(token_abilities),
+    };
+    token.status.set_silenced(true);
+    state.players[0].creatures.push(token);
+
+    let actions = legal_actions(&state, &card_db);
+
+    // Should NOT have UseAbility action (silenced)
+    let use_ability_count = actions
+        .iter()
+        .filter(|a| matches!(a, Action::UseAbility { .. }))
+        .count();
+
+    assert_eq!(
+        use_ability_count, 0,
+        "Silenced token should NOT be able to use abilities"
+    );
+}
+
+#[test]
+fn test_token_ability_action_indices() {
+    let card_db = CardDatabase::empty();
+    let mut state = GameState::new();
+
+    // Give player resources
+    setup_resources(&mut state, 0, 3, 5);
+
+    // Create a token creature with an activated ability
+    let token_abilities = vec![TokenAbility {
+        name: "Volatile Overload".to_string(),
+        essence_cost: 1,
+        targeting: TargetingRule::TargetAny,
+        effects: vec![
+            TokenEffect::DestroySelf,
+            TokenEffect::Damage { amount: 2 },
+        ],
+    }];
+
+    let token = Creature {
+        instance_id: CreatureInstanceId(0),
+        card_id: CardId(0), // Token marker
+        owner: PlayerId::PLAYER_ONE,
+        slot: Slot(0),
+        attack: 2,
+        current_health: 2,
+        max_health: 2,
+        base_attack: 2,
+        base_health: 2,
+        keywords: Keywords::none(),
+        status: CreatureStatus::default(),
+        turn_played: 1,
+        frenzy_stacks: 0,
+        token_abilities: Some(token_abilities),
+    };
+    state.players[0].creatures.push(token);
+
+    // Add an enemy creature to have a target
+    let enemy = Creature {
+        instance_id: CreatureInstanceId(1),
+        card_id: CardId(1),
+        owner: PlayerId::PLAYER_TWO,
+        slot: Slot(2),
+        attack: 2,
+        current_health: 2,
+        max_health: 2,
+        base_attack: 2,
+        base_health: 2,
+        keywords: Keywords::none(),
+        status: CreatureStatus::default(),
+        turn_played: 1,
+        frenzy_stacks: 0,
+        token_abilities: None,
+    };
+    state.players[1].creatures.push(enemy);
+
+    let actions = legal_actions(&state, &card_db);
+
+    // Find UseAbility actions
+    let use_ability_actions: Vec<_> = actions
+        .iter()
+        .filter(|a| matches!(a, Action::UseAbility { .. }))
+        .collect();
+
+    println!("UseAbility actions found: {:?}", use_ability_actions);
+
+    // TargetAny should create:
+    // 1. Action targeting enemy creature (slot 2)
+    // 2. Action targeting face (NoTarget)
+    assert_eq!(
+        use_ability_actions.len(), 2,
+        "Should have 2 UseAbility actions (1 enemy creature + 1 face). Got: {:?}",
+        use_ability_actions
+    );
+
+    // Verify action indices are in the UseAbility range (75-253)
+    for action in &use_ability_actions {
+        let index = action.to_index();
+        assert!(
+            (75..=253).contains(&index),
+            "UseAbility action should have index 75-253, got {}",
+            index
+        );
+    }
 }

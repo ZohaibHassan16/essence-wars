@@ -1025,3 +1025,102 @@ fn test_conditional_spell_does_not_trigger_when_target_survives() {
         "P1 should NOT have drawn a card (target survived)"
     );
 }
+
+// ========================================
+// High Artificer Token Ability Tests
+// ========================================
+
+/// Test that The High Artificer's Brass Cog tokens have the Volatile Overload ability.
+#[test]
+fn test_high_artificer_token_has_ability() {
+    // Load real card database which includes commanders
+    let card_db = load_real_card_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    // Use a deck that works with The High Artificer (commander 5000)
+    let deck = valid_yaml_deck();
+    let high_artificer = CardId(5000);
+
+    // Start game with P1 as High Artificer
+    engine.start_game_raw(
+        deck.clone(),
+        deck.clone(),
+        high_artificer,
+        high_artificer,
+        42,
+        GameMode::default(),
+    ).unwrap();
+
+    // At turn start, P1 should have a Brass Cog token summoned
+    // Find tokens (CardId(0) is the sentinel for tokens)
+    let tokens: Vec<_> = engine.state.players[0]
+        .creatures
+        .iter()
+        .filter(|c| c.card_id == CardId(0))
+        .collect();
+
+    assert!(
+        !tokens.is_empty(),
+        "High Artificer should summon a Brass Cog token at StartOfTurn. Creatures: {:?}",
+        engine.state.players[0].creatures.iter().map(|c| c.card_id).collect::<Vec<_>>()
+    );
+
+    // The token should have abilities
+    let token = tokens[0];
+    assert!(
+        token.token_abilities.is_some(),
+        "Brass Cog token should have token_abilities. Token: card_id={:?}, attack={}, health={}",
+        token.card_id,
+        token.attack,
+        token.current_health
+    );
+
+    let abilities = token.token_abilities.as_ref().unwrap();
+    assert_eq!(abilities.len(), 1, "Brass Cog should have exactly 1 ability");
+    assert_eq!(abilities[0].name, "Volatile Overload", "Ability should be Volatile Overload");
+    assert_eq!(abilities[0].essence_cost, 1, "Volatile Overload should cost 1 essence");
+}
+
+/// Test that UseAbility actions are generated for Brass Cog tokens.
+#[test]
+fn test_high_artificer_token_generates_use_ability() {
+    let card_db = load_real_card_db();
+    let mut engine = GameEngine::new(&card_db);
+
+    let deck = valid_yaml_deck();
+    let high_artificer = CardId(5000);
+
+    engine.start_game_raw(
+        deck.clone(),
+        deck.clone(),
+        high_artificer,
+        high_artificer,
+        42,
+        GameMode::default(),
+    ).unwrap();
+
+    // Advance to turn 2 so the token from turn 1 isn't summoning sick
+    engine.apply_action(Action::EndTurn).unwrap();
+    engine.apply_action(Action::EndTurn).unwrap();
+
+    // Now it's turn 2, P1's turn again
+    // P1 should have a token that can use abilities
+
+    // Give P1 enough essence to use the ability
+    engine.state.players[0].current_essence = 5;
+
+    let actions = engine.get_legal_actions();
+
+    let use_ability_count = actions
+        .iter()
+        .filter(|a| matches!(a, Action::UseAbility { .. }))
+        .count();
+
+    println!("Legal actions: {:?}", actions.iter().map(|a| format!("{:?}", a)).collect::<Vec<_>>());
+
+    assert!(
+        use_ability_count > 0,
+        "Should have UseAbility actions for Brass Cog token. Actions: {:?}",
+        actions
+    );
+}
