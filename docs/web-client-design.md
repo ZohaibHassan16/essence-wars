@@ -787,7 +787,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 
 ### Phase 10: Art Pass
 - Generate better backgrounds that fit the art direction of the game, replace existing ones
-- Use Flux Schnell to create decorations and props, populate the Menus with thoughtful additions (not plastering it, but making it look nice)
+- Use Flux Dev to create decorations and props, populate the Menus with thoughtful additions (not plastering it, but making it look nice). Include the prompts to have pure white background, so that the background can be removed and replaed with transparency programatically. Readfile tool every generated final asset before using it, regenarte/iterate if needed.
 - Overhall all Menus and Boards etc to be visually stunning and professional
 - Audit SFX Library, current creature sounds are placeholders. Web Search for a consistent art asset pack that fits our theme and replace the existing ones.
 

@@ -30,14 +30,14 @@ To keep things balanced and distinct (like Warcraft or MTG), there are three maj
 * **Card Links:** *Iron Defender*, *Tower Sentinel*, *Siege Commander*.
 * **Lore Hook:** They believe the chaotic "Wild Essence" must be refined into perfect, predictable geometric shapes. They build the "Iron Fortress" decks.
 
-### 🌿 Faction 2: The Symbiote Circles (Growth & Adaptation)
+### 🌿 Faction 2: The Symbiote Circles (Primal Nature & The Pack)
 
-* **Primary Color/Vibe:** Deep Green, Bioluminescent Purple, Bone. "Biopunk" Fantasy.
-* **Philosophy:** "Evolution is Mandatory."
-* **Essence Harvesting:** **Photosynthesis**. They plant genetically modified "Spire Trees" into Essence veins, which drink the energy and grow fruit/creatures infused with power.
-* **Key Archetypes:** Beasts, Healers, Poison/Lethal.
-* **Card Links:** *Toxic Spider*, *Centaur Charger*, *Ambush Predator*.
-* **Lore Hook:** They don't build machines; they *grow* them. A "tank" is a massive beetle. A "gun" is a symbiotic insect on your arm.
+* **Primary Color/Vibe:** Deep Forest Green, Bioluminescent Purple, Rich Earth Brown. Urza's Saga-era nature magic.
+* **Philosophy:** "The Pack Endures. Hunt as One."
+* **Essence Harvesting:** **Communion**. They bond with ancient primordial forests, drawing power from sacred groves where Essence flows through root networks connecting all living things.
+* **Key Archetypes:** Wolves, Great Cats, Serpents, Druids, Treants.
+* **Card Links:** *Pack Alpha*, *Grove Guardian*, *Serpent Striker*.
+* **Lore Hook:** They don't command nature; they *are* nature. The pack hunts as one mind. The forest remembers those who protect it.
 
 ### 🔮 Faction 3: The Obsidion Syndicate (Knowledge & Ambition)
 
@@ -71,9 +71,9 @@ Here is how the factions interact on the continent of **Pangea-Prime**:
     ┌──────────────┴──────────────┐
     │                             │
  [ARGENTUM COMBINE]       [SYMBIOTE CIRCLES]
- (West - Plateaus)         (East - Jungle)
- Cities of Brass,          Living Cities,
- Order, Industry           Beasts, Evolution
+ (West - Plateaus)         (East - Primordial Forest)
+ Cities of Brass,          Sacred Groves,
+ Order, Industry           Packs, Nature Magic
     │                             │
     └──────────────┬──────────────┘
              The Trade Roads
@@ -103,7 +103,7 @@ Let's take specific cards from your document and give them this new "Gilded Truc
 ### Example 3: `31 Warlord Titan` (8 Cost, 8/8)
 
 * **Faction:** Neutral (Free-Walker)
-* **Art Direction:** A massive giant wearing patchwork armor made from the scraps of both Combine tanks and Symbiote chitin. He is holding a ship's anchor as a weapon.
+* **Art Direction:** A massive giant wearing patchwork armor made from scraps of Combine tanks, Circle bone plates, and Syndicate dark iron. He is holding a ship's anchor as a weapon.
 * **Flavor Text:** *"I don't care about your politics, little man. I care about how much Essence you can fit in this sack."*
 
 ### Example 4: `33 Arcane Intellect` (3 Cost, Draw 2)
@@ -271,122 +271,124 @@ Parents are given flexibility to raise children as they see fit, within health a
 
 ### 🌿 Faction 2: The Symbiote Circles
 
-**"Adapt or Perish."**
+**"The Pack Endures. Hunt as One."**
 
 **The Vibe:**
-High-tech biology ("Biopunk"). This isn't people in loincloths; it's scientists in living armor. Their cities are grown from coral and massive trees. They use genetic grafting to create "perfect" beings. A "gun" might be a beetle that spits acid, bonded to the soldier's arm.
+Primordial nature magic in the spirit of Urza's Saga. Druids in wolf pelts, beast-masters bonded to great predators, ancient treants guarding sacred groves. Their cities are primordial forests where enormous ancient trees shelter entire communities. They draw power from the land itself, channeling Essence through root networks that connect all living things.
 
 **The Philosophy:**
-The world is stagnant; the Circle brings evolution. They believe Essence is the blood of the planet and should be used to accelerate natural selection. Why build a tank when you can breed a beetle the size of a house?
+The world is a living whole; the Circles are its guardians. They believe Essence flows through all natural things—the hunting wolf, the ancient oak, the mountain lion—and that those who bond with nature become part of something greater. Why stand alone when you can run with the pack?
 
 **Keywords & Archetypes:**
 
-* **Lethal / Poison:** Biological warfare.
-* **Beasts:** Genetically modified monsters (Chimeras).
-* **Rush:** Feral speed and adrenaline injectors.
+* **Lethal:** Predator strikes—fangs, venom, natural weapons.
+* **Beasts:** Wolves, great cats, serpents, bears, birds of prey.
+* **Rush:** Pack tactics and the thrill of the hunt.
 
 ---
 
 #### The People of the Circles
 
-The Symbiote Circles are not a horde of mindless beasts—they are a sophisticated civilization where the line between "person" and "creature" has been deliberately erased. Every humanoid member of the Circles has undergone **The Communion**, a ritual bonding that integrates them into the collective biological network.
+The Symbiote Circles are not savages—they are an ancient civilization where the bond between humanoid and nature has been elevated to sacred art. Every member of the Circles has undergone **The Pack Bond**, a ritual communion that links them spiritually to the great forests and the creatures within.
 
-To outsiders, this appears horrifying. To the Circles, it is the natural next step of evolution. They do not see their mutations as deformities—they see themselves as *improved*. The baseline human body is considered an unfinished draft, waiting to be perfected through symbiosis.
+To outsiders, the Circles appear wild and dangerous. To the Circles, they are simply *whole*. The Combine locks itself in metal boxes. The Syndicate poisons itself with dark magic. Only the Circles remember what it means to be part of the living world.
 
 **Society Structure:**
 
-The Circles operate through a caste system based on specialization rather than birth. One's role determines one's modifications, and one's modifications determine one's role. Advancement means deeper integration with the collective—more grafts, more symbiotes, more communion.
+The Circles operate through a fluid hierarchy based on respect and proven capability. One earns their place through deeds—protecting the grove, leading successful hunts, healing the sick, communing with ancient spirits. Leadership is not seized; it is recognized by the pack.
 
-At the lowest level are the **Initiated**, who bear only minor modifications: bioluminescent tattoos that pulse with emotion, a symbiotic companion no larger than a rat, perhaps a single chitin plate grafted to the shoulder. At the highest levels are the **Fully Expressed**, whose original humanoid form is barely recognizable beneath layers of living armor, multiple symbiotic entities, and organs that were never meant for human bodies.
+At the foundational level are the **Bonded**, who have formed their first spiritual link—perhaps with a wolf companion, a grove of sacred trees, or the spirit of an ancestor. At the highest levels are the **Alphas** and **Grove Elders**, whose bond with nature is so deep they can call storms, command entire packs, or speak with voices older than memory.
 
-**The Humanoid Castes:**
+**The Circles' Roles:**
 
-| Caste | Role | Modifications |
-|-------|------|---------------|
-| **Bio-Weaver** | Genetic engineer | Living fiber robes that respond to thought, symbiotic tools bonded to fingers, third eye for microscopic vision |
-| **Spore-Sower** | Healer/Medic | Mycelium robes, fungal growths along the spine, small mushroom familiars that harvest healing spores |
-| **Hive Shepherd** | Beast commander | Chitin armor bonded directly to skin, pheromone glands in the throat, compound eye implants |
-| **Gene-Sculptor** | Elite scientist | Elegant bio-suits with deliberate asymmetric mutations, extra limbs, organs visible through translucent skin |
-| **Circle Warrior** | Soldier | Living weapons fused to arms, bio-grafted armor plates, adrenaline-sac grafts for combat |
-| **Swarm Caller** | Commander | Hive nodes grafted to shoulders and skull, neural links to swarm creatures, bioluminescent command markings |
-| **Evolution Priest** | Religious figure | Ritualistic bio-implants, sacred mutations marking divine favor, living scripture tattooed in genetic code |
-| **Grove Keeper** | Druid/Warden | Plant-creature communion, bark-like skin grafts, root tendrils in place of feet |
+| Role | Function | Appearance & Bond |
+|------|----------|-------------------|
+| **Pack Alpha** | War leader | Wolf pelt cloaks, bone totems, dire wolf companions, tribal war paint in bioluminescent patterns |
+| **Grove Keeper** | Forest guardian | Living wood staff, bark-like skin patterns, communion with ancient trees, healing magic |
+| **Beast Warden** | Animal commander | Leather and fur armor, bonded to great cats or wolf packs, predator's eyes glowing gold |
+| **Circle Shaman** | Spiritual leader | Feathered robes, bone masks, spirit links to ancestors, bioluminescent ritual markings |
+| **Pack Hunter** | Scout/warrior | Light leather armor, bone weapons, wolf companion, natural camouflage |
+| **Spore Tender** | Healer/decay master | Fungal robes, mushroom familiars, mastery of poison and medicine |
+| **Serpent Speaker** | Venom specialist | Scale-patterned skin, snake companions, lethal toxin mastery |
+| **Treant Elder** | Ancient guardian | Bark skin, root tendrils, centuries of wisdom, regenerating form |
 
 **Relationship with Beasts:**
 
-The creatures of the Circles are not pets, mounts, or tools—they are *extensions* of the collective. A Hive Shepherd does not "command" her beetle swarm; she *is* the swarm, perceiving through a thousand compound eyes while her humanoid body directs the whole. When a Circle Warrior bonds with a living blade-creature, the weapon can feel pain, hunger, and loyalty.
+The creatures of the Circles are not pets, mounts, or tools—they are *family*. A Pack Alpha does not "command" her wolves; she runs with them, hunts with them, shares their joy and grief. When a Beast Warden bonds with a great cat, they become pack-mates for life, each willing to die for the other.
 
-This philosophy extends to the largest war-beasts. The "Siege Beetle" that the Argentum Combine fears is not a mindless animal—it contains a Gene-Sculptor who has merged with it completely, their consciousness distributed throughout its massive form. They remember being humanoid. They simply no longer see the appeal.
+This philosophy extends to the greatest beasts. The dire wolves that accompany Circle war parties are not mindless animals—they are trusted companions who fight alongside their bonded partners. The ancient serpents that guard sacred groves remember pacts made centuries ago and honor them still.
 
-*"You ask if our beasts are intelligent. You ask the wrong question. Ask instead: are your 'individuals' still capable of being anything greater than alone?"* — Evolution Priest Tyrak
+*"You ask if our beasts obey us. You ask the wrong question. In the pack, there is no 'us' and 'them.' There is only the hunt, and those who run together."* — Pack Alpha Kira Wolfborn
 
 ---
 
-#### Visual Identity of Symbiote Humanoids
+#### Visual Identity of Circle Members
 
-The members of the Circles are immediately recognizable, even to those who have never seen one in person. Their aesthetic is organic, asymmetric, and alive.
+The members of the Circles are immediately recognizable by their natural aesthetic—organic, primal, and connected to the wild.
 
 **Clothing and Armor:**
 
-* **Living Fiber:** Garments are grown, not woven. Robes of living plant fiber respond to the wearer's needs—tightening for protection, loosening for mobility, changing color to match emotional state.
-* **Chitin Plates:** Armor is not worn; it is bonded. Plates of insectoid chitin fuse directly to skin, growing alongside the wearer. Higher-ranked members have full carapaces.
-* **Bio-Grafts:** Weapons are living creatures bonded to the body. A Circle Warrior's "sword" might be a hardened limb-creature, its blade-edge constantly regenerating, its hilt fused to the warrior's forearm.
+* **Natural Materials:** Garments are crafted from leather, fur, and woven plant fiber. Wolf pelts, bear hides, and great cat skins mark status and bond. Everything is practical for the hunt.
+* **Bone and Fang:** Armor incorporates bones, fangs, and claws from honored beasts—trophies that carry the spirit of fallen pack-mates. A necklace of wolf fangs marks a proven hunter.
+* **Living Adornment:** Vines, flowers, and moss grow on clothing by choice, marking those deeply bonded to the forest. Some wear living wood armor that heals alongside them.
 
-**Physical Modifications:**
+**Physical Characteristics:**
 
-* **Bioluminescent Markings:** Green and purple patterns glow beneath the skin, pulsing with heartbeat, flaring with emotion. These are not tattoos—they are symbiotic organisms.
-* **Eyes:** Modified eyes are common. Some have compound facets for enhanced perception. Others have third eyes on the forehead for microscopic work. Many have glowing irises in shades of green or amber.
-* **Hair:** Traditional hair is rare in the Circles. Most members have living tendrils, vine-like growths, or moss that serves the same aesthetic purpose while being biologically useful.
-* **Limbs:** Extra limbs are not uncommon among higher castes. A Gene-Sculptor might have four arms—two humanoid, two chitinous. A Grove Keeper might have root-tendrils instead of legs.
+* **Bioluminescent War Paint:** Green and purple patterns glow beneath the skin during communion, flaring with emotion during battle. These markings appear during the Pack Bond ritual and strengthen with deeper connection.
+* **Eyes:** Many Circle members have golden predator eyes—a mark of deep beast-bonding. Some see in darkness as their wolf companions do.
+* **Hair:** Often wild and braided with bone beads, feathers, and totems. Some Grove Keepers have hair that flows with living vines and flowers.
+* **Build:** Athletic and powerful. Circle life demands strength, speed, and endurance. Both men and women are formidable warriors.
 
-*"The Combine welds metal to metal and calls it progress. We grow bone to bone and call it communion."* — Bio-Weaver Seline
+*"The Combine encases itself in metal. The Syndicate drowns in shadow. We run beneath open sky, and the forest runs with us."* — Grove Keeper Thorn
 
 ---
 
-#### Life in the Living Cities
+#### Life in the Primordial Forests
 
-The cities of the Symbiote Circles are grown, not built. Massive Spire Trees form the central structures, their branches becoming walkways, their hollows becoming homes. Buildings are coral-like growths that expand to accommodate new residents. Streets are root networks that guide travelers and transport nutrients.
+The Circles do not build cities—they *grow* with them. Their communities exist within and around enormous ancient trees, in groves where Essence flows so strongly that the forest itself seems alive. Walkways are woven from living branches. Homes are hollows shaped by generations of careful tending.
 
 **Daily Life:**
 
-A typical day for a Circle citizen begins with **Tending**—a morning ritual where each member tends to their symbiotes and contributes to their local growth-node. This might mean feeding a weapon-creature, pruning a section of living wall, or simply spending time in communion with the neighborhood's shared consciousness.
+A typical day for a Circle citizen begins with **The Morning Hunt**—not always literal hunting, but the gathering of what the pack needs. Some hunt game. Some gather herbs. Some tend to the sacred groves. All contribute to the whole.
 
-Work is specialized by caste but collaborative by nature. Bio-Weavers design new creatures in grown laboratories. Spore-Sowers maintain the health of both citizens and structures. Hive Shepherds patrol the borders with their bonded swarms. Everyone contributes to the whole.
+The pack eats together, trains together, celebrates together. Individual achievement is honored, but never at the expense of the pack. The greatest hunters are those who ensure everyone eats.
 
-**Children and Growth:**
+**Children and the Pack:**
 
-Children in the Circles are born unmodified—The Communion cannot be forced, only chosen. At the age of fifteen, each young person chooses their path and receives their first modification. Some choose minimal integration. Others embrace full transformation from the start.
+Children in the Circles grow up surrounded by nature. They learn to track before they learn to read (though they do learn to read—the Circles keep oral and written histories stretching back millennia). At fifteen, each young person undergoes **The First Bond**—choosing their path and forming their initial connection to a beast, a grove, or an ancestral spirit.
 
-Parents do not see children who choose different paths as lost—the collective remains connected regardless of individual form.
+Parents celebrate whatever path their children choose. A family might include a Pack Hunter, a Grove Keeper, and a Serpent Speaker—all equally honored, all part of the same pack.
+
+*"The Combine raises children to serve machines. The Syndicate raises children to hunger for power. We raise children to run free, to hunt true, and to always—always—protect the pack."* — Elder Shaman Whisperwind
 
 ---
 
 **Card Flavor Mapping:**
 
-* **`04 Toxic Spider` (Lethal):** A "Needle-Fang Drone."
-* *Flavor:* "The toxin doesn't kill you. It just convinces your heart to stop beating."
+* **Pack Alpha (Lethal):** A battle-scarred wolf matriarch with fangs that never miss their mark.
+* *Flavor:* "One bite. That's all she needs."
 
 
-* **`11 Centaur Charger` (Rush):** Not a mythical centaur, but a soldier whose legs have been surgically replaced with cyber-organic predatory limbs.
-* *Flavor:* "Whatever he was before the grafting, he's much faster now."
+* **Grove Guardian (Regenerate):** An ancient treant whose wounds seal with new bark before the enemy can strike again.
+* *Flavor:* "The forest remembers every axe. The forest forgives nothing."
 
 
-* **`10 Medic Apprentice` (Heal):** A "Spore-Sower." Instead of bandages, they apply a glowing moss that knits flesh together.
-* *Flavor:* "Hold still. The roots need a moment to take hold."
+* **Swift Stalker (Rush):** A young hunter and her wolf, both eager for their first real battle.
+* *Flavor:* "The pack runs. The prey falls. This is the way."
 
-**Additional Humanoid Card Flavor:**
+**Additional Character Flavor:**
 
-* **Bio-Weaver Adept:** A scientist in flowing green robes that ripple with independent life, tools extending from their fingertips.
-* *Flavor:* "Every creature begins as a question. I simply provide the answer."
+* **Pack Alpha Commander:** A fierce woman in wolf pelts, dire wolf at her side, rallying her pack with a howl that echoes across the battlefield.
+* *Flavor:* "Where the alpha howls, the pack follows."
 
-* **Hive Shepherd:** A warrior whose chitin armor has become indistinguishable from their skin, insects crawling across their form with purpose.
-* *Flavor:* "The swarm does not follow me. The swarm and I are the same sentence."
+* **Beast Warden:** A muscular hunter whose great cat companion mirrors every movement, both coiled to spring.
+* *Flavor:* "She doesn't command the panther. They simply agree on who deserves to die."
 
-* **Evolution Priest:** A robed figure whose sacred mutations glow with inner light, ritual scars forming patterns of genetic code.
-* *Flavor:* "Mutation is not chaos. It is the universe whispering what you could become."
+* **Circle Shaman:** An elder in feathered robes, communing with spirits visible only as dancing lights.
+* *Flavor:* "The ancestors fought beside us. They fight beside us still."
 
-* **Swarm Caller:** A commander with hive-nodes grafted to their skull, bioluminescent markings flaring as swarms respond to unspoken commands.
-* *Flavor:* "I speak with a thousand voices. Do you still wish to negotiate?"
+* **Serpent Speaker:** An elegant figure with scales glinting beneath the skin, vipers coiled lovingly around both arms.
+* *Flavor:* "Venom is just nature's way of saying 'no.'"
 
 ---
 
@@ -627,7 +629,7 @@ The Free-Walker aesthetic is **functional patchwork**: a mix of stolen, salvaged
 
 **Clothing and Armor:**
 
-* **Salvaged Mix:** A Free-Walker might wear a Combine helmet, Circle chitin boots, and a Syndicate coat—all stripped from corpses, bought in markets, or won in games of chance. Nothing matches; everything works.
+* **Salvaged Mix:** A Free-Walker might wear a Combine helmet, Circle bone-studded boots, and a Syndicate coat—all stripped from corpses, bought in markets, or won in games of chance. Nothing matches; everything works.
 * **Practical Layers:** The Unclaimed Zones range from scorching desert to frozen waste. Free-Walkers dress in layers: light underlayers for heat, heavy outer layers for cold, everything designed to be shed or added quickly.
 * **Personal Modification:** Every piece of equipment is customized. That rifle has been rebalanced, that armor patched with a different metal, that cloak dyed to match the local terrain. Free-Walkers take pride in making their gear *theirs*.
 
@@ -697,8 +699,8 @@ The Gilded Truce keeps the major factions from open war, but the tension never s
 
 | From / About | Argentum Combine | Symbiote Circles | Obsidion Syndicate | Free-Walkers |
 |--------------|------------------|------------------|-------------------|--------------|
-| **Argentum** | *We are the future* | Disturbing aberrations | Dangerous but useful | Necessary chaos |
-| **Symbiote** | Stagnant cowards | *We are evolution* | Arrogant parasites | Sadly limited |
+| **Argentum** | *We are the future* | Wild savages | Dangerous but useful | Necessary chaos |
+| **Symbiote** | Stagnant cowards | *We are the pack* | Arrogant parasites | Sadly alone |
 | **Obsidion** | Useful tools | Fascinating specimens | *We are transcendence* | Profitable pawns |
 | **Free-Walk** | Best customers | Weird but honest | Pay well, don't trust | *We are free* |
 
@@ -706,9 +708,9 @@ The Gilded Truce keeps the major factions from open war, but the tension never s
 
 Despite their differences, the factions need each other:
 
-* **Combine ↔ Circles:** The Combine trades processed Essence and precision tools for Circle biological products (medicines, organic components, "ethically sourced" creatures)
+* **Combine ↔ Circles:** The Combine trades processed Essence and precision tools for Circle natural medicines, rare herbs, and beast-trained mounts
 * **Combine ↔ Syndicate:** The Combine provides raw materials and manufacturing; the Syndicate provides magical research and "unconventional solutions"
-* **Circles ↔ Syndicate:** Careful trading of biological research (the Circles despise Syndicate methods but want their knowledge) and magical enhancements (the Syndicate wants Circle regeneration tech)
+* **Circles ↔ Syndicate:** Uneasy trading of healing knowledge (the Circles despise Syndicate methods but want their lore) and nature magic (the Syndicate covets Circle regeneration secrets)
 * **Free-Walkers ↔ Everyone:** They carry the mail, guard the caravans, fight the wars, and ask no questions. Everyone needs them; no one admits it.
 
 ---

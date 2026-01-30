@@ -35,11 +35,26 @@ commanders:
     card_type: commander
     faction: Obsidion
     rarity: Legendary
-    passive_ability:
-      description: "Your creatures have Stealth"
-      effect:
-        type: grant_keyword
-        keyword: Stealth
+    triggered_ability:
+      trigger: StartOfTurn
+      description: "At the start of your turn, summon a 1/1 Shade with Stealth and Soul Siphon"
+      effects:
+        - type: summon_token
+          token:
+            name: "Shade"
+            attack: 1
+            health: 1
+            keywords: [Stealth]
+            abilities:
+              - name: "Soul Siphon"
+                essence_cost: 1
+                targeting: NoTarget
+                effects:
+                  - type: destroy_self
+                  - type: damage
+                    amount: 1
+                  - type: heal_self
+                    amount: 2
     flavor: "Shadows don't lie. They simply don't tell the whole truth."
 
   - id: 5011

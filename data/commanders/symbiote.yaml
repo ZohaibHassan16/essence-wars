@@ -1,5 +1,5 @@
 # Symbiote Circles Commanders
-# 4 commanders defining the aggressive, swarm-focused faction
+# 4 commanders defining the aggressive, pack-focused faction
 # ID range: 5004-5007
 
 commanders:
@@ -13,7 +13,7 @@ commanders:
       effect:
         type: grant_keyword
         keyword: Rush
-    flavor: "Where she commands, the swarm follows."
+    flavor: "Where the alpha howls, the pack follows."
 
   - id: 5005
     name: "Plague Sovereign"
@@ -21,13 +21,25 @@ commanders:
     faction: Symbiote
     rarity: Legendary
     triggered_ability:
-      trigger: OnAllyDeath
-      description: "When one of your creatures dies, deal 2 damage to the enemy commander"
+      trigger: StartOfTurn
+      description: "At the start of your turn, summon a 1/1 Sporeling with Fungal Rot"
       effects:
-        - type: damage
-          amount: 2
-          target: EnemyCommander
-    flavor: "Every death feeds the plague."
+        - type: summon_token
+          token:
+            name: "Sporeling"
+            attack: 1
+            health: 1
+            keywords: []
+            abilities:
+              - name: "Fungal Rot"
+                essence_cost: 1
+                targeting: TargetEnemyCreature
+                effects:
+                  - type: destroy_self
+                  - type: debuff
+                    attack: -1
+                    health: -1
+    flavor: "From death blooms the endless rot."
 
   - id: 5006
     name: "Alpha of the Hunt"

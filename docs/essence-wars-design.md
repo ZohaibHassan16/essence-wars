@@ -112,7 +112,7 @@ The New Horizons Edition contains **300 cards** organized across three factions 
 | Faction | Cards | ID Range | Identity |
 |---------|-------|----------|----------|
 | Argentum Combine | 75 | 1000-1074 | "The Wall" — Defensive constructs |
-| Symbiote Circles | 75 | 2000-2074 | "The Swarm" — Aggressive tempo |
+| Symbiote Circles | 75 | 2000-2074 | "The Pack" — Aggressive tempo |
 | Obsidion Syndicate | 75 | 3000-3074 | "The Shadow" — Burst and control |
 | Free-Walkers (Neutral) | 75 | 4000-4074 | "The Toolbox" — Utility splash |
 | **Total** | **300** | | |
@@ -1045,11 +1045,11 @@ The New Horizons Edition features **12 pre-built Commander Decks** — each buil
 
 ## 17.3 Symbiote Circles Decks (4)
 
-### 🐛 The Broodmother — Rush/Swarm
+### 🐺 The Broodmother — Rush/Pack
 
 **Deck ID:** `broodmother_swarm`
 **Commander:** The Broodmother (5004) — All creatures have Rush
-**Strategy:** Every creature attacks immediately; overwhelming aggression
+**Strategy:** Every creature attacks immediately; overwhelming pack aggression
 
 ### ☠️ Plague Sovereign — Death Triggers
 
@@ -1149,7 +1149,7 @@ Essence Wars features a **faction-based card system** that provides thematic ide
 │                                                                          │
 │   TRUE FACTIONS (Primary Identity)                                       │
 │   ├── Argentum Combine    "The Wall"     [Defensive, Industrial]        │
-│   ├── Symbiote Circles    "The Swarm"    [Aggressive, Adaptive]         │
+│   ├── Symbiote Circles    "The Pack"     [Aggressive, Primal]           │
 │   └── Obsidion Syndicate  "The Shadow"   [Burst, Control]               │
 │                                                                          │
 │   NEUTRAL CARDS (Supplemental)                                           │
@@ -1181,21 +1181,21 @@ Essence Wars features a **faction-based card system** that provides thematic ide
 
 ---
 
-### 🌿 SYMBIOTE CIRCLES — "The Swarm"
+### 🌿 SYMBIOTE CIRCLES — "The Pack"
 
-**Thematic Identity:** Growth, Adaptation, Evolution
-**Lore:** Biopunk Fantasy ecosystem. "Adapt or Perish."
+**Thematic Identity:** Primal Nature, Pack Bond, The Hunt
+**Lore:** Urza's Saga-era nature magic. "The Pack Endures. Hunt as One."
 
 | Aspect | Definition |
 |--------|------------|
 | **Primary Keywords** | Rush, Lethal, Regenerate |
-| **Secondary Keywords** | Ranged (acid spitters) |
-| **Archetypes** | Beasts, Parasites, Healers, Swarm |
+| **Secondary Keywords** | Frenzy, Volatile |
+| **Archetypes** | Wolves, Great Cats, Serpents, Druids, Treants |
 | **Strengths** | Tempo, efficient trading, sustained pressure |
 | **Weaknesses** | Low board control, vulnerable to AoE |
 | **Avoid** | Guard, Shield |
 
-**Playstyle:** Aggressive tempo with Rush creatures. Trade efficiently using Lethal. Regenerate provides staying power for key threats.
+**Playstyle:** Aggressive pack tactics with Rush creatures. Trade efficiently using Lethal predators. Regenerate provides staying power for ancient forest guardians.
 
 ---
 

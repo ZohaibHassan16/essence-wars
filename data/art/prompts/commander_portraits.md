@@ -107,24 +107,25 @@ classical painted portrait with refined Renaissance-style lighting.
    ![The Broodmother](/home/chris/ai-cardgame/crates/essence-wars-ui/static/portrait/the_broodmother.webp)
 
    **WAIST-UP PORTRAIT PROMPT:**
-Three-quarter view waist-up portrait of a fierce female druid queen commander,
-showing from head to waist with primal majesty. Living bio-armor of bioluminescent
-purple vines and bone plates covering her shoulders, torso, and waist - a complete
-organic battle suit that pulses with life. Powerful athletic features with wild
-untamed hair flowing with living tendrils that pulse with purple light, some
-tendrils extending down past her shoulders. One clawed hand raised in a summoning
-gesture, the other hand positioned at her waist with fingers splayed showing
-predatory claws. Chitinous armor plating visible on both forearms and torso. Deep
-green skin with organic circuit-like patterns spreading across her body. Intense
-predatory gaze showing both beauty and danger, tribal markings glowing on her
-cheekbones and neck. Commanding stance of a pack leader ready to call her swarm.
-Jungle background with glowing spore trees and smaller symbiote creatures softly
-out of focus, purple and green bioluminescence creating dramatic rim lighting on
-her bio-armor. 90s Magic the Gathering card art, painted fantasy illustration
-with vibrant organic textures.
+Three-quarter view waist-up portrait of a fierce female wolf matriarch druid queen,
+showing from head to waist with primal majesty and pack leader authority. Natural
+armor of wolf pelts and dire wolf fur draped across her powerful shoulders, leather
+bodice with bone clasps and wolf fang necklace adorning her athletic frame. Wild
+flowing auburn hair with braided sections containing bone beads and feathers,
+windswept and untamed. Strong beautiful features with golden predator eyes that
+command absolute loyalty, tribal war paint in green bioluminescent patterns across
+her cheekbones. One hand raised in a summoning gesture calling her wolf pack, the
+other resting on the massive head of a dire wolf companion visible at her side.
+Muscular athletic build showing she hunts alongside her pack, not above them.
+Expression is fierce, protective, and commanding - a mother wolf who will destroy
+anything threatening her pack. Ancient primordial forest clearing behind with wolf
+eyes glowing in the shadows, moonlight filtering through massive trees. Dramatic
+rim lighting from bioluminescent fungi creating green and purple highlights on her
+fur cloak and wild hair. 90s Magic the Gathering card art, Urza's Saga era painted
+fantasy illustration with primal nature energy.
 
    LoRA: frazetta:0.5, classical-painting:0.5
-   Negative: mechanical, industrial, blurry, low quality, full body, legs
+   Negative: chitin, insect, alien, mechanical, industrial, blurry, low quality, full body, legs
 
 6. **Plague Sovereign (ID: 5005)**
 
@@ -156,24 +157,25 @@ portrait with unsettling beauty.
 
    **WAIST-UP PORTRAIT PROMPT:**
 Three-quarter view waist-up portrait of a savage male pack alpha commander,
-showing from head to waist with feral intensity and predatory power. Predator
-grafts covering his entire muscular torso - bone spurs and chitin plates naturally
-fused to his powerful frame, creating natural organic armor. Feral yellow eyes
-gleaming with hunting instinct, intense predatory gaze locked forward ready to
-strike. Strong angular face with tribal scars and bioluminescent green markings
-pulsing across cheekbones, neck, and chest. Wild mane of dark hair with living
-tendrils that move independently like sensing appendages. Powerful muscular arms
-and torso showing raw primal strength, hands positioned in a crouched aggressive
-stance - claws extended, one hand near his chest, the other reaching forward as
-if about to pounce. Hunting posture of an apex predator leading his pack into
-frenzy. Tribal bone ornaments and symbiote grafts visible at his waist. Dark
-jungle clearing behind with glowing eyes of his pack barely visible in shadows.
-Dramatic lighting from bioluminescent sources creating dangerous atmosphere,
-green light pulsing across his body in tribal patterns. 90s Magic the Gathering
-card art, dynamic painted fantasy illustration with aggressive energy.
+showing from head to waist with feral intensity and predatory power. Massive
+muscular torso covered in ritual scars and tribal tattoos, wearing a cloak of
+dire wolf pelts with the alpha wolf's skull as a shoulder pauldron. Feral golden
+eyes gleaming with hunting instinct, intense predatory gaze locked forward ready
+to strike. Strong angular face with tribal scars and bioluminescent green war
+paint pulsing across cheekbones, neck, and chest in primal patterns. Wild mane
+of dark hair braided with wolf teeth and bone totems, wind-whipped and savage.
+Powerful muscular arms and torso showing raw primal strength earned through the
+hunt, hands gripping a massive bone-handled hunting spear. Hunting posture of an
+apex predator leading his pack into frenzy, coiled and ready to spring. Trophy
+belt of predator fangs and claws from great beasts he has slain. Dark primordial
+forest clearing behind with glowing eyes of his wolf pack barely visible in
+shadows, ready to attack on his command. Dramatic moonlight and bioluminescent
+fungi creating dangerous atmosphere, green light highlighting his war paint and
+the savage intensity in his golden eyes. 90s Magic the Gathering card art, Urza's
+Saga era dynamic painted fantasy illustration with primal aggressive energy.
 
-   LoRA: frazetta:0.5, classical-painting:0.5
-   Negative: mechanical, industrial, blurry, low quality, full body, legs
+   LoRA: frazetta:0.6, classical-painting:0.4
+   Negative: chitin, insect, alien, mechanical, industrial, blurry, low quality, full body, legs
 
 8. **The Eternal Grove (ID: 5007)**
 
