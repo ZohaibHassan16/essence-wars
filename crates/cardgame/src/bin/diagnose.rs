@@ -21,7 +21,7 @@ use cardgame::diagnostics::{
     export_csv, export_json, AggregatedStats, DiagnosticConfig, DiagnosticRunner, ExportFormat,
     print_report,
 };
-use cardgame::execution::GameData;
+use cardgame::execution::{parse_bot_type_or_exit, GameData};
 
 /// P1/P2 Asymmetry Diagnostic Tool
 #[derive(Parser, Debug)]
@@ -88,14 +88,8 @@ fn main() {
         args.games_positional
     };
 
-    // Parse bot type
-    let bot_type: BotType = args.bot.parse().unwrap_or_else(|_| {
-        eprintln!(
-            "Error: Invalid bot type '{}'. Valid options: greedy, alphabeta, mcts, random",
-            args.bot
-        );
-        process::exit(1);
-    });
+    // Parse bot type using shared helper
+    let bot_type = parse_bot_type_or_exit(&args.bot);
 
     // Warn about using non-competitive bots for serious analysis
     if !bot_type.is_competitive() {

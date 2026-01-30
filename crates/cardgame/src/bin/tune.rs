@@ -18,6 +18,7 @@ use clap::Parser;
 use cardgame::bots::{BotWeights, GreedyWeights};
 use cardgame::cards::CardDatabase;
 use cardgame::decks::{DeckDefinition, DeckRegistry, Faction};
+use cardgame::execution::GameData;
 use cardgame::tuning::{
     deploy_weights, CmaEs, CmaEsConfig, Evaluator, EvaluatorConfig, ExperimentConfig,
     ExperimentDir, TuningMode,
@@ -160,26 +161,22 @@ fn main() {
         eprintln!("Warning: Could not save version info: {}", e);
     }
 
-    // Load card database with commanders
-    let card_db = match CardDatabase::load_with_commanders(&args.cards, &args.commanders) {
-        Ok(db) => db,
+    // Load game data using unified loader
+    let game_data = match GameData::load_with_overrides(
+        Some(&args.cards),
+        Some(&args.commanders),
+        Some(&args.decks),
+        None, // weights - not needed for tuning
+        !args.verbose,
+    ) {
+        Ok(data) => data,
         Err(e) => {
-            eprintln!("Error loading card database from {:?} and commanders from {:?}: {}", args.cards, args.commanders, e);
+            eprintln!("Error loading game data: {}", e);
             process::exit(1);
         }
     };
-
-    // Load deck registry if needed
-    let deck_registry = match DeckRegistry::load_from_directory(&args.decks) {
-        Ok(r) => r,
-        Err(e) => {
-            if args.mode == "specialist" || args.mode == "generalist" {
-                eprintln!("Error loading decks from {:?}: {}", args.decks, e);
-                process::exit(1);
-            }
-            DeckRegistry::new()
-        }
-    };
+    let card_db = game_data.card_db;
+    let deck_registry = game_data.deck_registry;
 
     // Parse tuning mode
     let tuning_mode = match args.mode.as_str() {

@@ -18,7 +18,7 @@ use std::time::Instant;
 use clap::Parser;
 
 use cardgame::bots::BotType;
-use cardgame::execution::{configure_thread_pool, GameData, MatchupBuilder};
+use cardgame::execution::{configure_thread_pool, parse_bot_type_or_exit, GameData, MatchupBuilder};
 use cardgame::validation::{
     export_json, print_results, save_validation_results, ArchetypeWeights, BalanceAnalyzer,
     BalanceStatus, ValidationConfig, ValidationExecutor, ValidationResults,
@@ -103,10 +103,7 @@ fn main() {
     }
 
     // Parse bot type
-    let bot_type: BotType = args.bot.parse().unwrap_or_else(|_| {
-        eprintln!("Error: Invalid bot type '{}'. Valid options: alphabeta, mcts, greedy, random", args.bot);
-        process::exit(1);
-    });
+    let bot_type = parse_bot_type_or_exit(&args.bot);
 
     // Configure thread pool
     let num_threads = configure_thread_pool(args.threads);

@@ -15,6 +15,7 @@ use cardgame::actions::Action;
 use cardgame::bots::{Bot, GreedyBot};
 use cardgame::cards::CardDatabase;
 use cardgame::engine::GameEngine;
+use cardgame::execution::MAX_ACTIONS_PER_GAME;
 use cardgame::state::GameMode;
 use cardgame::types::PlayerId;
 use common::*;
@@ -105,7 +106,9 @@ fn test_turn_limit_enforcement() {
     engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 99999, GameMode::default()).unwrap();
 
     // Always end turn immediately to maximize turn count
-    while !engine.is_game_over() {
+    // Safety limit in case turn limit logic has a bug
+    let mut action_count = 0;
+    while !engine.is_game_over() && action_count < MAX_ACTIONS_PER_GAME {
         let actions = engine.get_legal_actions();
 
         // Find EndTurn action
@@ -114,6 +117,7 @@ fn test_turn_limit_enforcement() {
             .expect("EndTurn should always be available");
 
         engine.apply_action(*end_turn).unwrap();
+        action_count += 1;
     }
 
     // Turn limit is 30 (each player gets 15 turns)
@@ -283,8 +287,9 @@ fn test_victory_points_tracking() {
     engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, 11111, GameMode::default()).unwrap();
 
     let mut rng = SimpleRng::new(11111);
+    let mut action_count = 0;
 
-    while !engine.is_game_over() {
+    while !engine.is_game_over() && action_count < MAX_ACTIONS_PER_GAME {
         // Track damage dealt (victory points)
         let p1_vp = engine.state.players[0].total_damage_dealt;
         let p2_vp = engine.state.players[1].total_damage_dealt;
@@ -300,6 +305,7 @@ fn test_victory_points_tracking() {
         }
         let action_idx = rng.range(actions.len());
         engine.apply_action(actions[action_idx]).unwrap();
+        action_count += 1;
     }
 }
 

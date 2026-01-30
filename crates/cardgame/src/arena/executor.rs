@@ -5,21 +5,17 @@
 
 use std::time::{Duration, Instant};
 
-/// Safety limit for maximum actions per game.
-///
-/// Prevents infinite loops from bugs or degenerate game states.
-/// 1000 actions is approximately 50x the typical game length of ~20 actions.
-const MAX_ACTIONS_PER_GAME: usize = 1000;
-
 use crate::arena::config::{MatchConfig, SequentialConfig};
 use crate::arena::logger::{ActionLogger, ActionRecord, StateSnapshot};
 use crate::arena::stats::MatchStats;
 use crate::bots::{create_bot, BotType};
 use crate::cards::CardDatabase;
-use crate::engine::GameInitError;
 use crate::core::tracing::{CombatTracer, EffectTracer};
-use crate::engine::GameEngine;
-use crate::execution::{run_batch_parallel, BatchConfig, GameOutcome, GameSeeds, ProgressStyle};
+use crate::engine::{GameEngine, GameInitError};
+use crate::execution::{
+    run_batch_parallel, run_game_loop, BatchConfig, GameLoopConfig, GameOutcome, GameSeeds,
+    NoOpCallback, ProgressStyle, MAX_ACTIONS_PER_GAME,
+};
 use crate::types::PlayerId;
 
 /// Validate that commanders exist in the card database before starting games.
@@ -120,38 +116,17 @@ fn run_single_game_parallel(
         .start_game_with_mode(&config.deck1, &config.deck2, seeds.game, config.game_mode)
         .expect("Failed to start game - commander not found in card database");
 
-    // Main game loop
-    let max_actions = MAX_ACTIONS_PER_GAME;
-    let mut action_count = 0;
+    // Run game using unified game loop (safety limit built-in)
+    let loop_config = GameLoopConfig::new(seeds.game);
+    let result = run_game_loop(
+        &mut engine,
+        &mut *bot1,
+        &mut *bot2,
+        &loop_config,
+        &mut NoOpCallback,
+    );
 
-    while !engine.is_game_over() && action_count < max_actions {
-        let current_player = engine.current_player();
-
-        // Select action using appropriate bot
-        let action = if current_player == PlayerId::PLAYER_ONE {
-            select_action_for_bot(&mut *bot1, &config.bot1_type, &engine)
-        } else {
-            select_action_for_bot(&mut *bot2, &config.bot2_type, &engine)
-        };
-
-        // Apply action
-        if engine.apply_action(action).is_err() {
-            break;
-        }
-
-        action_count += 1;
-    }
-
-    // Log warning if action limit was hit without game completion
-    if action_count >= max_actions && !engine.is_game_over() {
-        log::warn!(
-            "Game exceeded {} action limit without completion (seed: {})",
-            max_actions,
-            seeds.game
-        );
-    }
-
-    GameOutcome::new(engine.winner(), engine.turn_number() as u32, start.elapsed())
+    GameOutcome::new(result.winner(), engine.turn_number() as u32, start.elapsed())
 }
 
 /// Run a match sequentially with logging and tracing support.

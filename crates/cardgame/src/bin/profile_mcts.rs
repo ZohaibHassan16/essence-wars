@@ -6,6 +6,7 @@ use cardgame::bots::{Bot, GreedyBot, MctsBot, MctsConfig};
 use cardgame::cards::CardDatabase;
 use cardgame::core::state::GameMode;
 use cardgame::engine::GameEngine;
+use cardgame::execution::MAX_ACTIONS_PER_GAME;
 use cardgame::types::{CardId, PlayerId};
 
 /// Default commander for profiling (The High Artificer).
@@ -161,8 +162,9 @@ fn main() {
 
                 let mut mcts = MctsBot::with_config(&card_db, config.clone(), seed);
                 let mut greedy = GreedyBot::new(&card_db, seed + 1000);
+                let mut action_count = 0;
 
-                while !engine.is_game_over() {
+                while !engine.is_game_over() && action_count < MAX_ACTIONS_PER_GAME {
                     let action = if engine.current_player() == PlayerId::PLAYER_ONE {
                         total_moves += 1;
                         mcts.select_action_with_engine(&engine)
@@ -170,6 +172,7 @@ fn main() {
                         greedy.select_action_with_engine(&engine)
                     };
                     let _ = engine.apply_action(action);
+                    action_count += 1;
                 }
             }
 

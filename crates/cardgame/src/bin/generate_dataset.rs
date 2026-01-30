@@ -29,13 +29,14 @@ use serde::Serialize;
 use cardgame::actions::Action;
 use cardgame::bots::{Bot, BotWeights, GreedyBot, GreedyWeights, MctsConfig};
 use cardgame::cards::CardDatabase;
+use cardgame::decks::DeckRegistry;
 use cardgame::engine::GameEnvironment;
-use cardgame::execution::configure_thread_pool;
+use cardgame::execution::{configure_thread_pool, resolve_seed, GameData, MAX_ACTIONS_PER_GAME};
 use cardgame::legal::legal_action_mask;
 use cardgame::state::GameMode;
 use cardgame::tensor::state_to_tensor;
 use cardgame::types::PlayerId;
-use cardgame::{DeckRegistry, GameEngine};
+use cardgame::GameEngine;
 
 /// Dataset Generator - Generate MCTS self-play data for ML training
 #[derive(Parser, Debug)]
@@ -69,6 +70,10 @@ struct Args {
     /// Path to card database
     #[arg(long, default_value = "data/cards/core_set")]
     cards: PathBuf,
+
+    /// Path to commanders directory
+    #[arg(long, default_value = "data/commanders")]
+    commanders: PathBuf,
 
     /// Path to deck definitions directory
     #[arg(long, default_value = "data/decks")]
@@ -410,9 +415,10 @@ fn generate_game(
     };
 
     let mut moves = Vec::new();
+    let mut action_count = 0;
 
-    // Play game
-    while !engine.is_game_over() {
+    // Play game with safety limit to prevent infinite loops
+    while !engine.is_game_over() && action_count < MAX_ACTIONS_PER_GAME {
         let state = engine.get_state();
         let turn = state.current_turn as u8;
         let player = engine.current_player();
@@ -439,6 +445,8 @@ fn generate_game(
         if engine.apply_action(action).is_err() {
             break;
         }
+
+        action_count += 1;
     }
 
     // Determine winner
@@ -470,13 +478,18 @@ fn main() {
     // Configure thread pool
     configure_thread_pool(args.threads);
 
-    // Load card database
-    println!("Loading card database from {:?}...", args.cards);
-    let card_db = CardDatabase::load_from_directory(&args.cards).expect("Failed to load card database");
-
-    // Load deck registry
-    println!("Loading decks from {:?}...", args.decks);
-    let deck_registry = DeckRegistry::load_from_directory(&args.decks).expect("Failed to load decks");
+    // Load game data using unified loader
+    println!("Loading game data...");
+    let game_data = GameData::load_with_overrides(
+        Some(&args.cards),
+        Some(&args.commanders),
+        Some(&args.decks),
+        None, // weights - handled separately
+        false,
+    )
+    .expect("Failed to load game data");
+    let card_db = game_data.card_db;
+    let deck_registry = game_data.deck_registry;
 
     // Load weights if specified
     let weights = args.weights.as_ref().map(|path| {
@@ -493,13 +506,8 @@ fn main() {
         }
     };
 
-    // Get base seed
-    let base_seed = args.seed.unwrap_or_else(|| {
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_secs()
-    });
+    // Get base seed using shared helper
+    let base_seed = resolve_seed(args.seed);
 
     // Get deck list
     let deck_ids: Vec<String> = deck_registry.deck_ids().iter().map(|s| s.to_string()).collect();

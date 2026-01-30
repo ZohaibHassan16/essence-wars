@@ -11,7 +11,7 @@ use rayon::prelude::*;
 use crate::bots::{create_bot, AlphaBetaConfig, BotType, MctsConfig};
 use crate::cards::CardDatabase;
 use crate::engine::{GameEngine, GameInitError};
-use crate::execution::{GameSeeds, ProgressReporter, ProgressStyle, UnifiedMatchup};
+use crate::execution::{GameSeeds, ProgressReporter, ProgressStyle, UnifiedMatchup, MAX_ACTIONS_PER_GAME};
 use crate::types::PlayerId;
 
 use super::game_diagnostics::{GameDiagnosticCollector, GameDiagnosticData};
@@ -375,12 +375,11 @@ impl<'a> ValidationExecutor<'a> {
                 .expect("Failed to start game - commander not found in card database");
         }
 
-        // Main game loop
-        let max_actions = 1000;
+        // Main game loop with safety limit from execution::game_loop
         let mut action_count = 0;
         let mut last_turn = 0;
 
-        while !engine.is_game_over() && action_count < max_actions {
+        while !engine.is_game_over() && action_count < MAX_ACTIONS_PER_GAME {
             // Record turn state at start of each new turn
             let current_turn = engine.turn_number();
             if current_turn != last_turn {
@@ -401,10 +400,10 @@ impl<'a> ValidationExecutor<'a> {
         }
 
         // Log warning if action limit was hit without game completion
-        if action_count >= max_actions && !engine.is_game_over() {
+        if action_count >= MAX_ACTIONS_PER_GAME && !engine.is_game_over() {
             log::warn!(
                 "Game exceeded {} action limit without completion (seed: {})",
-                max_actions,
+                MAX_ACTIONS_PER_GAME,
                 seeds.game
             );
         }

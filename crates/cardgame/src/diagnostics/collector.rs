@@ -6,7 +6,7 @@ use crate::bots::{create_bot, AlphaBetaConfig, BotType, MctsConfig};
 use crate::cards::CardDatabase;
 use crate::decks::DeckDefinition;
 use crate::engine::{GameEngine, GameInitError};
-use crate::execution::GameSeeds;
+use crate::execution::{GameSeeds, MAX_ACTIONS_PER_GAME};
 use crate::types::{CardId, PlayerId};
 
 use super::metrics::{
@@ -345,10 +345,10 @@ impl<'a> DiagnosticRunner<'a> {
         // Capture initial state
         snapshots.push(TurnSnapshot::capture(&engine));
 
-        let max_actions = 1000;
+        // Game loop with safety limit from execution::game_loop
         let mut action_count = 0;
 
-        while !engine.is_game_over() && action_count < max_actions {
+        while !engine.is_game_over() && action_count < MAX_ACTIONS_PER_GAME {
             let current_player = engine.current_player();
             let current_turn = engine.turn_number() as u32;
 
@@ -484,10 +484,10 @@ impl<'a> DiagnosticRunner<'a> {
         }
 
         // Log warning if action limit was hit without game completion
-        if action_count >= max_actions && !engine.is_game_over() {
+        if action_count >= MAX_ACTIONS_PER_GAME && !engine.is_game_over() {
             log::warn!(
                 "Game exceeded {} action limit without completion (seed: {})",
-                max_actions,
+                MAX_ACTIONS_PER_GAME,
                 seeds.game
             );
         }

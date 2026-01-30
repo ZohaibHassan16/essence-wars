@@ -6,11 +6,11 @@ use crate::arena::logger::{ActionLogger, ActionRecord, StateSnapshot};
 use crate::arena::stats::MatchStats;
 use crate::bots::Bot;
 use crate::cards::CardDatabase;
-use crate::engine::GameInitError;
 use crate::core::state::GameMode;
 use crate::core::tracing::{CombatTrace, CombatTracer, EffectEvent, EffectTracer};
 use crate::decks::DeckDefinition;
-use crate::engine::GameEngine;
+use crate::engine::{GameEngine, GameInitError};
+use crate::execution::MAX_ACTIONS_PER_GAME;
 use crate::types::PlayerId;
 
 /// Result of a single game.
@@ -118,11 +118,10 @@ impl<'a> GameRunner<'a> {
             let _ = logger.log_game_start(seed, bot1.name(), bot2.name());
         }
 
-        // Main game loop
-        let max_actions = 1000; // Safety limit
+        // Main game loop with safety limit from execution::game_loop
         let mut action_count = 0;
 
-        while !engine.is_game_over() && action_count < max_actions {
+        while !engine.is_game_over() && action_count < MAX_ACTIONS_PER_GAME {
             let action_start = Instant::now();
 
             // Get current state info
@@ -186,10 +185,10 @@ impl<'a> GameRunner<'a> {
         }
 
         // Log warning if action limit was hit without game completion
-        if action_count >= max_actions && !engine.is_game_over() {
+        if action_count >= MAX_ACTIONS_PER_GAME && !engine.is_game_over() {
             log::warn!(
                 "Game exceeded {} action limit without completion (seed: {})",
-                max_actions,
+                MAX_ACTIONS_PER_GAME,
                 seed
             );
         }

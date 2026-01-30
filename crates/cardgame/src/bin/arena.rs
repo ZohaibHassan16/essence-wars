@@ -22,7 +22,7 @@ use cardgame::arena::{
 };
 use cardgame::bots::{AlphaBetaConfig, BotType, MctsConfig};
 use cardgame::core::state::GameMode;
-use cardgame::execution::{configure_thread_pool, GameData};
+use cardgame::execution::{configure_thread_pool, parse_bot_type_or_exit, resolve_seed, GameData};
 
 /// Arena - Run matches between card game bots
 #[derive(Parser, Debug)]
@@ -202,36 +202,12 @@ fn main() {
         return;
     }
 
-    // Parse bot types using factory
-    let bot1_type: BotType = match args.bot1.parse() {
-        Ok(t) => t,
-        Err(_) => {
-            eprintln!(
-                "Unknown bot type: {}. Available: random, greedy, mcts, alphabeta, agent-argentum, agent-symbiote, agent-obsidion, agent-generalist",
-                args.bot1
-            );
-            process::exit(1);
-        }
-    };
+    // Parse bot types using shared helper
+    let bot1_type = parse_bot_type_or_exit(&args.bot1);
+    let bot2_type = parse_bot_type_or_exit(&args.bot2);
 
-    let bot2_type: BotType = match args.bot2.parse() {
-        Ok(t) => t,
-        Err(_) => {
-            eprintln!(
-                "Unknown bot type: {}. Available: random, greedy, mcts, alphabeta, agent-argentum, agent-symbiote, agent-obsidion, agent-generalist",
-                args.bot2
-            );
-            process::exit(1);
-        }
-    };
-
-    // Create seed
-    let seed = args.seed.unwrap_or_else(|| {
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_secs()
-    });
+    // Create seed (use provided or generate from time)
+    let seed = resolve_seed(args.seed);
 
     // Load decks (now returns DeckDefinition with commander)
     let deck1 = match load_deck(args.deck1.as_deref(), &game_data.deck_registry, &game_data.card_db, "1") {

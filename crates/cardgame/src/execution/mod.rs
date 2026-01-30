@@ -5,6 +5,12 @@
 //!
 //! # Modules
 //!
+//! ## CLI Utilities
+//! - [`cli`] - Shared CLI argument parsing, bot config, and path handling
+//!
+//! ## Game Loop
+//! - [`game_loop`] - Unified game loop abstraction with safety limits
+//!
 //! ## Core Execution
 //! - [`seeds`] - Deterministic seed derivation for parallel execution
 //! - [`progress`] - Progress reporting for batch operations
@@ -20,7 +26,9 @@
 //! ## Metrics
 //! - [`metrics`] - Comprehensive per-game and aggregated metrics
 
+pub mod cli;
 mod data_loader;
+pub mod game_loop;
 mod matchup;
 mod matchup_builder;
 mod metrics;
@@ -55,3 +63,17 @@ pub use progress::{maybe_progress, ProgressReporter, ProgressStyle};
 
 // Seed derivation
 pub use seeds::{offsets, GameSeeds};
+
+// Game loop (unified abstraction)
+pub use game_loop::{
+    run_game_loop, run_game_loop_with_client, run_game_to_completion, ActionContext,
+    ClientActionContext, ClientGameLoopCallback, GameLoopCallback, GameLoopConfig,
+    GameLoopResult, NoOpCallback, NoOpClientCallback, MAX_ACTIONS_PER_GAME,
+};
+
+// CLI utilities
+pub use cli::{
+    parse_bot_type, parse_bot_type_or_exit, resolve_seed, resolve_seed_with_default,
+    AlphaBetaArgs, DataPaths, ExecutionSettings, MctsArgs, VALID_BOT_TYPES,
+    DEFAULT_CARDS_PATH, DEFAULT_COMMANDERS_PATH, DEFAULT_DECKS_PATH, DEFAULT_WEIGHTS_PATH,
+};

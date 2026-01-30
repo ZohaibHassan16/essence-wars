@@ -75,7 +75,8 @@ pub struct EvaluatorConfig {
     pub candidate_type: CandidateType,
     /// Base random seed
     pub seed: u64,
-    /// Maximum actions per game (prevents infinite games)
+    /// Maximum actions per game (prevents infinite games).
+    /// Default is 500 for faster evaluation. Should not exceed MAX_ACTIONS_PER_GAME.
     pub max_actions: usize,
     /// Run games in parallel
     pub parallel: bool,

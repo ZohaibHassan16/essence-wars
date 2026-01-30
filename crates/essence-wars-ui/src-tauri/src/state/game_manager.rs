@@ -2,6 +2,7 @@
 
 use cardgame::bots::{create_bot, AlphaBetaConfig, BotType, GreedyBot, MctsConfig};
 use cardgame::client_api::GameClient;
+use cardgame::execution::MAX_ACTIONS_PER_GAME;
 use cardgame::{CardDatabase, DeckRegistry, PlayerId};
 use std::time::Instant;
 use parking_lot::RwLock;
@@ -445,295 +446,6 @@ impl GameManager {
     // NOTE: Spectator match computation moved to SpectatorComputer for async support
 
     /// Convert GameClient state to DTO
-    #[allow(dead_code)]
-    fn _compute_spectator_match_deprecated(&self, config: SpectatorConfig) -> Result<SpectatorMatch, String> {
-        // Get decks
-        let deck1 = self
-            .deck_registry
-            .get(&config.player1_deck_id)
-            .ok_or_else(|| format!("Player 1 deck not found: {}", config.player1_deck_id))?;
-
-        let deck2 = self
-            .deck_registry
-            .get(&config.player2_deck_id)
-            .ok_or_else(|| format!("Player 2 deck not found: {}", config.player2_deck_id))?;
-
-        // Parse bot types
-        let bot1_type: BotType = config
-            .player1_bot_type
-            .parse()
-            .map_err(|e| format!("Invalid bot type for player 1: {}", e))?;
-
-        let bot2_type: BotType = config
-            .player2_bot_type
-            .parse()
-            .map_err(|e| format!("Invalid bot type for player 2: {}", e))?;
-
-        // Get bot display names
-        let bot1_name = self.bot_display_name(&bot1_type);
-        let bot2_name = self.bot_display_name(&bot2_type);
-
-        // Create game client
-        let mut client = GameClient::new(self.card_db.clone());
-
-        // Use provided seed or generate random
-        let mut rng = rand::thread_rng();
-        let game_seed = config.seed.unwrap_or_else(|| rng.gen::<u64>());
-        let bot1_seed = rng.gen::<u64>();
-        let bot2_seed = rng.gen::<u64>();
-
-        // Start game (player 1 always goes first in spectator mode)
-        client.start_game(deck1, deck2, game_seed);
-
-        let match_id = Uuid::new_v4().to_string();
-
-        // Capture initial state (from player 1's perspective for consistency)
-        let initial_state = self.client_to_spectator_dto(&client, &match_id);
-
-        // Storage for actions
-        let mut actions: Vec<SpectatorAction> = Vec::new();
-
-        // Bot configurations - use configured values
-        let mcts_config = MctsConfig {
-            simulations: config.mcts_simulations,
-            ..MctsConfig::default()
-        };
-        let alphabeta_config = AlphaBetaConfig {
-            max_depth: config.alphabeta_depth,
-            ..AlphaBetaConfig::default()
-        };
-
-        // Play game to completion
-        while !client.is_game_over() {
-            let current_player = client
-                .current_player()
-                .ok_or_else(|| "No active player".to_string())?;
-            let player_num = current_player.0 + 1; // Convert 0-indexed to 1-indexed (1 or 2)
-            let turn = client.turn_number();
-
-            // Determine which bot to use
-            let (bot_type, bot_seed) = if current_player == PlayerId::PLAYER_ONE {
-                (&bot1_type, bot1_seed)
-            } else {
-                (&bot2_type, bot2_seed)
-            };
-
-            // Create bot and get action
-            let start = Instant::now();
-            let mut bot = create_bot(
-                &self.card_db,
-                bot_type,
-                None, // No custom weights
-                &mcts_config,
-                &alphabeta_config,
-                bot_seed,
-            );
-
-            let action = client
-                .select_bot_action(&mut *bot)
-                .ok_or_else(|| "Game ended unexpectedly".to_string())?;
-
-            let thinking_time_ms = start.elapsed().as_millis() as u64;
-
-            // Apply action and capture events
-            let action_index = action.to_index();
-            let events = client
-                .apply_action_by_index(action_index)
-                .map_err(|e| e.to_string())?;
-
-            // Convert action and events to DTOs
-            let action_info = action_to_info(&action, action_index);
-            let event_dtos: Vec<GameEventDto> = events.iter().map(game_event_to_dto).collect();
-            let state_after = self.client_to_spectator_dto(&client, &match_id);
-
-            // Store action (no MCTS thinking data for now - can be added later)
-            actions.push(SpectatorAction {
-                turn,
-                player: player_num,
-                action: action_info,
-                state_after,
-                events: event_dtos,
-                thinking: None, // TODO: Add MCTS introspection when available
-                thinking_time_ms,
-            });
-        }
-
-        // Get final result
-        let result = client.get_result();
-        let final_state = client.get_state();
-
-        let (winner, reason) = match result {
-            Some(cardgame::core::state::GameResult::Win { winner, reason }) => {
-                // Convert from 0-indexed to 1-indexed (1 or 2)
-                (Some(winner.0 + 1), format!("{:?}", reason))
-            }
-            Some(cardgame::core::state::GameResult::Draw) => (None, "TurnLimit".to_string()),
-            None => (None, "Unknown".to_string()),
-        };
-
-        let (p1_life, p2_life) = final_state
-            .map(|s| (s.players[0].life, s.players[1].life))
-            .unwrap_or((0, 0));
-
-        let spectator_result = SpectatorResult {
-            winner,
-            reason,
-            player1_final_life: p1_life,
-            player2_final_life: p2_life,
-        };
-
-        Ok(SpectatorMatch {
-            id: match_id,
-            config,
-            initial_state,
-            actions,
-            result: spectator_result,
-            total_turns: client.turn_number(),
-            player1_deck_name: deck1.name.clone(),
-            player2_deck_name: deck2.name.clone(),
-            player1_bot_name: bot1_name,
-            player2_bot_name: bot2_name,
-        })
-    }
-
-    /// Get display name for a bot type
-    fn bot_display_name(&self, bot_type: &BotType) -> String {
-        match bot_type {
-            BotType::Random => "Random Bot".to_string(),
-            BotType::Greedy => "Greedy Bot".to_string(),
-            BotType::Mcts => "MCTS Bot".to_string(),
-            BotType::AlphaBeta => "Alpha-Beta Bot".to_string(),
-            BotType::AgentSpecialist(faction) => format!("Agent ({:?})", faction),
-            BotType::AgentGeneralist => "Agent (Generalist)".to_string(),
-        }
-    }
-
-    /// Convert GameClient state to DTO for spectator mode (both hands visible)
-    fn client_to_spectator_dto(&self, client: &GameClient, game_id: &str) -> GameStateDto {
-        let state = match client.get_state() {
-            Some(s) => s,
-            None => {
-                return GameStateDto {
-                    id: game_id.to_string(),
-                    turn: 0,
-                    phase: "not_started".to_string(),
-                    active_player: 0,
-                    player: PlayerStateDto {
-                        life: 0,
-                        max_life: 30,
-                        essence: 0,
-                        max_essence: 0,
-                        action_points: 0,
-                        deck_count: 0,
-                        hand: Vec::new(),
-                        creatures: vec![None; 5],
-                        supports: vec![None; 2],
-                        commander: None,
-                    },
-                    opponent: PlayerStateDto {
-                        life: 0,
-                        max_life: 30,
-                        essence: 0,
-                        max_essence: 0,
-                        action_points: 0,
-                        deck_count: 0,
-                        hand: Vec::new(),
-                        creatures: vec![None; 5],
-                        supports: vec![None; 2],
-                        commander: None,
-                    },
-                    is_game_over: false,
-                    winner: None,
-                    game_over_reason: None,
-                };
-            }
-        };
-
-        let player1_state = &state.players[0];
-        let player2_state = &state.players[1];
-
-        // Get commander DTOs
-        let player1_commander = commander_to_dto(state.get_commander(PlayerId::PLAYER_ONE), &self.card_db);
-        let player2_commander = commander_to_dto(state.get_commander(PlayerId::PLAYER_TWO), &self.card_db);
-
-        // Convert both hands (visible in spectator mode)
-        let player1_hand: Vec<CardDto> = player1_state
-            .hand
-            .iter()
-            .filter_map(|card_inst| {
-                self.card_db
-                    .get(card_inst.card_id)
-                    .map(CardDto::from_card_def)
-            })
-            .collect();
-
-        let player2_hand: Vec<CardDto> = player2_state
-            .hand
-            .iter()
-            .filter_map(|card_inst| {
-                self.card_db
-                    .get(card_inst.card_id)
-                    .map(CardDto::from_card_def)
-            })
-            .collect();
-
-        // Convert creatures to slot-indexed arrays
-        let player1_creatures = self.creatures_to_slots(player1_state, state.current_turn);
-        let player2_creatures = self.creatures_to_slots(player2_state, state.current_turn);
-
-        // Convert supports to slot-indexed arrays
-        let player1_supports = self.supports_to_slots(player1_state);
-        let player2_supports = self.supports_to_slots(player2_state);
-
-        let active_player = state.active_player.0;
-
-        let result = client.get_result();
-        let winner = result.and_then(|r| match r {
-            cardgame::core::state::GameResult::Win { winner, .. } => Some(winner.0),
-            cardgame::core::state::GameResult::Draw => None,
-        });
-
-        let game_over_reason = result.map(|r| match r {
-            cardgame::core::state::GameResult::Win { reason, .. } => format!("{:?}", reason),
-            cardgame::core::state::GameResult::Draw => "draw".to_string(),
-        });
-
-        GameStateDto {
-            id: game_id.to_string(),
-            turn: state.current_turn,
-            phase: format!("{:?}", state.phase),
-            active_player,
-            player: PlayerStateDto {
-                life: player1_state.life,
-                max_life: 30,
-                essence: player1_state.current_essence,
-                max_essence: player1_state.max_essence,
-                action_points: player1_state.action_points,
-                deck_count: player1_state.deck.len(),
-                hand: player1_hand,
-                creatures: player1_creatures,
-                supports: player1_supports,
-                commander: player1_commander,
-            },
-            opponent: PlayerStateDto {
-                life: player2_state.life,
-                max_life: 30,
-                essence: player2_state.current_essence,
-                max_essence: player2_state.max_essence,
-                action_points: player2_state.action_points,
-                deck_count: player2_state.deck.len(),
-                hand: player2_hand,
-                creatures: player2_creatures,
-                supports: player2_supports,
-                commander: player2_commander,
-            },
-            is_game_over: client.is_game_over(),
-            winner,
-            game_over_reason,
-        }
-    }
-
-    /// Convert GameClient state to DTO
     fn client_to_dto(&self, client: &GameClient, game_id: &str, player_id: PlayerId) -> GameStateDto {
         let state = match client.get_state() {
             Some(s) => s,
@@ -992,8 +704,9 @@ impl SpectatorComputer {
             ..AlphaBetaConfig::default()
         };
 
-        // Play game to completion
-        while !client.is_game_over() {
+        // Play game to completion with safety limit to prevent infinite loops
+        let mut action_count = 0;
+        while !client.is_game_over() && action_count < MAX_ACTIONS_PER_GAME {
             let current_player = client
                 .current_player()
                 .ok_or_else(|| "No active player".to_string())?;
@@ -1045,6 +758,17 @@ impl SpectatorComputer {
                 thinking: None, // TODO: Add MCTS introspection when available
                 thinking_time_ms,
             });
+
+            action_count += 1;
+        }
+
+        // Log warning if action limit was hit without game completion
+        if action_count >= MAX_ACTIONS_PER_GAME && !client.is_game_over() {
+            eprintln!(
+                "Warning: Spectator game exceeded {} action limit without completion (seed: {:?})",
+                MAX_ACTIONS_PER_GAME,
+                config.seed
+            );
         }
 
         // Get final result

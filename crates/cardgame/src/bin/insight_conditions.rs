@@ -5,7 +5,7 @@
 
 use cardgame::bots::{create_bot, AlphaBetaConfig, BotType, MctsConfig};
 use cardgame::engine::GameEngine;
-use cardgame::execution::GameData;
+use cardgame::execution::{GameData, MAX_ACTIONS_PER_GAME};
 use cardgame::types::PlayerId;
 
 fn main() {
@@ -52,9 +52,8 @@ fn main() {
             engine.start_game(deck1, deck2, seed).expect("Failed to start game");
 
             let mut action_count = 0;
-            let max_actions = 1000;
 
-            while !engine.is_game_over() && action_count < max_actions {
+            while !engine.is_game_over() && action_count < MAX_ACTIONS_PER_GAME {
                 let turn = engine.turn_number();
 
                 if turn >= 10 {
