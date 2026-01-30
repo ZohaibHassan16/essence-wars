@@ -10,7 +10,7 @@
 
   let { timeline }: Props = $props();
 
-  let container: HTMLDivElement;
+  let container = $state<HTMLDivElement>(undefined!);
   let chart: uPlot | null = null;
 
   const P1_COLOR = "#4ade80";

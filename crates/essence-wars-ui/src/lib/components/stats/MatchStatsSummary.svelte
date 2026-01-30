@@ -71,22 +71,27 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <!-- Modal backdrop -->
-<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 <div
+  role="presentation"
   class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
   onclick={handleClickOutside}
+  onkeydown={(e) => e.key === "Escape" && onClose()}
 >
   <!-- Modal content -->
-  <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
   <div
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="stats-modal-title"
+    tabindex="-1"
     class="bg-ui-panel border border-gray-700 rounded-xl shadow-2xl w-[90vw] max-w-5xl h-[85vh] flex flex-col"
     onclick={(e) => e.stopPropagation()}
+    onkeydown={(e) => e.stopPropagation()}
   >
     <!-- Header -->
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-700">
       <div class="flex items-center gap-3">
         <span class="text-2xl">📊</span>
-        <h2 class="text-xl font-bold text-ui-text">Match Statistics</h2>
+        <h2 id="stats-modal-title" class="text-xl font-bold text-ui-text">Match Statistics</h2>
       </div>
 
       <div class="flex items-center gap-3">
