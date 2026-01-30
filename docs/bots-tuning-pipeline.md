@@ -74,7 +74,7 @@ Each deck has a `playstyle` field that maps to an archetype:
 
 | Archetype | Decks |
 |-----------|-------|
-| **Aggro** | vex_piercing, archon_burst, shadow_weaver, alpha_frenzy, broodmother_swarm |
+| **Aggro** | vex_piercing, archon_burst, shadow_weaver, alpha_frenzy, broodmother_pack |
 | **Control** | architect_fortify, sanctum_healer, plague_volatile |
 | **Tempo** | artificer_tokens, deathmaster_assassin, sovereign_lifesteal |
 | **Midrange** | grove_regenerate |

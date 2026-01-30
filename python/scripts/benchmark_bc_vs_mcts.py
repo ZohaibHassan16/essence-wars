@@ -152,7 +152,7 @@ def evaluate_agent_vs_opponent(
     except AttributeError:
         available_decks = [
             "architect_fortify", "colossus_wall", "vex_piercing",
-            "broodmother_swarm", "alpha_frenzy", "plague_volatile",
+            "broodmother_pack", "alpha_frenzy", "plague_volatile",
             "archon_burst", "shadow_weaver",
         ]
 

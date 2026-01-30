@@ -394,7 +394,7 @@ pub fn valid_yaml_deck() -> Vec<CardId> {
         // Symbiote (10 cards)
         2000, 2000, // Spore Crawler (1/2)
         2001, 2001, // Venom Fang (2/3 Lethal)
-        2003, 2003, // Broodling (1/1 Rush)
+        2003, 2003, // Pack Whelp (1/1 Rush)
         2005, 2005, // Pack Hunter (2/2 Rush)
         2002, 2002, // Regenerating Ooze (2/5 Regenerate)
         // Obsidion (10 cards)
@@ -412,7 +412,7 @@ pub fn valid_yaml_deck() -> Vec<CardId> {
 pub fn arena_test_deck() -> Vec<CardId> {
     let card_ids: [u16; 30] = [
         // Symbiote Core (21 cards)
-        2003, 2003, // Broodling (1/1 Rush)
+        2003, 2003, // Pack Whelp (1/1 Rush)
         2006, 2006, // Parasitic Larva (1/2 Lethal)
         2000, 2000, // Spore Crawler (1/2 vanilla)
         2001, 2001, // Venom Fang (2/3 Lethal)
@@ -420,9 +420,9 @@ pub fn arena_test_deck() -> Vec<CardId> {
         2002, 2002, // Regenerating Ooze (2/5 Regenerate)
         2010, 2010, // Acid Spitter (3/3 Ranged)
         2007, 2007, // Evolution Chamber (2/4, buff +1/+1)
-        2011, 2011, // Carapace Warrior (2/6 Regenerate)
+        2011, 2011, // Scaled Warrior (2/6 Regenerate)
         2008,       // Alpha Predator (5/5 Rush+Lethal)
-        2009,       // Swarm Mother (4/6 Regenerate)
+        2009,       // Den Mother (4/6 Regenerate)
         2012,       // Rapid Mutation spell
         // Free-Walker Splash (9 cards)
         4007, 4007, // Reckless Charger (4/1 Charge+Rush)

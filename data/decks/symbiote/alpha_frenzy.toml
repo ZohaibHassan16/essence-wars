@@ -7,20 +7,20 @@ commander = 5006
 
 cards = [
     # Frenzy Creatures (double attack synergy)
-    2017,              # Feral Stalker
-    2021,              # Rabid Hunter
-    2022,              # Frenzied Beast
-    2032,              # Savage Predator
+    2017,              # Ravager Alpha
+    2021,              # Bloodrage Berserker
+    2022,              # Frenzy Pack Leader
+    2032,              # Feeding Grounds (support)
 
     # High Attack Creatures (benefit from +1 aura)
-    2003, 2003, 2003,  # Broodling x3
+    2003, 2003, 2003,  # Pack Whelp x3
     2005, 2005, 2005,  # Pack Hunter x3
     2001, 2001,        # Venom Fang x2
 
     # Regenerate for Sustain (keep attackers alive)
     2002,              # Regenerating Ooze
-    2004,              # Hive Guardian
-    2019,              # Swarm Leader
+    2004,              # Grove Guardian
+    2019,              # Volatile Whelp
 
     # Attack Buff Spells (stack with aura)
     2010,              # Overgrowth
@@ -32,8 +32,8 @@ cards = [
     2006,              # Parasitic Larva
 
     # Utility
-    2016,              # Regeneration
-    2059,              # Brood Overlord
+    2016,              # Frenzied Pack
+    2059,              # Pack Overlord
 
     # Neutral Support
     4000,              # Wandering Merchant

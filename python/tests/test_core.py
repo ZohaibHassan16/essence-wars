@@ -142,7 +142,7 @@ def test_pygame_deck_selection():
     """Test creating game with specific decks."""
     from essence_wars import PyGame
 
-    game = PyGame(deck1="architect_fortify", deck2="broodmother_swarm")
+    game = PyGame(deck1="architect_fortify", deck2="broodmother_pack")
     game.reset(seed=42)
 
     assert not game.is_done()

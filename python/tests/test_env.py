@@ -174,7 +174,7 @@ def test_env_deck_selection():
 
     env = EssenceWarsEnv(
         deck1="architect_fortify",
-        deck2="broodmother_swarm",
+        deck2="broodmother_pack",
     )
     obs, info = env.reset(seed=42)
 
@@ -254,7 +254,7 @@ def test_env_make_function():
 
     env = make_env(
         deck1="artificer_tokens",
-        deck2="broodmother_swarm",
+        deck2="broodmother_pack",
         opponent="random",
     )
     obs, info = env.reset(seed=42)
@@ -530,7 +530,7 @@ def test_vectorized_env_deck_selection():
     vec_env = VectorizedEssenceWars(
         num_envs=2,
         deck1="architect_fortify",
-        deck2="broodmother_swarm",
+        deck2="broodmother_pack",
     )
     obs, masks = vec_env.reset(seed=42)
 

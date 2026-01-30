@@ -357,8 +357,8 @@ fn test_real_deck_factions() {
         assert_eq!(deck.commander, 5003); // The Grand Architect
     }
 
-    // Check broodmother_swarm exists and has correct faction
-    if let Some(deck) = registry.get("broodmother_swarm") {
+    // Check broodmother_pack exists and has correct faction
+    if let Some(deck) = registry.get("broodmother_pack") {
         assert_eq!(deck.faction(), Some(Faction::Symbiote));
         assert!(deck.is_compatible_with_specialist(Faction::Symbiote));
         assert_eq!(deck.commander, 5004); // The Broodmother

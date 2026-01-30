@@ -1,6 +1,6 @@
-id = "broodmother_swarm"
+id = "broodmother_pack"
 name = "The Broodmother"
-description = "Every creature strikes the moment it hits the board. With Rush on all your minions, overwhelm enemies before they can mount a defense. The swarm waits for no one."
+description = "Every creature strikes the moment it hits the board. With Rush on all your minions, overwhelm enemies before they can mount a defense. The pack waits for no one."
 playstyle = "Aggro"
 tags = ["commander", "symbiote"]
 commander = 5004
@@ -19,7 +19,7 @@ cards = [
     4036, 4036, 4036,  # Contract Killer x3 (3c 3/2 Lethal) - premium Lethal+Rush
     2026, 2026,        # Festering Plague x2 (3c 2/2 Volatile+Lethal) - kills + explodes
     2070, 2070,        # Rabid Hunter x2 (3c 3/2 Frenzy) - aggressive Frenzy
-    2016, 2016,        # Frenzied Brood x2 (3c 2/3 Frenzy) - durable Frenzy
+    2016, 2016,        # Frenzied Pack x2 (3c 2/3 Frenzy) - durable Frenzy
 
     # === 4-COST (4 cards) - Closers ===
     2068, 2068,        # Death Blossom x2 (4c 3/2 Volatile+Lethal) - big Lethal threats

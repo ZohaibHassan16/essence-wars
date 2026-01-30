@@ -98,7 +98,7 @@ Let's take specific cards from your document and give them this new "Gilded Truc
 
 * **Faction:** Symbiote Circles
 * **Art Direction:** A spider the size of a dog, but its abdomen is a translucent glass vial filled with glowing green liquid. It's climbing on a cogwheel.
-* **Flavor Text:** *"The Combine builds walls of steel. We just dissolve the hinges." — Circle Bio-Weaver*
+* **Flavor Text:** *"The Combine builds walls of steel. The forest grows through the cracks." — Grove Keeper*
 
 ### Example 3: `31 Warlord Titan` (8 Cost, 8/8)
 

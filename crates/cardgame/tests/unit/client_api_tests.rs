@@ -33,7 +33,7 @@ fn create_test_client() -> (GameClient, DeckDefinition, DeckDefinition) {
     let deck1 = registry.get("architect_fortify")
         .expect("Deck not found")
         .clone();
-    let deck2 = registry.get("broodmother_swarm")
+    let deck2 = registry.get("broodmother_pack")
         .expect("Deck not found")
         .clone();
 
@@ -55,7 +55,7 @@ fn test_game_client_start_game() {
 
     let deck1 = registry.get("architect_fortify")
         .expect("Deck not found");
-    let deck2 = registry.get("broodmother_swarm")
+    let deck2 = registry.get("broodmother_pack")
         .expect("Deck not found");
 
     let mut client = GameClient::new(db);
@@ -74,7 +74,7 @@ fn test_game_client_emits_game_started_event() {
 
     let deck1 = registry.get("architect_fortify")
         .expect("Deck not found");
-    let deck2 = registry.get("broodmother_swarm")
+    let deck2 = registry.get("broodmother_pack")
         .expect("Deck not found");
 
     let mut client = GameClient::new(db);
@@ -94,7 +94,7 @@ fn test_game_client_apply_action() {
 
     let deck1 = registry.get("architect_fortify")
         .expect("Deck not found");
-    let deck2 = registry.get("broodmother_swarm")
+    let deck2 = registry.get("broodmother_pack")
         .expect("Deck not found");
 
     let mut client = GameClient::new(db);
@@ -122,7 +122,7 @@ fn test_game_client_event_history() {
 
     let deck1 = registry.get("architect_fortify")
         .expect("Deck not found");
-    let deck2 = registry.get("broodmother_swarm")
+    let deck2 = registry.get("broodmother_pack")
         .expect("Deck not found");
 
     let mut client = GameClientBuilder::new()
@@ -152,7 +152,7 @@ fn test_state_snapshot_creation() {
 
     let deck1 = registry.get("architect_fortify")
         .expect("Deck not found");
-    let deck2 = registry.get("broodmother_swarm")
+    let deck2 = registry.get("broodmother_pack")
         .expect("Deck not found");
 
     let mut client = GameClient::new(db);

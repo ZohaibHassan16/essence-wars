@@ -61,7 +61,7 @@ struct Args {
     include_turns: bool,
 
     /// Deck ID to use
-    #[arg(long, default_value = "broodmother_swarm")]
+    #[arg(long, default_value = "broodmother_pack")]
     deck: String,
 
     /// Random seed for reproducibility

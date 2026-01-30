@@ -84,7 +84,7 @@ class EssenceWarsParallelEnv(ParallelEnvBase):  # type: ignore[misc]
     def __init__(
         self,
         deck1: str = "artificer_tokens",
-        deck2: str = "broodmother_swarm",
+        deck2: str = "broodmother_pack",
         game_mode: str = "attrition",
         max_turns: int = 100,
         render_mode: str | None = None,

@@ -122,7 +122,7 @@ impl<'a> MatchupBuilder<'a> {
     /// Filter matchups by pattern.
     ///
     /// Supports matching by:
-    /// - Deck ID (e.g., "broodmother" matches "broodmother_swarm")
+    /// - Deck ID (e.g., "broodmother" matches "broodmother_pack")
     /// - Faction pair (e.g., "argentum-symbiote" or "symbiote-argentum")
     /// - Single faction (e.g., "argentum" matches all matchups involving Argentum)
     ///
@@ -305,7 +305,7 @@ mod tests {
         // Filter by partial deck name
         let filtered = MatchupBuilder::filter_matchups(all.clone(), "broodmother");
 
-        // Should find all matchups involving broodmother_swarm
+        // Should find all matchups involving broodmother_pack
         assert!(!filtered.is_empty(), "Expected to find broodmother matchups");
         for matchup in &filtered {
             let has_brood = matchup.deck1.id.contains("broodmother")

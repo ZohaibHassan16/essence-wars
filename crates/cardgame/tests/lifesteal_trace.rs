@@ -22,7 +22,7 @@ fn trace_single_game_detailed() {
 
     // Use Obsidion deck which has Lifesteal creatures
     let obsidion_deck = deck_registry.get("archon_burst").expect("Deck should exist");
-    let aggressive_deck = deck_registry.get("broodmother_swarm").expect("Deck should exist");
+    let aggressive_deck = deck_registry.get("broodmother_pack").expect("Deck should exist");
 
     let deck1_cards: Vec<CardId> = obsidion_deck.cards.iter().map(|&id| CardId(id)).collect();
     let deck2_cards: Vec<CardId> = aggressive_deck.cards.iter().map(|&id| CardId(id)).collect();
@@ -164,7 +164,7 @@ fn check_vampire_lord_in_starting_hands() {
 
     // Use Obsidion deck which has Lifesteal creatures
     let obsidion_deck = deck_registry.get("archon_burst").expect("Deck should exist");
-    let aggressive_deck = deck_registry.get("broodmother_swarm").expect("Deck should exist");
+    let aggressive_deck = deck_registry.get("broodmother_pack").expect("Deck should exist");
 
     let deck1_cards: Vec<CardId> = obsidion_deck.cards.iter().map(|&id| CardId(id)).collect();
     let deck2_cards: Vec<CardId> = aggressive_deck.cards.iter().map(|&id| CardId(id)).collect();

@@ -559,7 +559,7 @@ When "AI Hint" clicked:
 │ • Good stat efficiency for cost (+0.3)  │
 ├─────────────────────────────────────────┤
 │ Alternatives:                           │
-│ • Attack with Broodling → Face (-0.5)   │
+│ • Attack with Pack Whelp → Face (-0.5)   │
 │   "Trades poorly, loses tempo"          │
 │ • End Turn (-1.8)                       │
 │   "Wastes action points"                │
@@ -642,7 +642,7 @@ When "Show AI Thinking" enabled:
 
   "config": {
     "player1": {
-      "deckId": "broodmother_swarm",
+      "deckId": "broodmother_pack",
       "deckName": "The Broodmother",
       "isHuman": true
     },
@@ -660,7 +660,7 @@ When "Show AI Thinking" enabled:
       "turn": 1,
       "player": 1,
       "actionIndex": 42,
-      "actionDescription": "Play Broodling to Slot 1",
+      "actionDescription": "Play Pack Whelp to Slot 1",
       "timestampMs": 3420,
       "stateAfter": { /* snapshot */ },
       "aiThinking": null

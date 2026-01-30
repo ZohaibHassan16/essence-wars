@@ -72,7 +72,7 @@ cd ~/stable-diffusion.cpp
 ### Core Art Style
 - **90s Magic the Gathering card art aesthetic**
 - **Empowered female characters** using beauty and sexuality as assets of power and influence
-- **Faction-specific aesthetics** (Art Deco, Biopunk, Gothic Victorian, Wasteland)
+- **Faction-specific aesthetics** (Art Deco, Primal Nature, Gothic Victorian, Wasteland)
 - **Painted illustration style** with dramatic lighting
 
 ### Prompt Template Structure
@@ -119,7 +119,7 @@ cd ~/stable-diffusion.cpp
 
 ### 🌿 SYMBIOTE CIRCLES (Growth & Adaptation)
 
-**Female Bio-Weaver:**
+**Female Grove Keeper:**
 ```bash
 ./build/bin/sd-cli \
   --diffusion-model ~/.ai-assets/models/flux/flux-dev-q8.gguf \
@@ -127,9 +127,9 @@ cd ~/stable-diffusion.cpp
   --clip_l ~/.ai-assets/models/flux/clip_l.safetensors \
   --t5xxl ~/.ai-assets/models/flux/t5-Q5_K_M.gguf \
   --lora-model-dir ~/.ai-assets/loras/ \
-  -p "A fierce female druid with living bio-armor made of bioluminescent purple vines and bone plates, deep green organic patterns, powerful stance, jungle background with glowing spore trees, revealing bio-suit design showing both beauty and danger, 90s Magic the Gathering art style, painted fantasy illustration <lora:classical-painting:0.6>" \
+  -p "A fierce female druid with living wood staff and bone ornaments, fur-trimmed leather armor, deep forest green robes, powerful stance in ancient primordial forest with massive trees, 90s Magic the Gathering art style, Urza's Saga aesthetic, painted fantasy illustration <lora:classical-painting:0.6>" \
   --cfg-scale 1.0 --sampling-method euler --steps 20 \
-  -H 896 -W 704 -o ~/.ai-assets/output/symbiote_bioweaver.png
+  -H 896 -W 704 -o ~/.ai-assets/output/symbiote_grovekeeper.png
 ```
 
 **Female Beast Master:**

@@ -1,4 +1,6 @@
-### Deck Builder
+# To Do
+
+## Deck Builder
 
 Custom Deck Builder
 
@@ -9,3 +11,4 @@ Choose Cards from Faction + Neutral Cards
 Save as Deck, add Description
 
 Be able to play with it
+

@@ -17,7 +17,7 @@ import type { TutorialStep } from '$lib/stores/tutorialState.svelte';
 // - Later: Iron Bastion's Guard forces enemy attacks
 export const TUTORIAL_SEED = 123;
 export const TUTORIAL_PLAYER_DECK = 'architect_fortify';
-export const TUTORIAL_OPPONENT_DECK = 'broodmother_swarm';
+export const TUTORIAL_OPPONENT_DECK = 'broodmother_pack';
 export const TUTORIAL_BOT = 'random';
 
 // Tutorial steps - friendly, helpful tone

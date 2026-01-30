@@ -22,7 +22,7 @@ const ARGENTUM_VEX_TOML: &str = include_str!("../../../data/decks/argentum/vex_p
 const ARGENTUM_ARTIFICER_TOML: &str = include_str!("../../../data/decks/argentum/artificer_tokens.toml");
 
 // Symbiote decks
-const SYMBIOTE_BROODMOTHER_TOML: &str = include_str!("../../../data/decks/symbiote/broodmother_swarm.toml");
+const SYMBIOTE_BROODMOTHER_TOML: &str = include_str!("../../../data/decks/symbiote/broodmother_pack.toml");
 const SYMBIOTE_ALPHA_TOML: &str = include_str!("../../../data/decks/symbiote/alpha_frenzy.toml");
 const SYMBIOTE_GROVE_TOML: &str = include_str!("../../../data/decks/symbiote/grove_regenerate.toml");
 const SYMBIOTE_PLAGUE_TOML: &str = include_str!("../../../data/decks/symbiote/plague_volatile.toml");
@@ -98,7 +98,7 @@ pub fn load_embedded_decks() -> Result<DeckRegistry, String> {
         ("vex_piercing", ARGENTUM_VEX_TOML),
         ("artificer_tokens", ARGENTUM_ARTIFICER_TOML),
         // Symbiote
-        ("broodmother_swarm", SYMBIOTE_BROODMOTHER_TOML),
+        ("broodmother_pack", SYMBIOTE_BROODMOTHER_TOML),
         ("alpha_frenzy", SYMBIOTE_ALPHA_TOML),
         ("grove_regenerate", SYMBIOTE_GROVE_TOML),
         ("plague_volatile", SYMBIOTE_PLAGUE_TOML),
@@ -143,7 +143,7 @@ pub fn get_embedded_deck_ids() -> &'static [&'static str] {
         "vex_piercing",
         "artificer_tokens",
         // Symbiote
-        "broodmother_swarm",
+        "broodmother_pack",
         "alpha_frenzy",
         "grove_regenerate",
         "plague_volatile",
@@ -164,7 +164,7 @@ pub fn get_embedded_deck_ids() -> &'static [&'static str] {
 pub fn get_mvp_deck_ids() -> &'static [&'static str] {
     &[
         "sanctum_healer",      // The Sanctum Healer
-        "broodmother_swarm",   // The Broodmother
+        "broodmother_pack",   // The Broodmother
         "sovereign_lifesteal", // The Blood Sovereign
     ]
 }

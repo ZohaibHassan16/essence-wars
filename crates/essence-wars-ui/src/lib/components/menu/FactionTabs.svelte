@@ -30,7 +30,7 @@
       bgColor: "bg-symbiote-glow/20",
       borderColor: "border-symbiote-glow",
       textColor: "text-symbiote-glow",
-      description: "Aggressive organic swarms",
+      description: "Primal pack hunters",
     },
     {
       id: "obsidion",

@@ -28,8 +28,8 @@ fn main() {
     let player_deck = deck_registry.get("architect_fortify")
         .expect("Player deck not found: architect_fortify")
         .clone();
-    let opponent_deck = deck_registry.get("broodmother_swarm")
-        .expect("Opponent deck not found: broodmother_swarm")
+    let opponent_deck = deck_registry.get("broodmother_pack")
+        .expect("Opponent deck not found: broodmother_pack")
         .clone();
 
     println!("Searching for good tutorial seeds...\n");

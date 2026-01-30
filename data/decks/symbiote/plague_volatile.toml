@@ -7,24 +7,24 @@ commander = 5005
 
 cards = [
     # Volatile Creatures (deal damage on death)
-    2026, 2026, 2026,  # Volatile Spore x3
-    2027,              # Plague Carrier
-    2028,              # Infectious Growth
+    2026, 2026, 2026,  # Festering Plague x3
+    2027,              # Volatile Matriarch
+    2028,              # Plague Bearer
 
     # Regenerate Creatures (hard to kill, good value)
     2002,              # Regenerating Ooze
-    2004,              # Hive Guardian
-    2063,              # Grove Warden (Eternal Grove commander but usable as creature)
+    2004,              # Grove Guardian
+    2063,              # Thornwood Sapling
 
     # Rush Creatures (aggressive trades)
-    2003, 2003, 2003,  # Broodling x3
+    2003, 2003, 2003,  # Pack Whelp x3
     2005, 2005,        # Pack Hunter x2
-    2019,              # Swarm Leader
+    2019,              # Volatile Whelp
 
     # Token Generators (more death triggers)
-    2038,              # Spawn Nest
-    2042,              # Brood Pit
-    2049,              # Hive Spawner
+    2038,              # Pounce Hunter
+    2042,              # Feral Striker
+    2049,              # Volatile Stalker
 
     # Lethal Creatures (trade efficiently)
     2001, 2001,        # Venom Fang x2
@@ -33,10 +33,10 @@ cards = [
     # Board Presence
     2000, 2000,        # Spore Crawler x2
 
-    # Spells
-    2010,              # Overgrowth
-    2013,              # Nature's Wrath
-    2016,              # Regeneration
+    # Spells/Creatures
+    2010,              # Acid Spitter
+    2013,              # Consume (spell)
+    2016,              # Frenzied Pack
 
     # Neutral Support
     4000,              # Wandering Merchant

@@ -146,7 +146,7 @@ mod tests {
         let config = SpectatorConfig {
             player1_deck_id: "architect_fortify".to_string(),
             player1_bot_type: "mcts".to_string(),
-            player2_deck_id: "broodmother_swarm".to_string(),
+            player2_deck_id: "broodmother_pack".to_string(),
             player2_bot_type: "greedy".to_string(),
             seed: Some(12345),
             mcts_simulations: 100,
@@ -227,7 +227,7 @@ mod tests {
         let config = SpectatorConfig {
             player1_deck_id: "architect_fortify".to_string(),
             player1_bot_type: "random".to_string(),
-            player2_deck_id: "broodmother_swarm".to_string(),
+            player2_deck_id: "broodmother_pack".to_string(),
             player2_bot_type: "random".to_string(),
             seed: Some(12345), // Fixed seed for reproducibility
             mcts_simulations: 100,

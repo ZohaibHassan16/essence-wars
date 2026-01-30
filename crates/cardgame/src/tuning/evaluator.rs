@@ -139,7 +139,7 @@ impl<'a> Evaluator<'a> {
             CardId(1004), CardId(1004), // Steel Vanguard (3/5 Guard)
             // Symbiote (2000+) - 6 cards
             CardId(2000), CardId(2000), // Spore Crawler (1/2)
-            CardId(2003), CardId(2003), // Broodling (1/1 Rush)
+            CardId(2003), CardId(2003), // Pack Whelp (1/1 Rush)
             CardId(2005), CardId(2005), // Pack Hunter (2/2 Rush)
             // Obsidion (3000+) - 4 cards
             CardId(3000), CardId(3000), // Shadow Initiate (2/2 Lifesteal)

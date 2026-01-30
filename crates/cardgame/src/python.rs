@@ -94,7 +94,7 @@ impl PyGame {
 
         // Load decks
         let deck1_name = deck1.unwrap_or("artificer_tokens");
-        let deck2_name = deck2.unwrap_or("broodmother_swarm");
+        let deck2_name = deck2.unwrap_or("broodmother_pack");
 
         let deck1_def = deck_registry.get(deck1_name)
             .ok_or_else(|| PyValueError::new_err(format!("Unknown deck: {}", deck1_name)))?;
@@ -328,7 +328,7 @@ impl PyParallelGames {
 
         // Load decks
         let deck1_name = deck1.unwrap_or("artificer_tokens");
-        let deck2_name = deck2.unwrap_or("broodmother_swarm");
+        let deck2_name = deck2.unwrap_or("broodmother_pack");
 
         let deck1_def = deck_registry.get(deck1_name)
             .ok_or_else(|| PyValueError::new_err(format!("Unknown deck: {}", deck1_name)))?;

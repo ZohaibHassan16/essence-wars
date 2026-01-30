@@ -56,7 +56,7 @@ fn debug_lifesteal_investigation() {
     println!("\n=== RUNNING 100 GAMES WITH TRACING ===");
 
     let deck1_cards: Vec<CardId> = obsidion_deck.cards.iter().map(|&id| CardId(id)).collect();
-    let deck2 = deck_registry.get("broodmother_swarm").expect("Deck should exist");
+    let deck2 = deck_registry.get("broodmother_pack").expect("Deck should exist");
     let deck2_cards: Vec<CardId> = deck2.cards.iter().map(|&id| CardId(id)).collect();
 
     let mut total_combats = 0;
@@ -137,7 +137,7 @@ fn debug_game_length_and_mana() {
     let deck_registry = DeckRegistry::load_from_directory(cardgame::data_dir().join("decks")).expect("Failed to load decks");
 
     let obsidion_deck = deck_registry.get("archon_burst").expect("Deck should exist");
-    let aggressive_deck = deck_registry.get("broodmother_swarm").expect("Deck should exist");
+    let aggressive_deck = deck_registry.get("broodmother_pack").expect("Deck should exist");
 
     let deck1_cards: Vec<CardId> = obsidion_deck.cards.iter().map(|&id| CardId(id)).collect();
     let deck2_cards: Vec<CardId> = aggressive_deck.cards.iter().map(|&id| CardId(id)).collect();

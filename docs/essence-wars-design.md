@@ -1047,7 +1047,7 @@ The New Horizons Edition features **12 pre-built Commander Decks** — each buil
 
 ### 🐺 The Broodmother — Rush/Pack
 
-**Deck ID:** `broodmother_swarm`
+**Deck ID:** `broodmother_pack`
 **Commander:** The Broodmother (5004) — All creatures have Rush
 **Strategy:** Every creature attacks immediately; overwhelming pack aggression
 
@@ -1111,7 +1111,7 @@ data/decks/
 │   ├── vex_piercing.toml
 │   └── architect_fortify.toml
 ├── symbiote/
-│   ├── broodmother_swarm.toml
+│   ├── broodmother_pack.toml
 │   ├── plague_volatile.toml
 │   ├── alpha_frenzy.toml
 │   └── grove_regenerate.toml

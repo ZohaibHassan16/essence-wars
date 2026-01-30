@@ -43,15 +43,15 @@ factions:
     default_negative: "organic, soft, natural, blurry, low quality"
 
   symbiote:
-    theme: "Growth & Adaptation - Biopunk organic"
-    palette: "Deep green, purple bioluminescence, bone white"
+    theme: "Growth & Adaptation - Urza's Saga nature magic"
+    palette: "Deep forest green, amber, bone white, earth browns"
     elements:
-      - "Living bio-armor and chitin"
-      - "Bioluminescent markings"
-      - "Organic jungle architecture"
-      - "Symbiotic creatures and grafts"
+      - "Fur, leather, and bone armor"
+      - "Ancient forest environments"
+      - "Wolf packs, great cats, serpents"
+      - "Living wood and druidic magic"
     default_lora: "classical-painting:0.6"
-    default_negative: "mechanical, industrial, blurry, low quality"
+    default_negative: "mechanical, industrial, chitin, insect, alien, blurry, low quality"
 
   obsidion:
     theme: "Knowledge & Ambition - Gothic Victorian"

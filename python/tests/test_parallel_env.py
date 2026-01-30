@@ -177,7 +177,7 @@ def test_parallel_env_deck_selection():
 
     env = EssenceWarsParallelEnv(
         deck1="architect_fortify",
-        deck2="broodmother_swarm",
+        deck2="broodmother_pack",
     )
     observations, infos = env.reset(seed=42)
 

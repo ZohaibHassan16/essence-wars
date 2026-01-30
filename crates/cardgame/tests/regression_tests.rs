@@ -49,8 +49,8 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
     GoldenTestCase {
         name: "greedy_mirror_seed_100",
         seed: 100,
-        deck1_id: "broodmother_swarm",
-        deck2_id: "broodmother_swarm",
+        deck1_id: "broodmother_pack",
+        deck2_id: "broodmother_pack",
         expected_winner: Some(0), // P1 wins
         expected_turns: 11,       // Updated for CommanderInsight action priority
         expected_action_count: 42,
@@ -58,8 +58,8 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
     GoldenTestCase {
         name: "greedy_mirror_seed_200",
         seed: 200,
-        deck1_id: "broodmother_swarm",
-        deck2_id: "broodmother_swarm",
+        deck1_id: "broodmother_pack",
+        deck2_id: "broodmother_pack",
         expected_winner: Some(0), // P1 wins
         expected_turns: 11,       // Updated for CommanderInsight action priority
         expected_action_count: 41,
@@ -67,8 +67,8 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
     GoldenTestCase {
         name: "greedy_mirror_seed_600",
         seed: 600,
-        deck1_id: "broodmother_swarm",
-        deck2_id: "broodmother_swarm",
+        deck1_id: "broodmother_pack",
+        deck2_id: "broodmother_pack",
         expected_winner: Some(0), // P1 wins (updated for v0.8.0 token abilities)
         expected_turns: 17,       // Updated for v0.8.0 token abilities
         expected_action_count: 86,
@@ -194,16 +194,16 @@ fn generate_golden_data() {
 
     let test_seeds = [100u64, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
     let deck_pairs = [
-        ("broodmother_swarm", "broodmother_swarm"),
-        ("broodmother_swarm", "broodmother_swarm"),
+        ("broodmother_pack", "broodmother_pack"),
+        ("broodmother_pack", "broodmother_pack"),
         ("architect_fortify", "architect_fortify"),
-        ("broodmother_swarm", "architect_fortify"),
-        ("architect_fortify", "broodmother_swarm"),
-        ("broodmother_swarm", "broodmother_swarm"),
+        ("broodmother_pack", "architect_fortify"),
+        ("architect_fortify", "broodmother_pack"),
+        ("broodmother_pack", "broodmother_pack"),
         ("architect_fortify", "architect_fortify"),
-        ("broodmother_swarm", "architect_fortify"),
-        ("architect_fortify", "broodmother_swarm"),
-        ("broodmother_swarm", "architect_fortify"),
+        ("broodmother_pack", "architect_fortify"),
+        ("architect_fortify", "broodmother_pack"),
+        ("broodmother_pack", "architect_fortify"),
     ];
 
     println!("\n=== GOLDEN TEST DATA ===\n");

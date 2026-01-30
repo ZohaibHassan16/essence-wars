@@ -64,7 +64,7 @@ class EssenceWarsEnv(gym.Env[np.ndarray, int]):
 
     Args:
         deck1: Deck name for the agent (Player 1). Default: "artificer_tokens"
-        deck2: Deck name for the opponent (Player 2). Default: "broodmother_swarm"
+        deck2: Deck name for the opponent (Player 2). Default: "broodmother_pack"
         opponent: Opponent type - "greedy", "random", or None for external control.
                   Default: "greedy"
         game_mode: "attrition" (default) or "essence_duel"
@@ -80,7 +80,7 @@ class EssenceWarsEnv(gym.Env[np.ndarray, int]):
     def __init__(
         self,
         deck1: str = "artificer_tokens",
-        deck2: str = "broodmother_swarm",
+        deck2: str = "broodmother_pack",
         opponent: str | None = "greedy",
         game_mode: str = "attrition",
         max_turns: int = 100,
@@ -283,7 +283,7 @@ class EssenceWarsSelfPlayEnv(EssenceWarsEnv):
     def __init__(
         self,
         deck1: str = "artificer_tokens",
-        deck2: str = "broodmother_swarm",
+        deck2: str = "broodmother_pack",
         game_mode: str = "attrition",
         max_turns: int = 100,
         render_mode: str | None = None,
@@ -373,7 +373,7 @@ class VectorizedEssenceWars:
         self,
         num_envs: int = 64,
         deck1: str = "artificer_tokens",
-        deck2: str = "broodmother_swarm",
+        deck2: str = "broodmother_pack",
         game_mode: str = "attrition",
     ) -> None:
         self.num_envs = num_envs
@@ -572,7 +572,7 @@ class VectorizedEssenceWarsWithShaping(VectorizedEssenceWars):
         self,
         num_envs: int = 64,
         deck1: str = "artificer_tokens",
-        deck2: str = "broodmother_swarm",
+        deck2: str = "broodmother_pack",
         game_mode: str = "attrition",
         shaping_scale: float = 0.01,
         life_weight: float = 1.0,
@@ -683,7 +683,7 @@ class VectorizedEssenceWarsWithShaping(VectorizedEssenceWars):
 
 def make_env(
     deck1: str = "artificer_tokens",
-    deck2: str = "broodmother_swarm",
+    deck2: str = "broodmother_pack",
     opponent: str | None = "greedy",
     game_mode: str = "attrition",
     seed: int | None = None,
@@ -719,7 +719,7 @@ try:
         entry_point="essence_wars.env:EssenceWarsEnv",
         kwargs={
             "deck1": "artificer_tokens",
-            "deck2": "broodmother_swarm",
+            "deck2": "broodmother_pack",
             "opponent": "greedy",
             "game_mode": "attrition",
         },
@@ -730,7 +730,7 @@ try:
         entry_point="essence_wars.env:EssenceWarsSelfPlayEnv",
         kwargs={
             "deck1": "artificer_tokens",
-            "deck2": "broodmother_swarm",
+            "deck2": "broodmother_pack",
             "game_mode": "attrition",
         },
     )

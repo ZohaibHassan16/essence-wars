@@ -11,7 +11,7 @@ commander = 5007
 cards = [
     # 1-cost (5 cards) - early game presence
     2000, 2000,  # Spore Crawler x2 (1/3 - durable)
-    2003,        # Broodling (2/2 Rush)
+    2003,        # Pack Whelp (2/2 Rush)
     2006,        # Parasitic Larva (1/2 Lethal)
     2018,        # Unstable Spore (1/1 Volatile)
 
@@ -27,12 +27,12 @@ cards = [
     2047,        # Spore Colony (2/4)
 
     # 4-cost (8 cards) - midrange power
-    2004,        # Hive Guardian (3/6 Guard Regenerate)
-    2011,        # Carapace Warrior (2/6 Regenerate)
+    2004,        # Grove Guardian (3/6 Guard Regenerate)
+    2011,        # Scaled Warrior (2/6 Regenerate)
     2041,        # Spawn Caller (2/4)
-    2052,        # Brood Protector (2/5 Guard)
-    2053,        # Brood Caller (2/3, summons token)
-    2058,        # Hive Network (support - draw)
+    2052,        # Den Protector (2/5 Guard)
+    2053,        # Pack Caller (2/3, summons token)
+    2058,        # Grove Network (support - draw)
     2072,        # Grove Warden (3/5 Regenerate)
     4040,        # Runebound Guardian (3/5 Ward)
 
@@ -41,8 +41,8 @@ cards = [
     4060,        # Bounty Hunter (3/3 Rush)
 
     # 6-cost (2 cards) - late game
-    2009,        # Swarm Mother (4/6 Regenerate, +1/0 each turn)
-    2059,        # Brood Overlord (5/6, grants Rush to allies)
+    2009,        # Den Mother (4/6 Regenerate, +1/0 each turn)
+    2059,        # Pack Overlord (5/6, grants Rush to allies)
 
     # Utility (2 cards)
     4050,        # Mercenary Ambush (spell - 3 damage + 2 AoE)
