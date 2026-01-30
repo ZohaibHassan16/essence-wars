@@ -1,273 +1,159 @@
 # Symbiote Circles - Card Art Prompts
 # Growth & Adaptation faction (IDs 2000-2074)
+# Aesthetic: Urza's Saga nature magic - primordial forests, pack predators, druids
+# NOT alien/biopunk - use wolves, great cats, serpents, treants, forest spirits
 
 faction: symbiote
 set: core_set
 
 cards:
-  # === COMMANDERS ===
-  - id: 2060
-    name: "The Broodmother"
-    card_type: creature
-    is_commander: true
-    tags: [Commander, Beast]
-    prompt: >
-      A fierce female druid queen with living bio-armor made of bioluminescent purple
-      vines and bone plates, deep green organic patterns covering her powerful athletic
-      form, commanding stance with one clawed hand raised summoning her swarm, revealing
-      bio-suit design showing both beauty and primal danger, wild untamed hair with
-      living tendrils, jungle background with glowing spore trees, full body visible
-      with dramatic bioluminescent lighting, 90s Magic the Gathering card art, painted
-      fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
+  # =============================================================================
+  # CREATURES - Parasites & Fungal (Decay/Volatile theme)
+  # =============================================================================
 
-  # === CREATURES - Swarm ===
-  - id: 2003
-    name: "Broodling"
-    card_type: creature
-    tags: [Swarm]
-    prompt: >
-      A small but vicious bio-engineered creature with chitinous armor and sharp claws,
-      rushing forward with feral speed as part of a larger swarm, bioluminescent purple
-      markings glowing on its carapace, multiple eyes gleaming with predatory intelligence,
-      born to charge and overwhelm, jungle floor background with other swarm creatures,
-      90s Magic the Gathering card art, painted fantasy illustration
-    lora: "frazetta:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2019
-    name: "Explosive Broodling"
-    card_type: creature
-    tags: [Swarm]
-    prompt: >
-      A swollen broodling with glowing unstable bio-chemicals visible beneath translucent
-      chitin, rushing forward on a suicide charge ready to detonate, purple and green
-      volatile fluids pulsing through its distended body, other swarm creatures trailing
-      behind, bioluminescent glow illuminating the jungle floor, 90s Magic the Gathering
-      card art, painted fantasy illustration
-    lora: "frazetta:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2016
-    name: "Frenzied Brood"
-    card_type: creature
-    tags: [Swarm]
-    prompt: >
-      A wild-eyed male swarm caller in tattered organic robes releasing pheromone clouds
-      that drive his pack of creatures into frenzy, muscular torso visible through ripped
-      fabric with bioluminescent tribal scars, frenzied swarm creatures surging past him
-      toward the enemy, each kill making them stronger and faster, ecstatic commanding
-      pose with arms raised, jungle battlefield background, 90s Magic the Gathering card
-      art, painted fantasy illustration
-    lora: "frazetta:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  # === CREATURES - Beasts ===
-  - id: 2005
-    name: "Pack Hunter"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A fierce female beast master with predator grafts along her arms and shoulders,
-      living chitin armor revealing her athletic form, bioluminescent green tattoos
-      pulsing as she communes with her pack, confident commanding pose with clawed
-      hand extended to her beast companions, wild hair of living tendrils, jungle
-      background with prowling creatures, 90s Magic the Gathering card art, painted
-      fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2038
-    name: "Pounce Hunter"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A stealthy male scout with feline bio-grafts enhancing his reflexes, sleek chitin
-      armor covering his lean muscular form, cat-like eyes gleaming with predatory
-      intelligence as he crouches ready to spring, retractable claws extending from
-      his fingertips, bioluminescent purple markings along his spine, jungle canopy
-      above casting dappled light, 90s Magic the Gathering card art, painted fantasy
-      illustration
-    lora: "frazetta:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2042
-    name: "Feral Striker"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A powerful male bio-warrior with grafted predator limbs and enhanced reflexes,
-      symbiotic armor of living chitin bonded to his muscular torso revealing his
-      athletic build, confident aggressive stance with bone-blade arms raised to strike,
-      bioluminescent green veins pulsing beneath his skin, war paint of glowing tribal
-      markings across his chest and face, determined fierce expression, jungle battlefield
-      background with organic spires, 90s Magic the Gathering card art, painted fantasy
-      illustration
-    lora: "frazetta:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2049
-    name: "Volatile Stalker"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A predatory stalker beast with unstable bio-chemicals coursing through glowing
-      veins beneath translucent skin, stealthily rushing through undergrowth ready to
-      explode on contact, purple volatile glow illuminating the surrounding jungle,
-      death coming swiftly and explosively, organic spines and poisonous barbs, 90s
-      Magic the Gathering card art, painted fantasy illustration
-    lora: "frazetta:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2001
-    name: "Venom Fang"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A serpentine beast with massive venomous fangs dripping with lethal toxin, coiled
-      to strike with hood flared showing warning colors of purple and green, bioluminescent
-      scales patterning its muscular body, one bite being all it takes, jungle floor
-      with bone remains of previous victims, 90s Magic the Gathering card art, painted
-      fantasy illustration
-    lora: "frazetta:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2010
-    name: "Acid Spitter"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A grotesque creature with a bulbous acid sac and projecting tube for spitting
-      corrosive fluids at range, green acid dripping from its nozzle-like mouth, armor
-      and stone melting before its spray, caustic steam rising from dissolved targets,
-      bio-organic ranged weapon evolved for destruction, 90s Magic the Gathering card
-      art, painted fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2059
-    name: "Brood Overlord"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A commanding male hive general in ornate chitin plate armor bonded to his muscular
-      torso, bioluminescent purple veins pulsing beneath his skin, psychic crown of
-      living bone directing swarm creatures that orbit him, powerful stance with
-      bio-grafted blade-arm raised commanding his forces, compound eyes gleaming with
-      tactical intelligence granting Rush to all allies, living hive-city of coral
-      spires in background, 90s Magic the Gathering card art, painted fantasy illustration
-    lora: "frazetta:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  # === CREATURES - Parasites ===
   - id: 2000
     name: "Spore Crawler"
     card_type: creature
     tags: [Parasite]
     prompt: >
-      A serene female healer in flowing robes woven from living mycelium and soft moss,
-      glowing mushroom familiar perched on her shoulder, hands releasing healing spores
-      that drift through the air, compassionate expression with subtle fungal patterns
-      on her cheeks, bioluminescent purple glow emanating from her robes, slender
-      graceful form visible through the organic fabric, medicinal cave garden background
-      with luminescent fungi, 90s Magic the Gathering card art, painted fantasy
-      illustration
+      A serene female druid in flowing robes woven from living moss and soft forest
+      fabric, glowing mushroom familiar perched on her shoulder, hands releasing
+      healing spores that drift through the air, compassionate expression with
+      subtle leaf patterns painted on her cheeks, purple bioluminescent glow
+      emanating from mushrooms around her, slender graceful form visible through
+      the organic fabric, ancient forest grove background with luminescent fungi
+      and massive trees, 90s Magic the Gathering card art, painted fantasy illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2006
     name: "Parasitic Larva"
     card_type: creature
     tags: [Parasite]
     prompt: >
-      A cunning female parasite weaver in form-fitting chitin armor that reveals her
-      lithe figure, cultivating deadly larvae in bio-vats attached to her forearms,
-      confident knowing smile as she releases a lethal parasite toward her target,
-      bioluminescent green toxin tubes running along her arms, wild dark hair with
-      living tendril highlights, nest chamber background with organic incubation pods,
+      A cunning female poison-weaver in form-fitting leather armor that reveals her
+      lithe figure, cultivating deadly fungal spores in wooden vials attached to
+      her belt, confident knowing smile as she releases toxic spores toward her
+      target, green poison mist swirling around her hands, wild dark hair with
+      flowers woven in, mushroom grove background with organic growth and fallen
+      logs, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2018
+    name: "Unstable Spore"
+    card_type: creature
+    tags: [Parasite]
+    prompt: >
+      A dangerously swollen puffball mushroom creature with cracks of glowing
+      green energy visible through its cap, wobbling as it moves with explosive
+      instability, toxic spore clouds drifting from small vents, other forest
+      creatures keeping their distance, dark ancient forest floor background
+      with the volatile fungus providing eerie green illumination, 90s Magic
+      the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2025
+    name: "Walking Bomb"
+    card_type: creature
+    tags: [Parasite]
+    prompt: >
+      A bloated fungal creature that exists only to explode, translucent membrane
+      showing churning toxic chemicals within, ephemeral existence visible in its
+      flickering bioluminescent glow, shambling through the forest with single-minded
+      purpose, other creatures fleeing from its unstable presence, countdown to
+      detonation visible in its pulsing green glow, decaying forest background,
       90s Magic the Gathering card art, painted fantasy illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    lora: "rutkowski:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-  # === SPELLS ===
-  - id: 2012
-    name: "Rapid Mutation"
-    card_type: spell
+  - id: 2026
+    name: "Festering Plague"
+    card_type: creature
+    tags: [Parasite]
     prompt: >
-      A male bio-weaver scientist in sleek organic robes channeling evolutionary energy
-      into a creature undergoing rapid transformation, his hands crackling with green
-      mutagenic power as muscles bulge and new appendages form, intense focused
-      expression with compound eye augments, bioluminescent veins visible on his
-      forearms, jungle laboratory background with spore trees and organic growth
-      chambers, 90s Magic the Gathering card art, painted fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
+      A horrifying plague spirit combining lethal touch with volatile explosion,
+      rotting plant matter animated by toxic fungal corruption, anything it touches
+      withers and when it dies everything nearby suffers, trail of dead vegetation
+      behind it, sickly green-purple glow of concentrated pestilence, quarantine
+      zone of dead trees visible where nothing lives, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "rutkowski:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-  # === SUPPORTS ===
-  - id: 2014
-    name: "Spawning Pool"
-    card_type: support
+  - id: 2047
+    name: "Spore Colony"
+    card_type: creature
+    tags: [Parasite]
     prompt: >
-      A female gene-sculptor tending a massive organic spawning pool, her elegant form
-      silhouetted against the bioluminescent glow as she guides embryonic creatures
-      to maturity, living robes of purple membrane flowing around her as she works,
-      one hand submerged directing the growth of new life, serene maternal expression,
-      tentacles and feeding tubes connecting to organic architecture, 90s Magic the
-      Gathering card art, painted fantasy illustration
+      A collective organism of interconnected fungal growths and spore sacs forming
+      a shambling mass, multiple mushroom caps with glowing eyes beneath, slowly
+      advancing as a unified creature, spores drifting from its many caps creating
+      a cloud of particles, purple bioluminescent glow from within the colony,
+      ancient forest floor with other fungal growths nearby, 90s Magic the Gathering
+      card art, painted fantasy illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-# === ADDITIONAL COMMANDERS ===
+  - id: 2048
+    name: "Blight Spawn"
+    card_type: creature
+    tags: [Parasite]
+    prompt: >
+      A small corrupted forest spirit infused with volatile decay magic, translucent
+      form showing toxic energy within, fungal corruption spreading from its touch,
+      floating through the dying undergrowth ready to detonate on contact, purple
+      volatile glow illuminating the withered vegetation around it, blighted grove
+      background, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2061
-    name: "Plague Sovereign"
+    name: "Blight Carrier"
     card_type: creature
-    is_commander: true
-    tags: [Commander, Parasite]
+    tags: [Parasite]
     prompt: >
-      A regal female plague queen in flowing robes of living decay and spore clouds,
-      hauntingly beautiful face with sickly pale skin and glowing green eyes, volatile
-      energy crackling around her elegant form as death spreads in her wake, one hand
-      raised summoning clouds of deadly spores, revealing gown of living membrane
-      showing her otherworldly allure, throne of bones and fungal growth behind her,
-      90s Magic the Gathering card art, painted fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
+      A corrupted forest creature carrying plague and decay, fungal growths
+      sprouting from its back, shambling through the woods spreading corruption
+      in its wake, volatile energy building within ready to release on death,
+      withered plants and dead animals marking its trail, green-purple rot
+      visible on its form, dying forest background, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "rutkowski:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-  - id: 2062
-    name: "Alpha of the Hunt"
+  - id: 2067
+    name: "Plague Bearer"
     card_type: creature
-    is_commander: true
-    tags: [Commander, Beast]
+    tags: [Parasite]
     prompt: >
-      A savage male pack alpha with predator grafts covering his muscular torso,
-      feral yellow eyes gleaming with hunting instinct, bone spurs and chitin plates
-      naturally fused to his powerful frame, crouched in an aggressive stance ready
-      to lead the pack into frenzy, bioluminescent tribal markings pulsing across
-      his chest, wild mane of hair with living tendrils, jungle clearing with his
-      pack visible in shadows behind, 90s Magic the Gathering card art, painted
-      fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2063
-    name: "The Eternal Grove"
-    card_type: creature
-    is_commander: true
-    tags: [Commander, Structure]
-    prompt: >
-      A massive sentient tree-creature with a face formed in ancient bark, towering
-      over the jungle canopy with branches spreading like protective arms, smaller
-      creatures sheltering in its regenerating roots, bioluminescent moss and healing
-      sap flowing through its veins, an aura of eternal life and growth radiating
-      outward, ancient and wise expression in its bark-formed features, sacred grove
-      background with glowing spore lights, 90s Magic the Gathering card art, painted
-      fantasy illustration
+      A diseased creature carrying volatile plague toxins in fungal growths across
+      its body, shambling forward to spread death upon its demise, green-purple
+      rot visible through gaps in its bark-like skin, flies and spores orbiting
+      its infectious form, leaving a trail of withered vegetation, isolated from
+      other creatures who fear its contagion, 90s Magic the Gathering card art,
+      painted fantasy illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-# === CREATURES - Beasts ===
+  - id: 2068
+    name: "Death Blossom"
+    card_type: creature
+    tags: [Parasite]
+    prompt: >
+      A beautiful but deadly flower creature with lethal petals that kill on
+      contact, volatile core ready to explode spreading toxic spores, deceptively
+      attractive purple and green colors luring prey closer, victims withered
+      at its roots showing its lethal nature, jungle clearing with other
+      creatures keeping their distance, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  # =============================================================================
+  # CREATURES - Oozes (Regeneration theme)
+  # =============================================================================
 
   - id: 2002
     name: "Regenerating Ooze"
@@ -275,267 +161,13 @@ cards:
     tags: [Ooze]
     prompt: >
       A massive amorphous ooze creature of translucent green slime with a pulsing
-      core, constantly reforming itself as pieces are torn away, pseudopods reaching
-      out to engulf prey, bioluminescent particles floating within its gelatinous
-      mass, regenerating wounds visibly healing as it moves, cave floor with
-      dissolved remains of previous victims, 90s Magic the Gathering card art,
-      painted fantasy illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2004
-    name: "Hive Guardian"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A massive insectoid guardian with thick carapace armor in purple and green
-      chitinous plates, standing protectively before a hive entrance with mandibles
-      spread wide, regenerating wounds visible on its battle-scarred shell, multiple
-      compound eyes scanning for threats, powerful legs planted in defensive stance,
-      organic hive architecture visible behind with pulsing bioluminescent veins,
-      90s Magic the Gathering card art, painted fantasy illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2007
-    name: "Evolution Chamber"
-    card_type: creature
-    tags: [Structure]
-    prompt: >
-      A living organic structure like a massive chrysalis with transparent membrane
-      walls, a creature visible inside undergoing rapid evolution and enhancement,
-      bio-tubes and feeding tendrils connecting to the central chamber, a female
-      bio-sculptor tending the chamber with her hands pressed against the membrane,
-      bioluminescent fluids pumping through organic conduits, spawning cavern
-      background, 90s Magic the Gathering card art, painted fantasy illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2008
-    name: "Alpha Predator"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A terrifying apex predator with lethal claws and venomous fangs, sleek
-      muscular body built for speed and killing, bioluminescent purple stripes
-      marking its deadly nature, caught mid-pounce with claws extended and jaws
-      open, prey creature fleeing in terror below, jungle canopy backdrop with
-      vines and organic growth, 90s Magic the Gathering card art, painted fantasy
-      illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2009
-    name: "Swarm Mother"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A massive female brood beast with a distended egg-sac and multiple birthing
-      appendages, smaller swarm creatures crawling over her protective carapace,
-      maternal ferocity in her compound eyes as she defends her offspring, regenerating
-      wounds as she grows stronger each turn, bioluminescent markings pulsing with
-      life-giving energy, nest chamber filled with eggs and hatching young, 90s
-      Magic the Gathering card art, painted fantasy illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2011
-    name: "Carapace Warrior"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A heavily armored male warrior with thick chitinous plates bonded to his
-      muscular frame, regenerating battle damage visible as wounds close themselves,
-      bone-blade weapons grown from his forearms, stoic determined expression beneath
-      a crested helm of living chitin, defensive stance with arms crossed showing
-      the thickness of his natural armor, jungle battlefield background, 90s Magic
-      the Gathering card art, painted fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2015
-    name: "Feral Striker"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A lithe female beast-warrior with feline grace and frenzy in her eyes, minimal
-      chitin armor revealing her athletic predator form, claws extended mid-strike
-      as she attacks with increasing fury, bioluminescent green war paint glowing
-      brighter with each kill, wild hair whipping as she moves, blood splatter from
-      previous strikes visible, jungle clearing with fallen enemies, 90s Magic the
-      Gathering card art, painted fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2017
-    name: "Ravager Alpha"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A massive male pack leader in a killing frenzy, muscles bulging with each
-      successive attack, bone spurs and chitin plates cracking from the intensity,
-      feral rage in his glowing eyes as he leads his pack to slaughter, blood and
-      viscera coating his clawed hands, bioluminescent veins pulsing faster with
-      battle fury, pack of lesser beasts following his rampage, 90s Magic the
-      Gathering card art, painted fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2020
-    name: "Deathburst Lurker"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A bloated predator stalking through undergrowth with volatile chemicals
-      visible beneath translucent skin, ready to explode in a devastating blast
-      upon death, purple and green toxins swirling in its distended body, patient
-      hunter's eyes waiting for the perfect moment to strike and detonate, organic
-      spines warning of its deadly nature, dark jungle background with eerie
-      bioluminescent glow, 90s Magic the Gathering card art, painted fantasy
-      illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2021
-    name: "Bloodrage Berserker"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A frenzied male warrior lost to bloodrage with veins bulging and muscles
-      straining, frenzy increasing with each kill as bioluminescent markings
-      pulse faster, bone weapons fused to his arms dripping with gore, wild
-      screaming expression of pure battle fury, tattered organic armor barely
-      containing his rage, battlefield strewn with fallen enemies, 90s Magic
-      the Gathering card art, painted fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2022
-    name: "Frenzy Pack Leader"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A powerful female pack leader directing her frenzied hunters with pheromone
-      commands, athletic form in revealing chitin armor showing her predator
-      physique, leading by example with bloodied claws from her own kills, pack
-      creatures around her growing stronger with each successful hunt, confident
-      commanding pose with one hand raised directing the attack, jungle clearing
-      with prey being surrounded, 90s Magic the Gathering card art, painted
+      magical core, constantly reforming itself as pieces are torn away, pseudopods
+      reaching out to engulf prey, glowing particles floating within its gelatinous
+      mass, regenerating wounds visibly healing as it moves, ancient forest floor
+      with dissolved remains of prey, 90s Magic the Gathering card art, painted
       fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2023
-    name: "Rabid Charger"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A four-legged charging beast with foam at its jaws and madness in its eyes,
-      frenzy building as it tramples everything in its path, muscular body built
-      for unstoppable momentum, chitin plates cracked from repeated impacts,
-      bioluminescent rage-veins pulsing along its spine, dust and debris flying
-      as it charges forward, jungle path being destroyed in its wake, 90s Magic
-      the Gathering card art, painted fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2024
-    name: "Savage Swarmling"
-    card_type: creature
-    tags: [Swarm]
-    prompt: >
-      A small but vicious swarm creature with oversized claws for its tiny body,
-      frenzy visible in its beady eyes as it attacks larger prey, chitinous body
-      vibrating with aggressive energy, part of a larger swarm visible swarming
-      over a fallen enemy, bioluminescent markings glowing brighter with bloodlust,
-      jungle floor covered with more swarmlings rushing to join the attack, 90s
-      Magic the Gathering card art, painted fantasy illustration
-    lora: "frazetta:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2027
-    name: "Volatile Matriarch"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A massive female brood-beast swollen with volatile chemicals, protective
-      of her explosive offspring clustering around her, ready to detonate in a
-      catastrophic blast if threatened, translucent belly showing churning toxic
-      fluids, maternal fury in her compound eyes, smaller volatile creatures
-      orbiting her massive form, nest chamber glowing with dangerous bioluminescence,
-      90s Magic the Gathering card art, painted fantasy illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2041
-    name: "Spawn Caller"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A female summoner in flowing organic robes calling forth creatures from
-      spawning pools, one hand extended releasing pheromones that damage weak
-      enemies, beautiful face with predator markings showing her connection to
-      the swarm, smaller creatures emerging from pools around her feet, commanding
-      pose in a spawning cavern with organic architecture, 90s Magic the Gathering
-      card art, painted fantasy illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2043
-    name: "Swarm Ambusher"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A stealthy predator bursting from concealment with lethal claws extended,
-      rush and lethal strike combined in one devastating attack, sleek body built
-      for ambush with camouflage chitin shifting colors, victim caught completely
-      by surprise as the ambusher strikes, jungle foliage parting as the predator
-      emerges, bioluminescent eyes the last thing prey sees, 90s Magic the Gathering
-      card art, painted fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2045
-    name: "Hiveling"
-    card_type: creature
-    tags: [Swarm]
-    prompt: >
-      A basic swarm creature the size of a large dog, simple chitinous body with
-      functional claws and mandibles, part of the endless tide of the hive, multiple
-      hivelings visible rushing forward together, bioluminescent markings identifying
-      them as part of the collective, expendable but numerous, hive tunnels visible
-      in background with more emerging, 90s Magic the Gathering card art, painted
-      fantasy illustration
-    lora: "frazetta:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2046
-    name: "Brood Tender"
-    card_type: creature
-    tags: [Beast]
-    prompt: >
-      A nurturing female caretaker tending to young creatures in a spawning chamber,
-      gentle hands applying healing secretions to wounded allies, soft bioluminescent
-      glow emanating from her robes of living membrane, maternal expression as she
-      strengthens the brood, organic cradles and feeding tubes surrounding her,
-      warm cave lighting from glowing fungi, 90s Magic the Gathering card art,
-      painted fantasy illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2047
-    name: "Spore Colony"
-    card_type: creature
-    tags: [Parasite]
-    prompt: >
-      A collective organism of interconnected fungal growths and spore sacs, multiple
-      eye-stalks emerging from the colonial mass, slowly advancing as a unified
-      creature, spores drifting from its many caps creating a cloud of particles,
-      bioluminescent purple glow from within the colony, cave floor with other
-      fungal growths nearby, 90s Magic the Gathering card art, painted fantasy
-      illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2050
     name: "Regenerating Spawn"
@@ -544,166 +176,356 @@ cards:
     prompt: >
       A small ooze creature with remarkable healing abilities, wounds closing almost
       instantly as it reforms, translucent body showing a pulsing regenerative core,
-      pseudopods reaching out as it moves across the jungle floor, leaving a trail
+      pseudopods reaching out as it moves across the forest floor, leaving a trail
       of healing slime, smaller pieces rejoining the main body after being separated,
       90s Magic the Gathering card art, painted fantasy illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-  - id: 2051
-    name: "Carapace Scout"
+  # =============================================================================
+  # CREATURES - Pack Beasts (Rush/Frenzy theme - wolves, wild dogs)
+  # =============================================================================
+
+  - id: 2003
+    name: "Pack Whelp"
     card_type: creature
     tags: [Beast]
     prompt: >
-      A lithe female scout with light chitin armor built for speed and range, organic
-      ranged weapon grown from her forearm firing bio-projectiles, alert pose scanning
-      the jungle from a high branch, bioluminescent markings subdued for stealth,
-      athletic figure visible through form-fitting living armor, spotter creature
-      perched on her shoulder, jungle canopy background, 90s Magic the Gathering
+      A young wolf with fierce eyes and powerful legs, rushing forward with feral
+      speed as part of a hunting pack, silver-grey fur with green magical markings
+      glowing along its spine, born to charge and overwhelm, forest clearing
+      background with other wolves visible in the shadows, 90s Magic the Gathering
       card art, painted fantasy illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-  - id: 2052
-    name: "Brood Protector"
+  - id: 2005
+    name: "Pack Hunter"
     card_type: creature
     tags: [Beast]
     prompt: >
-      A massive defensive beast with thick overlapping chitin plates forming
-      impenetrable armor, standing guard before a nest of eggs and young, small
-      creatures sheltering behind its bulk, protective stance with arms spread
-      wide to block attackers, bioluminescent warning patterns glowing on its
-      shield-like carapace, nest chamber background with vulnerable young visible,
+      A fierce female beast master in revealing leather armor with wolf-fur trim,
+      athletic form visible as she runs alongside her wolf pack, green magical
+      tattoos pulsing as she communes with her beasts, confident commanding pose
+      with spear raised, wild hair flowing behind her, ancient forest background
+      with prowling wolves, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2016
+    name: "Frenzied Pack"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A wild-eyed male pack caller in tattered forest robes releasing a howl that
+      drives his wolves into frenzy, muscular torso visible through ripped fabric
+      with green tribal scars, frenzied wolves surging past him toward the enemy,
+      each kill making them stronger and faster, ecstatic commanding pose with
+      arms raised, moonlit forest battlefield, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2019
+    name: "Volatile Whelp"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A young wolf corrupted by toxic forest magic, glowing green veins visible
+      beneath its fur, rushing forward on a suicide charge ready to release its
+      poisonous energy, volatile fluids pulsing through its body, other pack
+      members trailing behind, bioluminescent glow illuminating the forest floor,
       90s Magic the Gathering card art, painted fantasy illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-  - id: 2053
-    name: "Brood Caller"
+  - id: 2024
+    name: "Savage Cub"
     card_type: creature
     tags: [Beast]
     prompt: >
-      A male summoner releasing pheromone clouds from glands on his arms, calling
-      forth a rushing broodling that materializes beside him, chitin armor with
-      pheromone vents along the forearms, focused expression as he commands the
-      swarm, small rush-capable broodling emerging from the organic floor beside
-      him, spawning chamber with more creatures waiting to be called, 90s Magic
-      the Gathering card art, painted fantasy illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+      A small but vicious wolf cub with oversized paws and fierce eyes, frenzy
+      visible as it attacks larger prey, silver fur bristling with aggressive
+      energy, part of a larger pack visible overwhelming a fallen enemy, green
+      magical markings glowing brighter with bloodlust, forest floor with more
+      cubs rushing to join the attack, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2038
+    name: "Pounce Hunter"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A stealthy male hunter with wolf-like reflexes, lean muscular form in
+      forest leathers, cat-like eyes gleaming with predatory intelligence as
+      he crouches ready to spring, hunting knife in hand, green magical markings
+      along his arms, forest canopy above casting dappled light, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2062
+    name: "Pack Runner"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A swift male hunter sprinting through the forest alongside his wolf pack,
+      lean muscular build in minimal leather armor, spear raised for the killing
+      strike, green magical energy trailing from his movements, wild hair flowing,
+      forest blurring past as he runs at impossible speed, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2064
-    name: "Swarm Caller"
+    name: "Pack Herald"
     card_type: creature
     tags: [Beast]
     prompt: >
-      A female swarm mistress with rush creatures orbiting her lithe form, calling
-      forth a swarmling token as she advances, revealing chitin armor showing her
-      athletic predator build, wild hair of living tendrils whipping as she
-      commands, swarmling materializing from organic matter beside her, aggressive
-      forward pose leading the charge, jungle battlefield background, 90s Magic
-      the Gathering card art, painted fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2067
-    name: "Plague Bearer"
-    card_type: creature
-    tags: [Parasite]
-    prompt: >
-      A diseased creature carrying volatile plague toxins in swollen sacs across
-      its body, shambling forward to spread death upon its demise, green-purple
-      rot visible through gaps in its decaying chitin, flies and spores orbiting
-      its infectious form, leaving a trail of withered vegetation, isolated from
-      other creatures who fear its contagion, 90s Magic the Gathering card art,
-      painted fantasy illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2068
-    name: "Death Blossom"
-    card_type: creature
-    tags: [Parasite]
-    prompt: >
-      A beautiful but deadly flower-like creature with lethal petals that kill
-      on contact, volatile core ready to explode spreading toxic spores, deceptively
-      attractive bioluminescent colors luring prey closer, victims withered at
-      its roots showing its lethal nature, jungle clearing with other creatures
-      keeping their distance, 90s Magic the Gathering card art, painted fantasy
+      A female pack mistress with wolves orbiting her athletic form, calling forth
+      a young wolf as she advances, revealing leather armor showing her predator
+      build, wild hair whipping as she commands, wolf materializing from forest
+      shadows beside her, aggressive forward pose leading the charge, moonlit
+      forest battlefield, 90s Magic the Gathering card art, painted fantasy
       illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2070
     name: "Rabid Hunter"
     card_type: creature
     tags: [Beast]
     prompt: >
-      A frenzied hunting beast with foam at its jaws and madness in its eyes,
-      lean muscular body built for relentless pursuit, frenzy building with each
-      strike as bioluminescent markings pulse faster, bloodied claws from recent
-      kills, pack of similar hunters visible in the background, jungle chase scene
-      with prey fleeing, 90s Magic the Gathering card art, painted fantasy
-      illustration
+      A frenzied hunting wolf with foam at its jaws and madness in its eyes, lean
+      muscular body built for relentless pursuit, frenzy building with each strike
+      as green magical markings pulse faster, bloodied fangs from recent kills,
+      pack of similar hunters visible in the background, forest chase scene with
+      prey fleeing, 90s Magic the Gathering card art, painted fantasy illustration
     lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-  - id: 2072
-    name: "Grove Warden"
+  # =============================================================================
+  # CREATURES - Great Cats & Predators (Lethal/Stealth theme)
+  # =============================================================================
+
+  - id: 2001
+    name: "Venom Fang"
     card_type: creature
     tags: [Beast]
     prompt: >
-      A massive tree-like guardian creature with bark armor and regenerating limbs,
-      ancient and patient eyes watching over the grove, wounds healing with visible
-      new growth, protective stance with branch-arms spread wide, smaller creatures
-      sheltering in its roots, sacred grove background with bioluminescent plants,
+      A massive serpent with venomous fangs dripping with lethal toxin, coiled
+      to strike with hood flared showing warning colors of purple and green,
+      iridescent scales patterning its muscular body, one bite being all it
+      takes, jungle floor with bone remains of previous victims, 90s Magic
+      the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2008
+    name: "Alpha Predator"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A terrifying great cat apex predator with lethal claws and fangs, sleek
+      muscular body built for speed and killing, green magical stripes marking
+      its deadly nature, caught mid-pounce with claws extended and jaws open,
+      prey creature fleeing in terror below, jungle canopy backdrop with vines
+      and ancient trees, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2010
+    name: "Acid Spitter"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A large forest lizard with a bulbous venom sac and projecting snout for
+      spitting corrosive acid at range, green acid dripping from its mouth,
+      armor and stone dissolving before its spray, caustic steam rising from
+      targets, ranged predator evolved for destruction, jungle background,
       90s Magic the Gathering card art, painted fantasy illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-# === CREATURES - Parasites/Volatile ===
-
-  - id: 2018
-    name: "Unstable Spore"
+  - id: 2015
+    name: "Feral Striker"
     card_type: creature
-    tags: [Parasite]
+    tags: [Beast]
     prompt: >
-      A tiny mushroom-like creature with a dangerously swollen cap full of volatile
-      chemicals, wobbling as it moves with explosive instability, glowing sickly
-      green and purple warning of its detonation potential, other creatures keeping
-      their distance, spore clouds drifting from small vents, dark cave background
-      with the spore providing the only light, 90s Magic the Gathering card art,
-      painted fantasy illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+      A lithe female beast-warrior with feline grace and frenzy in her eyes,
+      minimal leather armor revealing her athletic predator form, claws extended
+      mid-strike as she attacks with increasing fury, green war paint glowing
+      brighter with each kill, wild hair whipping as she moves, blood splatter
+      from previous strikes, jungle clearing with fallen enemies, 90s Magic
+      the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-  - id: 2025
-    name: "Walking Bomb"
+  - id: 2042
+    name: "Feral Striker"
     card_type: creature
-    tags: [Parasite]
+    tags: [Beast]
     prompt: >
-      A bloated creature that exists only to explode, translucent skin showing
-      churning volatile chemicals within, ephemeral existence visible in its
-      flickering bioluminescence, stumbling toward enemies with single-minded
-      purpose, other creatures fleeing from its unstable presence, countdown to
-      detonation visible in its pulsing glow, 90s Magic the Gathering card art,
-      painted fantasy illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+      A powerful male beast-warrior with predator reflexes and enhanced senses,
+      leather armor bonded to his muscular torso revealing his athletic build,
+      confident aggressive stance with bone-tipped spear raised to strike, green
+      tribal markings pulsing beneath his skin, war paint across his chest and
+      face, determined fierce expression, jungle battlefield background, 90s
+      Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-  - id: 2026
-    name: "Festering Plague"
+  - id: 2043
+    name: "Pack Ambusher"
     card_type: creature
-    tags: [Parasite]
+    tags: [Beast]
     prompt: >
-      A horrifying plague creature combining lethal touch with volatile explosion,
-      rotting flesh held together by toxic chemicals, anything it touches dies
-      and when it dies everything nearby suffers, trail of death and decay behind
-      it, sickly green-purple glow of concentrated pestilence, quarantine zone
-      visible where nothing lives, 90s Magic the Gathering card art, painted
+      A stealthy great cat predator bursting from concealment with lethal claws
+      extended, rush and lethal strike combined in one devastating attack, sleek
+      spotted body built for ambush with camouflage markings, victim caught
+      completely by surprise as the predator strikes, jungle foliage parting
+      as it emerges, glowing green eyes the last thing prey sees, 90s Magic
+      the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2049
+    name: "Volatile Stalker"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A predatory great cat stalker with unstable magical energy coursing through
+      glowing veins, stealthily rushing through undergrowth ready to explode on
+      contact, purple volatile glow illuminating the surrounding jungle, death
+      coming swiftly and explosively, poisonous claws and toxic breath, 90s Magic
+      the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  # =============================================================================
+  # CREATURES - Frenzy Warriors (Berserker theme)
+  # =============================================================================
+
+  - id: 2017
+    name: "Ravager Alpha"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A massive male pack leader in a killing frenzy, muscles bulging with each
+      successive attack, tribal scars and war paint cracking from the intensity,
+      feral rage in his glowing eyes as he leads his pack to slaughter, blood
+      coating his clawed hands, green magical veins pulsing faster with battle
+      fury, pack of wolves following his rampage, 90s Magic the Gathering card
+      art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2020
+    name: "Deathburst Lurker"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A bloated forest predator stalking through undergrowth with volatile magical
+      chemicals visible beneath translucent patches of skin, ready to explode in
+      a devastating blast upon death, purple and green toxins swirling in its
+      body, patient hunter's eyes waiting for the perfect moment to strike and
+      detonate, dark jungle background with eerie glow, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2021
+    name: "Bloodrage Berserker"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A frenzied male warrior lost to bloodrage with veins bulging and muscles
+      straining, frenzy increasing with each kill as green tribal markings pulse
+      faster, bone weapons gripped in his hands dripping with gore, wild screaming
+      expression of pure battle fury, tattered leather armor barely containing
+      his rage, battlefield strewn with fallen enemies, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2022
+    name: "Frenzy Pack Leader"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A powerful female pack leader directing her frenzied hunters with howls and
+      gestures, athletic form in revealing leather armor showing her predator
+      physique, leading by example with bloodied claws from her own kills, wolves
+      around her growing stronger with each successful hunt, confident commanding
+      pose with one hand raised directing the attack, jungle clearing with prey
+      being surrounded, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2023
+    name: "Rabid Charger"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A four-legged dire boar with foam at its tusks and madness in its eyes,
+      frenzy building as it tramples everything in its path, muscular body built
+      for unstoppable momentum, battle scars from repeated impacts, green magical
+      rage-veins pulsing along its spine, dust and debris flying as it charges
+      forward, jungle path being destroyed in its wake, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  # =============================================================================
+  # CREATURES - Defenders & Guardians (Guard/Regenerate theme)
+  # =============================================================================
+
+  - id: 2004
+    name: "Grove Guardian"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A massive bear standing on hind legs with thick fur and protective stance,
+      guarding the entrance to a sacred grove with claws spread wide, regenerating
+      wounds visible as they close themselves, ancient and wise eyes scanning
+      for threats, powerful legs planted in defensive stance, sacred grove with
+      ancient trees visible behind, 90s Magic the Gathering card art, painted
       fantasy illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2011
+    name: "Scaled Warrior"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A heavily armored male warrior with natural scale-like skin covering his
+      muscular frame, regenerating battle damage visible as wounds close themselves,
+      bone-tipped weapons held in his hands, stoic determined expression beneath
+      war paint, defensive stance with arms ready showing the thickness of his
+      natural armor, jungle battlefield background, 90s Magic the Gathering card
+      art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2027
+    name: "Volatile Matriarch"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A massive she-bear swollen with protective magical energy, guarding her
+      cubs clustering around her, ready to detonate in a catastrophic blast if
+      her family is threatened, glowing belly showing churning defensive magic,
+      maternal fury in her eyes, smaller volatile spirits orbiting her massive
+      form, den cave glowing with dangerous bioluminescence, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2028
     name: "Plague Bearer"
@@ -711,67 +533,233 @@ cards:
     tags: [Beast]
     prompt: >
       A guardian beast that protects by threatening mutual destruction, thick
-      carapace armor combined with volatile chemicals visible beneath, standing
-      in defensive guard position daring enemies to attack, explosion would harm
-      attackers as much as itself, bioluminescent warning patterns on its shell,
-      other swarm creatures sheltering behind its volatile protection, 90s Magic
+      hide combined with volatile magical energy visible beneath, standing in
+      defensive guard position daring enemies to attack, explosion would harm
+      attackers as much as itself, green magical warning patterns on its hide,
+      other pack creatures sheltering behind its volatile protection, 90s Magic
       the Gathering card art, painted fantasy illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-  - id: 2048
-    name: "Volatile Drone"
+  - id: 2052
+    name: "Den Protector"
     card_type: creature
-    tags: [Swarm]
+    tags: [Beast]
     prompt: >
-      A small expendable swarm drone carrying volatile payload, mechanical precision
-      in its movements as it seeks targets, explosive chemicals visible through
-      translucent chitin, mass-produced for suicide attacks, swarm of identical
-      drones visible advancing together, each a tiny bomb waiting to detonate,
-      90s Magic the Gathering card art, painted fantasy illustration
-    lora: "frazetta:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+      A massive defensive bear with thick protective fur forming impenetrable
+      armor, standing guard before a den of cubs and young, small creatures
+      sheltering behind its bulk, protective stance with paws spread wide to
+      block attackers, green magical warning patterns glowing on its shield-like
+      chest, den background with vulnerable young visible, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-# === SPELLS ===
+  - id: 2072
+    name: "Grove Warden"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A massive treant guardian creature with bark armor and regenerating limbs,
+      ancient and patient eyes watching over the grove, wounds healing with
+      visible new growth sprouting, protective stance with branch-arms spread
+      wide, smaller creatures sheltering in its roots, sacred grove background
+      with bioluminescent plants, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-  - id: 2013
-    name: "Consume"
+  # =============================================================================
+  # CREATURES - Den/Pack Support (Token generators, buffers)
+  # =============================================================================
+
+  - id: 2009
+    name: "Den Mother"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A massive female alpha wolf with a protective aura, smaller wolves and cubs
+      crawling over her as she guards her pack, maternal ferocity in her golden
+      eyes as she defends her offspring, regenerating wounds as she grows stronger
+      each turn, green magical markings pulsing with life-giving energy, forest
+      den filled with the next generation, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2041
+    name: "Spawn Caller"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A female summoner in flowing forest robes calling forth creatures from
+      sacred pools, one hand extended releasing nature magic that damages weak
+      enemies, beautiful face with druid markings showing her connection to the
+      forest, smaller spirits emerging from pools around her feet, commanding
+      pose in a sacred grove with ancient trees, 90s Magic the Gathering card
+      art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2045
+    name: "Forest Sprite"
+    card_type: creature
+    tags: [Spirit]
+    prompt: >
+      A small glowing forest spirit the size of a large cat, simple ethereal
+      body made of leaves and light, part of the endless spirits of the grove,
+      multiple sprites visible floating through the forest together, green
+      bioluminescent glow identifying them as part of the collective, expendable
+      but numerous, ancient trees visible in background with more emerging from
+      shadows, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2046
+    name: "Den Keeper"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A nurturing female druid tending to young wolf cubs in a forest den, gentle
+      hands applying healing herbs to wounded pack members, soft green magical
+      glow emanating from her robes of woven forest fabric, maternal expression
+      as she strengthens the pack, cozy den with sleeping furs and feeding bowls
+      surrounding her, warm firelight from the den entrance, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2051
+    name: "Forest Scout"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A lithe female scout with forest camouflage and keen eyes, light leather
+      armor built for speed and stealth, organic bow grown from living wood
+      firing nature-blessed arrows, alert pose scanning the jungle from a high
+      branch, green magical markings subdued for stealth, athletic figure visible
+      through form-fitting armor, hawk companion perched on her shoulder, jungle
+      canopy background, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2053
+    name: "Pack Caller"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A male druid releasing howling calls that summon wolves from the forest,
+      calling forth a rushing wolf that materializes beside him, forest robes
+      with wolf-fur trim, focused expression as he commands the pack, young wolf
+      emerging from the forest shadows beside him, sacred grove with more wolves
+      waiting to be called, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2059
+    name: "Pack Overlord"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A commanding male pack alpha in ornate forest armor bonded to his muscular
+      torso, green magical veins pulsing beneath his skin, crown of antlers and
+      bone directing pack creatures that orbit him, powerful stance with bone-blade
+      staff raised commanding his forces, golden predator eyes gleaming with
+      tactical intelligence granting Rush to all allies, sacred forest throne
+      in background, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2060
+    name: "Grove Tender"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A gentle female druid in flowing green robes tending to forest spirits,
+      one hand extended calling a small sprite into existence, kind face with
+      leaf patterns painted on her cheeks, surrounded by floating forest sprites
+      and young animals, nurturing presence in a sacred grove clearing, soft
+      green magical light surrounding her, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  # =============================================================================
+  # CREATURES - Structures (Living forest constructs)
+  # =============================================================================
+
+  - id: 2007
+    name: "Growth Chamber"
+    card_type: creature
+    tags: [Structure]
+    prompt: >
+      A living organic structure like a massive hollow tree with transparent bark
+      walls, a creature visible inside undergoing natural enhancement and growth,
+      roots and vines connecting to the central chamber, a female druid tending
+      the chamber with her hands pressed against the bark, healing sap flowing
+      through organic conduits, sacred grove spawning cavern background, 90s
+      Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2063
+    name: "Thornwood Sapling"
+    card_type: creature
+    tags: [Structure]
+    prompt: >
+      A young treant sapling with remarkable healing properties, small humanoid
+      tree creature with bright green leaves and bark skin, wounds regenerating
+      with visible new growth, protective stance with thorny branch-arms, ancient
+      parent trees visible in the background nurturing the young one, sacred
+      grove with soft golden light, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  # =============================================================================
+  # SPELLS - Buff & Enhancement
+  # =============================================================================
+
+  - id: 2012
+    name: "Rapid Mutation"
     card_type: spell
     prompt: >
-      A massive maw of organic matter engulfing an enemy creature, teeth and
-      digestive acids dissolving the victim, tendrils pulling the prey deeper
-      into the consuming mass, bioluminescent digestive fluids glowing as they
-      break down flesh, the consumed creature's final scream visible, jungle
-      background with the organic predator emerging from the ground, 90s Magic
-      the Gathering card art, painted fantasy illustration
+      A male druid channeling evolutionary nature magic into a wolf undergoing
+      rapid transformation, his hands crackling with green mutagenic power as
+      muscles bulge and fangs grow larger, intense focused expression with
+      glowing green eyes, veins visible on his forearms, jungle laboratory
+      background with sacred trees and natural growth chambers, 90s Magic the
+      Gathering card art, painted fantasy illustration
     lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2029
     name: "Primal Fury"
     card_type: spell
     prompt: >
       A shaman channeling frenzy energy into a beast warrior, the recipient's
-      muscles bulging and eyes going wild with battle rage, bioluminescent energy
+      muscles bulging and eyes going wild with battle rage, green magical energy
       flowing from the caster's hands into the target, the warrior's attacks
       becoming stronger with each strike, primal screaming pose as the fury
-      takes hold, jungle ritual circle background, 90s Magic the Gathering card
-      art, painted fantasy illustration
+      takes hold, forest ritual circle background, 90s Magic the Gathering
+      card art, painted fantasy illustration
     lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2030
     name: "Adaptive Shell"
     card_type: spell
     prompt: >
-      A creature's skin hardening into thick regenerating armor, chitin plates
-      forming and overlapping as the spell takes effect, wounds beginning to
-      heal even as new armor grows, the creature standing taller with enhanced
-      protection, bioluminescent healing energy flowing across its surface,
-      battlefield background with enemies unable to penetrate the new defenses,
-      90s Magic the Gathering card art, painted fantasy illustration
+      A creature's skin hardening into thick regenerating natural armor, bark-like
+      plates forming and overlapping as the spell takes effect, wounds beginning
+      to heal even as new protection grows, the creature standing taller with
+      enhanced defense, green healing energy flowing across its surface, battlefield
+      background with enemies unable to penetrate the new defenses, 90s Magic
+      the Gathering card art, painted fantasy illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2031
     name: "Berserk Rage"
@@ -779,150 +767,88 @@ cards:
     prompt: >
       A warrior losing all control to primal fury, muscles tearing through
       restraints as pure rage takes over, immediate rush toward enemies with
-      no thought of defense, bioluminescent veins pulsing with aggressive energy,
+      no thought of defense, green magical veins pulsing with aggressive energy,
       the caster stepping back from the unleashed berserker, destruction and
       carnage in the warrior's wake, 90s Magic the Gathering card art, painted
       fantasy illustration
     lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2035
-    name: "Soul Reaper"
-    card_type: spell
-    prompt: >
-      A spectral tendril of life-draining energy striking an enemy creature,
-      the victim's essence being pulled away as damage is dealt, if the target
-      dies knowledge flows back to the caster as a drawn card, female reaper
-      figure channeling the dark energy with one hand extended, bioluminescent
-      soul-stream connecting caster to victim, 90s Magic the Gathering card art,
-      painted fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2036
-    name: "Feast"
-    card_type: spell
-    prompt: >
-      A predator creature devouring a fallen enemy, growing stronger from the
-      consumed flesh, muscles visibly bulging as the feast empowers it, blood
-      and gore from the kill fueling evolution, bioluminescent glow intensifying
-      with each bite, the hunter becoming more dangerous with every meal, jungle
-      floor with bones of previous feasts, 90s Magic the Gathering card art,
-      painted fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2037
-    name: "Predatory Strike"
-    card_type: spell
-    prompt: >
-      A devastating killing blow from a predator's claws, the strike so powerful
-      it heals the attacker if it kills, life energy flowing from victim to
-      predator in streams of bioluminescent green, the hunter's wounds closing
-      as it feeds on the kill, savage beauty of nature's violence, jungle
-      clearing with the fatal moment captured, 90s Magic the Gathering card art,
-      painted fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2039
     name: "Evolution Burst"
     card_type: spell
     prompt: >
-      A wave of evolutionary energy washing over rush creatures, enhancing their
-      speed and power simultaneously, multiple beasts mid-charge growing stronger
-      as the spell hits them, bioluminescent enhancement aura spreading across
+      A wave of evolutionary nature magic washing over rushing wolves, enhancing
+      their speed and power simultaneously, multiple beasts mid-charge growing
+      stronger as the spell hits them, green enhancement aura spreading across
       the battlefield, the caster channeling primal evolution with raised hands,
-      jungle battlefield with empowered swarm advancing, 90s Magic the Gathering
+      jungle battlefield with empowered pack advancing, 90s Magic the Gathering
       card art, painted fantasy illustration
     lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2040
-    name: "Pack Recall"
-    card_type: spell
-    prompt: >
-      A beast being called back to its master's side through organic teleportation,
-      the creature dissolving into spores and reforming near the summoner, a card
-      of knowledge gained from the recalled creature's experiences, female pack
-      leader with hand extended calling her hunter home, bioluminescent recall
-      portal of swirling organic matter, 90s Magic the Gathering card art, painted
-      fantasy illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2044
-    name: "Consume the Fallen"
-    card_type: spell
-    prompt: >
-      Organic tendrils rising from the ground to consume a weakened enemy, the
-      swarm growing stronger from devouring the fallen, buff energy flowing into
-      nearby allied creatures from the consumed victim, jungle floor opening to
-      swallow the dying target, bioluminescent feeding frenzy as nature recycles
-      the weak, 90s Magic the Gathering card art, painted fantasy illustration
-    lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2054
     name: "Pack Tactics"
     card_type: spell
     prompt: >
-      Multiple creatures coordinating their attack on a single target, gaining
-      rush and enhanced stats from hunting together, pack of beasts visible
-      moving in perfect predatory formation, bioluminescent communication signals
-      passing between pack members, the prey surrounded with no escape, jungle
-      ambush scene with coordinated strike, 90s Magic the Gathering card art,
-      painted fantasy illustration
+      Multiple wolves coordinating their attack on a single target, gaining rush
+      and enhanced stats from hunting together, pack of beasts visible moving
+      in perfect predatory formation, green magical communication signals passing
+      between pack members, the prey surrounded with no escape, jungle ambush
+      scene with coordinated strike, 90s Magic the Gathering card art, painted
+      fantasy illustration
     lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2055
     name: "Adaptive Form"
     card_type: spell
     prompt: >
       A creature's body shifting and adapting to become more resilient, skin
-      thickening and regeneration activating as the spell transforms it, the
-      target becoming harder to kill with each passing moment, bioluminescent
-      adaptation energy flowing across its changing form, evolution happening
-      in real-time, 90s Magic the Gathering card art, painted fantasy illustration
+      thickening with bark-like protection and regeneration activating as the
+      spell transforms it, the target becoming harder to kill with each passing
+      moment, green adaptation energy flowing across its changing form, evolution
+      happening in real-time, 90s Magic the Gathering card art, painted fantasy
+      illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2056
-    name: "Swarm Fury"
+    name: "Pack Fury"
     card_type: spell
     prompt: >
-      A pheromone wave washing over the entire swarm driving them to attack fury,
-      all creatures gaining offensive power as rage spreads, the swarm master
-      releasing the fury cloud from raised hands, bioluminescent rage-energy
-      spreading like wildfire through the horde, enemies facing a suddenly more
-      dangerous swarm, 90s Magic the Gathering card art, painted fantasy illustration
+      A howl wave washing over the entire pack driving them to attack fury, all
+      creatures gaining offensive power as rage spreads, the pack master releasing
+      the fury howl with head thrown back, green rage-energy spreading like
+      wildfire through the wolves, enemies facing a suddenly more dangerous pack,
+      90s Magic the Gathering card art, painted fantasy illustration
     lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2065
     name: "Pack Tactics"
     card_type: spell
     prompt: >
       A coordinated pack attack buffing all allied creatures, predators moving
-      as one unified hunting force, each creature gaining attack power from
-      the pack bond, bioluminescent pack-links connecting the hunters, prey
-      creature surrounded by the coordinated swarm, jungle hunting grounds
-      background, 90s Magic the Gathering card art, painted fantasy illustration
+      as one unified hunting force, each creature gaining attack power from the
+      pack bond, green magical pack-links connecting the hunters, prey creature
+      surrounded by the coordinated wolves, forest hunting grounds background,
+      90s Magic the Gathering card art, painted fantasy illustration
     lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2069
     name: "Toxic Spores"
     card_type: spell
     prompt: >
-      Volatile spore pods being grafted onto an ally creature making it explosive,
-      the creature accepting its role as a living bomb, spore sacs swelling with
-      unstable chemicals, the shaman applying the volatile gift with careful hands,
-      bioluminescent warning glow now emanating from the enhanced creature, 90s
-      Magic the Gathering card art, painted fantasy illustration
+      Volatile fungal spores being blessed onto an ally creature making it
+      explosive, the creature accepting its role as a vessel of decay, spore
+      sacs forming on its body with unstable chemicals, the shaman applying
+      the volatile gift with careful hands, green warning glow now emanating
+      from the enhanced creature, 90s Magic the Gathering card art, painted
+      fantasy illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2071
     name: "Bloodfury"
@@ -931,10 +857,10 @@ cards:
       A warrior being overwhelmed by bloodlust and frenzy energy, attack power
       surging as rational thought fades, the berserker's eyes going red with
       killing fury, shaman channeling the rage spell with blood-stained hands,
-      bioluminescent fury-veins spreading across the warrior's body, 90s Magic
-      the Gathering card art, painted fantasy illustration
+      green fury-veins spreading across the warrior's body, 90s Magic the
+      Gathering card art, painted fantasy illustration
     lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2074
     name: "Nature's Resilience"
@@ -947,99 +873,201 @@ cards:
       with ancient trees providing power, 90s Magic the Gathering card art,
       painted fantasy illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-# === SUPPORTS ===
+  # =============================================================================
+  # SPELLS - Damage & Removal
+  # =============================================================================
+
+  - id: 2013
+    name: "Consume"
+    card_type: spell
+    prompt: >
+      A massive maw of thorny vines and forest matter engulfing an enemy creature,
+      thorns and digestive acids dissolving the victim, tendrils pulling the prey
+      deeper into the consuming mass, green digestive energy glowing as it breaks
+      down flesh, the consumed creature's final scream visible, jungle background
+      with the organic predator emerging from the ground, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2035
+    name: "Soul Reaper"
+    card_type: spell
+    prompt: >
+      A spectral tendril of life-draining nature energy striking an enemy creature,
+      the victim's essence being pulled away as damage is dealt, if the target
+      dies knowledge flows back to the caster as a drawn card, female druid
+      channeling the dark forest energy with one hand extended, green soul-stream
+      connecting caster to victim, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2036
+    name: "Feast"
+    card_type: spell
+    prompt: >
+      A predator wolf devouring a fallen enemy, growing stronger from the consumed
+      flesh, muscles visibly bulging as the feast empowers it, blood and gore
+      from the kill fueling its evolution, green magical glow intensifying with
+      each bite, the hunter becoming more dangerous with every meal, forest floor
+      with bones of previous feasts, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2037
+    name: "Predatory Strike"
+    card_type: spell
+    prompt: >
+      A devastating killing blow from a great cat's claws, the strike so powerful
+      it heals the attacker if it kills, life energy flowing from victim to
+      predator in streams of green nature magic, the hunter's wounds closing
+      as it feeds on the kill, savage beauty of nature's violence, jungle
+      clearing with the fatal moment captured, 90s Magic the Gathering card
+      art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2044
+    name: "Consume the Fallen"
+    card_type: spell
+    prompt: >
+      Thorny vines rising from the ground to consume a weakened enemy, the pack
+      growing stronger from devouring the fallen, buff energy flowing into nearby
+      allied creatures from the consumed victim, forest floor opening to swallow
+      the dying target, green feeding frenzy as nature recycles the weak, 90s
+      Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  # =============================================================================
+  # SPELLS - Utility
+  # =============================================================================
+
+  - id: 2040
+    name: "Pack Recall"
+    card_type: spell
+    prompt: >
+      A wolf being called back to its master's side through forest teleportation,
+      the creature dissolving into leaves and light and reforming near the druid,
+      a card of knowledge gained from the recalled creature's experiences, female
+      pack leader with hand extended calling her hunter home, green magical recall
+      portal of swirling forest energy, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  # =============================================================================
+  # SUPPORTS
+  # =============================================================================
+
+  - id: 2014
+    name: "Spawning Pool"
+    card_type: support
+    prompt: >
+      A female druid tending a massive sacred pool in the forest, her elegant
+      form silhouetted against the green magical glow as she guides young spirits
+      to emerge, living robes of woven moss flowing around her as she works,
+      one hand submerged directing the growth of new life, serene maternal
+      expression, roots and vines connecting to the pool's edge, 90s Magic
+      the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2032
     name: "Feeding Grounds"
     card_type: support
     prompt: >
-      A blood-soaked hunting ground where the swarm brings prey to be devoured,
-      bones and remains scattered across the organic floor, creatures growing
-      stronger from the constant feeding, bioluminescent fungi growing on the
-      remains providing light, attack bonus visible as creatures feast, dark
-      jungle clearing consecrated to the hunt, 90s Magic the Gathering card art,
-      painted fantasy illustration
+      A blood-soaked hunting ground where the pack brings prey to be devoured,
+      bones and remains scattered across the forest floor, wolves growing stronger
+      from the constant feeding, mushrooms growing on the remains providing eerie
+      light, attack bonus visible as creatures feast, dark jungle clearing
+      consecrated to the hunt, 90s Magic the Gathering card art, painted fantasy
+      illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2033
     name: "Symbiotic Bond"
     card_type: support
     prompt: >
-      Living tendrils connecting multiple creatures in a symbiotic network, each
-      creature sharing strength and health with the others, bioluminescent bond-
-      lines pulsing with shared energy, the network making all members more
-      resilient, organic architecture of the bonding structure, creatures standing
-      connected by living tissue, 90s Magic the Gathering card art, painted
-      fantasy illustration
-    lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
-
-  - id: 2034
-    name: "Hive Mind Nexus"
-    card_type: support
-    prompt: >
-      A massive psychic brain-structure connecting all swarm creatures, granting
-      rush to everyone through instant telepathic coordination, bioluminescent
-      thought-pulses emanating from the central nexus, creatures moving with
-      perfect synchronization as the hive mind directs them, organic architecture
-      of neural tissue and psychic amplifiers, 90s Magic the Gathering card art,
+      Living vines and roots connecting multiple creatures in a symbiotic network,
+      each creature sharing strength and health with the others, green magical
+      bond-lines pulsing with shared energy, the network making all members more
+      resilient, organic architecture of the bonding vines, creatures standing
+      connected by living forest tissue, 90s Magic the Gathering card art,
       painted fantasy illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2034
+    name: "Spirit Nexus"
+    card_type: support
+    prompt: >
+      A massive ancient tree connecting all pack creatures through spirit magic,
+      granting rush to everyone through instant psychic coordination, green
+      magical thought-pulses emanating from the central tree, creatures moving
+      with perfect synchronization as the forest spirit directs them, sacred
+      grove architecture with the nexus tree towering above, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2057
     name: "Symbiotic Growth"
     card_type: support
     prompt: >
-      A living garden of symbiotic organisms enhancing creature health, vines
-      and healing fungi wrapping around allies making them more resilient,
-      bioluminescent growth spreading across the battlefield, health bonus
-      visible as creatures stand taller in the garden's influence, organic
-      architecture of intertwined life forms, 90s Magic the Gathering card art,
-      painted fantasy illustration
+      A living garden of symbiotic plants enhancing creature health, vines and
+      healing flowers wrapping around allies making them more resilient, green
+      magical growth spreading across the battlefield, health bonus visible as
+      creatures stand taller in the garden's influence, organic architecture of
+      intertwined flowering vines, 90s Magic the Gathering card art, painted
+      fantasy illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2058
-    name: "Hive Network"
+    name: "Grove Network"
     card_type: support
     prompt: >
-      A network of organic communication nodes allowing the swarm to share
-      knowledge, card draw represented by information flowing through the
-      network each turn, bioluminescent data-streams connecting the nodes,
-      creatures receiving tactical knowledge from the network, organic
-      architecture of neural relay stations, 90s Magic the Gathering card art,
-      painted fantasy illustration
+      A network of ancient trees allowing the pack to share knowledge, card draw
+      represented by information flowing through root systems each turn, green
+      magical data-streams connecting the trees, creatures receiving tactical
+      knowledge from the network, organic architecture of interconnected forest
+      giants, 90s Magic the Gathering card art, painted fantasy illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2066
-    name: "Brood Pit"
+    name: "Spawning Den"
     card_type: support
     prompt: >
-      A spawning pit constantly birthing new rush-capable broodlings, organic
-      membrane stretching as new creatures emerge each turn, bioluminescent
-      birthing fluids pooling in the pit, freshly spawned broodlings scrambling
-      out ready to charge, endless reproduction visible in the pit's depths,
-      cavern background with multiple pits active, 90s Magic the Gathering card
-      art, painted fantasy illustration
+      A wolf den constantly producing new pack members, warm earthen walls with
+      moss bedding as new wolves emerge each turn, green magical energy pooling
+      in the den, freshly spawned young wolves scrambling out ready to hunt,
+      endless reproduction visible in the den's depths, forest cave background
+      with multiple dens active, 90s Magic the Gathering card art, painted
+      fantasy illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
   - id: 2073
     name: "Living Roots"
     card_type: support
     prompt: >
       A network of healing roots spreading beneath the battlefield, providing
-      regeneration to all creatures standing above, bioluminescent sap flowing
+      regeneration to all creatures standing above, green magical sap flowing
       through the root system, wounds healing as the roots channel life energy,
       ancient tree visible whose roots provide the healing, sacred grove with
       creatures sheltering among the roots, 90s Magic the Gathering card art,
       painted fantasy illustration
     lora: "rutkowski:0.4, classical-painting:0.6"
-    negative: "mechanical, industrial, blurry, low quality"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
-# === ALL SYMBIOTE PROMPTS COMPLETE ===
+# =============================================================================
+# SYMBIOTE CIRCLES PROMPTS COMPLETE - 75 CARDS
+# Aesthetic: Urza's Saga nature magic, primordial forests, pack predators
+# =============================================================================

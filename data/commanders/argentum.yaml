@@ -10,14 +10,22 @@ commanders:
     rarity: Legendary
     triggered_ability:
       trigger: StartOfTurn
-      description: "At the start of your turn, summon a 2/2 Brass Cog"  # Buffed from 1/1→2/1→2/2 (v0.8.0 balance)
+      description: "At the start of your turn, summon a 2/2 Brass Cog with Volatile Overload"
       effects:
         - type: summon_token
           token:
             name: "Brass Cog"
-            attack: 2  # Buffed from 1 (v0.8.0 balance)
-            health: 2  # Buffed from 1 (v0.8.0 balance wave 4)
+            attack: 2
+            health: 2
             keywords: []
+            abilities:
+              - name: "Volatile Overload"
+                essence_cost: 1
+                targeting: TargetAny
+                effects:
+                  - type: destroy_self
+                  - type: damage
+                    amount: 2
     flavor: "The Combine doesn't build soldiers. We manufacture victory."
 
   - id: 5001

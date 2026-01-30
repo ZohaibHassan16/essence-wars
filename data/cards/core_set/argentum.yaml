@@ -768,7 +768,7 @@ cards:
   # These IDs now hold regular creatures to fill the card pool
   # =============================================================================
 
-  # --- Cogwheel Engineer (Male, Construct) ---
+  # --- Cogwheel Engineer (Female, Construct) ---
   - id: 1056
     name: "Cogwheel Engineer"
     cost: 4
@@ -788,7 +788,7 @@ cards:
               attack: 0
               health: 2
               keywords: []
-    # A skilled technician who deploys maintenance drones
+    # A skilled technician
 
   # --- Field Medic Vera (Female, Medic) ---
   - id: 1057

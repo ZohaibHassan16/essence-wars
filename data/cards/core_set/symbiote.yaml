@@ -1,9 +1,10 @@
 name: "Symbiote Circles"
 cards:
   # =============================================================================
-  # SYMBIOTE CIRCLES - "The Swarm"
-  # Identity: Growth, Adaptation, Evolution
+  # SYMBIOTE CIRCLES - "The Pack"
+  # Identity: Growth, Adaptation, Primal Nature
   # Primary Keywords: Rush, Lethal, Regenerate
+  # Aesthetic: Urza's Saga nature magic, wolves, great cats, forest spirits
   # ID Range: 2000-2999
   # =============================================================================
 
@@ -39,17 +40,17 @@ cards:
     tags: [Ooze]
 
   - id: 2003
-    name: "Broodling"
+    name: "Pack Whelp"
     cost: 1
     card_type: creature
     attack: 2  # Buffed from 1 (v0.5.1 round 5)
     health: 2
     keywords: [Rush]
     rarity: Common
-    tags: [Swarm]
+    tags: [Beast]
 
   - id: 2004
-    name: "Hive Guardian"
+    name: "Grove Guardian"
     cost: 4
     card_type: creature
     attack: 3
@@ -79,7 +80,7 @@ cards:
     tags: [Parasite]
 
   - id: 2007
-    name: "Evolution Chamber"
+    name: "Growth Chamber"
     cost: 3
     card_type: creature
     attack: 2
@@ -106,7 +107,7 @@ cards:
     tags: [Beast]
 
   - id: 2009
-    name: "Swarm Mother"
+    name: "Den Mother"
     cost: 6
     card_type: creature
     attack: 4
@@ -132,7 +133,7 @@ cards:
     tags: [Beast]
 
   - id: 2011
-    name: "Carapace Warrior"
+    name: "Scaled Warrior"
     cost: 4
     card_type: creature
     attack: 2
@@ -178,14 +179,14 @@ cards:
     tags: [Beast]
 
   - id: 2016
-    name: "Frenzied Brood"
+    name: "Frenzied Pack"
     cost: 3
     card_type: creature
     attack: 2
     health: 3
     keywords: [Frenzy]
     rarity: Uncommon
-    tags: [Swarm]
+    tags: [Beast]
 
   - id: 2017
     name: "Ravager Alpha"
@@ -210,14 +211,14 @@ cards:
     tags: [Parasite]
 
   - id: 2019
-    name: "Explosive Broodling"
+    name: "Volatile Whelp"
     cost: 2
     card_type: creature
     attack: 1
     health: 2
     keywords: [Rush, Volatile]
     rarity: Uncommon
-    tags: [Swarm]
+    tags: [Beast]
 
   - id: 2020
     name: "Deathburst Lurker"
@@ -273,14 +274,14 @@ cards:
     tags: [Beast]
 
   - id: 2024
-    name: "Savage Swarmling"
+    name: "Savage Cub"
     cost: 1
     card_type: creature
     attack: 1
     health: 1
     keywords: [Frenzy]
     rarity: Common
-    tags: [Swarm]
+    tags: [Beast]
 
   # === PHASE 2B: ADDITIONAL VOLATILE CREATURES (v0.5.0) ===
   - id: 2025
@@ -385,7 +386,7 @@ cards:
     rarity: Uncommon
 
   - id: 2034
-    name: "Hive Mind Nexus"
+    name: "Spirit Nexus"
     cost: 5
     card_type: support
     durability: 4
@@ -516,7 +517,7 @@ cards:
     tags: [Beast]
 
   - id: 2043
-    name: "Swarm Ambusher"
+    name: "Pack Ambusher"
     cost: 4
     card_type: creature
     attack: 4
@@ -550,18 +551,18 @@ cards:
 
   # --- Basic Swarm Bodies (3 cards) ---
   - id: 2045
-    name: "Hiveling"
+    name: "Forest Sprite"
     cost: 1
     card_type: creature
     attack: 1
     health: 1
     keywords: []
     rarity: Common
-    tags: [Swarm]
-    # Basic 1/1 body for swarm strategies
+    tags: [Spirit]
+    # Basic 1/1 body for pack strategies
 
   - id: 2046
-    name: "Brood Tender"
+    name: "Den Keeper"
     cost: 2
     card_type: creature
     attack: 1
@@ -591,15 +592,15 @@ cards:
 
   # --- Volatile Options (2 cards) ---
   - id: 2048
-    name: "Volatile Drone"
+    name: "Blight Spawn"
     cost: 2
     card_type: creature
     attack: 1
     health: 2
     keywords: [Volatile]
     rarity: Common
-    tags: [Swarm]
-    # Basic volatile body, slightly worse than Explosive Broodling
+    tags: [Parasite]
+    # Basic volatile body, fungal corruption theme
 
   - id: 2049
     name: "Volatile Stalker"
@@ -625,7 +626,7 @@ cards:
     # Efficient regenerator, but only 2/2
 
   - id: 2051
-    name: "Carapace Scout"
+    name: "Forest Scout"
     cost: 3
     card_type: creature
     attack: 2
@@ -637,7 +638,7 @@ cards:
 
   # --- Defensive Options (2 cards) ---
   - id: 2052
-    name: "Brood Protector"
+    name: "Den Protector"
     cost: 4
     card_type: creature
     attack: 2
@@ -648,7 +649,7 @@ cards:
     # Pure defensive option - unusual for Symbiote
 
   - id: 2053
-    name: "Brood Caller"
+    name: "Pack Caller"
     cost: 4
     card_type: creature
     attack: 2
@@ -662,11 +663,11 @@ cards:
         effects:
           - type: summon_token
             token:
-              name: "Broodling"
+              name: "Pack Whelp"
               attack: 1
               health: 1
               keywords: [Rush]
-    # Summons a 1/1 Rush token - swarm enabler
+    # Summons a 1/1 Rush token - pack enabler
 
   # --- Buff Spells (3 cards) ---
   - id: 2054
@@ -698,7 +699,7 @@ cards:
     # Defensive buff - grants Regenerate
 
   - id: 2056
-    name: "Swarm Fury"
+    name: "Pack Fury"
     cost: 3
     card_type: spell
     targeting: NoTarget
@@ -722,7 +723,7 @@ cards:
     # Creatures get +0/+1 - defensive support
 
   - id: 2058
-    name: "Hive Network"
+    name: "Grove Network"
     cost: 4
     card_type: support
     durability: 2
@@ -736,7 +737,7 @@ cards:
 
   # --- Finisher (1 card) ---
   - id: 2059
-    name: "Brood Overlord"
+    name: "Pack Overlord"
     cost: 6
     card_type: creature
     attack: 5
@@ -750,7 +751,7 @@ cards:
         effects:
           - type: grant_keyword
             keyword: Rush
-    # Grants Rush to all ally creatures on play - swarm finisher
+    # Grants Rush to all ally creatures on play - pack finisher
 
   # =============================================================================
   # PHASE 8A: REGULAR CREATURES (IDs 2060-2063)
@@ -758,9 +759,9 @@ cards:
   # These IDs now hold regular creatures to fill the card pool
   # =============================================================================
 
-  # --- Hive Tender (Female, Beast) ---
+  # --- Grove Tender (Female, Beast) ---
   - id: 2060
-    name: "Hive Tender"
+    name: "Grove Tender"
     cost: 4
     card_type: creature
     attack: 3
@@ -774,11 +775,11 @@ cards:
         effects:
           - type: summon_token
             token:
-              name: "Hiveling"
+              name: "Forest Sprite"
               attack: 1
               health: 1
               keywords: []
-    # She nurtures the next generation of the swarm
+    # She nurtures the next generation of the pack
 
   # --- Blight Carrier (Ambiguous, Parasite) ---
   - id: 2061
@@ -823,7 +824,7 @@ cards:
 
   # --- Rush/Swarm Support ---
   - id: 2064
-    name: "Swarm Caller"
+    name: "Pack Herald"
     cost: 3
     card_type: creature
     attack: 2
@@ -837,7 +838,7 @@ cards:
         effects:
           - type: summon_token
             token:
-              name: "Swarmling"
+              name: "Young Wolf"
               attack: 1
               health: 1
               keywords: [Rush]
@@ -854,7 +855,7 @@ cards:
     rarity: Common
 
   - id: 2066
-    name: "Brood Pit"
+    name: "Spawning Den"
     cost: 4
     card_type: support
     durability: 3
@@ -863,7 +864,7 @@ cards:
         effects:
           - type: summon_token
             token:
-              name: "Broodling"
+              name: "Pack Whelp"
               attack: 1
               health: 1
               keywords: [Rush]
