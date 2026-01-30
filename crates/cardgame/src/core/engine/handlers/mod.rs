@@ -12,7 +12,7 @@ mod summon;
 pub use damage::{DamageHandler, HealHandler};
 pub use stats::{BuffStatsHandler, SetStatsHandler};
 pub use keyword::{GrantKeywordHandler, RemoveKeywordHandler, SilenceHandler};
-pub use utility::{DrawHandler, GainEssenceHandler, RefreshCreatureHandler, BounceHandler, DestroyHandler};
+pub use utility::{DrawHandler, GainEssenceHandler, RefreshCreatureHandler, BounceHandler, DestroyHandler, DestroySelfHandler};
 pub use summon::{SummonHandler, SummonTokenHandler, TransformHandler, CopyHandler};
 
 use crate::core::effects::Effect;
@@ -149,6 +149,12 @@ pub fn create_handler(effect: &Effect, _source_player: PlayerId) -> Box<dyn Effe
             Box::new(BounceHandler {
                 target: *target,
                 filter: filter.clone(),
+            })
+        }
+        Effect::DestroySelf { owner, slot } => {
+            Box::new(DestroySelfHandler {
+                owner: *owner,
+                slot: *slot,
             })
         }
     }

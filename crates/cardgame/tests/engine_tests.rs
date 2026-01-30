@@ -122,6 +122,7 @@ fn test_turn_start_creatures_can_attack() {
         status: CreatureStatus::default(),
         turn_played: 0, // Played on a previous turn
         frenzy_stacks: 0,
+        token_abilities: None,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -177,6 +178,7 @@ fn test_win_by_damage() {
         status: CreatureStatus::default(),
         turn_played: 0, // Not summoning sick
         frenzy_stacks: 0,
+        token_abilities: None,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -377,6 +379,7 @@ fn test_creature_combat() {
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
+        token_abilities: None,
     };
     engine.state.players[0].creatures.push(p1_creature);
 
@@ -394,6 +397,7 @@ fn test_creature_combat() {
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
+        token_abilities: None,
     };
     engine.state.players[1].creatures.push(p2_creature);
 
@@ -440,6 +444,7 @@ fn test_direct_face_attack() {
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
+        token_abilities: None,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -615,6 +620,7 @@ fn test_use_ability_basic() {
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
+        token_abilities: None,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -655,6 +661,7 @@ fn test_use_ability_silenced_fails() {
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
+        token_abilities: None,
     };
     // Silence the creature
     creature.status.set_silenced(true);
@@ -675,6 +682,7 @@ fn test_use_ability_silenced_fails() {
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
+        token_abilities: None,
     };
     engine.state.players[1].creatures.push(target_creature);
 
@@ -735,6 +743,7 @@ fn test_use_ability_invalid_ability_index() {
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
+        token_abilities: None,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -774,6 +783,7 @@ fn test_use_ability_self_target() {
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
+        token_abilities: None,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -913,6 +923,7 @@ fn test_conditional_spell_triggers_on_kill() {
         status: CreatureStatus::default(),
         turn_played: 1,
         frenzy_stacks: 0,
+        token_abilities: None,
     };
     engine.state.players[1].creatures.push(creature);
 
@@ -975,6 +986,7 @@ fn test_conditional_spell_does_not_trigger_when_target_survives() {
         status: CreatureStatus::default(),
         turn_played: 1,
         frenzy_stacks: 0,
+        token_abilities: None,
     };
     engine.state.players[1].creatures.push(creature);
 

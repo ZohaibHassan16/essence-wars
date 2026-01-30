@@ -36,6 +36,8 @@ pub enum Trigger {
     OnEnemyDeath,
     /// When owner plays a creature (for commanders like The Broodmother)
     OnCreaturePlayed,
+    /// Manually activated by the player (costs essence, used via UseAbility action)
+    Activated,
 }
 
 /// What an effect targets
@@ -69,6 +71,34 @@ pub struct TokenDefinition {
     /// Keywords as a bitmask
     #[serde(default)]
     pub keywords: u16,
+    /// Activated abilities for this token (optional)
+    #[serde(default)]
+    pub abilities: Vec<TokenAbility>,
+}
+
+/// An activated ability for a token creature
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TokenAbility {
+    /// Display name for the ability
+    pub name: String,
+    /// Essence cost to activate
+    #[serde(default)]
+    pub essence_cost: u8,
+    /// What this ability can target
+    #[serde(default)]
+    pub targeting: TargetingRule,
+    /// Effects to apply when activated
+    pub effects: Vec<TokenEffect>,
+}
+
+/// Simplified effect types for token abilities
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum TokenEffect {
+    /// Destroy the source creature (self-sacrifice)
+    DestroySelf,
+    /// Deal damage to target
+    Damage { amount: u8 },
 }
 
 impl TokenDefinition {
@@ -79,6 +109,7 @@ impl TokenDefinition {
             attack,
             health,
             keywords: 0,
+            abilities: Vec::new(),
         }
     }
 
@@ -137,6 +168,10 @@ pub enum Effect {
     // === Board Manipulation ===
     /// Return target creature to its owner's hand (filter applies to AoE targets)
     Bounce { target: EffectTarget, filter: Option<CreatureFilter> },
+
+    // === Self-Sacrifice ===
+    /// Destroy the source creature (used by token sacrifice abilities)
+    DestroySelf { owner: PlayerId, slot: Slot },
 }
 
 /// Source of an effect (for tracking and debugging)

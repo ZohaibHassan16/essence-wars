@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::core::config::{board, game, player};
 use crate::core::types::*;
 use crate::core::keywords::Keywords;
+use crate::core::effects::TokenAbility;
 
 /// Status flags for creatures (packed bitfield)
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -50,6 +51,9 @@ pub struct Creature {
     pub status: CreatureStatus,
     pub turn_played: u16,
     pub frenzy_stacks: u8,    // Frenzy bonus: +1 attack per stack (resets at end of turn)
+    /// Activated abilities for tokens (None for regular creatures from card database)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub token_abilities: Option<Vec<TokenAbility>>,
 }
 
 impl Creature {

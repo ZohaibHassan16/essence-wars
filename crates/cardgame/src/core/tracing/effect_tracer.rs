@@ -135,6 +135,9 @@ fn format_effect(effect: &Effect) -> String {
         Effect::Copy { target, owner } => {
             format!("Copy({} for P{})", format_target(target), owner.index() + 1)
         }
+        Effect::DestroySelf { owner, slot } => {
+            format!("DestroySelf(P{}_Slot{})", owner.index() + 1, slot.0)
+        }
     }
 }
 

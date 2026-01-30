@@ -214,6 +214,7 @@ mod tests {
             status: Default::default(),
             turn_played: 1,
             frenzy_stacks: 0,
+            token_abilities: None,
         }
     }
 

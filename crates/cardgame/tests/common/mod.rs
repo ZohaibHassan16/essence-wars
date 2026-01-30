@@ -171,6 +171,7 @@ pub fn create_test_creature(
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
+        token_abilities: None,
     };
     state.players[owner.index()].creatures.push(creature);
 }

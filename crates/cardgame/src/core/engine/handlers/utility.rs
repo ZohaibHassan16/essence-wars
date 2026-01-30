@@ -171,3 +171,25 @@ impl EffectHandler for DestroyHandler {
         true
     }
 }
+
+/// Handler for DestroySelf effects (self-sacrifice for token abilities).
+pub struct DestroySelfHandler {
+    pub owner: PlayerId,
+    pub slot: Slot,
+}
+
+impl EffectHandler for DestroySelfHandler {
+    fn apply(&self, ctx: &mut EffectContext) -> bool {
+        // Mark the creature for death (will trigger OnDeath effects)
+        if ctx.state.players[self.owner.index()].get_creature(self.slot).is_some() {
+            ctx.mark_for_death(self.owner, self.slot);
+            true
+        } else {
+            false
+        }
+    }
+
+    fn blocked_by_ward(&self) -> bool {
+        false // Self-sacrifice cannot be warded
+    }
+}

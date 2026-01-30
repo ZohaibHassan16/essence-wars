@@ -165,6 +165,7 @@ fn make_creature(
         status: CreatureStatus::default(),
         turn_played,
         frenzy_stacks: 0,
+        token_abilities: None,
     }
 }
 

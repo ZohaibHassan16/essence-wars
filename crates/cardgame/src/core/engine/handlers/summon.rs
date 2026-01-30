@@ -60,6 +60,7 @@ impl EffectHandler for SummonHandler {
             status: Default::default(),
             turn_played: ctx.state.current_turn,
             frenzy_stacks: 0,
+            token_abilities: None, // Regular creatures don't have token abilities
         };
 
         ctx.state.players[self.owner.index()].creatures.push(creature);
@@ -108,6 +109,13 @@ impl EffectHandler for SummonTokenHandler {
         let instance_id = ctx.state.next_creature_instance_id();
         let keywords = Keywords(self.token.keywords);
 
+        // Convert token abilities if present
+        let token_abilities = if self.token.abilities.is_empty() {
+            None
+        } else {
+            Some(self.token.abilities.clone())
+        };
+
         let creature = Creature {
             instance_id,
             card_id: CardId(0), // Token marker
@@ -122,6 +130,7 @@ impl EffectHandler for SummonTokenHandler {
             status: Default::default(),
             turn_played: ctx.state.current_turn,
             frenzy_stacks: 0,
+            token_abilities,
         };
 
         ctx.state.players[self.owner.index()].creatures.push(creature);
@@ -165,6 +174,13 @@ impl EffectHandler for TransformHandler {
         let instance_id = ctx.state.next_creature_instance_id();
         let keywords = Keywords(self.into.keywords);
 
+        // Convert token abilities if present
+        let token_abilities = if self.into.abilities.is_empty() {
+            None
+        } else {
+            Some(self.into.abilities.clone())
+        };
+
         let creature = Creature {
             instance_id,
             card_id: CardId(0), // Token marker
@@ -179,6 +195,7 @@ impl EffectHandler for TransformHandler {
             status: Default::default(),
             turn_played: ctx.state.current_turn,
             frenzy_stacks: 0,
+            token_abilities,
         };
 
         // Check if the transformed creature has <= 0 health before adding (edge case)
@@ -218,6 +235,7 @@ impl EffectHandler for CopyHandler {
         let base_attack = source.base_attack;
         let base_health = source.base_health;
         let keywords = source.keywords;
+        let token_abilities = source.token_abilities.clone();
 
         // Find empty slot for the copy
         let target_slot = match ctx.state.players[self.owner.index()].find_empty_creature_slot() {
@@ -242,6 +260,7 @@ impl EffectHandler for CopyHandler {
             status: Default::default(),
             turn_played: ctx.state.current_turn,
             frenzy_stacks: 0,
+            token_abilities,
         };
 
         ctx.state.players[self.owner.index()].creatures.push(creature);

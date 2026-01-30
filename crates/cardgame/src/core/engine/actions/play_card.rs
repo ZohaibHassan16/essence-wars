@@ -107,6 +107,7 @@ fn play_creature(
         status: CreatureStatus::default(),
         turn_played: current_turn,
         frenzy_stacks: 0,
+        token_abilities: None, // Regular creatures don't have token abilities
     };
 
     // Add creature to board

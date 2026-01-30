@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use crate::core::types::*;
 use crate::core::keywords::Keywords;
-use crate::core::effects::{Condition, Trigger, TargetingRule, CreatureFilter, TokenDefinition};
+use crate::core::effects::{Condition, Trigger, TargetingRule, CreatureFilter, TokenDefinition, TokenAbility, TokenEffect};
 
 /// Definition of a triggered ability on a creature
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -45,6 +45,34 @@ pub struct TokenDef {
     /// Keywords as string list (converted to bitmask at runtime)
     #[serde(default)]
     pub keywords: Vec<String>,
+    /// Activated abilities for this token (optional)
+    #[serde(default)]
+    pub abilities: Vec<TokenAbilityDef>,
+}
+
+/// Token ability definition for YAML parsing
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct TokenAbilityDef {
+    /// Display name for the ability
+    pub name: String,
+    /// Essence cost to activate
+    #[serde(default)]
+    pub essence_cost: u8,
+    /// What this ability can target
+    #[serde(default)]
+    pub targeting: TargetingRule,
+    /// Effects to apply when activated
+    pub effects: Vec<TokenEffectDef>,
+}
+
+/// Token effect definition for YAML parsing
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum TokenEffectDef {
+    /// Destroy the source creature (self-sacrifice)
+    DestroySelf,
+    /// Deal damage to target
+    Damage { amount: u8 },
 }
 
 impl TokenDef {
@@ -57,6 +85,29 @@ impl TokenDef {
             attack: self.attack,
             health: self.health,
             keywords: keywords.0,
+            abilities: self.abilities.iter().map(|a| a.to_token_ability()).collect(),
+        }
+    }
+}
+
+impl TokenAbilityDef {
+    /// Convert to runtime TokenAbility
+    pub fn to_token_ability(&self) -> TokenAbility {
+        TokenAbility {
+            name: self.name.clone(),
+            essence_cost: self.essence_cost,
+            targeting: self.targeting.clone(),
+            effects: self.effects.iter().map(|e| e.to_token_effect()).collect(),
+        }
+    }
+}
+
+impl TokenEffectDef {
+    /// Convert to runtime TokenEffect
+    pub fn to_token_effect(&self) -> TokenEffect {
+        match self {
+            TokenEffectDef::DestroySelf => TokenEffect::DestroySelf,
+            TokenEffectDef::Damage { amount } => TokenEffect::Damage { amount: *amount },
         }
     }
 }

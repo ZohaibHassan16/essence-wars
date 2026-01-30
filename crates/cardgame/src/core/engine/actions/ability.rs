@@ -1,10 +1,11 @@
 //! Ability action execution.
 //!
 //! Handles creature ability usage including validation and effect processing.
+//! Supports both token abilities (stored on creature) and card-based abilities.
 
 use crate::core::actions::Target;
 use crate::core::cards::CardType;
-use crate::core::effects::{EffectSource, EffectTarget};
+use crate::core::effects::{Effect, EffectSource, EffectTarget, TokenEffect};
 use crate::core::engine::effect_convert::effect_def_to_effect_with_target;
 use crate::core::types::Slot;
 
@@ -15,11 +16,15 @@ use super::ActionContext;
 /// Uses a creature's ability at the specified slot with the given target.
 /// The ability is identified by ability_index (0-based).
 ///
+/// Supports:
+/// 1. Token abilities (stored on creature.token_abilities)
+/// 2. Card-based abilities (looked up via card_db)
+///
 /// # Errors
 /// - Returns error if no creature exists at the slot
 /// - Returns error if creature is silenced
 /// - Returns error if ability_index is out of bounds
-/// - Returns error if the card definition is not found
+/// - Returns error if insufficient essence for token ability
 pub fn execute_use_ability(
     ctx: &mut ActionContext,
     slot: Slot,
@@ -37,6 +42,96 @@ pub fn execute_use_ability(
     if creature.status.is_silenced() {
         return Err("Creature is silenced".to_string());
     }
+
+    // Check for token abilities first
+    if let Some(ref abilities) = creature.token_abilities.clone() {
+        return execute_token_ability(ctx, slot, ability_index, target, abilities);
+    }
+
+    // Fall back to card-based abilities
+    execute_card_ability(ctx, slot, ability_index, target)
+}
+
+/// Execute a token ability (stored directly on the creature).
+fn execute_token_ability(
+    ctx: &mut ActionContext,
+    slot: Slot,
+    ability_index: u8,
+    target: Target,
+    abilities: &[crate::core::effects::TokenAbility],
+) -> Result<(), String> {
+    let current_player = ctx.state.active_player;
+
+    // Get the specific ability
+    let ability = abilities.get(ability_index as usize)
+        .ok_or("Invalid ability index")?;
+
+    // Check and deduct essence cost
+    let player_state = &mut ctx.state.players[current_player.index()];
+    if ability.essence_cost > player_state.current_essence {
+        return Err("Not enough essence".to_string());
+    }
+    player_state.current_essence -= ability.essence_cost;
+
+    // Convert target to EffectTarget
+    // For token abilities:
+    // - NoTarget = enemy commander (face damage)
+    // - EnemySlot = specific enemy creature
+    let effect_target = match target {
+        Target::NoTarget => EffectTarget::Player(current_player.opponent()),
+        Target::EnemySlot(s) => EffectTarget::Creature {
+            owner: current_player.opponent(),
+            slot: s,
+        },
+        Target::Self_ => EffectTarget::Creature {
+            owner: current_player,
+            slot,
+        },
+    };
+
+    // Queue effects
+    let source = EffectSource::Creature { owner: current_player, slot };
+
+    for token_effect in &ability.effects {
+        match token_effect {
+            TokenEffect::DestroySelf => {
+                ctx.effect_queue.push(
+                    Effect::DestroySelf { owner: current_player, slot },
+                    source,
+                );
+            }
+            TokenEffect::Damage { amount } => {
+                ctx.effect_queue.push(
+                    Effect::Damage {
+                        target: effect_target,
+                        amount: *amount,
+                        filter: None,
+                    },
+                    source,
+                );
+            }
+        }
+    }
+
+    // Process all effects
+    ctx.process_effects();
+
+    Ok(())
+}
+
+/// Execute a card-based ability (looked up via card database).
+fn execute_card_ability(
+    ctx: &mut ActionContext,
+    slot: Slot,
+    ability_index: u8,
+    target: Target,
+) -> Result<(), String> {
+    let current_player = ctx.state.active_player;
+
+    // Get creature at slot (need to re-fetch after potential mutation)
+    let creature = ctx.state.players[current_player.index()]
+        .get_creature(slot)
+        .ok_or("No creature at slot")?;
 
     let card_id = creature.card_id;
 
@@ -59,11 +154,11 @@ pub fn execute_use_ability(
         Target::NoTarget => EffectTarget::None,
         Target::EnemySlot(s) => EffectTarget::Creature {
             owner: current_player.opponent(),
-            slot: s
+            slot: s,
         },
         Target::Self_ => EffectTarget::Creature {
             owner: current_player,
-            slot
+            slot,
         },
     };
 

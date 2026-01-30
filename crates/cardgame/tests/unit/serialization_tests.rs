@@ -160,6 +160,7 @@ fn test_creature_roundtrip() {
         status: CreatureStatus(CreatureStatus::EXHAUSTED),
         turn_played: 3,
         frenzy_stacks: 0,
+        token_abilities: None,
     };
     let roundtrip = test_json_roundtrip(&creature);
     assert_eq!(creature.instance_id, roundtrip.instance_id);
@@ -312,6 +313,7 @@ fn test_game_state_with_creatures_roundtrip() {
         status: CreatureStatus::default(),
         turn_played: 1,
         frenzy_stacks: 0,
+        token_abilities: None,
     });
 
     // Add a creature to player 2
@@ -329,6 +331,7 @@ fn test_game_state_with_creatures_roundtrip() {
         status: CreatureStatus(CreatureStatus::EXHAUSTED),
         turn_played: 2,
         frenzy_stacks: 1,
+        token_abilities: None,
     });
 
     let roundtrip = test_json_roundtrip(&state);

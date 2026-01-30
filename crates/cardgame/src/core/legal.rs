@@ -8,10 +8,10 @@
 use arrayvec::ArrayVec;
 use crate::core::config::{board, insight};
 use crate::core::types::Slot;
-use crate::core::actions::Action;
+use crate::core::actions::{Action, Target};
 use crate::core::state::GameState;
 use crate::core::cards::{CardDatabase, CardType};
-// Note: Trigger and TargetingRule will be needed when activated abilities are implemented
+use crate::core::effects::TargetingRule;
 
 /// Maximum number of legal actions possible in any game state
 pub const MAX_LEGAL_ACTIONS: usize = 64;
@@ -213,27 +213,101 @@ fn generate_attack_actions(
 
 /// Generate all legal UseAbility actions
 ///
-/// NOTE: Currently, the game has no "activated" abilities - all creature abilities
-/// use automatic triggers (OnPlay, OnDeath, StartOfTurn, etc.) that fire automatically
-/// when their conditions are met. These are NOT usable via UseAbility actions.
+/// This generates actions for:
+/// 1. Token abilities (stored on creature.token_abilities)
+/// 2. Card-based activated abilities (with Trigger::Activated) - future
 ///
-/// UseAbility actions are reserved for future "Activated" trigger types that
-/// allow players to manually trigger abilities during their turn.
-///
-/// The action space (indices 75-253) is reserved for this future feature.
-#[allow(unused_variables)]
+/// UseAbility actions use action space indices 75-253.
 fn generate_ability_actions(
     state: &GameState,
-    card_db: &CardDatabase,
+    _card_db: &CardDatabase,  // Will be used when card-based Activated abilities are implemented
     actions: &mut ArrayVec<Action, MAX_LEGAL_ACTIONS>,
 ) {
-    // No activated abilities exist in the current game design.
-    // All abilities are triggered automatically (OnPlay, OnDeath, StartOfTurn, etc.)
-    //
-    // To add activated abilities in the future:
-    // 1. Add `Activated` variant to the `Trigger` enum in effects.rs
-    // 2. Create cards with `trigger: Activated` abilities
-    // 3. Implement the ability generation logic here, checking for Trigger::Activated
+    let player = state.active_player_state();
+    let opponent = state.opponent_state();
+
+    for creature in &player.creatures {
+        // Skip silenced creatures - they can't use abilities
+        if creature.status.is_silenced() {
+            continue;
+        }
+
+        // Check token abilities
+        if let Some(ref abilities) = creature.token_abilities {
+            for (ability_idx, ability) in abilities.iter().enumerate() {
+                // Check essence cost
+                if ability.essence_cost > player.current_essence {
+                    continue;
+                }
+
+                // Generate actions based on targeting rule
+                match &ability.targeting {
+                    TargetingRule::TargetAny => {
+                        // Can target any enemy creature
+                        for enemy_creature in &opponent.creatures {
+                            // Skip stealthed creatures
+                            if enemy_creature.keywords.has_stealth() {
+                                continue;
+                            }
+                            if actions.len() < MAX_LEGAL_ACTIONS {
+                                actions.push(Action::UseAbility {
+                                    slot: creature.slot,
+                                    ability_index: ability_idx as u8,
+                                    target: Target::EnemySlot(enemy_creature.slot),
+                                });
+                            }
+                        }
+                        // Can also target enemy commander (NoTarget = face)
+                        if actions.len() < MAX_LEGAL_ACTIONS {
+                            actions.push(Action::UseAbility {
+                                slot: creature.slot,
+                                ability_index: ability_idx as u8,
+                                target: Target::NoTarget,
+                            });
+                        }
+                    }
+                    TargetingRule::TargetEnemyCreature => {
+                        for enemy_creature in &opponent.creatures {
+                            if enemy_creature.keywords.has_stealth() {
+                                continue;
+                            }
+                            if actions.len() < MAX_LEGAL_ACTIONS {
+                                actions.push(Action::UseAbility {
+                                    slot: creature.slot,
+                                    ability_index: ability_idx as u8,
+                                    target: Target::EnemySlot(enemy_creature.slot),
+                                });
+                            }
+                        }
+                    }
+                    TargetingRule::TargetEnemyPlayer => {
+                        if actions.len() < MAX_LEGAL_ACTIONS {
+                            actions.push(Action::UseAbility {
+                                slot: creature.slot,
+                                ability_index: ability_idx as u8,
+                                target: Target::NoTarget,
+                            });
+                        }
+                    }
+                    TargetingRule::NoTarget => {
+                        if actions.len() < MAX_LEGAL_ACTIONS {
+                            actions.push(Action::UseAbility {
+                                slot: creature.slot,
+                                ability_index: ability_idx as u8,
+                                target: Target::NoTarget,
+                            });
+                        }
+                    }
+                    // Other targeting rules not yet implemented for token abilities
+                    _ => {}
+                }
+            }
+        }
+
+        // TODO: Also check card-based activated abilities (Trigger::Activated)
+        // This would require looking up the card definition and checking abilities
+        // with trigger == Trigger::Activated. Leaving as future enhancement.
+    }
 }
 
 /// Check if Commander's Insight is legal for the current player.

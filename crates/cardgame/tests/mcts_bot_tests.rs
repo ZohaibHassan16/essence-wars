@@ -64,6 +64,7 @@ fn test_mcts_finds_lethal() {
         status: CreatureStatus::default(), // Not exhausted
         turn_played: engine.turn_number(),
         frenzy_stacks: 0,
+        token_abilities: None,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -133,6 +134,7 @@ fn test_attack_face_ends_game() {
         status: CreatureStatus::default(),
         turn_played: engine.turn_number(),
         frenzy_stacks: 0,
+        token_abilities: None,
     };
     engine.state.players[0].creatures.push(creature);
 
