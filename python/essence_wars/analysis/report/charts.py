@@ -886,3 +886,293 @@ def create_faction_elo_comparison(elo_data: "EloData") -> str:
         annotation["font"] = {"color": DARK_THEME["text_primary"]}
 
     return fig.to_html(full_html=False, include_plotlyjs=False)
+
+
+# =============================================================================
+# Research Tab Charts
+# =============================================================================
+
+
+def create_faction_matchup_heatmap(faction_matrix: dict[str, dict[str, float]]) -> str:
+    """Create a heatmap showing faction vs faction win rates.
+
+    Args:
+        faction_matrix: Nested dict of faction -> faction -> win_rate (0-1)
+
+    Returns:
+        HTML string with embedded Plotly chart
+    """
+    factions = ["argentum", "symbiote", "obsidion"]
+    labels = ["Argentum", "Symbiote", "Obsidion"]
+
+    # Build matrix values
+    z_values = []
+    hover_text = []
+
+    for f1 in factions:
+        row = []
+        hover_row = []
+        for f2 in factions:
+            val = faction_matrix.get(f1, {}).get(f2, 0.5)
+            row.append(val)
+            hover_row.append(
+                f"{f1.title()} vs {f2.title()}<br>Win Rate: {val * 100:.1f}%"
+            )
+        z_values.append(row)
+        hover_text.append(hover_row)
+
+    # Create annotations for cell values
+    annotations = []
+    for i, f1 in enumerate(factions):
+        for j, f2 in enumerate(factions):
+            val = z_values[i][j]
+            # Use dark text for values near 50%, white for extreme values
+            text_color = "#fff" if abs(val - 0.5) > 0.05 else "#333"
+            annotations.append(
+                {
+                    "x": labels[j],
+                    "y": labels[i],
+                    "text": f"{val * 100:.1f}%",
+                    "showarrow": False,
+                    "font": {"color": text_color, "size": 18, "family": "Arial Black"},
+                }
+            )
+
+    fig = go.Figure(
+        data=go.Heatmap(
+            z=z_values,
+            x=labels,
+            y=labels,
+            colorscale=[
+                [0.0, "#dc3545"],  # Red for 0%
+                [0.4, "#ffc107"],  # Yellow for 40%
+                [0.5, "#f8f9fa"],  # Near-white for 50%
+                [0.6, "#28a745"],  # Green for 60%
+                [1.0, "#00d26a"],  # Bright green for 100%
+            ],
+            zmin=0.3,
+            zmax=0.7,
+            text=hover_text,
+            hoverinfo="text",
+            showscale=True,
+            colorbar={
+                "title": {"text": "Win Rate", "font": {"color": DARK_THEME["text_primary"]}},
+                "tickvals": [0.3, 0.4, 0.5, 0.6, 0.7],
+                "ticktext": ["30%", "40%", "50%", "60%", "70%"],
+                "tickfont": {"color": DARK_THEME["text_primary"]},
+            },
+        )
+    )
+
+    fig.update_layout(
+        annotations=annotations,
+        paper_bgcolor=DARK_THEME["bg_primary"],
+        plot_bgcolor=DARK_THEME["bg_secondary"],
+        font={"color": DARK_THEME["text_primary"]},
+        xaxis={"title": "Opponent Faction", "tickfont": {"size": 14}},
+        yaxis={"title": "Your Faction", "autorange": "reversed", "tickfont": {"size": 14}},
+        height=400,
+        margin={"t": 30, "b": 80, "l": 100, "r": 80},
+    )
+
+    return fig.to_html(full_html=False, include_plotlyjs=False)
+
+
+def create_faction_winrate_bar(faction_win_rates: dict[str, float]) -> str:
+    """Create a bar chart of overall faction win rates.
+
+    Args:
+        faction_win_rates: Dict of faction -> win_rate (0-1)
+
+    Returns:
+        HTML string with embedded Plotly chart
+    """
+    factions = list(faction_win_rates.keys())
+    win_rates = [faction_win_rates[f] * 100 for f in factions]
+    colors = [FACTION_COLORS.get(f, DARK_THEME["text_secondary"]) for f in factions]
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Bar(
+            x=[f.title() for f in factions],
+            y=win_rates,
+            marker_color=colors,
+            text=[f"{wr:.1f}%" for wr in win_rates],
+            textposition="outside",
+            hovertemplate="<b>%{x}</b><br>Win Rate: %{y:.1f}%<extra></extra>",
+        )
+    )
+
+    # Add 50% reference line
+    fig.add_hline(
+        y=50, line_dash="dash", line_color=DARK_THEME["warning"], line_width=2
+    )
+
+    # Add balanced zone (45-55%)
+    fig.add_hrect(
+        y0=45,
+        y1=55,
+        fillcolor="rgba(0, 210, 106, 0.1)",
+        line_width=0,
+    )
+
+    fig.update_layout(
+        paper_bgcolor=DARK_THEME["bg_primary"],
+        plot_bgcolor=DARK_THEME["bg_secondary"],
+        font={"color": DARK_THEME["text_primary"]},
+        yaxis={
+            "title": "Win Rate (%)",
+            "range": [0, 70],
+            "gridcolor": DARK_THEME["grid"],
+        },
+        xaxis={"title": None},
+        height=300,
+        margin={"t": 30, "b": 50, "l": 60, "r": 30},
+        showlegend=False,
+    )
+
+    return fig.to_html(full_html=False, include_plotlyjs=False)
+
+
+def create_game_length_histogram(game_lengths: list[float]) -> str:
+    """Create a histogram of game length distribution.
+
+    Args:
+        game_lengths: List of game lengths (turns)
+
+    Returns:
+        HTML string with embedded Plotly chart
+    """
+    if not game_lengths:
+        return "<p>No game length data available</p>"
+
+    avg_length = sum(game_lengths) / len(game_lengths)
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Histogram(
+            x=game_lengths,
+            nbinsx=20,
+            marker_color=FACTION_COLORS["obsidion"],
+            opacity=0.8,
+            hovertemplate="Turns: %{x}<br>Games: %{y}<extra></extra>",
+        )
+    )
+
+    # Add average line
+    fig.add_vline(
+        x=avg_length,
+        line_dash="dash",
+        line_color=DARK_THEME["accent"],
+        line_width=2,
+        annotation_text=f"Avg: {avg_length:.1f}",
+        annotation_position="top",
+        annotation_font_color=DARK_THEME["accent"],
+    )
+
+    fig.update_layout(
+        paper_bgcolor=DARK_THEME["bg_primary"],
+        plot_bgcolor=DARK_THEME["bg_secondary"],
+        font={"color": DARK_THEME["text_primary"]},
+        xaxis={
+            "title": "Game Length (Turns)",
+            "gridcolor": DARK_THEME["grid"],
+        },
+        yaxis={
+            "title": "Number of Games",
+            "gridcolor": DARK_THEME["grid"],
+        },
+        height=300,
+        margin={"t": 30, "b": 50, "l": 60, "r": 30},
+        bargap=0.05,
+    )
+
+    return fig.to_html(full_html=False, include_plotlyjs=False)
+
+
+def create_combat_efficiency_chart(combat_stats: dict[str, dict[str, float]]) -> str:
+    """Create a dual-axis bar chart for combat efficiency by faction.
+
+    Args:
+        combat_stats: Dict of faction -> {"trade_ratio": float, "face_damage": float}
+
+    Returns:
+        HTML string with embedded Plotly chart
+    """
+    if not combat_stats:
+        return "<p>No combat efficiency data available</p>"
+
+    factions = list(combat_stats.keys())
+    labels = [f.title() for f in factions]
+    trade_ratios = [combat_stats[f].get("trade_ratio", 1.0) for f in factions]
+    face_damage = [combat_stats[f].get("face_damage", 15.0) for f in factions]
+    colors = [FACTION_COLORS.get(f, DARK_THEME["text_secondary"]) for f in factions]
+
+    fig = make_subplots(
+        rows=1,
+        cols=2,
+        subplot_titles=("Trade Ratio", "Avg Face Damage per Game"),
+        horizontal_spacing=0.15,
+    )
+
+    # Trade ratio bars
+    fig.add_trace(
+        go.Bar(
+            x=labels,
+            y=trade_ratios,
+            marker_color=colors,
+            name="Trade Ratio",
+            showlegend=False,
+            text=[f"{tr:.2f}" for tr in trade_ratios],
+            textposition="outside",
+            hovertemplate="<b>%{x}</b><br>Trade Ratio: %{y:.2f}<extra></extra>",
+        ),
+        row=1,
+        col=1,
+    )
+
+    # Face damage bars
+    fig.add_trace(
+        go.Bar(
+            x=labels,
+            y=face_damage,
+            marker_color=colors,
+            name="Face Damage",
+            showlegend=False,
+            text=[f"{fd:.1f}" for fd in face_damage],
+            textposition="outside",
+            hovertemplate="<b>%{x}</b><br>Face Damage: %{y:.1f}<extra></extra>",
+        ),
+        row=1,
+        col=2,
+    )
+
+    # Add 1.0 baseline to trade ratio
+    fig.add_hline(
+        y=1.0,
+        line_dash="dash",
+        line_color=DARK_THEME["text_secondary"],
+        line_width=1,
+        row=1,
+        col=1,
+    )
+
+    fig.update_layout(
+        paper_bgcolor=DARK_THEME["bg_primary"],
+        plot_bgcolor=DARK_THEME["bg_secondary"],
+        font={"color": DARK_THEME["text_primary"]},
+        height=300,
+        margin={"t": 50, "b": 50, "l": 60, "r": 30},
+    )
+
+    # Update axes
+    fig.update_yaxes(gridcolor=DARK_THEME["grid"], row=1, col=1)
+    fig.update_yaxes(gridcolor=DARK_THEME["grid"], row=1, col=2)
+
+    # Style subplot titles
+    for annotation in fig["layout"]["annotations"]:
+        annotation["font"] = {"color": DARK_THEME["text_primary"]}
+
+    return fig.to_html(full_html=False, include_plotlyjs=False)

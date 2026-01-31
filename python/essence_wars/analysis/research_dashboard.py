@@ -2,6 +2,13 @@
 """
 Research Dashboard Generator for Essence Wars
 
+.. deprecated::
+    This standalone dashboard is deprecated.
+    Use the unified CLI instead:
+        essence-wars report generate --run-id latest --open
+    Or:
+        uv run python python/scripts/generate_report.py --run-id latest --open
+
 Generates an interactive HTML dashboard from validation results,
 showing faction matchups, deck performance, P1/P2 analysis, and more.
 
@@ -11,6 +18,14 @@ Usage:
 """
 
 import argparse
+import warnings
+
+warnings.warn(
+    "research_dashboard.py is deprecated. "
+    "Use 'essence-wars report generate --run-id latest' instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 import json
 import sys
 from datetime import datetime

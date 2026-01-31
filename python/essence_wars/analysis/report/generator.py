@@ -15,6 +15,7 @@ from .tabs.overview import OverviewTab
 from .tabs.validation import ValidationTab
 from .tabs.tuning import TuningTab
 from .tabs.elo import EloTab
+from .tabs.research import ResearchTab
 
 # Default output directory
 DEFAULT_OUTPUT_DIR = Path("experiments/reports")
@@ -81,7 +82,7 @@ class ReportGenerator:
                 pass  # Skip ELO tab if loading fails
 
         # Determine which tabs to include
-        all_tabs = ["overview", "validation"]
+        all_tabs = ["overview", "validation", "research"]
         if tuning_experiments:
             all_tabs.append("tuning")
         if elo_data and elo_data.ratings:
@@ -99,6 +100,8 @@ class ReportGenerator:
             tab_content["overview"] = OverviewTab(data).render()
         if "validation" in tabs:
             tab_content["validation"] = ValidationTab(data).render()
+        if "research" in tabs:
+            tab_content["research"] = ResearchTab(data).render()
         if "tuning" in tabs and tuning_experiments:
             tab_content["tuning"] = TuningTab(tuning_experiments).render()
         if "elo" in tabs and elo_data:
@@ -133,6 +136,7 @@ class ReportGenerator:
         tab_labels = {
             "overview": "Overview",
             "validation": "Validation",
+            "research": "Research",
             "tuning": "Tuning",
             "elo": "ELO Ratings",
         }
@@ -891,6 +895,51 @@ body {
 .history-loss .delta { color: var(--danger); }
 .history-draw .delta { color: var(--warning); }
 
+/* Research tab styles */
+.research-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.research-tab {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.research-tab:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+}
+
+.research-tab.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(233, 69, 96, 0.1);
+}
+
+.research-panels {
+    margin-top: 1rem;
+}
+
+.research-panel {
+    display: none;
+}
+
+.research-panel.active {
+    display: block;
+}
+
+.win-rate.balanced { color: var(--success); }
+.win-rate.warning { color: var(--warning); }
+.win-rate.imbalanced { color: var(--danger); }
+
 /* Responsive */
 @media (max-width: 768px) {
     .report-header {
@@ -973,6 +1022,26 @@ function showExperiment(index) {
         window.dispatchEvent(new Event('resize'));
     }
 }
+
+// Research tab faction switching
+document.addEventListener('DOMContentLoaded', function() {
+    const researchTabs = document.querySelectorAll('.research-tab');
+    researchTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const faction = this.dataset.researchFaction;
+
+            // Update active states
+            researchTabs.forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.research-panel').forEach(p => p.classList.remove('active'));
+
+            this.classList.add('active');
+            const panel = document.getElementById('research-table-' + faction);
+            if (panel) {
+                panel.classList.add('active');
+            }
+        });
+    });
+});
 
 function sortTable(table, columnIndex) {
     const tbody = table.querySelector('tbody');

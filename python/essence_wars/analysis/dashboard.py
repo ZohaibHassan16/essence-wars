@@ -2,9 +2,26 @@
 """
 Interactive HTML dashboard generator for MCTS training analysis.
 Loads data from CSV files dynamically for efficiency and flexibility.
+
+.. deprecated::
+    This standalone dashboard is deprecated.
+    Use the unified CLI instead:
+        essence-wars report generate --run-id latest --open
+    Or:
+        uv run python python/scripts/generate_report.py --run-id latest --open
+
+    The Tuning tab in the new report generator provides this functionality.
 """
 
 import logging
+import warnings
+
+warnings.warn(
+    "dashboard.py MCTSDashboard is deprecated. "
+    "Use 'essence-wars report generate --run-id latest' instead (see Tuning tab).",
+    DeprecationWarning,
+    stacklevel=2,
+)
 from datetime import datetime
 from pathlib import Path
 

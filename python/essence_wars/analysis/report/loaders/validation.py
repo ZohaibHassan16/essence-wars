@@ -63,6 +63,7 @@ class MatchupResult:
     avg_turns: float
     p1_win_rate: float
     p1_significance: str
+    diagnostics: dict = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, data: dict) -> "MatchupResult":
@@ -80,6 +81,7 @@ class MatchupResult:
             avg_turns=data["avg_turns"],
             p1_win_rate=diag.get("p1_win_rate", 0.5),
             p1_significance=diag.get("p1_significance", "not_significant"),
+            diagnostics=diag,
         )
 
 

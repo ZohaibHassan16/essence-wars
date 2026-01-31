@@ -428,7 +428,7 @@ if __name__ == "__main__":
 | Phase | Effort | Impact | Dependencies | Status |
 |-------|--------|--------|--------------|--------|
 | **1. Unified CLI** | Low | High | None | **DONE** |
-| **2. Dashboard Consolidation** | Medium | High | None | Open |
+| **2. Dashboard Consolidation** | Medium | High | None | **DONE** |
 | **3. Unified Ratings** | Low | Medium | None | Open |
 | **4. Training Pipeline** | Medium | High | Phase 1, 3 | Open |
 | **5. Script Reorganization** | High | Medium | Phase 1 | Open |
@@ -450,6 +450,42 @@ essence-wars = "essence_wars.cli:main"
 ```
 
 Usage: `essence-wars --help`
+
+### Phase 2 Implementation (COMPLETED 2026-01-31)
+
+Consolidated dashboards into unified report generator:
+
+**New Files Created:**
+- `python/essence_wars/analysis/report/tabs/research.py` (~300 LOC)
+  - Faction vs faction matchup heatmap
+  - Faction win rates bar chart
+  - Game length distribution histogram
+  - Combat efficiency analysis
+  - Detailed matchup tables by faction
+
+**Charts Added to `charts.py`:**
+- `create_faction_matchup_heatmap()` - 3x3 faction matrix with cell annotations
+- `create_faction_winrate_bar()` - Overall faction win rates
+- `create_game_length_histogram()` - Distribution with average line
+- `create_combat_efficiency_chart()` - Trade ratio and face damage subplots
+
+**Generator Updates:**
+- Added "Research" tab to available tabs
+- Updated tab labels and content generation
+- Added CSS for research tab sub-navigation
+- Added JavaScript for faction tab switching
+
+**Deprecation Warnings Added:**
+- `analysis/research_dashboard.py` - Warns to use `essence-wars report generate`
+- `analysis/dashboard.py` - Warns to use unified report (Tuning tab)
+
+**Usage:**
+```bash
+# Generate report with all tabs including Research
+essence-wars report generate --run-id latest --open
+
+# Reports now available at: experiments/reports/{run_id}/index.html
+```
 
 ---
 
