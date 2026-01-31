@@ -36,6 +36,9 @@ pub mod validation;
 // Diagnostics module for P1/P2 asymmetry analysis
 pub mod diagnostics;
 
+// Card statistics module for per-card performance analysis
+pub mod stats;
+
 // Client API for game integration (web, JRPG, training)
 pub mod client_api;
 
