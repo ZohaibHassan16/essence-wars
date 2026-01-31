@@ -48,13 +48,15 @@ cards:
     card_type: creature
     tags: [Scout]
     prompt: >
-      A lean female scout with a composite bow, crouched on a rocky outcrop
-      scanning the horizon, desert camouflage wrapped around her lean athletic
-      form, falcon companion perched on her shoulder, keen alert expression,
-      vast desert expanse behind her with dust devils in the distance,
-      90s Magic the Gathering card art, painted fantasy illustration
+      A lean female scout in a proper archery stance drawing a composite bow on a
+      rocky outcrop, her bow hand gripping the riser correctly with fingers wrapped
+      around, draw hand pulling the string to her cheek. Desert camouflage wraps
+      around her athletic form, a falcon companion perched nearby. Keen alert
+      expression scanning the horizon. Vast desert expanse behind her with dust
+      devils in the distance, golden hour lighting, 90s Magic the Gathering card
+      art, painted fantasy illustration in the style of Frank Frazetta
     lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "rifle, sniper, modern scope, gun, chitin, Gothic, blurry, low quality, text, watermark"
+    negative: "wrong hand position, anatomical error, extra fingers, rifle, gun, modern, chitin, Gothic, blurry, low quality, text, watermark"
 
   - id: 4003
     name: "Hired Blade"
@@ -923,13 +925,15 @@ cards:
     name: "Sabotage"
     card_type: spell
     prompt: >
-      A saboteur's bomb exploding on enemy equipment, chaos spreading through
-      enemy camp, the saboteur fleeing the destruction, smoke and debris,
-      desert military encampment suffering targeted destruction, covert
-      warfare achieving results, tactical disruption,
-      90s Magic the Gathering card art, painted fantasy illustration
+      A cloaked saboteur fleeing from an explosion at an enemy supply camp, clay
+      pots of alchemist's fire bursting into magical flames on wooden supply wagons
+      and canvas tents. The saboteur wearing practical leather armor with a hood,
+      looking back at the chaos with grim satisfaction. Fantasy medieval military
+      camp being destroyed - wooden carts, barrels, crates, not modern vehicles.
+      Desert setting at dusk, orange firelight against darkening sky, 90s Magic
+      the Gathering card art, painted fantasy illustration
     lora: "rutkowski:0.5, classical-painting:0.5"
-    negative: "gun, modern explosives, Gothic, chitin, direct combat, blurry, low quality, text, watermark"
+    negative: "modern, military, soldier, helmet, truck, vehicle, gun, rifle, war photography, journalist, Gothic, chitin, blurry, low quality, text, watermark"
 
   - id: 4070
     name: "Hired Muscle"

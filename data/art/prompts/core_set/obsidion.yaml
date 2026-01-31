@@ -674,13 +674,15 @@ cards:
     name: "Soul Harvest"
     card_type: spell
     prompt: >
-      A ritual harvesting the soul of a dying enemy for healing, crimson
-      soul energy rising from a fallen victim, the caster absorbing the
-      essence and healing, satisfied expression as power flows in, Gothic
-      battlefield with harvested corpse, 90s Magic the Gathering card art,
-      painted fantasy illustration
+      A robed Obsidion mage harvesting a glowing crimson soul essence from a
+      defeated enemy, the ethereal energy rising as wisps from the fallen warrior
+      shown only as an armored figure lying face-down with no blood visible. The
+      mage absorbing the crimson soul light with raised hands, expression of
+      satisfaction. Gothic cathedral interior with candlelight. The soul energy
+      swirling between victim and caster. Dark elegant atmosphere, 90s Magic the
+      Gathering card art, painted fantasy illustration
     lora: "frazetta:0.5, classical-painting:0.5"
-    negative: "bright colors, nature, forests, mechanical, blurry, low quality, text, watermark"
+    negative: "gore, blood pool, graphic, corpse details, wounds visible, explicit, disturbing, bright colors, nature, forests, mechanical, blurry, low quality, text, watermark"
 
   - id: 3031
     name: "Consume Essence"
