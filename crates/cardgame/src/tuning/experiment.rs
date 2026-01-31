@@ -67,6 +67,23 @@ impl ExperimentDir {
         })
     }
 
+    /// Create an ExperimentDir from an existing directory path.
+    ///
+    /// Used when resuming from a checkpoint.
+    pub fn from_existing(path: &std::path::Path) -> Self {
+        let id = path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("unknown")
+            .to_string();
+
+        Self {
+            root: path.to_path_buf(),
+            plots_dir: path.join("plots"),
+            id,
+        }
+    }
+
     /// Save version info for reproducibility.
     pub fn save_version(&self) -> io::Result<()> {
         let version_info = VersionInfo::current();

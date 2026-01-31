@@ -102,7 +102,7 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 
 | Feature | Status |
 |---------|--------|
-| Resume from checkpoint | OPEN |
+| Resume from checkpoint | DONE (`--resume <run_id>`) |
 | Post-tuning auto-validation | DONE (runs by default, --skip-validation to disable) |
 | Multi-objective optimization (win rate + game length) | PARTIAL (game length is minor factor only) |
 | Hyperparameter auto-tuning | OPEN |
@@ -113,14 +113,29 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 
 ### Low Priority (Nice to Have)
 1. **HTML report generation** - Charts and visualizations in experiments folder
-2. **Tournament modes** - Swiss for arena
-3. **Tune resume from checkpoint** - Save/restore CMA-ES optimizer state
-4. **Hyperparameter auto-tuning** - Adaptive CMA-ES parameters
-5. **True multi-objective optimization** - Pareto frontier for win rate vs game length
+2. **Hyperparameter auto-tuning** - Adaptive CMA-ES parameters
+3. **True multi-objective optimization** - Pareto frontier for win rate vs game length
 
 ---
 
 ## Recently Completed
+
+- **Tune checkpoint resume** - DONE (2026-01-31)
+  - `--resume <run_id>` flag to resume from interrupted runs
+  - Checkpoint saved after every generation (~10 KB TOML)
+  - Graceful Ctrl+C handling saves checkpoint before exit
+  - Partial ID matching (e.g., `--resume baseline` finds `2026-01-31_1430_baseline`)
+  - Accumulated elapsed time tracking across sessions
+  - Core module: `src/tuning/checkpoint.rs` (~400 lines)
+
+- **Swiss tournament mode** - DONE (2026-01-31)
+  - New `swiss` binary for Swiss-system tournaments
+  - Score-based pairing (similar scores play each other)
+  - Tiebreakers: score, Buchholz (opponent strength), win rate
+  - Automatic ELO updates after each match
+  - Faction filtering (`--faction argentum`)
+  - JSON export (`--output results.json`)
+  - Core module: `src/arena/tournament.rs` (~700 lines)
 
 - **ELO rating persistence** - DONE (2026-01-31)
   - Automatic per-deck/commander ELO tracking in arena binary

@@ -8,6 +8,8 @@
 use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
+use super::checkpoint::{CheckpointError, CmaEsCheckpoint};
+
 /// Configuration for CMA-ES optimizer.
 #[derive(Clone, Debug)]
 pub struct CmaEsConfig {
@@ -504,5 +506,126 @@ impl CmaEs {
                 self.generation, repairs_made
             );
         }
+    }
+
+    /// Create a checkpoint from the current optimizer state.
+    pub fn to_checkpoint(&self, best_weights: &[f64], best_win_rate: f64) -> CmaEsCheckpoint {
+        CmaEsCheckpoint {
+            dim: self.dim,
+            lambda: self.lambda,
+            mu: self.mu,
+            mean: self.mean.clone(),
+            sigma: self.sigma,
+            cov_flat: CmaEsCheckpoint::flatten_cov(&self.cov),
+            ps: self.ps.clone(),
+            pc: self.pc.clone(),
+            generation: self.generation,
+            fitness_history: self.fitness_history.clone(),
+            best_fitness: self.best_fitness,
+            best_weights: best_weights.to_vec(),
+            best_win_rate,
+            base_seed: self.config.seed,
+        }
+    }
+
+    /// Restore an optimizer from a checkpoint.
+    ///
+    /// This recreates the full optimizer state including derived parameters.
+    /// The RNG is re-seeded deterministically based on generation for reproducibility.
+    pub fn from_checkpoint(
+        checkpoint: &CmaEsCheckpoint,
+        bounds: Vec<(f64, f64)>,
+        config: CmaEsConfig,
+    ) -> Result<Self, CheckpointError> {
+        let dim = checkpoint.dim;
+
+        // Validate dimensions
+        if bounds.len() != dim {
+            return Err(CheckpointError::DimensionMismatch {
+                expected: dim,
+                found: bounds.len(),
+            });
+        }
+        if checkpoint.mean.len() != dim {
+            return Err(CheckpointError::DimensionMismatch {
+                expected: dim,
+                found: checkpoint.mean.len(),
+            });
+        }
+
+        // Unflatten covariance matrix
+        let cov = CmaEsCheckpoint::unflatten_cov(&checkpoint.cov_flat, dim)?;
+
+        // Recalculate derived parameters (these depend only on lambda/mu/dim)
+        let lambda = checkpoint.lambda;
+        let mu = checkpoint.mu;
+
+        // Recombination weights (logarithmic)
+        let raw_weights: Vec<f64> = (0..mu)
+            .map(|i| ((mu as f64 + 0.5).ln() - ((i + 1) as f64).ln()).max(0.0))
+            .collect();
+        let sum: f64 = raw_weights.iter().sum();
+        let weights: Vec<f64> = raw_weights.iter().map(|w| w / sum).collect();
+
+        // Variance effective selection mass
+        let sum_sq: f64 = weights.iter().map(|w| w * w).sum();
+        let mu_eff = 1.0 / sum_sq;
+
+        // Adaptation parameters
+        let cs = (mu_eff + 2.0) / (dim as f64 + mu_eff + 5.0);
+        let cc = (4.0 + mu_eff / dim as f64) / (dim as f64 + 4.0 + 2.0 * mu_eff / dim as f64);
+        let c1 = 2.0 / ((dim as f64 + 1.3).powi(2) + mu_eff);
+        let cmu = (2.0 * (mu_eff - 2.0 + 1.0 / mu_eff)
+            / ((dim as f64 + 2.0).powi(2) + 2.0 * mu_eff / 2.0))
+            .min(1.0 - c1);
+        let damps =
+            1.0 + 2.0 * (0.0_f64.max(((mu_eff - 1.0) / (dim as f64 + 1.0)).sqrt() - 1.0)) + cs;
+
+        // Expected length of N(0,I) vector
+        let chi_n = (dim as f64).sqrt()
+            * (1.0 - 1.0 / (4.0 * dim as f64) + 1.0 / (21.0 * (dim as f64).powi(2)));
+
+        // Deterministic RNG seeding based on generation
+        // This ensures that resuming from generation N produces the same population
+        // as if we had run continuously from generation 0
+        let seed = checkpoint
+            .base_seed
+            .wrapping_add(checkpoint.generation as u64 * CmaEsCheckpoint::SEED_OFFSET);
+        let rng = SmallRng::seed_from_u64(seed);
+
+        Ok(Self {
+            dim,
+            lambda,
+            mu,
+            weights,
+            mu_eff,
+            mean: checkpoint.mean.clone(),
+            sigma: checkpoint.sigma,
+            cov,
+            ps: checkpoint.ps.clone(),
+            pc: checkpoint.pc.clone(),
+            c1,
+            cmu,
+            cs,
+            cc,
+            damps,
+            chi_n,
+            generation: checkpoint.generation,
+            rng,
+            config,
+            bounds,
+            fitness_history: checkpoint.fitness_history.clone(),
+            best_fitness: checkpoint.best_fitness,
+        })
+    }
+
+    /// Get the configuration.
+    pub fn config(&self) -> &CmaEsConfig {
+        &self.config
+    }
+
+    /// Get the best fitness seen so far.
+    pub fn best_fitness(&self) -> f64 {
+        self.best_fitness
     }
 }

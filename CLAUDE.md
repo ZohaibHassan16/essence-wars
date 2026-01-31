@@ -37,6 +37,10 @@ cargo run --release --bin validate -- --games 100 --bot mcts --mcts-sims 200
 # P1/P2 asymmetry analysis
 cargo run --release --bin diagnose -- 200
 
+# Swiss tournaments (deck rankings with ELO tracking)
+cargo run --release --bin swiss -- --games 20 --progress
+cargo run --release --bin swiss -- --faction symbiote --games 30 --output results.json
+
 # Game replay (debugging, analysis)
 cargo run --release --bin replay -- --seed 12345 --deck1 broodmother_pack --deck2 architect_fortify
 cargo run --release --bin replay -- --file game.replay.json.gz --interactive
@@ -74,7 +78,7 @@ RUST_LOG=debug cargo run --release --bin tune -- ...    # Verbose debugging
 - `crates/cardgame/src/core/` - Game types, state, actions, combat
 - `crates/cardgame/src/engine/` - GameEngine, effect processing
 - `crates/cardgame/src/bots/` - RandomBot, GreedyBot, MctsBot
-- `crates/cardgame/src/bin/` - CLIs: arena, tune, validate, diagnose, replay
+- `crates/cardgame/src/bin/` - CLIs: arena, swiss, tune, validate, diagnose, replay
 - `crates/cardgame/tests/unit/` - Unit tests (separate from src)
 - `python/essence_wars/` - Python bindings and ML agents
 - `python/essence_wars/agents/` - PPO, AlphaZero, Card2Vec, embeddings
@@ -344,6 +348,20 @@ Output includes:
 - Balanced deck: 40-60% win rate
 - Outlier deck: <40% or >60% win rate
 - Sample size: 50+ games per matchup recommended for statistical confidence
+
+## ELO Ratings & Swiss Tournaments
+
+**ELO Tracking**: Arena matches automatically update deck ratings in `data/ratings/deck_elo.json`. Ratings persist across sessions for tracking deck strength over time.
+
+**Swiss Tournaments** (`swiss` binary): Run full tournaments with score-based pairing. Useful for ranking all decks, testing new cards/expansions, or comparing deck archetypes.
+
+```bash
+cargo run --release --bin swiss -- --games 20 --progress          # All 12 decks, 5 rounds
+cargo run --release --bin swiss -- --faction argentum --games 30  # Single faction (4 decks)
+cargo run --release --bin swiss -- --bot mcts --rounds 4          # Custom bot/rounds
+```
+
+Features: Buchholz tiebreakers, bye handling, automatic ELO updates, JSON export (`--output`).
 
 ## Game Replay
 

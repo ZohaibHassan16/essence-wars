@@ -653,6 +653,11 @@ impl<'a> Evaluator<'a> {
         self.eval_count
     }
 
+    /// Set the evaluation count (for checkpoint resume).
+    pub fn set_eval_count(&mut self, count: u64) {
+        self.eval_count = count;
+    }
+
     // Static helpers for parallel game execution (no &self needed)
 
     /// Run a single game vs Random (static version for parallel).

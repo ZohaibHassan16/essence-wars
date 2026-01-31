@@ -7,12 +7,14 @@
 //!   cargo run --release --bin tune -- --mode faction-specialist --faction argentum
 //!   cargo run --release --bin tune -- --mode agent-generalist
 //!   cargo run --release --bin tune -- --tag baseline
+//!   cargo run --release --bin tune -- --resume 2026-01-31_1430_baseline
 
 use std::io::Write;
 use std::path::PathBuf;
 use std::process;
 use std::time::Instant;
 
+use chrono::Utc;
 use clap::Parser;
 
 use cardgame::bots::{BotWeights, GreedyWeights};
@@ -20,8 +22,10 @@ use cardgame::cards::CardDatabase;
 use cardgame::decks::{DeckDefinition, DeckRegistry, Faction};
 use cardgame::execution::GameData;
 use cardgame::tuning::{
-    deploy_weights, run_post_tuning_validation, CmaEs, CmaEsConfig, Evaluator, EvaluatorConfig,
-    ExperimentConfig, ExperimentDir, PostTuningValidationConfig, TuningMode,
+    deploy_weights, is_interrupted, load_checkpoint, register_interrupt_handler,
+    run_post_tuning_validation, save_checkpoint, CmaEs, CmaEsConfig, Evaluator, EvaluatorConfig,
+    EvaluatorCheckpoint, ExperimentConfig, ExperimentDir, PostTuningValidationConfig,
+    TuningCheckpoint, TuningConfig, TuningMode,
 };
 use cardgame::version;
 
@@ -135,25 +139,65 @@ struct Args {
     /// Skip post-tuning validation
     #[arg(long)]
     skip_validation: bool,
+
+    // ===== Resume =====
+    /// Resume from a previous run checkpoint (run ID or partial match)
+    ///
+    /// Examples:
+    ///   --resume baseline              # Matches "2026-01-31_1430_baseline"
+    ///   --resume 2026-01-31_1430       # Exact prefix match
+    #[arg(long)]
+    resume: Option<String>,
 }
 
 fn main() {
     env_logger::init();
     let args = Args::parse();
 
-    // Create experiment directory with timestamp
-    // Use "alphabeta" category for alpha-beta modes, "mcts" for others
+    // Register interrupt handler for graceful shutdown
+    register_interrupt_handler();
+
+    // Determine category based on mode
     let category = if args.mode.starts_with("alphabeta") {
         "alphabeta"
     } else {
         "mcts"
     };
-    let exp_config = ExperimentConfig::new(&args.experiment_dir, category, &args.tag);
-    let experiment = match ExperimentDir::create(&exp_config) {
-        Ok(e) => e,
-        Err(e) => {
-            eprintln!("Error creating experiment directory: {}", e);
-            process::exit(1);
+
+    // Check if we're resuming from a checkpoint
+    let loaded_checkpoint = if let Some(ref resume_id) = args.resume {
+        match load_checkpoint(resume_id, &args.experiment_dir, category) {
+            Ok(checkpoint) => {
+                println!("📂 Resuming from checkpoint: {}", checkpoint.run_id);
+                println!("   Generation: {}", checkpoint.cmaes.generation);
+                println!("   Best fitness: {:.2}", checkpoint.cmaes.best_fitness);
+                println!("   Best win rate: {:.1}%", checkpoint.cmaes.best_win_rate * 100.0);
+                println!();
+                Some(checkpoint)
+            }
+            Err(e) => {
+                eprintln!("Error loading checkpoint '{}': {}", resume_id, e);
+                process::exit(1);
+            }
+        }
+    } else {
+        None
+    };
+
+    // Create or find experiment directory
+    let experiment = if let Some(ref checkpoint) = loaded_checkpoint {
+        // Use existing experiment directory
+        let exp_dir = args.experiment_dir.join(category).join(&checkpoint.run_id);
+        ExperimentDir::from_existing(&exp_dir)
+    } else {
+        // Create new experiment directory with timestamp
+        let exp_config = ExperimentConfig::new(&args.experiment_dir, category, &args.tag);
+        match ExperimentDir::create(&exp_config) {
+            Ok(e) => e,
+            Err(e) => {
+                eprintln!("Error creating experiment directory: {}", e);
+                process::exit(1);
+            }
         }
     };
 
@@ -449,19 +493,64 @@ fn main() {
     writeln!(log_file, "MCTS sims: {}", args.mcts_sims).unwrap();
     writeln!(log_file).unwrap();
 
-    // Create optimizer and evaluator
-    let mut cmaes = CmaEs::new(initial_weights, bounds, cmaes_config);
+    // Create or restore optimizer and evaluator
+    let (mut cmaes, mut best_weights, mut best_fitness, mut best_win_rate, elapsed_before_resume) =
+        if let Some(ref checkpoint) = loaded_checkpoint {
+            // Restore from checkpoint
+            let cmaes = match CmaEs::from_checkpoint(&checkpoint.cmaes, bounds, cmaes_config) {
+                Ok(c) => c,
+                Err(e) => {
+                    eprintln!("Error restoring CMA-ES from checkpoint: {}", e);
+                    process::exit(1);
+                }
+            };
+
+            let best_weights = checkpoint.cmaes.best_weights.clone();
+            let best_fitness = checkpoint.cmaes.best_fitness;
+            let best_win_rate = checkpoint.cmaes.best_win_rate;
+            let elapsed = checkpoint.elapsed_secs;
+
+            (cmaes, best_weights, best_fitness, best_win_rate, elapsed)
+        } else {
+            // Fresh start
+            let cmaes = CmaEs::new(initial_weights, bounds, cmaes_config);
+            (cmaes, Vec::new(), f64::NEG_INFINITY, 0.0, 0.0)
+        };
+
     let mut evaluator = Evaluator::new(&card_db, eval_config);
 
-    // Track best result
-    let mut best_weights: Vec<f64> = Vec::new();
-    let mut best_fitness = f64::NEG_INFINITY;
-    let mut best_win_rate = 0.0;
+    // Restore evaluator eval_count if resuming (for deterministic seeding)
+    if let Some(ref checkpoint) = loaded_checkpoint {
+        evaluator.set_eval_count(checkpoint.evaluator.eval_count);
+    }
 
     let start_time = Instant::now();
 
+    // Build TuningConfig for checkpoint
+    let tuning_config = TuningConfig {
+        mode: args.mode.clone(),
+        generations: args.generations,
+        games_per_eval: args.games,
+        population_size: args.population,
+        initial_sigma: args.sigma,
+        seed: args.seed,
+        mcts_sims: args.mcts_sims,
+        ab_depth: args.ab_depth,
+        deck: args.deck.clone(),
+        opponent: args.opponent.clone(),
+        faction: args.faction.clone(),
+        archetype: args.archetype.clone(),
+    };
+
     // Main optimization loop
+    let mut interrupted = false;
     while !cmaes.should_stop(best_fitness) {
+        // Check for interrupt before starting generation
+        if is_interrupted() {
+            interrupted = true;
+            break;
+        }
+
         let gen = cmaes.generation();
         let gen_start = Instant::now();
 
@@ -472,6 +561,12 @@ fn main() {
         let mut evaluated: Vec<(Vec<f64>, f64)> = Vec::with_capacity(population.len());
 
         for candidate in population {
+            // Check for interrupt during evaluation
+            if is_interrupted() {
+                interrupted = true;
+                break;
+            }
+
             let result = evaluator.evaluate(&candidate);
             evaluated.push((candidate, result.fitness));
 
@@ -483,10 +578,16 @@ fn main() {
             }
         }
 
+        // Exit if interrupted during evaluation
+        if interrupted {
+            break;
+        }
+
         // Update CMA-ES
         cmaes.update(evaluated);
 
         let gen_time = gen_start.elapsed();
+        let total_elapsed = elapsed_before_resume + start_time.elapsed().as_secs_f64();
 
         // Print progress
         let progress_msg = format!(
@@ -497,13 +598,59 @@ fn main() {
             cmaes.sigma(),
             gen_time.as_secs_f64()
         );
-        
+
         if args.verbose || gen.is_multiple_of(5) || gen == 0 {
             println!("{}", progress_msg);
         }
-        
+
         // Always log to file
         writeln!(log_file, "{}", progress_msg).unwrap();
+
+        // Save checkpoint after each generation
+        let checkpoint = TuningCheckpoint {
+            version: TuningCheckpoint::VERSION,
+            created_at: Utc::now().to_rfc3339(),
+            run_id: experiment.id.clone(),
+            cmaes: cmaes.to_checkpoint(&best_weights, best_win_rate),
+            evaluator: EvaluatorCheckpoint {
+                eval_count: evaluator.eval_count(),
+            },
+            config: tuning_config.clone(),
+            elapsed_secs: total_elapsed,
+        };
+
+        if let Err(e) = save_checkpoint(&checkpoint, &experiment.root) {
+            eprintln!("Warning: Could not save checkpoint: {}", e);
+        }
+    }
+
+    // Handle interrupt - save final checkpoint
+    if interrupted {
+        let total_elapsed = elapsed_before_resume + start_time.elapsed().as_secs_f64();
+        let checkpoint = TuningCheckpoint {
+            version: TuningCheckpoint::VERSION,
+            created_at: Utc::now().to_rfc3339(),
+            run_id: experiment.id.clone(),
+            cmaes: cmaes.to_checkpoint(&best_weights, best_win_rate),
+            evaluator: EvaluatorCheckpoint {
+                eval_count: evaluator.eval_count(),
+            },
+            config: tuning_config.clone(),
+            elapsed_secs: total_elapsed,
+        };
+
+        match save_checkpoint(&checkpoint, &experiment.root) {
+            Ok(path) => {
+                eprintln!("\n✅ Checkpoint saved to {:?}", path);
+                eprintln!("   Resume with: cargo run --release --bin tune -- --resume {}", experiment.id);
+            }
+            Err(e) => {
+                eprintln!("\n❌ Error saving checkpoint: {}", e);
+            }
+        }
+
+        println!("\n⚠️  Training interrupted at generation {}", cmaes.generation());
+        process::exit(0);
     }
 
     let total_time = start_time.elapsed();

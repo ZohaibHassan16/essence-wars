@@ -41,6 +41,7 @@ flate2.workspace = true
 indicatif.workspace = true
 log = "0.4"
 env_logger.workspace = true
+ctrlc = "3.4"
 
 # Optional Python bindings
 pyo3 = { version = "0.22", features = ["extension-module"], optional = true }
@@ -84,6 +85,11 @@ required-features = ["parallel"]
 [[bin]]
 name = "generate_dataset"
 path = "src/bin/generate_dataset.rs"
+required-features = ["parallel"]
+
+[[bin]]
+name = "swiss"
+path = "src/bin/swiss.rs"
 required-features = ["parallel"]
 
 [[bench]]
