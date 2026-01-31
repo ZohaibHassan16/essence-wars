@@ -42,7 +42,7 @@ mod types;
 
 // Re-export types
 pub use types::{
-    BalanceStatus, BalanceSummary, DirectionDiagnostics, DirectionResults,
+    BalanceStatus, BalanceSummary, DeckStats, DirectionDiagnostics, DirectionResults,
     MatchupDefinition, MatchupDiagnostics, MatchupP1Stats, MatchupResult, P1P2Summary,
     ValidationConfig, ValidationResults,
 };

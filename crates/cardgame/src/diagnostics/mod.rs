@@ -34,6 +34,7 @@
 
 mod analyzer;
 mod collector;
+pub mod critical_turns;
 pub mod export;
 pub mod metrics;
 mod report;
@@ -41,6 +42,9 @@ pub mod statistics;
 
 pub use analyzer::{AggregatedStats, BalanceAssessment};
 pub use collector::{DiagnosticConfig, DiagnosticRunner, GameDiagnostics, TurnSnapshot};
+pub use critical_turns::{
+    analyze_critical_turns, print_critical_turns_report, CriticalTurnConfig, CriticalTurnStats,
+};
 pub use export::{export_csv, export_json, ExportFormat};
 pub use metrics::{
     BoardAdvantage, CombatEfficiency, GameMetrics, ResourceEfficiency, TempoMetrics, TurnMetrics,

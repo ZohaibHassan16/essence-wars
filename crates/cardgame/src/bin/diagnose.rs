@@ -18,7 +18,8 @@ use clap::Parser;
 
 use cardgame::bots::{AlphaBetaConfig, BotType, MctsConfig};
 use cardgame::diagnostics::{
-    export_csv, export_json, print_comparative_report, AggregatedStats, DiagnosticConfig,
+    analyze_critical_turns, export_csv, export_json, print_comparative_report,
+    print_critical_turns_report, AggregatedStats, CriticalTurnConfig, DiagnosticConfig,
     DiagnosticRunner, ExportFormat, print_report,
 };
 use cardgame::execution::{parse_bot_type_or_exit, GameData};
@@ -79,6 +80,18 @@ struct Args {
     /// Show progress during execution
     #[arg(long, short = 'p')]
     progress: bool,
+
+    /// Analyze critical turns (game-deciding moments)
+    #[arg(long)]
+    critical_turns: bool,
+
+    /// Life swing threshold for critical turn detection (default: 5)
+    #[arg(long, default_value = "5")]
+    life_swing_threshold: i32,
+
+    /// Board advantage swing threshold for critical turn detection (default: 3.0)
+    #[arg(long, default_value = "3.0")]
+    board_swing_threshold: f64,
 }
 
 fn main() {
@@ -281,5 +294,15 @@ fn main() {
         print_comparative_report(&stats, &deck1.name, &deck2.name);
     } else {
         print_report(&stats);
+    }
+
+    // Critical turn analysis if requested
+    if args.critical_turns {
+        let ct_config = CriticalTurnConfig::new(
+            args.life_swing_threshold,
+            args.board_swing_threshold,
+        );
+        let ct_stats = analyze_critical_turns(&diagnostics, &ct_config);
+        print_critical_turns_report(&ct_stats, &ct_config);
     }
 }

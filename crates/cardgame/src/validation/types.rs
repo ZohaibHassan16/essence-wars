@@ -5,14 +5,14 @@
 
 use std::collections::HashMap;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::decks::Faction;
 use crate::types::CardId;
 use crate::version::VersionInfo;
 
 /// Configuration for a validation run.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ValidationConfig {
     /// Number of games per matchup per player order.
     pub games_per_matchup: usize,
@@ -47,7 +47,7 @@ impl ValidationConfig {
 }
 
 /// Results for a single faction pair (both player orders).
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MatchupResult {
     /// First faction name.
     pub faction1: String,
@@ -98,7 +98,7 @@ pub struct MatchupResult {
 }
 
 /// Balance status classification.
-#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum BalanceStatus {
     /// All metrics within acceptable range.
@@ -120,7 +120,7 @@ impl std::fmt::Display for BalanceStatus {
 }
 
 /// Per-deck performance statistics.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeckStats {
     /// Deck ID (e.g., "artificer_tokens").
     pub deck_id: String,
@@ -147,7 +147,7 @@ pub struct DeckStats {
 }
 
 /// Balance analysis summary.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BalanceSummary {
     /// Player 1 overall win rate.
     pub p1_win_rate: f64,
@@ -171,7 +171,7 @@ pub struct BalanceSummary {
 }
 
 /// Summary of P1/P2 asymmetry analysis across all matchups.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct P1P2Summary {
     /// Overall P1 win rate across all matchups.
     pub overall_p1_win_rate: f64,
@@ -188,7 +188,7 @@ pub struct P1P2Summary {
 }
 
 /// P1 statistics for a single matchup.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MatchupP1Stats {
     /// P1 win rate for this matchup.
     pub p1_rate: f64,
@@ -197,7 +197,7 @@ pub struct MatchupP1Stats {
 }
 
 /// Complete validation results (for JSON output).
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ValidationResults {
     /// ISO 8601 timestamp.
     pub timestamp: String,
@@ -283,7 +283,7 @@ pub struct DirectionDiagnostics {
 }
 
 /// P1/P2 diagnostic analysis for a matchup.
-#[derive(Debug, Clone, Default, Serialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct MatchupDiagnostics {
     // P1/P2 win rate with statistical analysis
     /// P1 win rate (excluding draws).
