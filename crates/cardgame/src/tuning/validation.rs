@@ -73,7 +73,7 @@ pub fn run_post_tuning_validation(
     let executor = ValidationExecutor::new(card_db, 50) // mcts_sims not used for AB
         .with_bot_type(BotType::AlphaBeta)
         .with_alphabeta_depth(config.alphabeta_depth)
-        .with_progress(false); // Keep output clean
+        .with_progress(true); // Show progress updates
 
     // Run validation
     let matchup_results = executor

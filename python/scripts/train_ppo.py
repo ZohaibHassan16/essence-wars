@@ -240,6 +240,28 @@ def parse_args():
         help="Device: 'cpu', 'cuda', or 'auto' (default: auto)",
     )
 
+    # Auto-callbacks (post-training automation)
+    parser.add_argument(
+        "--auto-callbacks",
+        action="store_true",
+        help="Enable auto-evaluate and auto-report callbacks",
+    )
+    parser.add_argument(
+        "--auto-evaluate",
+        action="store_true",
+        help="Run final evaluation after training (implied by --auto-callbacks)",
+    )
+    parser.add_argument(
+        "--auto-report",
+        action="store_true",
+        help="Generate HTML report after training (implied by --auto-callbacks)",
+    )
+    parser.add_argument(
+        "--update-elo",
+        action="store_true",
+        help="Update agent ELO ratings after evaluation",
+    )
+
     return parser.parse_args()
 
 
@@ -347,16 +369,59 @@ def main():
     if args.load is not None:
         trainer.load(args.load)
 
-    # Callback for saving checkpoints
-    def save_callback(step: int, info: dict) -> bool:
-        if step > 0 and step % args.save_interval == 0:
-            checkpoint_path = save_path / f"checkpoint_{step}.pt"
-            trainer.save(str(checkpoint_path))
-        return False  # Don't stop training
+    # Setup callbacks
+    use_callback_system = args.auto_callbacks or args.auto_evaluate or args.auto_report
+
+    if use_callback_system:
+        # Use the structured callback system
+        from essence_wars.training import (
+            CallbackList, CallbackContext, CheckpointCallback,
+            AutoEvaluateCallback, AutoReportCallback,
+        )
+
+        callbacks = CallbackList()
+
+        # Always add checkpoint callback
+        callbacks.add(CheckpointCallback(
+            save_path=save_path,
+            save_freq=args.save_interval,
+            save_best=True,
+        ))
+
+        # Auto-evaluate if requested (also implied by --auto-callbacks)
+        if args.auto_callbacks or args.auto_evaluate:
+            callbacks.add(AutoEvaluateCallback(
+                eval_games=200,
+                update_elo=args.update_elo,
+            ))
+
+        # Auto-report if requested (also implied by --auto-callbacks)
+        if args.auto_callbacks or args.auto_report:
+            callbacks.add(AutoReportCallback(
+                output_dir=save_path,
+            ))
+
+        # Create callback context
+        context = CallbackContext(
+            trainer=trainer,
+            experiment_dir=save_path,
+            config={k: v for k, v in vars(config).items() if not k.startswith("_")},
+        )
+
+        # Initialize callbacks
+        callbacks.on_train_start(context)
+        train_callback = callbacks.as_functional()
+    else:
+        # Use simple callback for backward compatibility
+        def train_callback(step: int, info: dict) -> bool:
+            if step > 0 and step % args.save_interval == 0:
+                checkpoint_path = save_path / f"checkpoint_{step}.pt"
+                trainer.save(str(checkpoint_path))
+            return False  # Don't stop training
 
     # Train
     try:
-        results = trainer.train(callback=save_callback, save_path=str(save_path))
+        results = trainer.train(callback=train_callback, save_path=str(save_path))
     except KeyboardInterrupt:
         print("\nTraining interrupted by user")
         results = {
@@ -369,20 +434,38 @@ def main():
     final_path = save_path / "final_model.pt"
     trainer.save(str(final_path))
 
-    # Final evaluation
-    print("\n" + "=" * 60)
-    print("Final Evaluation")
-    print("=" * 60)
+    # Post-training: callbacks or manual evaluation
+    if use_callback_system:
+        # Let callbacks handle post-training tasks
+        callbacks.on_train_complete(results)
+    else:
+        # Manual final evaluation (original behavior)
+        print("\n" + "=" * 60)
+        print("Final Evaluation")
+        print("=" * 60)
 
-    win_rate_greedy = trainer.evaluate_vs_greedy(200)
-    win_rate_random = trainer.evaluate_vs_random(200)
+        win_rate_greedy = trainer.evaluate_vs_greedy(200)
+        win_rate_random = trainer.evaluate_vs_random(200)
 
-    print(f"  vs GreedyBot: {win_rate_greedy:.1%} win rate")
-    print(f"  vs RandomBot: {win_rate_random:.1%} win rate")
+        print(f"  vs GreedyBot: {win_rate_greedy:.1%} win rate")
+        print(f"  vs RandomBot: {win_rate_random:.1%} win rate")
 
-    # Save summary
+    # Save summary (always)
     best_win_rate = results.get("best_win_rate", trainer.best_win_rate)
     summary_path = save_path / "summary.txt"
+
+    # Get final evaluation results if using callbacks
+    if use_callback_system:
+        # Find AutoEvaluateCallback to get results
+        for cb in callbacks.callbacks:
+            if isinstance(cb, AutoEvaluateCallback):
+                win_rate_greedy = cb.results.get("vs_greedy", 0)
+                win_rate_random = cb.results.get("vs_random", 0)
+                break
+        else:
+            win_rate_greedy = 0
+            win_rate_random = 0
+
     with open(summary_path, "w") as f:
         f.write("Essence Wars PPO Training Summary\n")
         f.write("=" * 40 + "\n\n")
@@ -406,7 +489,7 @@ def main():
     # Success check
     if win_rate_greedy >= 0.6:
         print(f"\n[SUCCESS] Achieved {win_rate_greedy:.1%} win rate vs Greedy (target: 60%)")
-    else:
+    elif win_rate_greedy > 0:
         print(f"\n[PROGRESS] Current: {win_rate_greedy:.1%} vs Greedy (target: 60%)")
         print("  Consider: more timesteps, tuning hyperparameters, or longer training")
 

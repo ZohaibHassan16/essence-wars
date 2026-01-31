@@ -348,40 +348,51 @@ class UnifiedRatings:
 
 ---
 
-### Phase 4: Training Pipeline Integration (~400 LOC)
+### Phase 4: Training Pipeline Integration (~400 LOC) - **DONE**
 
-Add callbacks to training scripts:
+**Implementation:**
 
+Created `python/essence_wars/training/callbacks.py` with structured callback system:
+
+**Core Types:**
+- `CallbackContext` - Context passed to callbacks (trainer, experiment_dir, config)
+- `TrainingCallback` - Abstract base class with `on_train_start`, `on_step`, `on_train_complete`
+- `CallbackList` - Container for multiple callbacks with functional conversion
+
+**Built-in Callbacks:**
+- `CheckpointCallback` - Save checkpoints during training
+- `EvaluationCallback` - Run periodic evaluation during training
+- `AutoEvaluateCallback` - Run final evaluation after training with optional ELO update
+- `AutoReportCallback` - Generate HTML report after training
+- `LoggingCallback` - Log metrics to console or file
+
+**Convenience Function:**
 ```python
-# training/callbacks.py
-from abc import ABC, abstractmethod
+from essence_wars.training import make_callback
 
-class TrainingCallback(ABC):
-    @abstractmethod
-    def on_epoch_end(self, epoch: int, metrics: dict): pass
-
-    @abstractmethod
-    def on_training_complete(self, checkpoint_path: Path): pass
-
-class AutoEvaluateCallback(TrainingCallback):
-    """Automatically evaluate model after training."""
-
-    def on_training_complete(self, checkpoint_path: Path):
-        from ..benchmark import EssenceWarsBenchmark
-        benchmark = EssenceWarsBenchmark()
-        results = benchmark.evaluate(checkpoint_path)
-        results.save(checkpoint_path.parent / "benchmark_results.json")
-
-class AutoReportCallback(TrainingCallback):
-    """Generate report after evaluation."""
-
-    def on_training_complete(self, checkpoint_path: Path):
-        from ..analysis.report import ReportGenerator
-        gen = ReportGenerator()
-        gen.generate_training_report(
-            experiment_dir=checkpoint_path.parent,
-        )
+callbacks = make_callback(
+    save_path="experiments/run1",
+    auto_evaluate=True,
+    auto_report=True,
+    update_elo=True,
+)
 ```
+
+**CLI Integration (train_ppo.py):**
+```bash
+# Enable all auto-callbacks
+python train_ppo.py --auto-callbacks
+
+# Or individually
+python train_ppo.py --auto-evaluate --auto-report --update-elo
+```
+
+**Files Created/Modified:**
+| File | Changes |
+|------|---------|
+| `python/essence_wars/training/callbacks.py` | NEW: Full callback system (~500 LOC) |
+| `python/essence_wars/training/__init__.py` | Updated: Export all callback types |
+| `python/scripts/train_ppo.py` | Added `--auto-callbacks`, `--auto-evaluate`, `--auto-report`, `--update-elo` flags |
 
 ---
 
@@ -430,7 +441,7 @@ if __name__ == "__main__":
 | **1. Unified CLI** | Low | High | None | **DONE** |
 | **2. Dashboard Consolidation** | Medium | High | None | **DONE** |
 | **3. Unified Ratings** | Low | Medium | None | **DONE** |
-| **4. Training Pipeline** | Medium | High | Phase 1, 3 | Open |
+| **4. Training Pipeline** | Medium | High | Phase 1, 3 | **DONE** |
 | **5. Script Reorganization** | High | Medium | Phase 1 | Open |
 
 **Recommended Order:** 1 → 2 → 3 → 4 → 5
