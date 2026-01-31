@@ -9,6 +9,7 @@
 | generate_dataset | ~710 | ML training data generation | Very High |
 | tune | ~700 | CMA-ES weight optimization | High |
 | arena | ~450 | Bot matches | Medium |
+| swiss | ~200 | Swiss-system tournaments | Medium |
 | diagnose | ~310 | P1/P2 asymmetry analysis | Medium |
 | card_stats | ~340 | Per-card win contribution analysis | Medium |
 | validate | ~300 | Balance testing + auto-diagnose | Medium |
@@ -79,7 +80,7 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 
 | Feature | Status |
 |---------|--------|
-| Tournament modes (Swiss, double elimination) | OPEN |
+| Tournament modes (Swiss) | DONE (swiss binary) |
 | ELO rating persistence across sessions | DONE |
 | Matchup matrix output | DONE (via validate --matrix) |
 | Game replay export (seeds + decisions) | DONE (--export-replays) |

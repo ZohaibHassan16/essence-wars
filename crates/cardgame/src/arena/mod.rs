@@ -33,6 +33,7 @@ mod logger;
 pub mod rating;
 mod runner;
 mod stats;
+pub mod tournament;
 
 // Configuration types
 pub use config::{MatchConfig, SequentialConfig};
@@ -65,3 +66,9 @@ pub use stats::{MatchStats, MatchupStats};
 
 // Rating types
 pub use rating::{DeckRating, EloTracker, MatchResult, RatingChange};
+
+// Tournament types
+pub use tournament::{
+    MatchOutcome, Pairing, Participant, RoundResult, Standing, SwissConfig, SwissTournament,
+    TournamentMatchResult, TournamentResult,
+};
