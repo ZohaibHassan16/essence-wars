@@ -27,8 +27,10 @@ cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --games 100 --progr
 cargo run --release --bin arena -- --list-decks
 
 # Weight tuning
+./scripts/tune-archetypes.sh                    # Tune all archetypes
+./scripts/tune-archetypes.sh aggro tempo        # Tune specific archetypes
+./scripts/tune-archetypes.sh --dry-run          # Preview commands
 cargo run --release --bin tune -- --mode generalist --tag my_run --generations 50
-cargo run --release --bin tune -- --mode archetype --archetype aggro --tag aggro_v1
 
 # Balance validation (deck/commander performance is key metric)
 cargo run --release --bin validate -- --games 50 --progress
@@ -114,8 +116,16 @@ RUST_LOG=debug cargo run --release --bin tune -- ...    # Verbose debugging
 - `crates/cardgame/tests/unit/` - Unit tests (separate from src)
 - `python/essence_wars/` - Python bindings and ML agents
 - `python/essence_wars/agents/` - PPO, AlphaZero, Card2Vec, embeddings
+- `python/essence_wars/analysis/report/` - Unified HTML report generator (tabbed reports)
+- `python/essence_wars/ratings/` - Unified ratings layer (deck + agent ELO)
+- `python/essence_wars/training/` - Training utilities and callbacks
 - `python/essence_wars/data/` - Dataset loaders (MCTSDataset, ChunkedMCTSDataset)
-- `python/scripts/` - Training scripts (train_ppo.py, train_alphazero.py, etc.)
+- `python/scripts/` - ML scripts organized by category:
+  - `training/` - Model training (ppo.py, alphazero.py, etc.)
+  - `evaluation/` - Model evaluation and benchmarks
+  - `data/` - Dataset generation
+  - `analysis/` - Training analysis and diagnostics
+  - `reporting/` - HTML report generation
 - `data/cards/core_set/` - 300 cards in 4 YAML files (by faction)
 - `data/commanders/` - 12 commanders in 3 YAML files (by faction)
 - `data/decks/{argentum,symbiote,obsidion}/` - 12 commander decks
@@ -357,6 +367,23 @@ CMA-ES optimizer with parallel evaluation. Outputs to `experiments/mcts/YYYY-MM-
 | `generalist` | Cross-deck optimization (all archetypes) |
 | `archetype` | Playstyle-specific (aggro, control, tempo, midrange) |
 | `specialist` | Specific deck matchup |
+
+```bash
+# Tune all archetypes (aggro, control, tempo, midrange)
+./scripts/tune-archetypes.sh
+
+# Tune specific archetypes
+./scripts/tune-archetypes.sh aggro tempo
+
+# Quick test run with fewer generations
+./scripts/tune-archetypes.sh -g 50 -n 50 aggro
+
+# Show available archetypes and their decks
+./scripts/tune-archetypes.sh --list
+
+# Preview commands without running
+./scripts/tune-archetypes.sh --dry-run
+```
 
 See `docs/bots-tuning-pipeline.md` for full options.
 
@@ -675,3 +702,4 @@ Key sounds: `buttonClick`, `buttonHover`, `cardSelect`, `cardHover`, `menuOpen`,
 | `docs/design-commanders.md` | Commander system design |
 | `docs/cards-new-horizons.md` | Card effect system |
 | `docs/tuning-pipeline.md` | Bot weight tuning guide |
+| `docs/analysis-suite-audit.md` | Python analysis suite architecture |
