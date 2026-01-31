@@ -36,7 +36,7 @@ from datetime import datetime
 from pathlib import Path
 
 # Add parent to path for local development
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 
 def main():

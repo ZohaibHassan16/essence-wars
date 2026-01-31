@@ -8,7 +8,7 @@ train a network that plays like MCTS without needing search at inference.
 Uses batched GPU inference for ~10-20x speedup over sequential evaluation.
 
 Usage:
-    uv run python python/scripts/generate_distillation_data.py \
+    python scripts/data/generate_distillation.py \
         --model models/bc_mcts_values.pt \
         --games 1000 \
         --sims 25 \
@@ -21,11 +21,15 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
+import sys
 import time
 from pathlib import Path
 
 import torch
 import numpy as np
+
+# Add parent to path for local development
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from essence_wars import PyGame
 from essence_wars.agents.networks import AlphaZeroNetwork

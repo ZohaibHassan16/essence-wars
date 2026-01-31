@@ -801,7 +801,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [ ] Installer/package creation
 - [ ] Final testing on both platforms
 - [ ] Documentation
-- [ ] Disuss Hosting Providers (itch.io, Google Drive, ...)
+- [ ] Disuss free Hosting Providers (itch.io, Google Drive, ...)
 
 ---
 

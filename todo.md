@@ -26,3 +26,8 @@ Update and Enhance the Diagnosis/Analysis Screen in Spectator Mode, using the no
 - Discuss if a needed `explain_rules()` function should be added, that concisely explain all rules, so that LLM Agents can play with confidence
 - Review and Audit complete Package
 - Improve/Enhance AI Hint function
+
+## (F) Review and Update Python Gym
+
+- Look into the changes, update and integrate everything
+- Create new, updated Github Action workflows - Fresh workflows with current best practices for Maturin/PyPI for Publishing to Github Packages / PyPI

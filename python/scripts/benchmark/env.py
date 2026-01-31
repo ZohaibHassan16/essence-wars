@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 """Benchmark script for vectorized environment throughput."""
 
+import sys
 import time
+from pathlib import Path
 
 import numpy as np
+
+# Add parent to path for local development
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from essence_wars.env import VectorizedEssenceWars
 

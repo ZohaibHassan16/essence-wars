@@ -10,7 +10,7 @@ This is much faster than AlphaZero self-play training because:
 3. Can be repeated quickly for architecture experiments
 
 Usage:
-    uv run python python/scripts/train_behavioral_cloning.py \\
+    python scripts/training/behavioral_cloning.py \\
         --dataset data/datasets/mcts_100k.jsonl \\
         --epochs 50 \\
         --output models/bc_mcts_100k.pt
@@ -21,6 +21,7 @@ TensorBoard logging is enabled by default. Use --no-tensorboard to disable.
 from __future__ import annotations
 
 import argparse
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -31,6 +32,9 @@ from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader, random_split
 from torch.utils.tensorboard import SummaryWriter
+
+# Add parent to path for local development
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from essence_wars.agents.networks import AlphaZeroNetwork
 from essence_wars.data import MCTSDataset, get_dataset_stats

@@ -8,6 +8,7 @@ Organized into categories:
 - analysis/    - Training analysis and diagnostics
 - benchmark/   - Performance profiling scripts
 - reporting/   - HTML report generation
+- utils/       - Utility scripts (card art, testing)
 
 Each script can be run directly or imported:
     python -m scripts.training.ppo --help
@@ -24,4 +25,5 @@ __all__ = [
     "analysis",
     "benchmark",
     "reporting",
+    "utils",
 ]

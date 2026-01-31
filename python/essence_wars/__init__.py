@@ -36,7 +36,7 @@ With Gymnasium:
 
 With Analysis Tools:
     from essence_wars.infra import Experiment
-    from essence_wars.analysis import ExperimentAggregator, MCTSDashboard
+    from essence_wars.analysis import ExperimentAggregator
 """
 
 __version__ = "0.6.0"

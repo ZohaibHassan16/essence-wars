@@ -6,7 +6,7 @@ allowing fast inference without tree search. The network learns to
 imitate the MCTS policy distribution rather than raw actions.
 
 Usage:
-    uv run python python/scripts/train_distilled_policy.py \
+    python scripts/training/distilled_policy.py \
         --dataset data/datasets/distillation_1k_mcts25.jsonl.gz \
         --epochs 30 \
         --output models/distilled_mcts25.pt
@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -27,6 +28,9 @@ import torch.nn.functional as F
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader, Dataset, random_split
+
+# Add parent to path for local development
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from essence_wars.agents.networks import AlphaZeroNetwork
 

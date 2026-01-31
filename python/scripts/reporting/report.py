@@ -3,22 +3,22 @@
 
 Usage:
     # Generate report for latest validation run
-    uv run python python/scripts/generate_report.py --run-id latest
+    python scripts/reporting/report.py --run-id latest
 
     # Generate report for specific run
-    uv run python python/scripts/generate_report.py --run-id 2026-01-31_1542
+    python scripts/reporting/report.py --run-id 2026-01-31_1542
 
     # Generate reports for all validation runs (skip existing)
-    uv run python python/scripts/generate_report.py --generate-all
+    python scripts/reporting/report.py --generate-all
 
     # Generate all reports since a date
-    uv run python python/scripts/generate_report.py --generate-all --since 2026-01-25
+    python scripts/reporting/report.py --generate-all --since 2026-01-25
 
     # Generate aggregated dashboard
-    uv run python python/scripts/generate_report.py --aggregate
+    python scripts/reporting/report.py --aggregate
 
     # Open report in browser after generation
-    uv run python python/scripts/generate_report.py --run-id latest --open
+    python scripts/reporting/report.py --run-id latest --open
 """
 
 from __future__ import annotations
@@ -29,6 +29,9 @@ import sys
 import webbrowser
 from datetime import datetime
 from pathlib import Path
+
+# Add parent to path for local development
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 
 def main() -> int:

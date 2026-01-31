@@ -47,7 +47,7 @@ from pathlib import Path
 import numpy as np
 
 # Add parent to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 
 def generate_exit_games(

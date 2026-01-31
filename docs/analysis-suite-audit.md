@@ -38,14 +38,14 @@ python/essence_wars/
 │   ├── card2vec.py      # Card embeddings
 │   └── decision_transformer.py # Sequence modeling approach
 │
-├── analysis/            # Visualization & Analysis (~4,200 LOC)
+├── analysis/            # Visualization & Analysis (~3,000 LOC)
 │   ├── aggregator.py    # Experiment aggregation
-│   ├── dashboard.py     # MCTSDashboard (training analysis)
-│   ├── research_dashboard.py  # Balance validation dashboard
+│   ├── validation_cli.py # CLI analyzer for validation results
+│   ├── visualize.py     # Matplotlib visualizations
 │   └── report/          # HTML report generator (tabbed reports)
 │       ├── generator.py
 │       ├── charts.py
-│       ├── tabs/
+│       ├── tabs/        # Overview, Validation, Tuning, Research, ELO
 │       └── loaders/
 │
 ├── benchmark/           # Standardized Evaluation (~1,400 LOC)
@@ -85,128 +85,101 @@ python/essence_wars/
 
 ## Gap Analysis
 
-### 1. Three Overlapping Dashboard Systems
+### 1. ~~Three Overlapping Dashboard Systems~~ - **RESOLVED**
 
-| System | Location | Generates | Use Case |
-|--------|----------|-----------|----------|
-| **MCTSDashboard** | `analysis/dashboard.py` | HTML with Plotly | CMA-ES tuning analysis |
-| **Research Dashboard** | `analysis/research_dashboard.py` | HTML with Plotly | Balance validation (faction matchups) |
-| **Report Generator** | `analysis/report/generator.py` | HTML with tabs | Unified validation reports |
+Previously had three separate dashboard systems. Now consolidated into a single unified report generator:
 
-**Problems:**
-- Different CSS themes and styling approaches
-- MCTSDashboard loads from CSV, Report Generator from JSON
-- Research Dashboard is standalone script, not integrated into module
-- No way to combine all views in a single dashboard
+| Tab | Replaces | Purpose |
+|-----|----------|---------|
+| **Overview** | - | Summary metrics and health score |
+| **Validation** | - | Deck performance and matchup heatmaps |
+| **Tuning** | `dashboard.py` (removed) | CMA-ES training curves and convergence |
+| **Research** | `research_dashboard.py` (removed) | Faction-level analysis |
+| **ELO** | - | Rating rankings and history |
 
-**Recommendation:** Consolidate into Report Generator with additional tabs:
-- Add "Research" tab with faction matchups from research_dashboard
-- Add "Training" tab that subsumes MCTSDashboard functionality
-- Deprecate standalone dashboard scripts
+**Single CLI entry point:** `essence-wars report generate --run-id latest`
 
 ---
 
-### 2. Dual ELO Implementations
+### 2. ~~Dual ELO Implementations~~ - **RESOLVED**
 
-| Implementation | Location | Purpose | Data Source |
-|----------------|----------|---------|-------------|
-| **benchmark/elo.py** | `EloTracker` class | Runtime agent rating during benchmarks | In-memory, saves to JSON |
-| **report/loaders/elo.py** | `load_elo_data()` | Load deck ELO for reports | `data/ratings/deck_elo.json` (from Rust) |
+Created unified ratings layer at `essence_wars/ratings/`:
 
-**Problems:**
-- Benchmark ELO tracks agent performance (Python agents)
-- Report ELO reads deck performance (from Rust arena binary)
-- No unified view of agent vs deck ratings
-- Different data structures (`AgentRating` vs `DeckRating`)
+| Module | Purpose |
+|--------|---------|
+| `base.py` | `BaseRating` abstract class, `RatingCategory` enum, ELO utilities |
+| `deck_ratings.py` | `DeckRatings` - loads from Rust arena (`deck_elo.json`) |
+| `agent_ratings.py` | `AgentRatings` - tracks Python agents (`agent_elo.json`) |
+| `unified.py` | `UnifiedRatings` - combined leaderboard with both |
 
-**Recommendation:** Create unified ELO layer:
+**Usage:**
+```python
+from essence_wars.ratings import UnifiedRatings
+ratings = UnifiedRatings.load()
+for entry in ratings.get_leaderboard()[:10]:
+    print(f"{entry.rank}. {entry.display_name}: {entry.rating:.0f}")
 ```
-essence_wars/
-└── ratings/
-    ├── __init__.py
-    ├── deck_ratings.py    # Reads Rust-generated deck_elo.json
-    ├── agent_ratings.py   # Tracks Python agent performance
-    └── combined.py        # Unified view with both
-```
+
+**CLI:** `essence-wars report leaderboard`
 
 ---
 
-### 3. No Unified CLI
+### 3. ~~No Unified CLI~~ - **RESOLVED**
 
-Currently, running different tasks requires:
+Created unified CLI using Click at `essence_wars/cli.py`:
+
 ```bash
-# Training
-python python/scripts/train_ppo.py --tag my_run ...
-python python/scripts/train_alphazero.py ...
-
-# Evaluation
-python python/scripts/run_benchmark.py ...
-python python/scripts/evaluate_neural_mcts.py ...
-
-# Reports
-uv run python python/scripts/generate_report.py --run-id latest
-uv run python python/scripts/generate_leaderboard.py
+essence-wars --help                    # Show all commands
+essence-wars train ppo --timesteps 100000
+essence-wars benchmark --checkpoint model.pt
+essence-wars report generate --run-id latest --open
+essence-wars report leaderboard --html
+essence-wars data generate --type distillation
 ```
 
-**Problems:**
-- No discoverability - users must know which script to run
-- Inconsistent argument patterns across scripts
-- No tab completion or help system
-- 21 scripts to maintain separately
-
-**Recommendation:** Create unified CLI using Click or Typer:
-```bash
-# Proposed interface
-essence-wars train ppo --tag my_run --games 1000
-essence-wars train alphazero --tag az_v1
-essence-wars evaluate agent my_model.pt --vs greedy
-essence-wars benchmark --agent my_model.pt
-essence-wars report --run latest --open
-essence-wars report generate-all --since 2026-01-25
-essence-wars dashboard --aggregate
+Scripts organized into categorized subpackages:
+```
+python/scripts/
+├── training/     # 6 training scripts
+├── evaluation/   # 3 evaluation scripts
+├── data/         # 2 data generation scripts
+├── analysis/     # 3 analysis scripts
+├── benchmark/    # 3 benchmark scripts
+├── reporting/    # 2 report scripts
+└── utils/        # 2 utility scripts
 ```
 
 ---
 
-### 4. Missing Pipeline Integration
+### 4. ~~Missing Pipeline Integration~~ - **RESOLVED**
+
+Created training callbacks at `essence_wars/training/callbacks.py`:
 
 ```
-Current Flow (Manual):
+Automated Flow:
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
 │   Training   │ --> │  Evaluation  │ --> │   Reports    │
-│  (manual)    │     │   (manual)   │     │   (manual)   │
-└──────────────┘     └──────────────┘     └──────────────┘
-     ^                     ^                     ^
-     │                     │                     │
-  User runs             User runs             User runs
-  train_*.py          benchmark.py         generate_report.py
-```
-
-```
-Proposed Flow (Automated):
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Training   │ --> │  Evaluation  │ --> │   Reports    │
-│  (hooks)     │     │   (auto)     │     │   (auto)     │
+│  (callbacks) │     │   (auto)     │     │   (auto)     │
 └──────────────┘     └──────────────┘     └──────────────┘
      │                     │                     │
      └─────────────────────┴─────────────────────┘
                     Unified Pipeline
 ```
 
-**Recommendation:** Add training callbacks:
-```python
-# In training scripts
-@on_training_complete
-def auto_evaluate(checkpoint_path):
-    benchmark = EssenceWarsBenchmark()
-    results = benchmark.evaluate(checkpoint_path)
-    save_results(results)
+**Usage:**
+```bash
+# Enable auto-evaluation and auto-report
+python scripts/training/ppo.py --auto-callbacks --update-elo
 
-@on_evaluation_complete
-def auto_report(results_path):
-    generator = ReportGenerator()
-    generator.generate_training_report(results_path)
+# Or individually
+python scripts/training/ppo.py --auto-evaluate --auto-report
 ```
+
+**Callbacks available:**
+- `CheckpointCallback` - Periodic model saving
+- `EvaluationCallback` - Evaluation during training
+- `AutoEvaluateCallback` - Final evaluation with ELO update
+- `AutoReportCallback` - Generate HTML report
 
 ---
 
@@ -396,40 +369,73 @@ python train_ppo.py --auto-evaluate --auto-report --update-elo
 
 ---
 
-### Phase 5: Script Reorganization
+### Phase 5: Script Reorganization - **DONE**
 
-Move scripts into categorized subpackages:
+**Implementation:**
 
+Reorganized 23 scripts from flat structure into 7 categorized subpackages:
+
+**Final Structure:**
 ```
 python/scripts/
-├── __init__.py
-├── training/
+├── __init__.py              # Package init with category docs
+├── training/                # 6 ML training scripts
 │   ├── __init__.py
 │   ├── ppo.py
 │   ├── alphazero.py
 │   ├── behavioral_cloning.py
-│   └── decision_transformer.py
-├── evaluation/
+│   ├── card2vec.py
+│   ├── decision_transformer.py
+│   └── distilled_policy.py
+├── evaluation/              # 3 evaluation scripts
 │   ├── __init__.py
 │   ├── benchmark.py
-│   └── neural_mcts.py
-├── data/
+│   ├── neural_mcts.py
+│   └── decision_transformer.py
+├── data/                    # 2 data generation scripts
 │   ├── __init__.py
 │   ├── generate_distillation.py
 │   └── generate_exits.py
-└── analysis/
+├── analysis/                # 3 analysis scripts
+│   ├── __init__.py
+│   ├── mcts.py
+│   ├── tensorboard.py
+│   └── diagnose_ppo.py
+├── benchmark/               # 3 performance benchmark scripts
+│   ├── __init__.py
+│   ├── env.py
+│   ├── batched_mcts.py
+│   └── bc_vs_mcts.py
+├── reporting/               # 2 report generation scripts
+│   ├── __init__.py
+│   ├── report.py
+│   └── leaderboard.py
+└── utils/                   # 2 utility scripts
     ├── __init__.py
-    ├── mcts.py
-    └── tensorboard.py
+    ├── card_art.py
+    └── test_experiment.py
 ```
 
-Each becomes a thin wrapper calling module functions:
+**Path Fixes:**
+All scripts updated with correct `sys.path.insert` to account for new directory depth:
 ```python
-# scripts/training/ppo.py
-"""Train PPO agent."""
-if __name__ == "__main__":
-    from essence_wars.cli import train_ppo_command
-    train_ppo_command()
+# Before (one level up to python/)
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# After (two levels up to python/)
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+```
+
+**Usage:**
+```bash
+# Scripts can be run directly
+python scripts/training/ppo.py --timesteps 300000
+
+# Or via module syntax
+python -m scripts.training.ppo --timesteps 300000
+
+# Or use the unified CLI (preferred)
+essence-wars train ppo --timesteps 300000
 ```
 
 ---
@@ -442,7 +448,7 @@ if __name__ == "__main__":
 | **2. Dashboard Consolidation** | Medium | High | None | **DONE** |
 | **3. Unified Ratings** | Low | Medium | None | **DONE** |
 | **4. Training Pipeline** | Medium | High | Phase 1, 3 | **DONE** |
-| **5. Script Reorganization** | High | Medium | Phase 1 | Open |
+| **5. Script Reorganization** | High | Medium | Phase 1 | **DONE** |
 
 **Recommended Order:** 1 → 2 → 3 → 4 → 5
 
@@ -609,24 +615,20 @@ class EssenceWarsBenchmark:
 
 ---
 
-## Migration Path
+## Migration Path - **COMPLETE**
 
-### For Existing Users
+Since the package is not yet public (no PyPI publishing, no external users), the migration path was simplified:
 
-**Phase 1 (Non-breaking):**
-- Add CLI as new entry point
-- Keep all existing scripts working
-- Add deprecation warnings to old dashboards
+**Completed Steps:**
+- ✅ Added unified CLI as new entry point (`essence-wars`)
+- ✅ Added deprecation warnings to old dashboards
+- ✅ Removed deprecated files:
+  - `analysis/dashboard.py` (MCTSDashboard) → replaced by Tuning tab
+  - `analysis/research_dashboard.py` → replaced by Research tab
+- ✅ Updated all imports and references
+- ✅ Scripts reorganized into categorized subpackages
 
-**Phase 2 (Deprecations):**
-- Mark old dashboard scripts as deprecated
-- Encourage migration to unified CLI
-- Keep backward compatibility for 6 months
-
-**Phase 3 (Cleanup):**
-- Remove deprecated scripts
-- Consolidate documentation
-- Release v1.0 of unified API
+**Note:** When going public, users will start fresh with the unified system.
 
 ---
 
@@ -648,14 +650,14 @@ class EssenceWarsBenchmark:
 - `agents/ppo.py` - Well-implemented PPO
 - `data/datasets.py` - Efficient dataset loaders
 
-### Consolidation Candidates (Merge)
-- `analysis/dashboard.py` → `analysis/report/tabs/tuning.py`
-- `analysis/research_dashboard.py` → `analysis/report/tabs/research.py`
-- `benchmark/elo.py` + `report/loaders/elo.py` → `ratings/`
+### Consolidation Candidates (Merge) - **DONE**
+- ~~`analysis/dashboard.py`~~ → `analysis/report/tabs/tuning.py` ✅ (file removed)
+- ~~`analysis/research_dashboard.py`~~ → `analysis/report/tabs/research.py` ✅ (file removed)
+- `benchmark/elo.py` + `report/loaders/elo.py` → `ratings/` ✅ (unified ratings module created)
 
-### Cleanup Candidates (Simplify)
-- `viz/plots.py` - Merge into analysis module
-- Multiple benchmark scripts - Consolidate to single CLI command
+### Cleanup Candidates (Simplify) - Remaining
+- `viz/plots.py` - Could merge into analysis module (low priority)
+- Multiple benchmark scripts - Now organized in `scripts/benchmark/`
 
 ---
 

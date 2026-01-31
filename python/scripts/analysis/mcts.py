@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """
 MCTS Training Analysis Tool
-Comprehensive analysis and visualization of MCTS tuning experiments.
+Comprehensive analysis and aggregation of MCTS tuning experiments.
 
 Usage:
-    python mcts_analysis.py                           # Analyze all experiments
-    python mcts_analysis.py --tag generalist          # Filter by tag
-    python mcts_analysis.py --mode multi-opponent     # Filter by mode
-    python mcts_analysis.py --min-gens 50             # Minimum generations
-    python mcts_analysis.py --output results/         # Custom output directory
+    python scripts/analysis/mcts.py                   # Analyze all experiments
+    python scripts/analysis/mcts.py --tag generalist  # Filter by tag
+    python scripts/analysis/mcts.py --mode multi-opponent  # Filter by mode
+    python scripts/analysis/mcts.py --min-gens 50     # Minimum generations
+    python scripts/analysis/mcts.py --output results/ # Custom output directory
+
+For HTML dashboards, use the unified report generator:
+    essence-wars report generate --run-id latest
 """
 
 import argparse
@@ -28,14 +31,10 @@ try:
 except ImportError:
     RICH_AVAILABLE = False
 
-try:
-    from essence_wars.analysis.aggregator import ExperimentAggregator
-    from essence_wars.analysis.dashboard import MCTSDashboard
-except ImportError:
-    # Fallback for running from scripts directory
-    sys.path.insert(0, str(Path(__file__).parent.parent))
-    from essence_wars.analysis.aggregator import ExperimentAggregator
-    from essence_wars.analysis.dashboard import MCTSDashboard
+# Add parent to path for local development
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from essence_wars.analysis.aggregator import ExperimentAggregator
 
 
 def setup_logging(verbose: bool = False) -> logging.Logger:
@@ -111,15 +110,9 @@ Examples:
     )
 
     parser.add_argument(
-        "--no-dashboard",
-        action="store_true",
-        help="Skip HTML dashboard generation (only export CSV)",
-    )
-
-    parser.add_argument(
         "--no-csv",
         action="store_true",
-        help="Skip CSV export (only generate dashboard)",
+        help="Skip CSV export",
     )
 
     parser.add_argument(
@@ -299,37 +292,14 @@ def main():
         logger.info(f"✓ Saved aggregated data: {csv_path}")
         logger.info(f"✓ Saved summary: {summary_csv_path}")
 
-    # Generate dashboard
-    if not args.no_dashboard:
-        dashboard_path = output_dir / "dashboard.html"
-
-        if console:
-            with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                transient=True,
-            ) as progress:
-                task = progress.add_task("Generating interactive dashboard...", total=None)
-
-                dashboard = MCTSDashboard(df, summary_df)
-                dashboard.generate_html(dashboard_path)
-
-                progress.update(task, completed=True)
-        else:
-            print("Generating interactive dashboard...")
-            dashboard = MCTSDashboard(df, summary_df)
-            dashboard.generate_html(dashboard_path)
-
-        logger.info(f"✓ Saved dashboard: {dashboard_path}")
-
-        if console:
-            console.print(
-                f"\n[bold green]✓ Analysis complete![/bold green]\n"
-                f"[dim]Open dashboard:[/dim] [cyan]{dashboard_path}[/cyan]\n"
-            )
-        else:
-            print("\n✓ Analysis complete!")
-            print(f"Open dashboard: {dashboard_path}\n")
+    if console:
+        console.print(
+            f"\n[bold green]✓ Analysis complete![/bold green]\n"
+            f"[dim]For HTML dashboard, use:[/dim] [cyan]essence-wars report generate[/cyan]\n"
+        )
+    else:
+        print("\n✓ Analysis complete!")
+        print("For HTML dashboard, use: essence-wars report generate\n")
 
     # Print statistics
     if console:

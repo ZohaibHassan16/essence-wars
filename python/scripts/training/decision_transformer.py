@@ -5,7 +5,7 @@ This script trains a Decision Transformer on MCTS game data,
 treating RL as sequence modeling.
 
 Usage:
-    uv run python python/scripts/train_decision_transformer.py \
+    python scripts/training/decision_transformer.py \
         --dataset data/datasets/distillation_10k_mcts50.jsonl.gz \
         --epochs 50 \
         --output models/decision_transformer.pt
@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -27,6 +28,9 @@ import torch.nn.functional as F
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader, Dataset, random_split
+
+# Add parent to path for local development
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from essence_wars.agents.decision_transformer import (
     DecisionTransformer,

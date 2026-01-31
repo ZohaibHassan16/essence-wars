@@ -18,7 +18,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from essence_wars._core import PyGame
 from essence_wars.agents.decision_transformer import (
