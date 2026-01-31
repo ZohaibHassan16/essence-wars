@@ -18,8 +18,8 @@ use clap::Parser;
 
 use cardgame::bots::{AlphaBetaConfig, BotType, MctsConfig};
 use cardgame::diagnostics::{
-    export_csv, export_json, AggregatedStats, DiagnosticConfig, DiagnosticRunner, ExportFormat,
-    print_report,
+    export_csv, export_json, print_comparative_report, AggregatedStats, DiagnosticConfig,
+    DiagnosticRunner, ExportFormat, print_report,
 };
 use cardgame::execution::{parse_bot_type_or_exit, GameData};
 
@@ -60,9 +60,17 @@ struct Args {
     #[arg(long)]
     include_turns: bool,
 
-    /// Deck ID to use
+    /// First deck ID (or only deck for mirror match)
     #[arg(long, default_value = "broodmother_pack")]
-    deck: String,
+    deck1: String,
+
+    /// Second deck ID (optional, for comparative mode)
+    #[arg(long)]
+    deck2: Option<String>,
+
+    /// Legacy deck argument (deprecated, use --deck1 instead)
+    #[arg(long, hide = true)]
+    deck: Option<String>,
 
     /// Random seed for reproducibility
     #[arg(long, short = 's', default_value = "42")]
@@ -119,11 +127,17 @@ fn main() {
         }
     };
 
-    // Get the specified deck (with its commander)
-    let deck = match game_data.deck_registry.get(&args.deck) {
+    // Handle legacy --deck argument
+    let deck1_id = args.deck.clone().unwrap_or_else(|| args.deck1.clone());
+    if args.deck.is_some() {
+        eprintln!("Warning: --deck is deprecated, use --deck1 instead");
+    }
+
+    // Get deck 1
+    let deck1 = match game_data.deck_registry.get(&deck1_id) {
         Some(d) => d.clone(),
         None => {
-            eprintln!("Error: deck '{}' not found", args.deck);
+            eprintln!("Error: deck '{}' not found", deck1_id);
             eprintln!("Available decks:");
             for d in game_data.deck_registry.decks() {
                 eprintln!("  - {} (commander: {})", d.id, d.commander);
@@ -132,11 +146,42 @@ fn main() {
         }
     };
 
-    // Show deck info including commander
-    if let Some(commander) = game_data.card_db.get_commander(cardgame::types::CardId(deck.commander)) {
-        println!("Deck: {} (Commander: {})", deck.name, commander.name);
+    // Get deck 2 (same as deck 1 for mirror match, or different for comparative mode)
+    let is_comparative = args.deck2.is_some();
+    let deck2 = if let Some(ref deck2_id) = args.deck2 {
+        match game_data.deck_registry.get(deck2_id) {
+            Some(d) => d.clone(),
+            None => {
+                eprintln!("Error: deck '{}' not found", deck2_id);
+                eprintln!("Available decks:");
+                for d in game_data.deck_registry.decks() {
+                    eprintln!("  - {} (commander: {})", d.id, d.commander);
+                }
+                process::exit(1);
+            }
+        }
     } else {
-        println!("Deck: {} (Commander ID: {})", deck.name, deck.commander);
+        deck1.clone()
+    };
+
+    // Show deck info
+    let deck1_commander_name = game_data
+        .card_db
+        .get_commander(cardgame::types::CardId(deck1.commander))
+        .map(|c| c.name.clone())
+        .unwrap_or_else(|| format!("ID {}", deck1.commander));
+
+    if is_comparative {
+        let deck2_commander_name = game_data
+            .card_db
+            .get_commander(cardgame::types::CardId(deck2.commander))
+            .map(|c| c.name.clone())
+            .unwrap_or_else(|| format!("ID {}", deck2.commander));
+        println!("Comparative Mode: {} vs {}", deck1.name, deck2.name);
+        println!("  P1: {} ({})", deck1.name, deck1_commander_name);
+        println!("  P2: {} ({})", deck2.name, deck2_commander_name);
+    } else {
+        println!("Mirror Match: {} (Commander: {})", deck1.name, deck1_commander_name);
     }
     println!();
 
@@ -150,8 +195,9 @@ fn main() {
     };
     let alphabeta_config = AlphaBetaConfig::with_depth(args.ab_depth);
 
-    // Configure diagnostics using deck definition (includes commander)
-    let config = DiagnosticConfig::new(deck, num_games)
+    // Configure diagnostics using deck definitions (includes commanders)
+    let config = DiagnosticConfig::new(deck1.clone(), num_games)
+        .with_decks(deck1.clone(), deck2.clone())
         .with_bots(bot_type.clone(), bot_type)
         .with_mcts_config(mcts_config)
         .with_alphabeta_config(alphabeta_config)
@@ -230,6 +276,10 @@ fn main() {
         }
     }
 
-    // Always print report
-    print_report(&stats);
+    // Print appropriate report based on mode
+    if is_comparative {
+        print_comparative_report(&stats, &deck1.name, &deck2.name);
+    } else {
+        print_report(&stats);
+    }
 }

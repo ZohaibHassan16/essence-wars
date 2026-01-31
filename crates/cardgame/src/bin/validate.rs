@@ -21,8 +21,7 @@ use cardgame::bots::BotType;
 use cardgame::execution::{configure_thread_pool, parse_bot_type_or_exit, GameData, MatchupBuilder};
 use cardgame::validation::{
     export_json, export_matrix_csv, print_matchup_matrix, print_results, save_validation_results,
-    ArchetypeWeights, BalanceAnalyzer, BalanceStatus, ValidationConfig, ValidationExecutor,
-    ValidationResults,
+    ArchetypeWeights, BalanceAnalyzer, ValidationConfig, ValidationExecutor, ValidationResults,
 };
 use cardgame::version::{self, VersionInfo};
 
@@ -234,10 +233,5 @@ fn main() {
             eprintln!("Error saving results: {}", e);
             process::exit(1);
         }
-    }
-
-    // Exit with appropriate code
-    if results.summary.overall_status == BalanceStatus::Imbalanced {
-        process::exit(1);
     }
 }

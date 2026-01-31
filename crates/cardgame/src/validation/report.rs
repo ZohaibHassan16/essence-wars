@@ -234,7 +234,7 @@ pub fn export_matrix_csv(
 /// Abbreviate deck name/ID for compact display.
 fn abbreviate_deck_name(name: &str, max_len: usize) -> String {
     // Try to use the first word, capitalize first letter
-    let first_word = name.split(|c: char| c == '_' || c == ' ').next().unwrap_or(name);
+    let first_word = name.split(['_', ' ']).next().unwrap_or(name);
     let abbreviated = if first_word.len() > max_len {
         &first_word[..max_len]
     } else {

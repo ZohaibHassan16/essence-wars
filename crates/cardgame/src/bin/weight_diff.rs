@@ -129,14 +129,14 @@ fn main() {
         comparisons.push((i, *v1, *v2, delta, pct_change));
 
         // Track largest changes
-        if delta > 0.0 {
-            if largest_increase.is_none() || delta > largest_increase.unwrap().1 {
-                largest_increase = Some((i, delta));
-            }
-        } else if delta < 0.0 {
-            if largest_decrease.is_none() || delta < largest_decrease.unwrap().1 {
-                largest_decrease = Some((i, delta));
-            }
+        if delta > 0.0
+            && (largest_increase.is_none() || delta > largest_increase.unwrap().1)
+        {
+            largest_increase = Some((i, delta));
+        } else if delta < 0.0
+            && (largest_decrease.is_none() || delta < largest_decrease.unwrap().1)
+        {
+            largest_decrease = Some((i, delta));
         }
     }
 

@@ -161,7 +161,7 @@ impl DeckDefinition {
 
         // Validate deck size (MIN_DECK_SIZE to MAX_DECK_SIZE cards, excluding commander)
         let card_count = self.cards.len();
-        if card_count < game::MIN_DECK_SIZE || card_count > game::MAX_DECK_SIZE {
+        if !(game::MIN_DECK_SIZE..=game::MAX_DECK_SIZE).contains(&card_count) {
             return Err(DeckError::InvalidDeckSize {
                 deck_id: self.id.clone(),
                 min: game::MIN_DECK_SIZE,

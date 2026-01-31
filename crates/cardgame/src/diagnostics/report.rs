@@ -9,6 +9,246 @@ pub fn print_report(stats: &AggregatedStats) {
     println!("\n{}", "=".repeat(60));
     println!("P1/P2 ASYMMETRY DIAGNOSTIC REPORT");
     println!("{}\n", "=".repeat(60));
+    print_report_body(stats);
+}
+
+/// Print a comparative report for deck vs deck analysis.
+pub fn print_comparative_report(stats: &AggregatedStats, deck1_name: &str, deck2_name: &str) {
+    println!("\n{}", "=".repeat(60));
+    println!("DECK COMPARISON: {} vs {}", deck1_name, deck2_name);
+    println!("{}\n", "=".repeat(60));
+
+    // Matchup summary
+    print_comparative_summary(stats, deck1_name, deck2_name);
+
+    // Tempo comparison
+    print_comparative_tempo(stats, deck1_name, deck2_name);
+
+    // Board metrics
+    print_comparative_board(stats, deck1_name, deck2_name);
+
+    // Combat efficiency
+    print_comparative_combat(stats, deck1_name, deck2_name);
+
+    // Action breakdown
+    print_comparative_actions(stats, deck1_name, deck2_name);
+
+    // Resource curves
+    print_resource_curves(stats);
+}
+
+fn print_comparative_summary(stats: &AggregatedStats, deck1_name: &str, deck2_name: &str) {
+    println!("=== Matchup Summary ({} games) ===", stats.total_games);
+
+    let p1_stats = stats.p1_win_rate_stats();
+
+    println!(
+        "{} (P1): {} wins ({}) {}",
+        deck1_name,
+        stats.p1_wins,
+        p1_stats.format_with_ci(),
+        p1_stats.significance.symbol()
+    );
+    println!(
+        "{} (P2): {} wins ({:.1}%)",
+        deck2_name,
+        stats.p2_wins,
+        stats.p2_win_rate() * 100.0
+    );
+    if stats.draws > 0 {
+        println!(
+            "Draws: {} ({:.1}%)",
+            stats.draws,
+            stats.draw_rate() * 100.0
+        );
+    }
+}
+
+fn print_comparative_tempo(stats: &AggregatedStats, deck1_name: &str, deck2_name: &str) {
+    println!("\n=== Tempo Comparison ===");
+
+    // Abbreviate names for table
+    let d1 = abbreviate_name(deck1_name, 12);
+    let d2 = abbreviate_name(deck2_name, 12);
+
+    println!(
+        "{:>18}  {:>12}  {:>12}  {:>10}",
+        "", d1, d2, "Delta"
+    );
+
+    // First creature turn
+    let p1_avg = stats.p1_avg_first_creature_turn();
+    let p2_avg = stats.p2_avg_first_creature_turn();
+    if let (Some(t1), Some(t2)) = (p1_avg, p2_avg) {
+        let delta = t1 - t2;
+        let delta_str = format_delta(delta);
+        println!(
+            "{:>18}: {:>10.1}   {:>10.1}   {:>10}",
+            "First creature", t1, t2, delta_str
+        );
+    }
+
+    // First blood
+    let total_fb = stats.p1_first_blood + stats.p2_first_blood;
+    if total_fb > 0 {
+        let p1_fb_rate = stats.p1_first_blood as f64 / total_fb as f64;
+        let p2_fb_rate = stats.p2_first_blood as f64 / total_fb as f64;
+        let delta = (p1_fb_rate - p2_fb_rate) * 100.0;
+        let delta_str = format_delta_pct(delta);
+        println!(
+            "{:>18}: {:>10.1}%  {:>10.1}%  {:>10}",
+            "First blood rate", p1_fb_rate * 100.0, p2_fb_rate * 100.0, delta_str
+        );
+    }
+}
+
+fn print_comparative_board(stats: &AggregatedStats, deck1_name: &str, deck2_name: &str) {
+    println!("\n=== Board Metrics ===");
+
+    let d1 = abbreviate_name(deck1_name, 12);
+    let d2 = abbreviate_name(deck2_name, 12);
+
+    println!(
+        "{:>18}  {:>12}  {:>12}  {:>10}",
+        "", d1, d2, "Delta"
+    );
+
+    // Average creatures (approximate from kills/losses)
+    // Use board advantage percentage
+    let p1_ahead_pct = stats.pct_turns_p1_ahead() * 100.0;
+    let p2_ahead_pct = stats.pct_turns_p2_ahead() * 100.0;
+    let delta = p1_ahead_pct - p2_ahead_pct;
+    let delta_str = format_delta_pct(delta);
+    println!(
+        "{:>18}: {:>10.1}%  {:>10.1}%  {:>10}",
+        "Turns ahead", p1_ahead_pct, p2_ahead_pct, delta_str
+    );
+
+    // Resource efficiency
+    let p1_eff = stats.p1_resource_efficiency();
+    let p2_eff = stats.p2_resource_efficiency();
+    let delta = p1_eff - p2_eff;
+    let delta_str = format_delta(delta);
+    println!(
+        "{:>18}: {:>10.2}   {:>10.2}   {:>10}",
+        "Board impact/ess", p1_eff, p2_eff, delta_str
+    );
+}
+
+fn print_comparative_combat(stats: &AggregatedStats, deck1_name: &str, deck2_name: &str) {
+    println!("\n=== Combat Efficiency ===");
+
+    let d1 = abbreviate_name(deck1_name, 12);
+    let d2 = abbreviate_name(deck2_name, 12);
+
+    println!(
+        "{:>18}  {:>12}  {:>12}  {:>10}",
+        "", d1, d2, "Delta"
+    );
+
+    // Face damage
+    let p1_fd = stats.p1_avg_face_damage();
+    let p2_fd = stats.p2_avg_face_damage();
+    let delta = p1_fd - p2_fd;
+    let delta_str = format_delta(delta);
+    println!(
+        "{:>18}: {:>10.1}   {:>10.1}   {:>10}",
+        "Face dmg/game", p1_fd, p2_fd, delta_str
+    );
+
+    // Trade ratio
+    let p1_tr = stats.p1_trade_ratio().unwrap_or(0.0);
+    let p2_tr = stats.p2_trade_ratio().unwrap_or(0.0);
+    let delta = p1_tr - p2_tr;
+    let delta_str = format_delta(delta);
+    println!(
+        "{:>18}: {:>10.2}   {:>10.2}   {:>10}",
+        "Trade ratio", p1_tr, p2_tr, delta_str
+    );
+
+    // Creatures killed
+    let p1_kills = if stats.total_games > 0 {
+        stats.p1_total_creatures_killed as f64 / stats.total_games as f64
+    } else {
+        0.0
+    };
+    let p2_kills = if stats.total_games > 0 {
+        stats.p2_total_creatures_killed as f64 / stats.total_games as f64
+    } else {
+        0.0
+    };
+    let delta = p1_kills - p2_kills;
+    let delta_str = format_delta(delta);
+    println!(
+        "{:>18}: {:>10.1}   {:>10.1}   {:>10}",
+        "Kills/game", p1_kills, p2_kills, delta_str
+    );
+}
+
+fn print_comparative_actions(stats: &AggregatedStats, deck1_name: &str, deck2_name: &str) {
+    let total = stats.total_actions_all();
+    if total == 0 || stats.total_games == 0 {
+        return;
+    }
+
+    println!("\n=== Action Breakdown (avg/game) ===");
+
+    let d1 = abbreviate_name(deck1_name, 12);
+    let d2 = abbreviate_name(deck2_name, 12);
+
+    println!("{:>12}  {:>12}  {:>12}", "", d1, d2);
+
+    let games = stats.total_games as f64;
+
+    // PlayCard
+    let p1_pc = stats.p1_total_play_card as f64 / games;
+    let p2_pc = stats.p2_total_play_card as f64 / games;
+    println!("{:>12}: {:>10.1}   {:>10.1}", "PlayCard", p1_pc, p2_pc);
+
+    // Attack
+    let p1_atk = stats.p1_total_attack as f64 / games;
+    let p2_atk = stats.p2_total_attack as f64 / games;
+    println!("{:>12}: {:>10.1}   {:>10.1}", "Attack", p1_atk, p2_atk);
+
+    // Abilities
+    let p1_ab = stats.p1_total_ability as f64 / games;
+    let p2_ab = stats.p2_total_ability as f64 / games;
+    println!("{:>12}: {:>10.1}   {:>10.1}", "Abilities", p1_ab, p2_ab);
+
+    // EndTurn
+    let p1_et = stats.p1_total_end_turn as f64 / games;
+    let p2_et = stats.p2_total_end_turn as f64 / games;
+    println!("{:>12}: {:>10.1}   {:>10.1}", "EndTurn", p1_et, p2_et);
+}
+
+/// Abbreviate a deck/commander name for table display.
+fn abbreviate_name(name: &str, max_len: usize) -> String {
+    if name.len() <= max_len {
+        name.to_string()
+    } else {
+        format!("{}...", &name[..max_len.saturating_sub(3)])
+    }
+}
+
+/// Format a delta value with +/- sign.
+fn format_delta(delta: f64) -> String {
+    if delta >= 0.0 {
+        format!("+{:.2}", delta)
+    } else {
+        format!("{:.2}", delta)
+    }
+}
+
+/// Format a delta percentage with +/- sign.
+fn format_delta_pct(delta: f64) -> String {
+    if delta >= 0.0 {
+        format!("+{:.1}%", delta)
+    } else {
+        format!("{:.1}%", delta)
+    }
+}
+
+fn print_report_body(stats: &AggregatedStats) {
 
     print_overall_statistics(stats);
     print_win_rate_by_length(stats);

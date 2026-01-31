@@ -45,7 +45,7 @@ pub use export::{export_csv, export_json, ExportFormat};
 pub use metrics::{
     BoardAdvantage, CombatEfficiency, GameMetrics, ResourceEfficiency, TempoMetrics, TurnMetrics,
 };
-pub use report::print_report;
+pub use report::{print_comparative_report, print_report};
 pub use statistics::{
     chi_square_test, correlation_p_value, mean_variance, pearson_correlation, percentile,
     wilson_score_interval, ProportionStats, SignificanceLevel,

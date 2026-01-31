@@ -266,12 +266,12 @@ impl<'a> ValidationExecutor<'a> {
     ) -> DirectionResults {
         let start_time = Instant::now();
 
-        // NOTE: No progress reporting at this level - progress is tracked at matchup level
-        // to avoid spamming output with per-game updates
+        // NOTE: Games run SEQUENTIALLY here because parallelism happens at the matchup level.
+        // With 48+ matchups running in parallel, this avoids nested parallelism overhead
+        // that was causing only 30% CPU utilization instead of 96-100%.
 
-        // Run games in parallel, collecting outcomes and diagnostics
+        // Run games sequentially within each matchup
         let results: Vec<(Option<PlayerId>, u32, GameDiagnosticData)> = (0..games)
-            .into_par_iter()
             .map(|i| {
                 let seeds = GameSeeds::for_game(base_seed, i);
                 let (winner, turns, diag) =

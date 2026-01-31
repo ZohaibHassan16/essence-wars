@@ -50,7 +50,8 @@ fn test_new_game_setup() {
     assert_eq!(engine.state.players[1].hand.len(), starting_hand + p2_bonus);
 
     // Each player should have remaining cards in deck
-    let deck_size = game::MAX_DECK_SIZE;
+    // simple_deck() returns 30 cards
+    let deck_size = 30;
     assert_eq!(engine.state.players[0].deck.len(), deck_size - starting_hand - 1);
     assert_eq!(engine.state.players[1].deck.len(), deck_size - starting_hand - p2_bonus);
 
