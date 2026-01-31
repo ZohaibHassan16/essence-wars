@@ -79,8 +79,8 @@ impl PyGame {
     /// Create a new game instance.
     ///
     /// Args:
-    ///     deck1: Name of deck for player 1 (default: "argentum_control")
-    ///     deck2: Name of deck for player 2 (default: "symbiote_aggro")
+    ///     deck1: Name of deck for player 1 (default: "architect_fortify")
+    ///     deck2: Name of deck for player 2 (default: "broodmother_pack")
     ///     game_mode: "attrition" (default) or "essence_duel"
     #[new]
     #[pyo3(signature = (deck1=None, deck2=None, game_mode=None))]
@@ -312,8 +312,8 @@ impl PyParallelGames {
     ///
     /// Args:
     ///     num_envs: Number of parallel environments
-    ///     deck1: Name of deck for player 1 (default: "argentum_control")
-    ///     deck2: Name of deck for player 2 (default: "symbiote_aggro")
+    ///     deck1: Name of deck for player 1 (default: "architect_fortify")
+    ///     deck2: Name of deck for player 2 (default: "broodmother_pack")
     ///     game_mode: "attrition" (default) or "essence_duel"
     #[new]
     #[pyo3(signature = (num_envs, deck1=None, deck2=None, game_mode=None))]

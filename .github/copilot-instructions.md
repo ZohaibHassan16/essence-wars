@@ -72,7 +72,7 @@ cargo run --release --bin arena -- --bot1 greedy --bot2 random --games 100 --pro
 
 # With custom decks and weights
 cargo run --release --bin arena -- \
-  --deck1 symbiote_aggro --deck2 argentum_control \
+  --deck1 broodmother_pack --deck2 architect_fortify \
   --bot1 mcts --weights1 data/weights/tuned_multi_opponent.toml \
   --games 50 --debug
 
@@ -87,7 +87,7 @@ cargo run --release --bin tune -- --mode generalist --tag vs_all --generations 1
 
 # Specialist for specific matchup
 cargo run --release --bin tune -- --mode specialist \
-  --deck symbiote_aggro --opponent argentum_control --tag aggro_spec
+  --deck broodmother_pack --opponent architect_fortify --tag aggro_spec
 
 # Faction specialist (auto-saves to data/weights/specialists/)
 cargo run --release --bin tune -- --mode faction-specialist \

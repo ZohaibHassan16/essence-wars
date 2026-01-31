@@ -3,7 +3,7 @@
 //! Usage:
 //!   cargo run --release --bin tune -- --generations 50 --population 20
 //!   cargo run --release --bin tune -- --mode vs-greedy --games 100
-//!   cargo run --release --bin tune -- --mode specialist --deck symbiote_aggro --opponent argentum_control
+//!   cargo run --release --bin tune -- --mode specialist --deck broodmother_pack --opponent architect_fortify
 //!   cargo run --release --bin tune -- --mode faction-specialist --faction argentum
 //!   cargo run --release --bin tune -- --mode agent-generalist
 //!   cargo run --release --bin tune -- --tag baseline

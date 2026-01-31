@@ -170,7 +170,7 @@ pub fn deploy_weights(
             if let Some(deck_name) = deck {
                 let specialists_dir = PathBuf::from("data/weights/specialists");
                 fs::create_dir_all(&specialists_dir)?;
-                // Extract faction from deck name (e.g., "argentum_control" -> "argentum")
+                // Extract prefix from deck name (e.g., "architect_fortify" -> "architect")
                 let faction = deck_name.split('_').next().unwrap_or(deck_name);
                 Some(specialists_dir.join(format!("{}.toml", faction.to_lowercase())))
             } else {

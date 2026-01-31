@@ -20,8 +20,9 @@ use clap::Parser;
 use cardgame::bots::BotType;
 use cardgame::execution::{configure_thread_pool, parse_bot_type_or_exit, GameData, MatchupBuilder};
 use cardgame::validation::{
-    export_json, print_results, save_validation_results, ArchetypeWeights, BalanceAnalyzer,
-    BalanceStatus, ValidationConfig, ValidationExecutor, ValidationResults,
+    export_json, export_matrix_csv, print_matchup_matrix, print_results, save_validation_results,
+    ArchetypeWeights, BalanceAnalyzer, BalanceStatus, ValidationConfig, ValidationExecutor,
+    ValidationResults,
 };
 use cardgame::version::{self, VersionInfo};
 
@@ -90,6 +91,14 @@ struct Args {
     /// Run only a specific matchup (e.g., "argentum-symbiote", "argentum-obsidion", "symbiote-obsidion")
     #[arg(long, short = 'm')]
     matchup: Option<String>,
+
+    /// Print matchup matrix after results
+    #[arg(long)]
+    matrix: bool,
+
+    /// Export matchup matrix to CSV file
+    #[arg(long)]
+    matrix_csv: Option<PathBuf>,
 }
 
 fn main() {
@@ -197,6 +206,20 @@ fn main() {
 
     // Output results
     print_results(&results, total_time);
+
+    // Print matchup matrix if requested
+    if args.matrix {
+        print_matchup_matrix(&results.matchups);
+    }
+
+    // Export matrix to CSV if requested
+    if let Some(ref csv_path) = args.matrix_csv {
+        if let Err(e) = export_matrix_csv(&results.matchups, csv_path) {
+            eprintln!("Error exporting matrix CSV: {}", e);
+            process::exit(1);
+        }
+        println!("Matrix exported to {:?}", csv_path);
+    }
 
     // Save to timestamped directory by default (or use specified output for backward compatibility)
     if let Some(ref output_path) = args.output {

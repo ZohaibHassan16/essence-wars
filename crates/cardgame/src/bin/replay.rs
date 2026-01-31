@@ -6,7 +6,7 @@
 //!   cargo run --release --bin replay -- --file game.replay.json.gz --interactive
 //!
 //!   # From seed (recreate game with bots)
-//!   cargo run --release --bin replay -- --seed 12345 --deck1 broodmother_pack --deck2 artificer_control
+//!   cargo run --release --bin replay -- --seed 12345 --deck1 broodmother_pack --deck2 artificer_tokens
 //!
 //!   # From JSONL dataset
 //!   cargo run --release --bin replay -- --dataset data.jsonl.gz --game-index 42

@@ -132,7 +132,7 @@ mod tests {
         let registry = DeckRegistry::new();
         let result = validate_faction_deck_binding(
             &BotType::Random,
-            Some("argentum_control"),
+            Some("architect_fortify"),
             &registry,
             "Bot 1",
         );

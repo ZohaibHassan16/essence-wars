@@ -5,7 +5,7 @@
 //!   cargo run --release --bin arena -- --bot1 greedy --bot2 greedy --games 100
 //!   cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --seed 12345 --debug
 //!   cargo run --release --bin arena -- --bot1 alphabeta --bot2 mcts --ab-depth 8 --games 50
-//!   cargo run --release --bin arena -- --deck1 symbiote_aggro --deck2 argentum_control
+//!   cargo run --release --bin arena -- --deck1 broodmother_pack --deck2 architect_fortify
 //!
 //! Agent types (with auto-loaded specialist weights):
 //!   cargo run --release --bin arena -- --bot1 agent-argentum --bot2 agent-symbiote
