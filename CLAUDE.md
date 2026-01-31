@@ -37,6 +37,11 @@ cargo run --release --bin validate -- --games 100 --bot mcts --mcts-sims 200
 # P1/P2 asymmetry analysis
 cargo run --release --bin diagnose -- 200
 
+# Game replay (debugging, analysis)
+cargo run --release --bin replay -- --seed 12345 --deck1 broodmother_pack --deck2 architect_fortify
+cargo run --release --bin replay -- --file game.replay.json.gz --interactive
+cargo run --release --bin replay -- --seed 12345 --deck1 X --deck2 Y --export transcript -o game.txt
+
 # Benchmarks
 cargo bench -p cardgame
 
@@ -69,7 +74,7 @@ RUST_LOG=debug cargo run --release --bin tune -- ...    # Verbose debugging
 - `crates/cardgame/src/core/` - Game types, state, actions, combat
 - `crates/cardgame/src/engine/` - GameEngine, effect processing
 - `crates/cardgame/src/bots/` - RandomBot, GreedyBot, MctsBot
-- `crates/cardgame/src/bin/` - CLIs: arena, tune, validate, diagnose
+- `crates/cardgame/src/bin/` - CLIs: arena, tune, validate, diagnose, replay
 - `crates/cardgame/tests/unit/` - Unit tests (separate from src)
 - `python/essence_wars/` - Python bindings and ML agents
 - `python/essence_wars/agents/` - PPO, AlphaZero, Card2Vec, embeddings
@@ -339,6 +344,41 @@ Output includes:
 - Balanced deck: 40-60% win rate
 - Outlier deck: <40% or >60% win rate
 - Sample size: 50+ games per matchup recommended for statistical confidence
+
+## Game Replay
+
+The `replay` binary allows stepping through games for debugging and analysis.
+
+**Input sources:**
+- `--seed` + `--deck1` + `--deck2`: Generate a fresh game with bots
+- `--file`: Load from `.replay.json` or `.replay.json.gz` (auto-validated)
+- `--dataset` + `--game-index`: Extract from JSONL dataset
+
+**Output modes:**
+- Default: Game summary (turns, actions, result)
+- `--interactive`: Step through with keyboard (n/p/s/q)
+- `--export transcript`: Plain text action log
+- `--export replay`: Compressed replay file
+
+```bash
+# Generate and summarize a game
+cargo run --release --bin replay -- --seed 12345 --deck1 broodmother_pack --deck2 architect_fortify
+
+# Interactive step-through (useful for debugging)
+cargo run --release --bin replay -- --seed 12345 --deck1 broodmother_pack --deck2 architect_fortify -i
+
+# Export to transcript for sharing/review
+cargo run --release --bin replay -- --seed 12345 --deck1 X --deck2 Y --export transcript -o game.txt
+
+# Load and validate existing replay
+cargo run --release --bin replay -- --file game.replay.json.gz
+```
+
+**Use cases:**
+- Debugging unexpected game outcomes
+- Understanding why a bot made certain decisions
+- Reproducing specific game states for testing
+- Sharing game transcripts for review
 
 ## Performance
 

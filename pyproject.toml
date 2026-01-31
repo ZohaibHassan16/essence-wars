@@ -1,5 +1,5 @@
 # =============================================================================
-# Essence Wars - High-performance card game for RL research
+# Essence Wars - High-performance card game
 # =============================================================================
 
 [build-system]
@@ -9,7 +9,7 @@ build-backend = "maturin"
 [project]
 name = "essence-wars"
 version = "0.7.0"
-description = "High-performance card game environment for reinforcement learning research"
+description = "High-performance card game environment"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
