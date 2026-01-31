@@ -696,59 +696,67 @@ def _run_report_aggregate(kwargs: dict) -> None:
 
 
 def _run_leaderboard(kwargs: dict) -> None:
-    """Display leaderboard from ELO ratings."""
+    """Display leaderboard from ELO ratings using unified ratings system."""
     import json
     from pathlib import Path
 
-    elo_file = Path(kwargs["elo_file"])
-    if not elo_file.exists():
-        print(f"Error: ELO file not found: {elo_file}")
+    try:
+        from essence_wars.ratings import UnifiedRatings
+    except ImportError:
+        print("Error: ratings module not available")
         sys.exit(1)
 
-    with open(elo_file) as f:
-        data = json.load(f)
+    # Load unified ratings (handles missing files gracefully)
+    elo_file = kwargs.get("elo_file")
+    ratings = UnifiedRatings.load(deck_file=elo_file)
 
-    ratings = data.get("ratings", {})
-    if not ratings:
+    entries = ratings.get_leaderboard()
+    if not entries:
         print("No ratings data found.")
         return
-
-    # Sort by rating
-    sorted_ratings = sorted(
-        ratings.items(),
-        key=lambda x: x[1].get("rating", 1500),
-        reverse=True
-    )
 
     output_format = kwargs["output_format"]
 
     if output_format == "json":
         print(json.dumps({"leaderboard": [
-            {"rank": i + 1, "deck_id": k, **v}
-            for i, (k, v) in enumerate(sorted_ratings)
+            {
+                "rank": e.rank,
+                "identifier": e.identifier,
+                "display_name": e.display_name,
+                "rating": e.rating,
+                "games": e.games,
+                "wins": e.wins,
+                "losses": e.losses,
+                "draws": e.draws,
+                "win_rate": e.win_rate,
+                "category": e.category.value,
+                "faction": e.faction,
+                "agent_type": e.agent_type,
+            }
+            for e in entries
         ]}, indent=2))
 
     elif output_format == "table":
-        print("\n" + "=" * 70)
+        print("\n" + "=" * 75)
         print("ESSENCE WARS LEADERBOARD")
-        print("=" * 70)
-        print(f"{'#':>3}  {'Deck':<30}  {'ELO':>6}  {'W-L-D':>10}  {'Win%':>6}")
-        print("-" * 70)
-        for i, (deck_id, stats) in enumerate(sorted_ratings, 1):
-            rating = stats.get("rating", 1500)
-            wins = stats.get("wins", 0)
-            losses = stats.get("losses", 0)
-            draws = stats.get("draws", 0)
-            games = stats.get("games", wins + losses + draws)
-            win_rate = (wins / games * 100) if games > 0 else 0
-            wld = f"{wins}-{losses}-{draws}"
-            print(f"{i:>3}  {deck_id:<30}  {rating:>6.0f}  {wld:>10}  {win_rate:>5.1f}%")
-        print("=" * 70)
+        print("=" * 75)
+        print(f"{'#':>3}  {'Name':<25}  {'Type':>6}  {'ELO':>6}  {'W-L-D':>10}  {'Win%':>6}")
+        print("-" * 75)
+        for e in entries:
+            wld = f"{e.wins}-{e.losses}-{e.draws}"
+            cat = e.category.value[:5].upper()
+            print(f"{e.rank:>3}  {e.display_name:<25}  {cat:>6}  {e.rating:>6.0f}  {wld:>10}  {e.win_rate * 100:>5.1f}%")
+        print("=" * 75)
+
+        # Show summary
+        summary = ratings.get_summary()
+        print(f"\nTotal: {summary.get('total_entries', 0)} entries "
+              f"({summary.get('total_decks', 0)} decks, {summary.get('total_agents', 0)} agents)")
 
     else:  # HTML
         output = kwargs.get("output") or "leaderboard.html"
-        # Generate simple HTML
-        html = _generate_leaderboard_html(sorted_ratings)
+        # Generate HTML using unified entries
+        html = _generate_leaderboard_html_unified(entries)
         Path(output).write_text(html)
         print(f"Leaderboard saved to: {output}")
 
@@ -789,6 +797,48 @@ def _generate_leaderboard_html(sorted_ratings: list) -> str:
     <h1>Essence Wars Leaderboard</h1>
     <table>
         <thead><tr><th>#</th><th>Deck</th><th>ELO</th><th>W-L-D</th><th>Win%</th></tr></thead>
+        <tbody>{"".join(rows)}</tbody>
+    </table>
+</body>
+</html>"""
+
+
+def _generate_leaderboard_html_unified(entries: list) -> str:
+    """Generate HTML leaderboard from unified rating entries."""
+    rows = []
+    for e in entries:
+        category_badge = "deck" if e.category.value == "deck" else "agent"
+        rows.append(f"""
+        <tr>
+            <td>{e.rank}</td>
+            <td>{e.display_name}</td>
+            <td><span class="badge {category_badge}">{e.category.value.upper()}</span></td>
+            <td>{e.rating:.0f}</td>
+            <td>{e.wins}-{e.losses}-{e.draws}</td>
+            <td>{e.win_rate * 100:.1f}%</td>
+        </tr>
+        """)
+
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+    <title>Essence Wars Leaderboard</title>
+    <style>
+        body {{ font-family: sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #eaeaea; }}
+        h1 {{ color: #e94560; }}
+        table {{ width: 100%; border-collapse: collapse; }}
+        th, td {{ padding: 12px; text-align: left; border-bottom: 1px solid #333; }}
+        th {{ background: #16213e; color: #D4AF37; }}
+        tr:hover {{ background: #0f3460; }}
+        .badge {{ padding: 2px 8px; border-radius: 4px; font-size: 0.8em; }}
+        .badge.deck {{ background: #D4AF37; color: #000; }}
+        .badge.agent {{ background: #00FFFF; color: #000; }}
+    </style>
+</head>
+<body>
+    <h1>Essence Wars Leaderboard</h1>
+    <table>
+        <thead><tr><th>#</th><th>Name</th><th>Type</th><th>ELO</th><th>W-L-D</th><th>Win%</th></tr></thead>
         <tbody>{"".join(rows)}</tbody>
     </table>
 </body>

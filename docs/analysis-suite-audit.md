@@ -429,7 +429,7 @@ if __name__ == "__main__":
 |-------|--------|--------|--------------|--------|
 | **1. Unified CLI** | Low | High | None | **DONE** |
 | **2. Dashboard Consolidation** | Medium | High | None | **DONE** |
-| **3. Unified Ratings** | Low | Medium | None | Open |
+| **3. Unified Ratings** | Low | Medium | None | **DONE** |
 | **4. Training Pipeline** | Medium | High | Phase 1, 3 | Open |
 | **5. Script Reorganization** | High | Medium | Phase 1 | Open |
 
@@ -485,6 +485,55 @@ Consolidated dashboards into unified report generator:
 essence-wars report generate --run-id latest --open
 
 # Reports now available at: experiments/reports/{run_id}/index.html
+```
+
+### Phase 3 Implementation (COMPLETED 2026-01-31)
+
+Created unified ratings layer at `python/essence_wars/ratings/`:
+
+**New Files Created:**
+- `ratings/__init__.py` - Module exports
+- `ratings/base.py` (~100 LOC) - Base classes and ELO utilities
+  - `BaseRating` abstract class with common properties
+  - `RatingCategory` enum (DECK, AGENT)
+  - `expected_score()` and `calculate_rating_change()` functions
+- `ratings/deck_ratings.py` (~200 LOC) - Deck ratings from Rust arena
+  - `DeckRating` dataclass with faction, commander_name, history
+  - `DeckRatings` manager with load/get_ranked/predict_matchup
+- `ratings/agent_ratings.py` (~200 LOC) - Agent ratings from Python benchmarks
+  - `AgentRating` dataclass with agent_type, model_path
+  - `AgentRatings` manager with live tracking and persistence
+- `ratings/unified.py` (~200 LOC) - Combined view
+  - `UnifiedRatings` with deck_ratings + agent_ratings
+  - `LeaderboardEntry` dataclass for combined leaderboards
+  - `get_leaderboard()`, `get_summary()`, `format_leaderboard()`
+
+**CLI Updates:**
+- `essence-wars report leaderboard` now uses unified ratings
+- Shows both deck and agent ratings in combined view
+- HTML output with dark theme and category badges
+
+**Usage:**
+```python
+from essence_wars.ratings import UnifiedRatings
+
+ratings = UnifiedRatings.load()
+print(ratings.format_leaderboard(limit=10))
+
+# Access specific categories
+for deck in ratings.deck_ratings.get_ranked()[:5]:
+    print(f"{deck.display_name}: {deck.rating:.0f}")
+
+# Track agent games
+ratings.agent_ratings.update("my_ppo", "greedy", winner=0)
+ratings.agent_ratings.save()
+```
+
+```bash
+# CLI usage
+essence-wars report leaderboard
+essence-wars report leaderboard --format json
+essence-wars report leaderboard --format html --output leaderboard.html
 ```
 
 ---
