@@ -19,6 +19,7 @@ pub fn print_report(stats: &AggregatedStats) {
     print_combat_efficiency(stats);
     print_first_creature_death(stats);
     print_actions_per_game(stats);
+    print_action_breakdown(stats);
     print_statistical_summary(stats);
     print_resource_curves(stats);
     print_essence_curves(stats);
@@ -278,6 +279,105 @@ fn print_actions_per_game(stats: &AggregatedStats) {
     println!("\n=== Actions Per Game ===");
     println!("P1 avg actions: {:.1}", stats.p1_avg_actions());
     println!("P2 avg actions: {:.1}", stats.p2_avg_actions());
+}
+
+fn print_action_breakdown(stats: &AggregatedStats) {
+    let total = stats.total_actions_all();
+    if total == 0 {
+        return;
+    }
+
+    let p1_total = stats.p1_total_actions_by_type();
+    let p2_total = stats.p2_total_actions_by_type();
+
+    println!("\n=== Action Breakdown ({} games) ===", stats.total_games);
+    println!(
+        "{:>12}  {:>10} {:>10} {:>12}",
+        "", "P1", "P2", "Total"
+    );
+
+    // PlayCard
+    let play_total = stats.p1_total_play_card + stats.p2_total_play_card;
+    let play_pct = if total > 0 { 100.0 * play_total as f64 / total as f64 } else { 0.0 };
+    println!(
+        "{:>12}: {:>10} {:>10} {:>10} ({:>4.1}%)",
+        "PlayCard",
+        format_with_commas(stats.p1_total_play_card),
+        format_with_commas(stats.p2_total_play_card),
+        format_with_commas(play_total),
+        play_pct
+    );
+
+    // Attack
+    let attack_total = stats.p1_total_attack + stats.p2_total_attack;
+    let attack_pct = if total > 0 { 100.0 * attack_total as f64 / total as f64 } else { 0.0 };
+    println!(
+        "{:>12}: {:>10} {:>10} {:>10} ({:>4.1}%)",
+        "Attack",
+        format_with_commas(stats.p1_total_attack),
+        format_with_commas(stats.p2_total_attack),
+        format_with_commas(attack_total),
+        attack_pct
+    );
+
+    // Abilities
+    let ability_total = stats.p1_total_ability + stats.p2_total_ability;
+    let ability_pct = if total > 0 { 100.0 * ability_total as f64 / total as f64 } else { 0.0 };
+    println!(
+        "{:>12}: {:>10} {:>10} {:>10} ({:>4.1}%)",
+        "Abilities",
+        format_with_commas(stats.p1_total_ability),
+        format_with_commas(stats.p2_total_ability),
+        format_with_commas(ability_total),
+        ability_pct
+    );
+
+    // EndTurn
+    let end_total = stats.p1_total_end_turn + stats.p2_total_end_turn;
+    let end_pct = if total > 0 { 100.0 * end_total as f64 / total as f64 } else { 0.0 };
+    println!(
+        "{:>12}: {:>10} {:>10} {:>10} ({:>4.1}%)",
+        "EndTurn",
+        format_with_commas(stats.p1_total_end_turn),
+        format_with_commas(stats.p2_total_end_turn),
+        format_with_commas(end_total),
+        end_pct
+    );
+
+    // Separator and totals
+    println!("{}", "-".repeat(55));
+    println!(
+        "{:>12}: {:>10} {:>10} {:>10}",
+        "Total",
+        format_with_commas(p1_total),
+        format_with_commas(p2_total),
+        format_with_commas(total)
+    );
+
+    // Average per game
+    let avg_per_game = stats.avg_actions_per_game();
+    let p1_avg = if stats.total_games > 0 { p1_total as f64 / stats.total_games as f64 } else { 0.0 };
+    let p2_avg = if stats.total_games > 0 { p2_total as f64 / stats.total_games as f64 } else { 0.0 };
+    println!(
+        "{:>12}: {:>10.1} {:>10.1} {:>10.1}",
+        "Avg/game",
+        p1_avg,
+        p2_avg,
+        avg_per_game
+    );
+}
+
+/// Format a number with comma separators for thousands.
+fn format_with_commas(n: usize) -> String {
+    let s = n.to_string();
+    let mut result = String::new();
+    for (i, c) in s.chars().rev().enumerate() {
+        if i > 0 && i % 3 == 0 {
+            result.push(',');
+        }
+        result.push(c);
+    }
+    result.chars().rev().collect()
 }
 
 fn print_resource_curves(stats: &AggregatedStats) {

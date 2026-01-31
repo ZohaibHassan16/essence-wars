@@ -452,4 +452,23 @@ impl ArchetypeWeights {
     pub fn has_any(&self) -> bool {
         self.aggro.is_some() || self.control.is_some() || self.tempo.is_some() || self.midrange.is_some()
     }
+
+    /// Create archetype weights using the same weights for all archetypes.
+    ///
+    /// Useful for post-tuning validation where we want to test a single
+    /// set of weights across all matchups.
+    pub fn from_single(weights: GreedyWeights) -> Self {
+        let bot_weights = BotWeights {
+            name: "tuned".to_string(),
+            version: 1,
+            default: WeightSet { greedy: weights },
+            deck_specific: std::collections::HashMap::new(),
+        };
+        Self {
+            aggro: Some(bot_weights.clone()),
+            control: Some(bot_weights.clone()),
+            tempo: Some(bot_weights.clone()),
+            midrange: Some(bot_weights),
+        }
+    }
 }

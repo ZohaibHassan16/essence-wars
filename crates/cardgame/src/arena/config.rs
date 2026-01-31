@@ -107,6 +107,8 @@ pub struct SequentialConfig {
     pub trace_combat: bool,
     /// Enable effect queue tracing
     pub trace_effects: bool,
+    /// Directory to export game replays (None = no export)
+    pub replay_dir: Option<std::path::PathBuf>,
 }
 
 impl SequentialConfig {
@@ -136,5 +138,11 @@ impl SequentialConfig {
     /// Check if any tracing is enabled.
     pub fn tracing_enabled(&self) -> bool {
         self.trace_combat || self.trace_effects
+    }
+
+    /// Set replay export directory.
+    pub fn with_replay_dir(mut self, dir: Option<std::path::PathBuf>) -> Self {
+        self.replay_dir = dir;
+        self
     }
 }

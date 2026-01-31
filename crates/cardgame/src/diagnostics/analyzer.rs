@@ -140,6 +140,24 @@ pub struct AggregatedStats {
 
     /// Per-game metrics for detailed analysis.
     pub game_metrics: Vec<GameMetrics>,
+
+    // === Action Type Breakdown ===
+    /// Total PlayCard actions by P1.
+    pub p1_total_play_card: usize,
+    /// Total Attack actions by P1.
+    pub p1_total_attack: usize,
+    /// Total Ability actions by P1 (UseAbility + CommanderInsight).
+    pub p1_total_ability: usize,
+    /// Total EndTurn actions by P1.
+    pub p1_total_end_turn: usize,
+    /// Total PlayCard actions by P2.
+    pub p2_total_play_card: usize,
+    /// Total Attack actions by P2.
+    pub p2_total_attack: usize,
+    /// Total Ability actions by P2 (UseAbility + CommanderInsight).
+    pub p2_total_ability: usize,
+    /// Total EndTurn actions by P2.
+    pub p2_total_end_turn: usize,
 }
 
 impl AggregatedStats {
@@ -273,6 +291,16 @@ impl AggregatedStats {
 
         // Store per-game metrics
         self.game_metrics.push(diag.metrics.clone());
+
+        // Action type breakdown
+        self.p1_total_play_card += diag.p1_play_card;
+        self.p1_total_attack += diag.p1_attack;
+        self.p1_total_ability += diag.p1_ability;
+        self.p1_total_end_turn += diag.p1_end_turn;
+        self.p2_total_play_card += diag.p2_play_card;
+        self.p2_total_attack += diag.p2_attack;
+        self.p2_total_ability += diag.p2_ability;
+        self.p2_total_end_turn += diag.p2_end_turn;
     }
 
     /// Record a snapshot's data into curves.
@@ -539,6 +567,32 @@ impl AggregatedStats {
         }
     }
 
+    // === Action Type Breakdown Methods ===
+
+    /// Get total actions by P1.
+    pub fn p1_total_actions_by_type(&self) -> usize {
+        self.p1_total_play_card + self.p1_total_attack + self.p1_total_ability + self.p1_total_end_turn
+    }
+
+    /// Get total actions by P2.
+    pub fn p2_total_actions_by_type(&self) -> usize {
+        self.p2_total_play_card + self.p2_total_attack + self.p2_total_ability + self.p2_total_end_turn
+    }
+
+    /// Get grand total of all actions.
+    pub fn total_actions_all(&self) -> usize {
+        self.p1_total_actions_by_type() + self.p2_total_actions_by_type()
+    }
+
+    /// Get average actions per game.
+    pub fn avg_actions_per_game(&self) -> f64 {
+        if self.total_games == 0 {
+            0.0
+        } else {
+            self.total_actions_all() as f64 / self.total_games as f64
+        }
+    }
+
     // === Phase 3: Statistical Analysis Methods ===
 
     /// Get P1 win rate statistics with confidence interval and significance test.
@@ -774,6 +828,15 @@ mod tests {
             p1_actions: 10,
             p2_actions: 12,
             metrics: GameMetrics::default(),
+            // Action type breakdown
+            p1_play_card: 3,
+            p1_attack: 4,
+            p1_ability: 0,
+            p1_end_turn: 3,
+            p2_play_card: 4,
+            p2_attack: 5,
+            p2_ability: 0,
+            p2_end_turn: 3,
         }
     }
 

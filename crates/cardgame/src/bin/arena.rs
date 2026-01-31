@@ -136,6 +136,10 @@ struct Args {
     /// Game mode: attrition (default) or essence-duel
     #[arg(long, default_value = "attrition")]
     mode: String,
+
+    /// Export game replays to directory (forces sequential mode)
+    #[arg(long)]
+    export_replays: Option<PathBuf>,
 }
 
 fn main() {
@@ -301,8 +305,8 @@ fn main() {
     let trace_effects = args.trace_effects || args.trace_all;
     let tracing_enabled = trace_combat || trace_effects;
 
-    // Can't parallelize with logging, invariant checking, or tracing
-    let parallel = !args.sequential && logger.is_none() && !args.invariants && !tracing_enabled;
+    // Can't parallelize with logging, invariant checking, tracing, or replay export
+    let parallel = !args.sequential && logger.is_none() && !args.invariants && !tracing_enabled && args.export_replays.is_none();
 
     // Print match info
     println!("Arena Match");
@@ -342,6 +346,9 @@ fn main() {
         }
         if trace_effects {
             mode_notes.push("effect-trace");
+        }
+        if args.export_replays.is_some() {
+            mode_notes.push("replay-export");
         }
         let note = if mode_notes.is_empty() {
             String::new()
@@ -413,7 +420,8 @@ fn main() {
         let seq_config = SequentialConfig::new()
             .with_invariants(args.invariants)
             .with_combat_tracing(trace_combat)
-            .with_effect_tracing(trace_effects);
+            .with_effect_tracing(trace_effects)
+            .with_replay_dir(args.export_replays.clone());
         match run_match_sequential(&game_data.card_db, &config, &seq_config, &mut logger) {
             Ok(s) => s,
             Err(e) => {

@@ -4,6 +4,7 @@
 
 use crate::bots::{create_bot, AlphaBetaConfig, BotType, MctsConfig};
 use crate::cards::CardDatabase;
+use crate::core::Action;
 use crate::decks::DeckDefinition;
 use crate::engine::{GameEngine, GameInitError};
 use crate::execution::{GameSeeds, MAX_ACTIONS_PER_GAME};
@@ -107,6 +108,24 @@ pub struct GameDiagnostics {
     pub p2_actions: usize,
     /// Game metrics (board advantage, tempo, efficiency).
     pub metrics: GameMetrics,
+
+    // === Action type breakdown ===
+    /// P1 PlayCard actions.
+    pub p1_play_card: usize,
+    /// P1 Attack actions.
+    pub p1_attack: usize,
+    /// P1 Ability actions (UseAbility + CommanderInsight).
+    pub p1_ability: usize,
+    /// P1 EndTurn actions.
+    pub p1_end_turn: usize,
+    /// P2 PlayCard actions.
+    pub p2_play_card: usize,
+    /// P2 Attack actions.
+    pub p2_attack: usize,
+    /// P2 Ability actions (UseAbility + CommanderInsight).
+    pub p2_ability: usize,
+    /// P2 EndTurn actions.
+    pub p2_end_turn: usize,
 }
 
 /// Configuration for diagnostic runs.
@@ -321,6 +340,16 @@ impl<'a> DiagnosticRunner<'a> {
         let mut p1_actions = 0;
         let mut p2_actions = 0;
 
+        // Action type breakdown tracking
+        let mut p1_play_card = 0;
+        let mut p1_attack = 0;
+        let mut p1_ability = 0;
+        let mut p1_end_turn = 0;
+        let mut p2_play_card = 0;
+        let mut p2_attack = 0;
+        let mut p2_ability = 0;
+        let mut p2_end_turn = 0;
+
         // Tempo tracking
         let mut tempo = TempoMetrics::default();
 
@@ -393,6 +422,23 @@ impl<'a> DiagnosticRunner<'a> {
                 p2_actions += 1;
                 bot2.select_action_with_engine(&engine)
             };
+
+            // Track action type breakdown
+            if current_player == PlayerId::PLAYER_ONE {
+                match action {
+                    Action::PlayCard { .. } => p1_play_card += 1,
+                    Action::Attack { .. } => p1_attack += 1,
+                    Action::UseAbility { .. } | Action::CommanderInsight => p1_ability += 1,
+                    Action::EndTurn => p1_end_turn += 1,
+                }
+            } else {
+                match action {
+                    Action::PlayCard { .. } => p2_play_card += 1,
+                    Action::Attack { .. } => p2_attack += 1,
+                    Action::UseAbility { .. } | Action::CommanderInsight => p2_ability += 1,
+                    Action::EndTurn => p2_end_turn += 1,
+                }
+            }
 
             if engine.apply_action(action).is_err() {
                 break;
@@ -540,6 +586,15 @@ impl<'a> DiagnosticRunner<'a> {
             p1_actions,
             p2_actions,
             metrics,
+            // Action type breakdown
+            p1_play_card,
+            p1_attack,
+            p1_ability,
+            p1_end_turn,
+            p2_play_card,
+            p2_attack,
+            p2_ability,
+            p2_end_turn,
         }
     }
 }

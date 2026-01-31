@@ -16,6 +16,7 @@ use crate::execution::{
     run_batch_parallel, run_game_loop, BatchConfig, GameLoopConfig, GameOutcome, GameSeeds,
     NoOpCallback, ProgressStyle, MAX_ACTIONS_PER_GAME,
 };
+use crate::replay::{GameReplay, PlayerConfig, ReplayBuilder};
 use crate::types::PlayerId;
 
 /// Validate that commanders exist in the card database before starting games.
@@ -145,6 +146,13 @@ pub fn run_match_sequential(
     // Validate commanders exist before starting any games
     validate_commanders(card_db, config)?;
 
+    // Create replay directory if export is enabled
+    if let Some(ref replay_dir) = seq_config.replay_dir {
+        if let Err(e) = std::fs::create_dir_all(replay_dir) {
+            log::warn!("Failed to create replay directory {:?}: {}", replay_dir, e);
+        }
+    }
+
     let mut stats = MatchStats::new(
         config.bot1_type.name().to_string(),
         config.bot2_type.name().to_string(),
@@ -156,7 +164,7 @@ pub fn run_match_sequential(
     for i in 0..config.games {
         let seeds = GameSeeds::for_game(config.seed, i);
 
-        let (winner, turns, duration) = run_single_game_sequential(
+        let (winner, turns, duration, replay) = run_single_game_sequential(
             card_db,
             config,
             seq_config,
@@ -165,6 +173,14 @@ pub fn run_match_sequential(
         );
 
         stats.record_game(winner, turns, duration);
+
+        // Save replay if export is enabled
+        if let (Some(ref replay_dir), Some(replay)) = (&seq_config.replay_dir, replay) {
+            let replay_path = replay_dir.join(format!("game_{:03}.replay.json.gz", i + 1));
+            if let Err(e) = crate::replay::save(&replay, &replay_path) {
+                log::warn!("Failed to save replay {:?}: {}", replay_path, e);
+            }
+        }
 
         // Progress reporting
         if config.show_progress {
@@ -197,23 +213,51 @@ pub fn run_match_sequential(
         );
     }
 
+    // Report replay export
+    if let Some(ref replay_dir) = seq_config.replay_dir {
+        eprintln!("Replays exported to {:?}", replay_dir);
+    }
+
     Ok(stats)
 }
 
 /// Run a single game with full logging and tracing support.
+///
+/// Returns (winner, turns, duration, optional_replay).
 fn run_single_game_sequential(
     card_db: &CardDatabase,
     config: &MatchConfig,
     seq_config: &SequentialConfig,
     logger: &mut Option<ActionLogger>,
     seeds: GameSeeds,
-) -> (Option<PlayerId>, u32, Duration) {
+) -> (Option<PlayerId>, u32, Duration, Option<GameReplay>) {
     let start = Instant::now();
 
     // Create tracers if enabled
     let mut combat_tracer = CombatTracer::new(seq_config.trace_combat);
     let mut effect_tracer = EffectTracer::new(seq_config.trace_effects);
     let tracing_enabled = seq_config.tracing_enabled();
+
+    // Create replay builder if export is enabled
+    let mut replay_builder = if seq_config.replay_dir.is_some() {
+        let player1 = PlayerConfig {
+            name: format!("P1 ({})", config.bot1_type.name()),
+            player_type: config.bot1_type.name().to_string(),
+            deck: config.deck1.cards.iter().map(|&id| crate::types::CardId(id)).collect(),
+            deck_name: Some(config.deck1.id.clone()),
+            commander: Some(crate::types::CardId(config.deck1.commander)),
+        };
+        let player2 = PlayerConfig {
+            name: format!("P2 ({})", config.bot2_type.name()),
+            player_type: config.bot2_type.name().to_string(),
+            deck: config.deck2.cards.iter().map(|&id| crate::types::CardId(id)).collect(),
+            deck_name: Some(config.deck2.id.clone()),
+            commander: Some(crate::types::CardId(config.deck2.commander)),
+        };
+        Some(ReplayBuilder::new(seeds.game, config.game_mode, player1, player2))
+    } else {
+        None
+    };
 
     // Create bots using the factory
     let mut bot1 = create_bot(
@@ -265,6 +309,11 @@ fn run_single_game_sequential(
         };
 
         let thinking_time = action_start.elapsed();
+
+        // Record action for replay
+        if let Some(ref mut builder) = replay_builder {
+            builder.record_action(turn as u16, action, Some(thinking_time.as_micros() as u64));
+        }
 
         // Log action
         if let Some(ref mut l) = logger {
@@ -333,10 +382,21 @@ fn run_single_game_sequential(
         );
     }
 
+    // Finalize replay
+    let replay = replay_builder.map(|builder| {
+        let result = engine.state.result;
+        let final_life = [
+            engine.state.players[0].life,
+            engine.state.players[1].life,
+        ];
+        builder.finalize(result, engine.turn_number(), final_life)
+    });
+
     (
         engine.winner(),
         engine.turn_number() as u32,
         start.elapsed(),
+        replay,
     )
 }
 
