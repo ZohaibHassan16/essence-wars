@@ -10,6 +10,7 @@
 | tune | ~700 | CMA-ES weight optimization | High |
 | arena | ~450 | Bot matches | Medium |
 | diagnose | ~310 | P1/P2 asymmetry analysis | Medium |
+| card_stats | ~340 | Per-card win contribution analysis | Medium |
 | validate | ~240 | Balance testing | Medium |
 | balance_diff | ~290 | Compare validation runs | Low |
 | weight_diff | ~180 | Compare weight files | Low |
@@ -47,7 +48,7 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 |-----|--------|
 | validate and diagnose are siloed - validate could auto-invoke diagnose for outlier decks | OPEN |
 | tune doesn't connect to validate for post-training verification | DONE |
-| No way to trace back from balance issues to specific cards | OPEN |
+| No way to trace back from balance issues to specific cards | DONE (card_stats binary) |
 
 ---
 
@@ -56,7 +57,7 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 | Idea | Description | Status |
 |------|-------------|--------|
 | Replay binary | Replay games from seeds or dataset entries for debugging | DONE |
-| Card statistics | Per-card win contribution, usage rates, synergy analysis | OPEN |
+| Card statistics | Per-card win contribution, usage rates, timing analysis | DONE (card_stats binary) |
 | Balance diff | Compare validation runs across versions | DONE |
 | Weight comparison | Side-by-side weight file analysis | DONE |
 | Dataset analysis | Statistics on existing datasets (distribution, coverage) | DONE |
@@ -68,7 +69,7 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 | Feature | Status |
 |---------|--------|
 | Matchup matrix output (`--matrix`, `--matrix-csv`) | DONE |
-| Per-card win rate contribution (identify problematic cards, not just decks) | OPEN |
+| Per-card win rate contribution (identify problematic cards, not just decks) | DONE (card_stats binary) |
 | Historical tracking (trend across versions) | DONE (timestamped dirs + balance_diff) |
 | HTML report generation with charts (in the experiments subfolder for the run) | OPEN |
 
@@ -109,22 +110,25 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 
 ## Remaining Open Items
 
-### High Priority
-1. **Card statistics binary** - Per-card win contribution, usage rates, synergy analysis
-   - Would enable tracing deck imbalances to specific problematic cards
-   - Synergy analysis could identify overpowered card combinations
-
 ### Medium Priority
-2. **Validate → diagnose integration** - Auto-invoke diagnose for outlier decks
+1. **Validate → diagnose integration** - Auto-invoke diagnose for outlier decks
    - When a deck shows significant imbalance, automatically run detailed diagnostics
-
-3. **Card-level balance tracing** - Connect to card statistics
-   - Extend validation to identify which cards contribute most to win rate
+   - Implementation: Add `--auto-diagnose` flag to validate binary
 
 ### Low Priority (Nice to Have)
-4. **HTML report generation** - Charts and visualizations in experiments folder
-5. **Tournament modes** - Swiss, double elimination for arena
-6. **ELO rating persistence** - Track bot strength across arena sessions
-7. **Tune resume from checkpoint** - Save/restore CMA-ES optimizer state
-8. **Hyperparameter auto-tuning** - Adaptive CMA-ES parameters
-9. **True multi-objective optimization** - Pareto frontier for win rate vs game length
+2. **HTML report generation** - Charts and visualizations in experiments folder
+3. **Tournament modes** - Swiss, double elimination for arena
+4. **ELO rating persistence** - Track bot strength across arena sessions
+5. **Tune resume from checkpoint** - Save/restore CMA-ES optimizer state
+6. **Hyperparameter auto-tuning** - Adaptive CMA-ES parameters
+7. **True multi-objective optimization** - Pareto frontier for win rate vs game length
+
+---
+
+## Recently Completed
+
+- **Card synergy analysis** - DONE (2026-01-31)
+  - Added `--synergy` flag to card_stats binary
+  - Tracks card pair co-occurrence and win rates
+  - Identifies synergistic pairs and anti-synergy pairs
+  - Exports to CSV/JSON via `--synergy-csv` and `--synergy-json`

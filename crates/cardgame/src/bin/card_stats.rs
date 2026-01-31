@@ -20,7 +20,8 @@ use cardgame::execution::{
     GameSeeds, MatchupBuilder,
 };
 use cardgame::stats::{
-    export_csv, export_json, print_report, CardStatsCallback, CardStatsCollector, ReportConfig,
+    export_csv, export_json, export_synergy_csv, export_synergy_json, print_report,
+    print_synergy_report, CardStatsCallback, CardStatsCollector, ReportConfig,
 };
 
 /// Card Statistics - Analyze per-card win contribution
@@ -75,6 +76,26 @@ struct Args {
     /// Export to JSON file
     #[arg(long)]
     json: Option<PathBuf>,
+
+    /// Enable synergy analysis (track card pair co-occurrence)
+    #[arg(long)]
+    synergy: bool,
+
+    /// Minimum co-occurrence for synergy pairs to be included
+    #[arg(long, default_value = "5")]
+    min_cooccur: u32,
+
+    /// Number of top synergy/anti-synergy pairs to show
+    #[arg(long, default_value = "10")]
+    synergy_top_n: usize,
+
+    /// Export synergy data to separate CSV file
+    #[arg(long)]
+    synergy_csv: Option<PathBuf>,
+
+    /// Export synergy data to separate JSON file
+    #[arg(long)]
+    synergy_json: Option<PathBuf>,
 
     /// Random seed for reproducibility
     #[arg(long, short = 's', default_value = "42")]
@@ -224,7 +245,7 @@ fn main() {
     println!();
 
     // Run games and collect statistics
-    let mut collector = CardStatsCollector::new();
+    let mut collector = CardStatsCollector::with_synergy(args.synergy);
     let total_games = matchups.len() * args.games;
     let mut games_completed = 0;
 
@@ -326,6 +347,59 @@ fn main() {
             process::exit(1);
         }
         println!("Exported JSON to: {:?}", json_path);
+    }
+
+    // Print synergy report if enabled
+    if let Some(ref synergy) = collector.synergy {
+        print_synergy_report(
+            synergy,
+            &collector,
+            &game_data.card_db,
+            &mode_str,
+            &deck_info,
+            args.min_cooccur,
+            args.synergy_top_n,
+        );
+
+        // Export synergy CSV if requested
+        if let Some(ref csv_path) = args.synergy_csv {
+            if let Err(e) = export_synergy_csv(
+                synergy,
+                &collector,
+                &game_data.card_db,
+                csv_path,
+                args.min_cooccur,
+            ) {
+                eprintln!("Error exporting synergy CSV: {}", e);
+                process::exit(1);
+            }
+            println!("\nExported synergy CSV to: {:?}", csv_path);
+        }
+
+        // Export synergy JSON if requested
+        if let Some(ref json_path) = args.synergy_json {
+            let config = ReportConfig {
+                mode: mode_str.clone(),
+                deck: Some(args.deck.clone()),
+                deck1: args.deck1.clone(),
+                deck2: args.deck2.clone(),
+                games: collector.total_games,
+                bot: args.bot.clone(),
+            };
+            if let Err(e) = export_synergy_json(
+                synergy,
+                &collector,
+                &game_data.card_db,
+                json_path,
+                config,
+                args.min_cooccur,
+                args.synergy_top_n,
+            ) {
+                eprintln!("Error exporting synergy JSON: {}", e);
+                process::exit(1);
+            }
+            println!("Exported synergy JSON to: {:?}", json_path);
+        }
     }
 }
 

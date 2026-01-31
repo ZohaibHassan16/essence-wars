@@ -29,9 +29,10 @@ pub mod report;
 mod types;
 
 pub use callback::CardStatsCallback;
-pub use collector::CardStatsCollector;
+pub use collector::{CardStatsCollector, SynergyCollector};
 pub use report::{
-    build_card_report, export_csv, export_json, print_report, CardReport, FullReport, ReportConfig,
-    ReportSummary,
+    build_card_report, build_synergy_pair_report, export_csv, export_json, export_synergy_csv,
+    export_synergy_json, print_report, print_synergy_report, CardReport, FullReport, ReportConfig,
+    ReportSummary, SynergyPairReport, SynergyReport, SynergySummary,
 };
-pub use types::{CardPlayStats, GameCardTracker, TurnBucket};
+pub use types::{CardPair, CardPairStats, CardPlayStats, GameCardTracker, TurnBucket};

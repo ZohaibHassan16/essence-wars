@@ -1,10 +1,61 @@
 //! Card statistics collector and aggregator.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::types::{CardId, PlayerId};
 
-use super::types::{CardPlayStats, GameCardTracker};
+use super::types::{CardPair, CardPairStats, CardPlayStats, GameCardTracker};
+
+/// Collects card pair co-occurrence and synergy statistics.
+#[derive(Clone, Debug, Default)]
+pub struct SynergyCollector {
+    /// Per-pair statistics.
+    pub pair_stats: HashMap<CardPair, CardPairStats>,
+}
+
+impl SynergyCollector {
+    /// Create a new empty synergy collector.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Aggregate pairs from a completed game.
+    /// `cards`: set of unique cards played by one player.
+    /// `won`: whether that player won.
+    pub fn aggregate_player_pairs(&mut self, cards: &HashSet<CardId>, won: bool) {
+        let card_vec: Vec<CardId> = cards.iter().copied().collect();
+
+        // Generate all pairs (n choose 2)
+        for i in 0..card_vec.len() {
+            for j in (i + 1)..card_vec.len() {
+                let pair = CardPair::new(card_vec[i], card_vec[j]);
+                let stats = self.pair_stats.entry(pair).or_default();
+                stats.games_together += 1;
+                if won {
+                    stats.wins_together += 1;
+                }
+            }
+        }
+    }
+
+    /// Filter pairs by minimum co-occurrence.
+    pub fn filter_by_min_cooccur(&self, min_cooccur: u32) -> Vec<(CardPair, &CardPairStats)> {
+        self.pair_stats
+            .iter()
+            .filter(|(_, stats)| stats.games_together >= min_cooccur)
+            .map(|(&pair, stats)| (pair, stats))
+            .collect()
+    }
+
+    /// Merge another synergy collector into this one.
+    pub fn merge(&mut self, other: &SynergyCollector) {
+        for (&pair, other_stats) in &other.pair_stats {
+            let stats = self.pair_stats.entry(pair).or_default();
+            stats.games_together += other_stats.games_together;
+            stats.wins_together += other_stats.wins_together;
+        }
+    }
+}
 
 /// Collects and aggregates card statistics across multiple games.
 #[derive(Clone, Debug)]
@@ -19,6 +70,8 @@ pub struct CardStatsCollector {
     pub p2_wins: u32,
     /// Draws.
     pub draws: u32,
+    /// Optional synergy tracking (enabled by CLI flag).
+    pub synergy: Option<SynergyCollector>,
 }
 
 impl Default for CardStatsCollector {
@@ -28,7 +81,7 @@ impl Default for CardStatsCollector {
 }
 
 impl CardStatsCollector {
-    /// Create a new empty collector.
+    /// Create a new empty collector without synergy tracking.
     pub fn new() -> Self {
         Self {
             stats: HashMap::new(),
@@ -36,6 +89,23 @@ impl CardStatsCollector {
             p1_wins: 0,
             p2_wins: 0,
             draws: 0,
+            synergy: None,
+        }
+    }
+
+    /// Create a new collector with optional synergy tracking.
+    pub fn with_synergy(enable_synergy: bool) -> Self {
+        Self {
+            stats: HashMap::new(),
+            total_games: 0,
+            p1_wins: 0,
+            p2_wins: 0,
+            draws: 0,
+            synergy: if enable_synergy {
+                Some(SynergyCollector::new())
+            } else {
+                None
+            },
         }
     }
 
@@ -93,6 +163,14 @@ impl CardStatsCollector {
                 stats.mid_plays += mid;
                 stats.late_plays += late;
             }
+        }
+
+        // Track synergy pairs if enabled
+        if let Some(ref mut synergy) = self.synergy {
+            let p1_won = winner == Some(PlayerId::PLAYER_ONE);
+            let p2_won = winner == Some(PlayerId::PLAYER_TWO);
+            synergy.aggregate_player_pairs(&tracker.p1_cards, p1_won);
+            synergy.aggregate_player_pairs(&tracker.p2_cards, p2_won);
         }
     }
 
@@ -162,6 +240,13 @@ impl CardStatsCollector {
             stats.early_plays += other_stats.early_plays;
             stats.mid_plays += other_stats.mid_plays;
             stats.late_plays += other_stats.late_plays;
+        }
+
+        // Merge synergy data if both have it
+        if let (Some(ref mut self_synergy), Some(ref other_synergy)) =
+            (&mut self.synergy, &other.synergy)
+        {
+            self_synergy.merge(other_synergy);
         }
     }
 }

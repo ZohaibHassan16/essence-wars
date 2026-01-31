@@ -96,6 +96,59 @@ impl TurnBucket {
     }
 }
 
+/// A canonical pair of card IDs for synergy tracking.
+/// Always stored with smaller ID first to ensure consistent hashing.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+pub struct CardPair(pub CardId, pub CardId);
+
+impl CardPair {
+    /// Create a new canonical pair (smaller ID first).
+    pub fn new(a: CardId, b: CardId) -> Self {
+        if a.0 <= b.0 {
+            CardPair(a, b)
+        } else {
+            CardPair(b, a)
+        }
+    }
+
+    /// Get the first card in the pair (smaller ID).
+    pub fn first(&self) -> CardId {
+        self.0
+    }
+
+    /// Get the second card in the pair (larger ID).
+    pub fn second(&self) -> CardId {
+        self.1
+    }
+}
+
+/// Statistics for a pair of cards appearing together.
+#[derive(Clone, Debug, Default)]
+pub struct CardPairStats {
+    /// Number of games where both cards were played by the same player.
+    pub games_together: u32,
+    /// Wins in games where both cards were played together.
+    pub wins_together: u32,
+}
+
+impl CardPairStats {
+    /// Win rate when both cards are played together.
+    pub fn pair_win_rate(&self) -> f64 {
+        if self.games_together == 0 {
+            0.0
+        } else {
+            self.wins_together as f64 / self.games_together as f64
+        }
+    }
+
+    /// Calculate synergy bonus given individual card win rates.
+    /// Positive = synergistic, Negative = anti-synergy.
+    pub fn synergy_bonus(&self, card1_wr: f64, card2_wr: f64) -> f64 {
+        let expected = (card1_wr + card2_wr) / 2.0;
+        self.pair_win_rate() - expected
+    }
+}
+
 /// Tracks card plays within a single game.
 #[derive(Clone, Debug, Default)]
 pub struct GameCardTracker {
