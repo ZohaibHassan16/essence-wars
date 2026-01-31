@@ -5,10 +5,12 @@
     commander,
     isPlayer = false,
     isActive = false,
+    tutorialId = undefined,
   }: {
     commander: CommanderDto | null;
     isPlayer?: boolean;
     isActive?: boolean;
+    tutorialId?: string;
   } = $props();
 
   // Get faction-specific styling classes
@@ -66,6 +68,7 @@
          {factionGradient()} {factionBorder()} {factionGlow()}"
   class:opacity-50={!commander}
   title={commander?.abilityDescription ?? 'No commander'}
+  data-tutorial-id={tutorialId}
 >
   {#if commander}
     <!-- Commander Portrait -->

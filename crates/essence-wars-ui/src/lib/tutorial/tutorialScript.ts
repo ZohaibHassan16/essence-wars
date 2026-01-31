@@ -1,167 +1,159 @@
 // Tutorial step definitions and configuration
-// Custom-tailored for Seed 123 game flow
+// Custom-tailored for Seed 77 game flow with sovereign_lifesteal vs broodmother_pack
 import type { TutorialStep } from '$lib/stores/tutorialState.svelte';
 
 // Tutorial game configuration
-// Seed 123 produces this starting hand:
-// - Iron Bastion (4c) - 1/6 Guard, Fortify - teaches Guard keyword
-// - Fortified Sentinel (2c) - 2/3 - first creature to play (Turn 2)
-// - The Grand Architect (6c) - 2/6 Fortify - late-game creature
-// - Lockdown Protocol (2c) - Spell
-// - Armor Plating (1c) - Spell (but we guide to play creature instead)
+// Seed 77 produces this starting hand for sovereign_lifesteal:
+// - Contract Killer (3c) - 3/2 Lethal - first creature to play (Turn 3)
+// - Supply Depot (3c) - Support with durability 4
+// - Silent Assassin (4c) - 4/3 Stealth, Quick
+// - Hired Blade (3c) - 3/3 vanilla creature
+// - Life Tap (1c) - Spell
+//
+// Blood Sovereign commander grants: Lifesteal + +0/+1 to all creatures
+// Broodmother commander grants: Rush to all creatures
 //
 // Game Flow:
-// - Turn 1: Only 1 essence, can't play 2c creature, end turn
-// - Turn 2: Play Fortified Sentinel (2/3)
-// - Turn 3: Opponent plays Rush creature, attacks face. Player retaliates.
-// - Later: Iron Bastion's Guard forces enemy attacks
-export const TUTORIAL_SEED = 123;
-export const TUTORIAL_PLAYER_DECK = 'architect_fortify';
+// - Turn 1: Only 1 essence, can play Life Tap but better to save, end turn
+// - Turn 2: Opponent plays Rush creature and attacks face
+// - Turn 3: Play Contract Killer (shows Lifesteal from commander!)
+// - Turn 4: Combat demonstrates Lethal + Lifesteal
+// - Turn 5: Play Silent Assassin (Stealth + Quick) and Supply Depot
+export const TUTORIAL_SEED = 77;
+export const TUTORIAL_PLAYER_DECK = 'sovereign_lifesteal';
 export const TUTORIAL_OPPONENT_DECK = 'broodmother_pack';
 export const TUTORIAL_BOT = 'random';
 
-// Tutorial steps - friendly, helpful tone
-// Custom-tailored for seed 123 game flow
+// Tutorial steps - friendly, engaging tone
+// Designed to teach mechanics without tutorial fatigue (~17 steps)
 export const tutorialSteps: TutorialStep[] = [
-  // === INTRODUCTION ===
+  // === PHASE 1: WELCOME & BOARD TOUR (4 steps) ===
   {
     id: 'welcome',
     title: 'Welcome to Essence Wars!',
-    message: `You're about to learn a strategic card game where you command creatures to battle. Your goal: reduce your opponent's life to zero before they do the same to you!`,
+    message: `You command the Blood Sovereign in battle! Your goal: reduce your opponent's life to zero before they do the same to you. Let's learn the basics!`,
     advanceCondition: { type: 'click_next' },
   },
-
-  // === BOARD TOUR ===
   {
-    id: 'your_life',
-    title: 'Your Life Total',
-    message: `This is your life. You start with 30. If it reaches 0, you lose the game!`,
+    id: 'your_commander',
+    title: 'Your Commander',
+    message: `This is your Commander - The Blood Sovereign. Commanders grant powerful abilities to ALL your creatures. Yours gives Lifesteal (heal when dealing damage) and +1 Health!`,
+    targetElementId: 'player-commander',
+    arrowDirection: 'top',
+    advanceCondition: { type: 'click_next' },
+  },
+  {
+    id: 'resources_intro',
+    title: 'Your Resources',
+    message: `You have 30 Life (lose when it hits 0), Essence to play cards (gains +1 max each turn), and 3 Action Points per turn for playing cards and attacking.`,
     targetElementId: 'player-life',
     arrowDirection: 'top',
     advanceCondition: { type: 'click_next' },
   },
   {
-    id: 'opponent_life',
-    title: "Opponent's Life",
-    message: `Your opponent also starts at 30. Every point of damage counts toward victory!`,
-    targetElementId: 'opponent-life',
-    arrowDirection: 'bottom',
-    advanceCondition: { type: 'click_next' },
-  },
-  {
-    id: 'essence_intro',
-    title: 'Essence - Your Resource',
-    message: `Essence is spent to play cards. You gain 1 max each turn (up to 10) and it refills completely each turn. Right now you have 1 essence - not enough for most cards!`,
-    targetElementId: 'player-essence',
-    arrowDirection: 'top',
-    advanceCondition: { type: 'click_next' },
-  },
-
-  // === HAND INTRODUCTION ===
-  {
     id: 'hand_intro',
     title: 'Your Hand',
-    message: `These are your cards. Hover over them to see details. Notice the cost in the top-left corner - your cheapest creature costs 2 essence, but you only have 1 right now.`,
+    message: `These are your cards! You have Creatures (fight on the board), Spells (one-time effects), and Supports (ongoing bonuses). Hover over cards to see details.`,
     targetElementId: 'player-hand',
     arrowDirection: 'top',
     advanceCondition: { type: 'click_next' },
   },
 
-  // === TURN 1: ACTION POINTS & END TURN ===
+  // === PHASE 2: FIRST TURNS (3 steps) ===
   {
-    id: 'action_points',
-    title: 'Action Points',
-    message: `You have 3 Action Points (AP) per turn. Playing cards and attacking each cost 1 AP. Since you can't afford any creatures this turn, let's end your turn to get more essence.`,
-    targetElementId: 'player-ap',
-    arrowDirection: 'top',
-    advanceCondition: { type: 'click_next' },
-  },
-  {
-    id: 'end_turn_first',
-    title: 'End Your Turn',
-    message: `Click "End Turn" to pass. You can also press Space as a shortcut. Next turn you'll have 2 essence - enough to play a creature!`,
+    id: 'turn_1_end',
+    title: 'End Your First Turn',
+    message: `With only 1 Essence, you can't afford most cards yet. End your turn to gain more Essence next turn. Click "End Turn" or press Space.`,
     targetElementId: 'end-turn-btn',
     arrowDirection: 'top',
     advanceCondition: { type: 'turn_ended' },
   },
-
-  // === OPPONENT TURN 1 ===
   {
     id: 'opponent_turn_1',
     title: "Opponent's Turn",
-    message: `Watch your opponent. They also only have 1 essence, so they'll likely pass too.`,
+    message: `Your opponent (The Broodmother) also has limited Essence. Watch what they do...`,
     advanceCondition: { type: 'auto', delayMs: 2000 },
   },
-
-  // === TURN 2: PLAY FIRST CREATURE ===
   {
-    id: 'turn_2_intro',
-    title: 'Your Turn - Play a Creature!',
-    message: `Now you have 2 essence! Look for "Fortified Sentinel" in your hand (costs 2). Click it, then click an empty slot on your battlefield to summon it!`,
+    id: 'opponent_rush_attack',
+    title: 'Rush Attack!',
+    message: `The opponent played a creature with Rush - it can attack immediately! Their Commander gives ALL creatures Rush. You took damage to your life total.`,
+    advanceCondition: { type: 'auto', delayMs: 3500 },
+  },
+
+  // === PHASE 3: PLAY YOUR FIRST CREATURE (3 steps) ===
+  {
+    id: 'play_creature',
+    title: 'Fight Back!',
+    message: `Now you have 3 Essence. Find "Contract Killer" in your hand (costs 3) and click it, then click an empty slot on your battlefield to summon it!`,
     targetElementId: 'player-hand',
     arrowDirection: 'top',
     advanceCondition: { type: 'card_played' },
   },
-
-  // === CREATURE ON BOARD ===
   {
-    id: 'creature_stats',
-    title: 'Your First Creature!',
-    message: `Excellent! The red number is Attack (damage it deals), green is Health. When health reaches 0, the creature dies.`,
+    id: 'commander_passive_demo',
+    title: 'Commander Power!',
+    message: `Look at your creature - it shows Lifesteal AND Lethal! The card only has Lethal, but your Commander automatically granted Lifesteal. It also has +1 Health from your Commander!`,
     advanceCondition: { type: 'click_next' },
   },
   {
     id: 'summoning_sickness',
     title: 'Summoning Sickness',
-    message: `Creatures can't attack on the turn they're summoned - they need time to get ready. Some creatures have "Rush" which lets them attack immediately. End your turn to continue.`,
+    message: `See the "~" on your creature? That's Summoning Sickness - creatures can't attack the turn they're played. End your turn, and next turn you can fight!`,
     targetElementId: 'end-turn-btn',
     arrowDirection: 'top',
     advanceCondition: { type: 'turn_ended' },
   },
 
-  // === OPPONENT PLAYS RUSH CREATURE ===
+  // === PHASE 4: COMBAT & KEYWORDS (4 steps) ===
   {
-    id: 'opponent_rush',
-    title: 'Watch Out!',
-    message: `The opponent played a creature with Rush and attacked you! Rush creatures can attack immediately - they're dangerous early threats.`,
-    advanceCondition: { type: 'auto', delayMs: 3000 },
+    id: 'opponent_attacks_again',
+    title: 'Under Attack!',
+    message: `The enemy is attacking again! Watch how their Rush creatures keep hitting you. You need to fight back!`,
+    advanceCondition: { type: 'auto', delayMs: 3500 },
   },
-
-  // === TURN 3: COMBAT ===
   {
     id: 'attack_intro',
-    title: 'Time to Fight Back!',
-    message: `Your creature is ready now. Click on it, then click an enemy creature to attack. Creatures deal damage to each other simultaneously!`,
+    title: 'Attack!',
+    message: `Your creature is ready! Click on it, then click an enemy creature to attack. Combat is simultaneous - both creatures deal damage to each other.`,
     advanceCondition: { type: 'creature_attacked' },
   },
   {
-    id: 'combat_result',
-    title: 'Combat Resolved',
-    message: `Both creatures dealt their attack damage to each other. If either reaches 0 health, it dies. Keep playing cards and attacking to build your advantage!`,
+    id: 'lethal_lifesteal_explain',
+    title: 'Powerful Keywords!',
+    message: `Amazing! Lethal killed their creature instantly (any damage = death). Lifesteal healed you for the damage dealt! These keywords work together beautifully.`,
     advanceCondition: { type: 'click_next' },
   },
-
-  // === KEYWORDS & GUARD ===
   {
-    id: 'keywords_intro',
-    title: 'Card Keywords',
-    message: `Cards have special keywords. Look for "Iron Bastion" in your hand (4 cost) - it has Guard. Guard forces enemies to attack that creature first, protecting your other creatures and your life!`,
-    advanceCondition: { type: 'click_next' },
+    id: 'play_stealth_quick',
+    title: 'More Keywords',
+    message: `Play "Silent Assassin" from your hand - it has Stealth (can't be targeted by attacks while hidden) and Quick (attacks first in combat, avoiding counter-damage)!`,
+    targetElementId: 'player-hand',
+    arrowDirection: 'top',
+    advanceCondition: { type: 'card_played' },
   },
 
-  // === WINNING ===
+  // === PHASE 5: ADVANCED & FREEDOM (3 steps) ===
   {
-    id: 'winning',
-    title: 'How to Win',
-    message: `Reduce your opponent's life to 0 to win! If they have no Guard creatures, you can attack them directly. Use creatures, spells, and timing to outmaneuver your opponent.`,
+    id: 'supports_intro',
+    title: 'Support Cards',
+    message: `You also have "Supply Depot" - a Support card! Supports go in special slots and provide ongoing effects. Play it to see how Supports work.`,
+    targetElementId: 'player-hand',
+    arrowDirection: 'top',
+    advanceCondition: { type: 'card_played' },
+  },
+  {
+    id: 'ai_hint_intro',
+    title: 'Need Help?',
+    message: `Feeling stuck? Click "Get Hint" anytime to see what the AI recommends! It analyzes the board and suggests the best move. Use it whenever you need guidance.`,
+    targetElementId: 'ai-hint-panel',
+    arrowDirection: 'left',
     advanceCondition: { type: 'click_next' },
   },
-
-  // === TUTORIAL COMPLETE ===
   {
     id: 'tutorial_complete',
-    title: 'Tutorial Complete!',
-    message: `You know the basics of Essence Wars! Continue this game to practice, or return to the menu for a fresh match. Good luck, Commander!`,
+    title: "You're Ready!",
+    message: `You've learned the essentials: Commanders, Resources, Combat, and Keywords like Rush, Lethal, Lifesteal, Stealth, and Quick. Now finish this battle on your own! Good luck, Commander!`,
     advanceCondition: { type: 'click_next' },
   },
 ];

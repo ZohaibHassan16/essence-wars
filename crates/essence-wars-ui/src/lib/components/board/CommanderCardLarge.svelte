@@ -13,6 +13,7 @@
     insightAvailable = false,
     insightIndicator = false,
     onInsightClick,
+    tutorialId = undefined,
   }: {
     commander: CommanderDto | null;
     life: number;
@@ -24,6 +25,7 @@
     insightAvailable?: boolean;
     insightIndicator?: boolean;
     onInsightClick?: () => void;
+    tutorialId?: string;
   } = $props();
 
   // Track life changes for animation
@@ -156,6 +158,7 @@
   onmouseleave={() => showPopup = false}
   role="region"
   aria-label={commander ? `${commander.name} - ${life} HP` : "No commander"}
+  data-tutorial-id={tutorialId}
 >
   {#if commander}
     <!-- Portrait Section -->

@@ -782,22 +782,21 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 
 ### Phase 9 Tutorial and Onboarding
 - [ ] Update Ingame Tutorial (Human vs AI Mode)
-    - Explaining the Rules, how the game works, turns, Commanders, using seeded game replay game, etc 
+    - Explaining the Rules, how the game works, turns, Commanders, using seeded game replay game to now what will happen at every step along the tutorial 
     - Use Seed and check it via Claude Code MCP Game and replay binary
 - [ ] Players can play a game without having to read any rulebook
 
 ### Phase 10: Art Pass
-- Generate better backgrounds that fit the art direction of the game, replace existing ones
-- Use Flux Dev to create decorations and props, populate the Menus with thoughtful additions (not plastering it, but making it look nice). Include the prompts to have pure white background, so that the background can be removed and replaed with transparency programatically. Readfile tool every generated final asset before using it, regenarte/iterate if needed.
-- Overhall all Menus and Boards etc to be visually stunning and professional
+- Generate better backgrounds that fit the art direction of the game, replace existing ones (Collages of Commanders, Scenes, Key Locations? Worldmap?)
+- Use Flux Dev to create decorations and props, populate the Menus with thoughtful additions (not plastering it, but making it look nice). Include the prompts to have pure white background, so that the background can be removed and replaed with transparency programatically. Readfile tool every generated final asset before using it, regenerate/iterate if needed.
+- Overhaul all Menus and Boards etc to be visually stunning and professionally polished
 - Audit SFX Library, current creature sounds are placeholders. Web Search for a consistent art asset pack that fits our theme and replace the existing ones.
 
 ### Phase 11: Release Prep
-- [ ] Discuss Distribution Options, DevOps, Storage Solutions (Assets, the Github Repo is becoming too big)
+- [ ] Discuss Distribution Options, DevOps, Storage Solutions (For all Art Assets, the Github Repo is becoming too big, we can't keep git committing the static/ folder)
 - [ ] Containerization?
 - [ ] Build for Windows
 - [ ] Build for Linux
-- [ ] Create Github Releases as Github Actions
 - [ ] Installer/package creation
 - [ ] Final testing on both platforms
 - [ ] Documentation

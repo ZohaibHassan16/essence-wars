@@ -6,11 +6,13 @@
     support = null,
     slot,
     isHighlighted = false,
+    isPlayerSide = true,
     onClick,
   }: {
     support: SupportDto | null;
     slot: number;
     isHighlighted?: boolean;
+    isPlayerSide?: boolean;
     onClick?: () => void;
   } = $props();
 
@@ -55,6 +57,7 @@
     onmouseenter={() => isHovered = true}
     onmouseleave={() => isHovered = false}
     disabled={!onClick}
+    data-tutorial-id="{isPlayerSide ? 'player' : 'opponent'}-support-{slot}"
   >
     {#if support}
       <!-- Support art background -->

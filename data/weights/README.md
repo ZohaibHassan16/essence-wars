@@ -103,7 +103,6 @@ This ensures bots always work, even in fresh clones.
 
 ## See Also
 
-- [tuning-pipeline.md](../../docs/tuning-pipeline.md) - Complete tuning guide
 - [src/bots/weights.rs](../../src/bots/weights.rs) - Weight data structures
 - [src/tuning/](../../src/tuning/) - Tuning implementation
 
@@ -124,4 +123,3 @@ enemy_life_damage = 2.0
 # Optional deck-specific overrides
 ```
 
-See [tuning-pipeline-reference.md](../../docs/tuning-pipeline-reference.md) for details on the tuning workflow.

@@ -49,7 +49,7 @@
   }
 </script>
 
-<div class="hint-panel">
+<div class="hint-panel" data-tutorial-id="ai-hint-panel">
   <div class="hint-header">
     <span class="hint-title">AI Hint</span>
     <button class="hint-button" onclick={onRequestHint} disabled={isLoading}>

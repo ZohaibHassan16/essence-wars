@@ -202,6 +202,7 @@
         maxEssence={gameState?.opponent.maxEssence ?? 0}
         isActive={!isPlayerTurn}
         isPlayer={false}
+        tutorialId="opponent-commander"
       />
       <!-- Opponent compact stats below commander -->
       <div class="mt-2 flex items-center gap-3 text-xs text-ui-text-dim">
@@ -248,6 +249,7 @@
         insightAvailable={gameStore.insightAvailable && isPlayerTurn}
         insightIndicator={showInsightIndicator() && !gameStore.insightAvailable}
         onInsightClick={() => gameStore.applyCommanderInsight()}
+        tutorialId="player-commander"
       />
     </div>
   </div>

@@ -37,6 +37,7 @@
     <SupportSlot
       support={paddedSupports[0]}
       slot={0}
+      {isPlayerSide}
       isHighlighted={highlightedSlots.includes(0)}
       onClick={onSupportClick ? () => onSupportClick(0) : undefined}
     />
@@ -63,6 +64,7 @@
     <SupportSlot
       support={paddedSupports[1]}
       slot={1}
+      {isPlayerSide}
       isHighlighted={highlightedSlots.includes(1)}
       onClick={onSupportClick ? () => onSupportClick(1) : undefined}
     />
