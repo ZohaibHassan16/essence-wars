@@ -80,7 +80,7 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 | Feature | Status |
 |---------|--------|
 | Tournament modes (Swiss, double elimination) | OPEN |
-| ELO rating persistence across sessions | OPEN |
+| ELO rating persistence across sessions | DONE |
 | Matchup matrix output | DONE (via validate --matrix) |
 | Game replay export (seeds + decisions) | DONE (--export-replays) |
 
@@ -112,15 +112,21 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 
 ### Low Priority (Nice to Have)
 1. **HTML report generation** - Charts and visualizations in experiments folder
-2. **Tournament modes** - Swiss, double elimination for arena
-3. **ELO rating persistence** - Track bot strength across arena sessions
-4. **Tune resume from checkpoint** - Save/restore CMA-ES optimizer state
-5. **Hyperparameter auto-tuning** - Adaptive CMA-ES parameters
-6. **True multi-objective optimization** - Pareto frontier for win rate vs game length
+2. **Tournament modes** - Swiss for arena
+3. **Tune resume from checkpoint** - Save/restore CMA-ES optimizer state
+4. **Hyperparameter auto-tuning** - Adaptive CMA-ES parameters
+5. **True multi-objective optimization** - Pareto frontier for win rate vs game length
 
 ---
 
 ## Recently Completed
+
+- **ELO rating persistence** - DONE (2026-01-31)
+  - Automatic per-deck/commander ELO tracking in arena binary
+  - Stored in `data/ratings/deck_elo.json`
+  - Brief console summary after each match
+  - Full history with opponent info, deltas, and results
+  - Standard ELO formula (K=32, initial 1500)
 
 - **Validate → diagnose integration** - DONE (2026-01-31)
   - Added `--auto-diagnose` flag to validate binary

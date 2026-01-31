@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "last_updated": "2026-01-31T15:46:17.524694947+00:00",
+  "ratings": {
+    "grove_regenerate": {
+      "rating": 1493.0,
+      "games": 10,
+      "wins": 3,
+      "losses": 7,
+      "draws": 0,
+      "history": [
+        {
+          "date": "2026-01-31",
+          "opponent": "broodmother_pack",
+          "delta": -7,
+          "result": "loss",
+          "games": 10
+        }
+      ]
+    },
+    "broodmother_pack": {
+      "rating": 1494.0,
+      "games": 20,
+      "wins": 8,
+      "losses": 12,
+      "draws": 0,
+      "history": [
+        {
+          "date": "2026-01-31",
+          "opponent": "artificer_tokens",
+          "delta": -13,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-01-31",
+          "opponent": "grove_regenerate",
+          "delta": 7,
+          "result": "win",
+          "games": 10
+        }
+      ]
+    },
+    "artificer_tokens": {
+      "rating": 1513.0,
+      "games": 10,
+      "wins": 9,
+      "losses": 1,
+      "draws": 0,
+      "history": [
+        {
+          "date": "2026-01-31",
+          "opponent": "broodmother_pack",
+          "delta": 13,
+          "result": "win",
+          "games": 10
+        }
+      ]
+    }
+  }
+}

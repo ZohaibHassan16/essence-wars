@@ -18,7 +18,7 @@ use clap::Parser;
 
 use cardgame::arena::{
     load_deck, run_match_parallel, run_match_sequential, validate_faction_deck_binding,
-    ActionLogger, MatchConfig, SequentialConfig,
+    ActionLogger, EloTracker, MatchConfig, SequentialConfig,
 };
 use cardgame::bots::{AlphaBetaConfig, BotType, MctsConfig};
 use cardgame::core::state::GameMode;
@@ -433,4 +433,22 @@ fn main() {
 
     // Print results
     println!("{}", stats.summary());
+
+    // Update ELO ratings if both decks were specified
+    if let (Some(ref deck1_id), Some(ref deck2_id)) = (&args.deck1, &args.deck2) {
+        let elo_path = PathBuf::from("data/ratings/deck_elo.json");
+        let mut elo = EloTracker::load_or_create(&elo_path);
+
+        // Update ratings based on match results
+        let (delta1, delta2) = elo.update_match(deck1_id, deck2_id, &stats.overall);
+
+        // Save updated ratings
+        if let Err(e) = elo.save() {
+            eprintln!("Warning: Failed to save ELO ratings: {}", e);
+        } else if delta1 != 0 || delta2 != 0 {
+            // Print brief summary if there were changes
+            println!();
+            println!("ELO: {}", elo.format_summary(deck1_id, deck2_id, delta1, delta2));
+        }
+    }
 }

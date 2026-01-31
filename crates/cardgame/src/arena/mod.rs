@@ -30,6 +30,7 @@ mod config;
 mod deck_utils;
 mod executor;
 mod logger;
+pub mod rating;
 mod runner;
 mod stats;
 
@@ -61,3 +62,6 @@ pub use runner::{GameResult, GameRunner};
 
 // Statistics types
 pub use stats::{MatchStats, MatchupStats};
+
+// Rating types
+pub use rating::{DeckRating, EloTracker, MatchResult, RatingChange};
