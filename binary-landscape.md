@@ -11,7 +11,7 @@
 | arena | ~450 | Bot matches | Medium |
 | diagnose | ~310 | P1/P2 asymmetry analysis | Medium |
 | card_stats | ~340 | Per-card win contribution analysis | Medium |
-| validate | ~240 | Balance testing | Medium |
+| validate | ~300 | Balance testing + auto-diagnose | Medium |
 | balance_diff | ~290 | Compare validation runs | Low |
 | weight_diff | ~180 | Compare weight files | Low |
 | dataset_stats | ~270 | Dataset statistics | Low |
@@ -46,7 +46,7 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 
 | Gap | Status |
 |-----|--------|
-| validate and diagnose are siloed - validate could auto-invoke diagnose for outlier decks | OPEN |
+| validate and diagnose are siloed - validate could auto-invoke diagnose for outlier decks | DONE (`--auto-diagnose`) |
 | tune doesn't connect to validate for post-training verification | DONE |
 | No way to trace back from balance issues to specific cards | DONE (card_stats binary) |
 
@@ -110,22 +110,25 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 
 ## Remaining Open Items
 
-### Medium Priority
-1. **Validate → diagnose integration** - Auto-invoke diagnose for outlier decks
-   - When a deck shows significant imbalance, automatically run detailed diagnostics
-   - Implementation: Add `--auto-diagnose` flag to validate binary
-
 ### Low Priority (Nice to Have)
-2. **HTML report generation** - Charts and visualizations in experiments folder
-3. **Tournament modes** - Swiss, double elimination for arena
-4. **ELO rating persistence** - Track bot strength across arena sessions
-5. **Tune resume from checkpoint** - Save/restore CMA-ES optimizer state
-6. **Hyperparameter auto-tuning** - Adaptive CMA-ES parameters
-7. **True multi-objective optimization** - Pareto frontier for win rate vs game length
+1. **HTML report generation** - Charts and visualizations in experiments folder
+2. **Tournament modes** - Swiss, double elimination for arena
+3. **ELO rating persistence** - Track bot strength across arena sessions
+4. **Tune resume from checkpoint** - Save/restore CMA-ES optimizer state
+5. **Hyperparameter auto-tuning** - Adaptive CMA-ES parameters
+6. **True multi-objective optimization** - Pareto frontier for win rate vs game length
 
 ---
 
 ## Recently Completed
+
+- **Validate → diagnose integration** - DONE (2026-01-31)
+  - Added `--auto-diagnose` flag to validate binary
+  - Automatically runs diagnostics on outlier decks (win rate <40% or >60%)
+  - Configurable threshold via `--outlier-threshold`
+  - Runs mirror match + worst matchup diagnostics
+  - Includes critical turn analysis
+  - Saves reports to `experiments/validation/{run_id}/diagnostics/`
 
 - **Card synergy analysis** - DONE (2026-01-31)
   - Added `--synergy` flag to card_stats binary

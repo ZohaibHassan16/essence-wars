@@ -34,6 +34,7 @@
 //! ```
 
 mod analyzer;
+mod auto_diagnose;
 mod executor;
 mod game_diagnostics;
 mod matchup;
@@ -67,3 +68,6 @@ pub use report::{
     capitalize, export_json, export_matrix_csv, print_matchup_matrix, print_results,
     save_validation_results, ExportError,
 };
+
+// Re-export auto-diagnose utilities
+pub use auto_diagnose::{find_outliers, run_outlier_diagnostics, AutoDiagnoseConfig, OutlierDeck};

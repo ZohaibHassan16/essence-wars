@@ -20,8 +20,9 @@ use clap::Parser;
 use cardgame::bots::BotType;
 use cardgame::execution::{configure_thread_pool, parse_bot_type_or_exit, GameData, MatchupBuilder};
 use cardgame::validation::{
-    export_json, export_matrix_csv, print_matchup_matrix, print_results, save_validation_results,
-    ArchetypeWeights, BalanceAnalyzer, ValidationConfig, ValidationExecutor, ValidationResults,
+    export_json, export_matrix_csv, find_outliers, print_matchup_matrix, print_results,
+    run_outlier_diagnostics, save_validation_results, ArchetypeWeights, AutoDiagnoseConfig,
+    BalanceAnalyzer, ValidationConfig, ValidationExecutor, ValidationResults,
 };
 use cardgame::version::{self, VersionInfo};
 
@@ -98,6 +99,18 @@ struct Args {
     /// Export matchup matrix to CSV file
     #[arg(long)]
     matrix_csv: Option<PathBuf>,
+
+    /// Auto-diagnose outlier decks after validation
+    #[arg(long)]
+    auto_diagnose: bool,
+
+    /// Win rate delta from 50% to trigger diagnosis (default: 0.10 = 40-60% range)
+    #[arg(long, default_value = "0.10")]
+    outlier_threshold: f64,
+
+    /// Number of games for each diagnostic run
+    #[arg(long, default_value = "50")]
+    diagnose_games: usize,
 }
 
 fn main() {
@@ -174,7 +187,7 @@ fn main() {
     // Run validation
     let start_time = Instant::now();
     let executor = ValidationExecutor::new(&game_data.card_db, args.mcts_sims)
-        .with_bot_type(bot_type)
+        .with_bot_type(bot_type.clone())
         .with_alphabeta_depth(args.ab_depth)
         .with_progress(show_progress);
 
@@ -221,17 +234,69 @@ fn main() {
     }
 
     // Save to timestamped directory by default (or use specified output for backward compatibility)
-    if let Some(ref output_path) = args.output {
+    let output_dir = if let Some(ref output_path) = args.output {
         // Legacy mode: save only JSON to specified path
         if let Err(e) = export_json(&results, output_path) {
             eprintln!("Error: {}", e);
             process::exit(1);
         }
+        // No output directory in legacy mode
+        None
     } else {
         // New mode: save full results to timestamped directory
-        if let Err(e) = save_validation_results(&results, total_time, args.run_id.as_deref()) {
-            eprintln!("Error saving results: {}", e);
-            process::exit(1);
+        match save_validation_results(&results, total_time, args.run_id.as_deref()) {
+            Ok(dir) => Some(dir),
+            Err(e) => {
+                eprintln!("Error saving results: {}", e);
+                process::exit(1);
+            }
+        }
+    };
+
+    // Auto-diagnose outlier decks if requested
+    if args.auto_diagnose {
+        let outliers = find_outliers(
+            &results.summary,
+            &game_data.deck_registry,
+            args.outlier_threshold,
+        );
+
+        if outliers.is_empty() {
+            println!("\nNo outlier decks found (all within {:.0}-{:.0}% win rate range).",
+                (0.5 - args.outlier_threshold) * 100.0,
+                (0.5 + args.outlier_threshold) * 100.0);
+        } else {
+            println!("\n=== Auto-Diagnosing {} Outlier Deck(s) ===", outliers.len());
+
+            let diagnose_config = AutoDiagnoseConfig {
+                games: args.diagnose_games,
+                bot_type: bot_type.clone(),
+                alphabeta_depth: args.ab_depth,
+                mcts_sims: args.mcts_sims,
+                seed: args.seed,
+            };
+
+            // Determine output directory for diagnostics
+            let diag_output_dir = output_dir.unwrap_or_else(|| {
+                // If using legacy output mode, create a diagnostics directory next to the output file
+                args.output
+                    .as_ref()
+                    .and_then(|p| p.parent())
+                    .map(|p| p.to_path_buf())
+                    .unwrap_or_else(|| PathBuf::from("experiments/validation/diagnostics"))
+            });
+
+            if let Err(e) = run_outlier_diagnostics(
+                &outliers,
+                &game_data.deck_registry,
+                &game_data.card_db,
+                &diagnose_config,
+                &diag_output_dir,
+                show_progress,
+            ) {
+                eprintln!("Error running auto-diagnostics: {}", e);
+                process::exit(1);
+            }
         }
     }
 }
