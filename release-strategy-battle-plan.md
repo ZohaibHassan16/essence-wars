@@ -26,7 +26,7 @@ We are going to perform a **"Triple Pincer Attack"** targeting three distinct co
 This is your strongest asset. The code is clean, the tests are extensive, and the benchmarks are objective facts.
 
 1. **The Hook:** "I built a TCG engine that runs 18k games/sec. Here is how we handled cache-locality and state-cloning."
-2. **The Audience:** r/rust, Hacker News, Rust GameDev Discord.
+2. **The Audience:** Hacker News, ML/AI Friendly Groups
 3. **The Ask:** "Looking for feedback on my `unsafe` usage in the arena allocator and the memory footprint of the State struct."
 4. **Why this works:** Rust developers love optimization. They will respect the `245 ns` fork time. They won't care if AI wrote it; they care if it *compiles* and *runs fast*.
 5. **Preparation:** Ensure your `README.md` in the crate folder highlights those benchmark tables prominently.

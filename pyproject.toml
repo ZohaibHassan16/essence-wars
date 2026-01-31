@@ -49,6 +49,9 @@ Documentation = "https://christianWissmann85.github.io/essence-wars/"
 Repository = "https://github.com/christianWissmann85/essence-wars"
 Issues = "https://github.com/christianWissmann85/essence-wars/issues"
 
+[project.scripts]
+essence-wars = "essence_wars.cli:main"
+
 # Optional dependencies for pip install essence-wars[extra]
 [project.optional-dependencies]
 # Training: PyTorch, tensorboard, experiment tracking
@@ -66,6 +69,7 @@ analysis = [
     "plotly>=5.18.0",
     "jinja2>=3.1.0",
     "rich>=13.7.0",
+    "click>=8.1.0",
 ]
 # Huggingface Hub for model/dataset sharing
 hub = [
@@ -202,6 +206,8 @@ module = [
     "PIL",
     "PIL.*",
     # CLI & display
+    "click",
+    "click.*",
     "rich",
     "rich.*",
     "modal",
@@ -263,6 +269,7 @@ analysis = [
     "plotly>=5.18.0",
     "jinja2>=3.1.0",
     "rich>=13.7.0",
+    "click>=8.1.0",  # CLI framework
 ]
 
 # Huggingface Hub integration for model/dataset sharing

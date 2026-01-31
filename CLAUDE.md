@@ -54,6 +54,38 @@ RUST_LOG=info cargo run --release --bin arena -- --bot1 greedy --bot2 random --g
 RUST_LOG=debug cargo run --release --bin validate -- --games 10  # More verbose
 ```
 
+## Python CLI
+
+The `essence-wars` command provides a unified interface for all Python ML tools.
+
+```bash
+# Install CLI dependencies
+pip install essence-wars[analysis]  # Or: uv sync --group analysis
+
+# View available commands
+essence-wars --help
+
+# Training commands
+essence-wars train ppo --timesteps 500000
+essence-wars train alphazero --iterations 100
+essence-wars train behavioral-cloning --data data.jsonl.gz
+essence-wars train card2vec --data data.jsonl.gz --embed-dim 64
+essence-wars train decision-transformer --data data.jsonl.gz
+
+# Agent benchmarking
+essence-wars benchmark --checkpoint model.pt
+essence-wars benchmark --checkpoint model.pt --full-eval
+
+# Report generation
+essence-wars report generate --run-id latest --open
+essence-wars report generate-all --force
+essence-wars report aggregate --open
+essence-wars report leaderboard
+
+# Data generation
+essence-wars data generate-distillation --games 10000 --output data.jsonl.gz
+```
+
 ## Logging
 
 The library uses `log` crate for diagnostic messages (weight loading, errors). CLIs initialize `env_logger` automatically.
