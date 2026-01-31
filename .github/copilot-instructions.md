@@ -124,7 +124,7 @@ When adding tests for a core module, create the corresponding `_tests.rs` file i
 
 ### Card Definitions
 - **YAML format**: data/cards/core_set - 300 cards organized by faction (argentum.yaml, symbiote.yaml, obsidion.yaml, neutral.yaml - 75 cards each)
-- **Deck format**: TOML files in data/decks - Card ID arrays (20-30 cards), organized by faction subdirectories
+- **Deck format**: TOML files in data/decks - Card ID arrays (29-60 cards), organized by faction subdirectories
 - **12 Commander Decks**: 4 Argentum, 4 Symbiote, 4 Obsidion (see `cargo run --release --bin arena -- --list-decks`)
 
 ### Python Environment

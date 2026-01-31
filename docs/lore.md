@@ -10,7 +10,7 @@ In Omyra, Essence isn't just magic air; it is **Geological Memory**.
 The planet Omyra has a crystalline core that records history. Every few centuries, the tectonic plates shift, pushing "Raw Essence" to the surface in the form of **Prismatic Geodes**.
 
 * **Why it drives progress:** This isn't just fuel; it’s *information*. Refining Essence allows civilization to not only power machines but to "remember" lost technologies from the ancient past.
-* **The Conflict:** The "skirmishes" you mentioned aren't total war; they are **"Extraction Disputes."** When a new Essence vein erupts, factions rush in to secure the site. The fighting is regulated, professional, and often treated like a high-stakes sport by the civilians back home.
+* **The Conflict:** The "skirmishes" aren't total war; they are **"Extraction Disputes."** When a new Essence vein erupts, factions rush in to secure the site. The fighting is regulated, professional, and often treated like a high-stakes sport by the civilians back home.
 
 **The "Peaceful" Era:**
 We are in the **Year 302 of the Gilded Truce**. The massive wars of the past (The "Calamity of Silence") almost broke the planet. Now, the nations agree to limited warfare only in "Unclaimed Zones."
@@ -19,7 +19,7 @@ We are in the **Year 302 of the Gilded Truce**. The massive wars of the past (Th
 
 ## 2. The Factions (The "Triad" + Mercenaries)
 
-To keep things balanced and distinct (like Warcraft or MTG), there are three major superpowers who share the continent of **Pangea-Prime**, plus a neutral faction.
+To keep things balanced and distinct, there are three major superpowers who share the continent of **Pangea-Prime**, plus a neutral faction.
 
 ### 🏛️ Faction 1: The Argentum Combine (Order & Industry)
 
@@ -27,7 +27,6 @@ To keep things balanced and distinct (like Warcraft or MTG), there are three maj
 * **Philosophy:** "Structure is Safety."
 * **Essence Harvesting:** **Sublimation**. They burn Essence in massive pressure engines to create steam and electricity.
 * **Key Archetypes:** Soldiers, Guards, Constructs.
-* **Card Links:** *Iron Defender*, *Tower Sentinel*, *Siege Commander*.
 * **Lore Hook:** They believe the chaotic "Wild Essence" must be refined into perfect, predictable geometric shapes. They build the "Iron Fortress" decks.
 
 ### 🌿 Faction 2: The Symbiote Circles (Primal Nature & The Pack)
@@ -36,7 +35,6 @@ To keep things balanced and distinct (like Warcraft or MTG), there are three maj
 * **Philosophy:** "The Pack Endures. Hunt as One."
 * **Essence Harvesting:** **Communion**. They bond with ancient primordial forests, drawing power from sacred groves where Essence flows through root networks connecting all living things.
 * **Key Archetypes:** Wolves, Great Cats, Serpents, Druids, Treants.
-* **Card Links:** *Pack Alpha*, *Grove Guardian*, *Serpent Striker*.
 * **Lore Hook:** They don't command nature; they *are* nature. The pack hunts as one mind. The forest remembers those who protect it.
 
 ### 🔮 Faction 3: The Obsidion Syndicate (Knowledge & Ambition)
@@ -45,14 +43,12 @@ To keep things balanced and distinct (like Warcraft or MTG), there are three maj
 * **Philosophy:** "Power is Personal."
 * **Essence Harvesting:** **Infusion**. They inject liquid Essence directly into their bloodstreams or bind it to souls. This is risky but powerful.
 * **Key Archetypes:** Mages, Cultists, Assassins, Undead.
-* **Card Links:** *Blood Cultist*, *Vampire Lord*, *Storm Mage*.
 * **Lore Hook:** They are the "scientists" who went too far. They view the body as a limitation. They are the primary users of Spells and direct damage.
 
 ### ⚖️ Neutral Faction: The Free-Walkers (Mercenaries & Guilds)
 
 * **Vibe:** Rugged, Patchwork, Practical.
 * **Role:** They work for the highest bidder. They include the "Ranged" units (who sell their precision) and Giants (who sell their strength).
-* **Card Links:** *Sniper Marksman*, *Warlord Titan*, *War Drums*.
 
 ---
 
@@ -84,42 +80,9 @@ Here is how the factions interact on the continent of **Pangea-Prime**:
 
 ---
 
-## 4. Bringing the Cards to Life (Flavor & Art Direction)
+## 4. Lore Justification for Game Mechanics
 
-Let's take specific cards from your document and give them this new "Gilded Truce" flavor.
-
-### Example 1: `05 Iron Defender` (2 Cost, 1/4 Guard)
-
-* **Faction:** Argentum Combine
-* **Art Direction:** A bulky, bronze automaton. Its chest is a glowing furnace. A small, polite-looking gnome engineer is tightening a bolt on its leg while the robot holds a massive shield.
-* **Flavor Text:** *"It doesn't feel pain, fear, or pity. But according to the manual, it does feel 'Pride in a job well done.'"*
-
-### Example 2: `04 Toxic Spider` (1 Cost, 1/1 Lethal)
-
-* **Faction:** Symbiote Circles
-* **Art Direction:** A spider the size of a dog, but its abdomen is a translucent glass vial filled with glowing green liquid. It's climbing on a cogwheel.
-* **Flavor Text:** *"The Combine builds walls of steel. The forest grows through the cracks." — Grove Keeper*
-
-### Example 3: `31 Warlord Titan` (8 Cost, 8/8)
-
-* **Faction:** Neutral (Free-Walker)
-* **Art Direction:** A massive giant wearing patchwork armor made from scraps of Combine tanks, Circle bone plates, and Syndicate dark iron. He is holding a ship's anchor as a weapon.
-* **Flavor Text:** *"I don't care about your politics, little man. I care about how much Essence you can fit in this sack."*
-
-### Example 4: `33 Arcane Intellect` (3 Cost, Draw 2)
-
-* **Faction:** Obsidion Syndicate
-* **Renaming Idea:** **"Liquid Insight"**
-* **Art Direction:** A mage with tubes connected to their temples, eyes glowing white, seeing blueprints floating in the air.
-* **Flavor Text:** *"Why read history when you can inject it directly into your veins?"*
-
----
-
-## 5. Lore Justification for Game Mechanics
-
-Since you have a "Perfect Information" game, we should explain that in the lore!
-
-* **The "Overseer" Tech:** The players (You and the Opponent) are **Commanders** sitting in high-orbit airships or using "Farsight Tables."
+* **The "Overseer" Tech:** The players are **Commanders** sitting in high-orbit airships or using "Farsight Tables."
 * **No Fog of War:** In this era of high science, sensors are perfect. You can see exactly what the enemy has deployed. The strategy isn't about *hiding*; it's about *calculating* the outcome better than they can.
 * **Essence Generation:** The automatic +1 Essence per turn represents the steady output of your **Mobile Drilling Platform**. As the battle rages, your drill goes deeper, accessing more power (1 Essence -> 10 Essence).
 
@@ -142,19 +105,6 @@ The world is chaotic; the Combine brings order. They view the other factions as 
 * **Guard:** They fight in phalanxes and shield walls.
 * **Soldiers:** Disciplined ranks.
 * **Constructs:** Clockwork automatons powered by Essence cores.
-
-**Card Flavor Mapping:**
-
-* **`05 Iron Defender` (Guard):** A "Clockwork Sentry." It has no head, just a rotating sensor light.
-* *Flavor:* "Sector 4 secure. Initiating polishing protocol."
-
-
-* **`20 Siege Breaker` (Piercing):** A soldier wielding a massive, steam-powered pile driver lance.
-* *Flavor:* "A wall is just a door that hasn't been opened hard enough yet."
-
-
-* **`26 Warhost Captain` (Buffs Allies):** A commander with a megaphone amplifier built into their gorget/neck armor.
-* *Flavor:* "The Captain didn't shout. He broadcasted."
 
 ---
 
@@ -253,22 +203,6 @@ Parents are given flexibility to raise children as they see fit, within health a
 
 ---
 
-**Additional Humanoid Card Flavor:**
-
-* **Architect Commander:** An elegant figure in a pristine white coat, brass calculation device clicking in one hand, the other raised in precise command gesture.
-* *Flavor:* "The battle was won in the planning room. The field merely confirmed the calculations."
-
-* **Sentinel Captain:** A faceless helm above gleaming plate armor, standing perfectly at attention while chaos rages around them.
-* *Flavor:* "Hold the line. Hold it. Hold it. The line held."
-
-* **Artificer Prodigy:** A young woman with brass goggles pushed up on her forehead, grease-stained fingers adjusting a clockwork heart.
-* *Flavor:* "The machine was built to specifications. The specifications were simply... ambitious."
-
-* **Foundry Matron:** A powerfully-built woman in heat-resistant gear, molten metal reflecting in her protective visor.
-* *Flavor:* "Steel doesn't care about your intentions. Neither do I. Get it right or get out."
-
----
-
 ### 🌿 Faction 2: The Symbiote Circles
 
 **"The Pack Endures. Hunt as One."**
@@ -363,35 +297,6 @@ Parents celebrate whatever path their children choose. A family might include a 
 
 ---
 
-**Card Flavor Mapping:**
-
-* **Pack Alpha (Lethal):** A battle-scarred wolf matriarch with fangs that never miss their mark.
-* *Flavor:* "One bite. That's all she needs."
-
-
-* **Grove Guardian (Regenerate):** An ancient treant whose wounds seal with new bark before the enemy can strike again.
-* *Flavor:* "The forest remembers every axe. The forest forgives nothing."
-
-
-* **Swift Stalker (Rush):** A young hunter and her wolf, both eager for their first real battle.
-* *Flavor:* "The pack runs. The prey falls. This is the way."
-
-**Additional Character Flavor:**
-
-* **Pack Alpha Commander:** A fierce woman in wolf pelts, dire wolf at her side, rallying her pack with a howl that echoes across the battlefield.
-* *Flavor:* "Where the alpha howls, the pack follows."
-
-* **Beast Warden:** A muscular hunter whose great cat companion mirrors every movement, both coiled to spring.
-* *Flavor:* "She doesn't command the panther. They simply agree on who deserves to die."
-
-* **Circle Shaman:** An elder in feathered robes, communing with spirits visible only as dancing lights.
-* *Flavor:* "The ancestors fought beside us. They fight beside us still."
-
-* **Serpent Speaker:** An elegant figure with scales glinting beneath the skin, vipers coiled lovingly around both arms.
-* *Flavor:* "Venom is just nature's way of saying 'no.'"
-
----
-
 ### 🔮 Faction 3: The Obsidion Syndicate
 
 **"Ambition Unbound."**
@@ -407,21 +312,6 @@ The world is ignorant; the Syndicate brings enlightenment. They treat Essence li
 * **Spells / Mages:** Direct manipulation of reality.
 * **Lifesteal:** Draining life force to fuel their own.
 * **Assassin / Undead:** Those who have transcended mortality.
-
-**Card Flavor Mapping:**
-
-* **`21 Vampire Lord` (Lifesteal):** A "Hemomancer Noble." Pale, elegant, with tubes connecting his arm veins to a glowing backpack.
-* *Flavor:* "Blood is such an inefficient fuel. Let me show you how to refine it."
-
-
-* **`09 Blood Cultist` (Self-Damage):** A "Syndicate Intern."
-* *Flavor:* "Great power requires a small deposit. Usually a pint or two."
-
-
-* **`34 Lightning Bolt` (Spell):** A mage snapping their fingers, wearing a gauntlet of crackling glass.
-* *Flavor:* "Calculated voltage. Minimal waste. Maximum result."
-
----
 
 #### The People of the Syndicate
 
@@ -521,24 +411,6 @@ Most members are recruited from outside: brilliant students from Combine univers
 
 *"We don't kidnap children. That's inefficient. We wait until they're adults, show them what's possible, and let them make their own choices. The hungry ones always say yes."* — Covenant Broker Aldric Thane
 
----
-
-**Additional Humanoid Card Flavor:**
-
-* **Archon Eternal:** An ancient figure in magnificent robes, skin like parchment stretched over visible bone, eyes burning with centuries of accumulated knowledge.
-* *Flavor:* "I remember the Calamity of Silence. I caused part of it. I've had time to feel guilty. I got over it."
-
-* **Hemomancer Countess:** An impossibly beautiful woman in a crimson gown, delicate tubes running from her wrist to a floating crystalline heart that pulses with stolen life.
-* *Flavor:* "Your blood or mine? I'll give you a moment to decide. But only a moment."
-
-* **Storm Caller:** A wild-eyed mage with lightning literally dancing in her hair, hands encased in glass gauntlets crackling with barely-contained power.
-* *Flavor:* "Control is overrated. I prefer to let the lightning decide where to go. It usually agrees with me."
-
-* **Shadow Blade:** A figure more absence than presence, face hidden in living darkness, twin daggers that seem to cut the light itself.
-* *Flavor:* "You never saw me. You never will. The last thing you'll see is nothing at all."
-
----
-
 ### ⚖️ The Neutral Faction: The Free-Walkers
 
 **"No Flag. Just Gold."**
@@ -554,21 +426,6 @@ Survival and Profit. They are the mercenaries, the traders, and the giants who w
 * **Ranged:** Snipers and hunters who value distance.
 * **Giants:** Massive laborers turned warriors.
 * **Supports:** The infrastructure of war (Drums, Fountains).
-
-**Card Flavor Mapping:**
-
-* **`27 Sniper Marksman` (Ranged):** A "Wasteland Deadeye." Wrapped in desert rags with a rifle longer than she is tall.
-* *Flavor:* "Combine armor. Circle hide. It all breaks if you hit the soft spot."
-
-
-* **`31 Warlord Titan` (Board Clear):** A "Scrap-Colossus." A giant wearing a ship's hull as a helmet.
-* *Flavor:* "When the ground shakes, the negotiations are over."
-
-
-* **`40 War Drums` (Support):** Giant speakers mounted on a rover.
-* *Flavor:* "The rhythm of war is universal."
-
----
 
 #### The People of the Zones
 
@@ -672,24 +529,6 @@ Free-Walker children grow up fast. They learn to shoot, ride, trade, and survive
 Families are often unconventional: adopted children, found siblings, crew-as-family. Blood matters less than loyalty. If you share your water in the desert, you're kin.
 
 *"The Combine raises children to be components. The Circles raise children to be modified. The Syndicate raises children to be recruited. We raise children to be themselves. Dangerous, free, and ready for anything."* — Matriarch Chen, Last Hope Schoolkeeper
-
----
-
-**Additional Humanoid Card Flavor:**
-
-* **Caravan Matriarch:** A weathered woman in dusty robes, calculating profits on a salvaged Syndicate data-slate while her guards handle the "negotiation" outside.
-* *Flavor:* "Everyone has a price. My gift is knowing exactly what it is before they do."
-
-* **Long Rifle Veteran:** A scarred sniper, rifle longer than she is tall, one eye replaced with a Syndicate targeting lens, the other still sharp enough.
-* *Flavor:* "I've dropped targets at two miles. You're standing at fifty feet. I'd reconsider your tone."
-
-* **Titan Warchief:** A massive Giant in patchwork armor made from all three factions' technology, carrying an anchor repurposed as a weapon.
-* *Flavor:* "I don't care about your politics. I care about whether you can afford me. Can you?"
-
-* **Wasteland Healer:** A young Fixer with a kit containing Combine medical tools, Circle biological compounds, and Syndicate alchemicals—whatever keeps you breathing.
-* *Flavor:* "Circle moss for infection, Syndicate stimulant for blood loss, Combine sutures to close. See? Everybody has something useful."
-
----
 
 ## 6. Cross-Faction Dynamics
 

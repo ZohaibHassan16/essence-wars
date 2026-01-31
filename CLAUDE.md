@@ -167,7 +167,7 @@ Life, creature stats, board state, resources, keywords (guard/lethal/lifesteal/r
 | **Obsidion Syndicate** | Lifesteal, Stealth, Quick | Burst damage |
 | **Free-Walkers** (neutral) | Ranged, Charge | Utility splash |
 
-**Deck composition**: 30 cards = 21 faction (70%) + 9 neutral (30%)
+**Deck composition**: Minimum 30 cards (29 + commander), maximum 60 cards. Recommended: 21 faction (70%) + 9 neutral (30%)
 
 ## Card System
 
@@ -240,10 +240,10 @@ Life, creature stats, board state, resources, keywords (guard/lethal/lifesteal/r
 id = "architect_fortify"
 name = "Architect's Bastion"
 commander = 1059               # Commander ID (separate from cards)
-cards = [1001, 1002, ...]      # 30 cards (commander NOT included)
+cards = [1001, 1002, ...]      # 29-60 cards (commander NOT included)
 ```
 
-**Note:** Commanders are NOT in the deck. The deck has 30 cards + 1 commander (defined separately).
+**Note:** Commanders are NOT in the deck. The deck has 29-60 cards + 1 commander (defined separately).
 
 ## Commander System
 

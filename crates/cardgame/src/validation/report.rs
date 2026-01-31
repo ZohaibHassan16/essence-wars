@@ -124,6 +124,130 @@ pub fn export_json(results: &ValidationResults, path: &Path) -> Result<(), Expor
     Ok(())
 }
 
+/// Print a matchup matrix showing deck vs deck win rates.
+pub fn print_matchup_matrix(matchups: &[super::types::MatchupResult]) {
+    use std::collections::{BTreeSet, HashMap};
+
+    // Collect unique deck IDs (sorted for consistent order)
+    let mut deck_ids: BTreeSet<&str> = BTreeSet::new();
+    for m in matchups {
+        deck_ids.insert(&m.deck1_id);
+        deck_ids.insert(&m.deck2_id);
+    }
+    let deck_ids: Vec<&str> = deck_ids.into_iter().collect();
+
+    if deck_ids.is_empty() {
+        return;
+    }
+
+    // Build lookup map: (deck1_id, deck2_id) -> win_rate for deck1
+    let mut matrix: HashMap<(&str, &str), f64> = HashMap::new();
+    for m in matchups {
+        matrix.insert((&m.deck1_id, &m.deck2_id), m.faction1_win_rate);
+        // The inverse matchup (if we have deck2 as player 1)
+        matrix.insert((&m.deck2_id, &m.deck1_id), m.faction2_win_rate);
+    }
+
+    // Column width for deck names
+    let col_width = 7;
+
+    // Print header
+    println!();
+    println!("=== Matchup Matrix (Row Deck Win Rate) ===");
+    print!("{:20}", "");
+    for deck_id in &deck_ids {
+        print!(" {:>width$}", abbreviate_deck_name(deck_id, col_width), width = col_width);
+    }
+    println!();
+    println!("{}", "-".repeat(20 + (col_width + 1) * deck_ids.len()));
+
+    // Print each row
+    for row_deck in &deck_ids {
+        print!("{:20}", abbreviate_deck_name(row_deck, 20));
+        for col_deck in &deck_ids {
+            if row_deck == col_deck {
+                // Diagonal - self-matchup
+                print!(" {:>width$}", "-", width = col_width);
+            } else if let Some(&win_rate) = matrix.get(&(*row_deck, *col_deck)) {
+                print!(" {:>5.1}%", win_rate * 100.0);
+            } else {
+                // No data for this matchup
+                print!(" {:>width$}", "n/a", width = col_width);
+            }
+        }
+        println!();
+    }
+    println!();
+}
+
+/// Export matchup matrix to CSV file.
+pub fn export_matrix_csv(
+    matchups: &[super::types::MatchupResult],
+    path: &Path,
+) -> Result<(), ExportError> {
+    use std::collections::{BTreeSet, HashMap};
+    use std::io::Write;
+
+    // Collect unique deck IDs (sorted for consistent order)
+    let mut deck_ids: BTreeSet<&str> = BTreeSet::new();
+    for m in matchups {
+        deck_ids.insert(&m.deck1_id);
+        deck_ids.insert(&m.deck2_id);
+    }
+    let deck_ids: Vec<&str> = deck_ids.into_iter().collect();
+
+    // Build lookup map
+    let mut matrix: HashMap<(&str, &str), f64> = HashMap::new();
+    for m in matchups {
+        matrix.insert((&m.deck1_id, &m.deck2_id), m.faction1_win_rate);
+        matrix.insert((&m.deck2_id, &m.deck1_id), m.faction2_win_rate);
+    }
+
+    // Write CSV
+    let mut file = std::fs::File::create(path).map_err(ExportError::Io)?;
+
+    // Header row
+    write!(file, "deck").map_err(ExportError::Io)?;
+    for deck_id in &deck_ids {
+        write!(file, ",{}", deck_id).map_err(ExportError::Io)?;
+    }
+    writeln!(file).map_err(ExportError::Io)?;
+
+    // Data rows
+    for row_deck in &deck_ids {
+        write!(file, "{}", row_deck).map_err(ExportError::Io)?;
+        for col_deck in &deck_ids {
+            if row_deck == col_deck {
+                write!(file, ",").map_err(ExportError::Io)?;
+            } else if let Some(&win_rate) = matrix.get(&(*row_deck, *col_deck)) {
+                write!(file, ",{:.3}", win_rate).map_err(ExportError::Io)?;
+            } else {
+                write!(file, ",").map_err(ExportError::Io)?;
+            }
+        }
+        writeln!(file).map_err(ExportError::Io)?;
+    }
+
+    Ok(())
+}
+
+/// Abbreviate deck name/ID for compact display.
+fn abbreviate_deck_name(name: &str, max_len: usize) -> String {
+    // Try to use the first word, capitalize first letter
+    let first_word = name.split(|c: char| c == '_' || c == ' ').next().unwrap_or(name);
+    let abbreviated = if first_word.len() > max_len {
+        &first_word[..max_len]
+    } else {
+        first_word
+    };
+    // Capitalize first letter
+    let mut chars = abbreviated.chars();
+    match chars.next() {
+        None => String::new(),
+        Some(c) => c.to_uppercase().chain(chars).collect(),
+    }
+}
+
 /// Save comprehensive validation results to a timestamped directory.
 ///
 /// Creates a directory structure like `experiments/validation/YYYY-MM-DD_HHMM/`

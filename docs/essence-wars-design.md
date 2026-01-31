@@ -134,7 +134,7 @@ The New Horizons Edition contains **300 cards** organized across three factions 
 
 ## 4.1 Setup Procedure
 
-1. **Choose Decks:** Each player selects a deck of 20-30 cards.
+1. **Choose Decks:** Each player selects a deck of 29-60 cards (plus 1 commander).
 
 2. **Set Life Totals:** Both players set their life counters to **30**.
 
@@ -1010,8 +1010,8 @@ The New Horizons Edition features **12 pre-built Commander Decks** — each buil
 
 ## 17.1 Deck Construction Rules
 
-- **Deck Size:** 29 cards + 1 commander = 30 total
-- **Commander:** Chosen separately, not part of the 29-card deck
+- **Deck Size:** Minimum 29 cards + 1 commander (30 total), maximum 60 cards + 1 commander
+- **Commander:** Chosen separately, not part of the deck card count
 - **Card Copies:** Maximum 2 copies of any card per deck
 - **Composition:** Typically ~21 faction cards + ~8 neutral splash cards (70/30 split)
 

@@ -121,9 +121,9 @@ class EssenceWarsBenchmark:
         except (ImportError, AttributeError):
             # Fallback to known decks
             self.DECKS = [
-                "argentum_control", "argentum_midrange",
-                "symbiote_aggro", "symbiote_tempo",
-                "obsidion_burst", "obsidion_control",
+                "architect_fortify", "artificer_tokens", "vex_piercing", "sanctum_healer",
+                "broodmother_pack", "grove_regenerate", "plague_volatile", "alpha_frenzy",
+                "archon_burst", "sovereign_lifesteal", "deathmaster_assassin", "shadow_weaver",
             ]
 
     def _log(self, msg: str) -> None:
@@ -233,8 +233,8 @@ class EssenceWarsBenchmark:
 
         for game_idx in range(num_games):
             # Select random decks for variety
-            deck1 = np.random.choice(self.DECKS) if self.DECKS else "argentum_control"
-            deck2 = np.random.choice(self.DECKS) if self.DECKS else "symbiote_aggro"
+            deck1 = np.random.choice(self.DECKS) if self.DECKS else "architect_fortify"
+            deck2 = np.random.choice(self.DECKS) if self.DECKS else "broodmother_pack"
 
             # Create game
             game = PyGame(
@@ -430,8 +430,8 @@ class EssenceWarsBenchmark:
         wins = 0
 
         for game_idx in range(num_games):
-            deck1 = np.random.choice(self.DECKS) if self.DECKS else "argentum_control"
-            deck2 = np.random.choice(self.DECKS) if self.DECKS else "symbiote_aggro"
+            deck1 = np.random.choice(self.DECKS) if self.DECKS else "architect_fortify"
+            deck2 = np.random.choice(self.DECKS) if self.DECKS else "broodmother_pack"
 
             game = PyGame(
                 deck1=deck1,

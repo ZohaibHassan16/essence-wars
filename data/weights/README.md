@@ -72,7 +72,7 @@ cargo run --release --bin arena -- \
 cargo run --release --bin arena -- \
   --bot1 greedy --weights1 data/weights/generalist.toml \
   --bot2 greedy --weights2 data/weights/specialists/argentum.toml \
-  --deck1 argentum_control --deck2 symbiote_aggro \
+  --deck1 architect_fortify --deck2 broodmother_pack \
   --games 500
 ```
 

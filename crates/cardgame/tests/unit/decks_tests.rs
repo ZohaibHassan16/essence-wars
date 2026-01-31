@@ -84,17 +84,41 @@ fn test_deck_validation() {
     };
     assert!(invalid_commander_deck.validate(&card_db).is_err());
 
-    // Invalid deck (wrong number of cards)
-    let wrong_size_deck = DeckDefinition {
-        id: "wrong_size".to_string(),
-        name: "Wrong Size".to_string(),
+    // Invalid deck (too few cards)
+    let too_small_deck = DeckDefinition {
+        id: "too_small".to_string(),
+        name: "Too Small".to_string(),
         description: String::new(),
         playstyle: String::new(),
         commander: 5001,
-        cards: vec![1000, 1001, 1002], // Only 3 cards
+        cards: vec![1000, 1001, 1002], // Only 3 cards (min is 29)
         tags: vec![],
     };
-    assert!(wrong_size_deck.validate(&card_db).is_err());
+    assert!(too_small_deck.validate(&card_db).is_err());
+
+    // Invalid deck (too many cards)
+    let too_large_deck = DeckDefinition {
+        id: "too_large".to_string(),
+        name: "Too Large".to_string(),
+        description: String::new(),
+        playstyle: String::new(),
+        commander: 5001,
+        cards: vec![1000; 61], // 61 cards (max is 60)
+        tags: vec![],
+    };
+    assert!(too_large_deck.validate(&card_db).is_err());
+
+    // Valid deck at maximum size (60 cards)
+    let max_size_deck = DeckDefinition {
+        id: "max_size".to_string(),
+        name: "Max Size".to_string(),
+        description: String::new(),
+        playstyle: String::new(),
+        commander: 5001,
+        cards: vec![1000; 60], // Exactly 60 cards (the max)
+        tags: vec![],
+    };
+    assert!(max_size_deck.validate(&card_db).is_ok());
 }
 
 #[test]

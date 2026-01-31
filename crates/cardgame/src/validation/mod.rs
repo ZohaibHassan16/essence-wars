@@ -63,4 +63,7 @@ pub use executor::ValidationExecutor;
 pub use analyzer::BalanceAnalyzer;
 
 // Re-export report utilities
-pub use report::{capitalize, export_json, print_results, save_validation_results, ExportError};
+pub use report::{
+    capitalize, export_json, export_matrix_csv, print_matchup_matrix, print_results,
+    save_validation_results, ExportError,
+};

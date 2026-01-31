@@ -54,11 +54,16 @@ pub mod game {
     /// Deck size for starter/testing decks
     pub const STARTER_DECK_SIZE: usize = 20;
 
-    /// Deck size for standard/competitive play
+    /// Deck size for standard/competitive play (recommended)
     pub const STANDARD_DECK_SIZE: usize = 30;
 
-    /// Maximum deck size
-    pub const MAX_DECK_SIZE: usize = 30;
+    /// Minimum deck size (excluding commander)
+    /// Decks must have at least this many cards for consistency.
+    pub const MIN_DECK_SIZE: usize = 29;
+
+    /// Maximum deck size (excluding commander)
+    /// Larger decks trade consistency for fatigue resistance.
+    pub const MAX_DECK_SIZE: usize = 60;
 
     /// Turn limit (game ends at this turn)
     pub const TURN_LIMIT: u8 = 30;

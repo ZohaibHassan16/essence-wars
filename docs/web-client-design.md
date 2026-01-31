@@ -783,7 +783,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 ### Phase 9 Tutorial and Onboarding
 - [ ] Update Ingame Tutorial (Human vs AI Mode)
     - Explaining the Rules, how the game works, turns, Commanders, using seeded game replay game, etc 
-    - Use Seed and check it via Claude Code MCP Game and traced seed match in Arena
+    - Use Seed and check it via Claude Code MCP Game and replay binary
 - [ ] Players can play a game without having to read any rulebook
 
 ### Phase 10: Art Pass

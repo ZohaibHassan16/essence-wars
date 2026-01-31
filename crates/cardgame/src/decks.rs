@@ -132,7 +132,7 @@ pub struct DeckDefinition {
     pub playstyle: String,
     /// Commander card ID (must be a commander card)
     pub commander: u16,
-    /// Card IDs in the deck (30 cards, excluding commander)
+    /// Card IDs in the deck (29-60 cards, excluding commander)
     pub cards: Vec<u16>,
     /// Tags for categorization (e.g., "aggro", "control", "midrange")
     #[serde(default)]
@@ -153,16 +153,20 @@ impl DeckDefinition {
     /// Validate deck structure and all cards exist in the database.
     ///
     /// Validates:
-    /// - Deck has exactly 29 cards (excluding commander, 30 total)
+    /// - Deck has 29-60 cards (excluding commander)
     /// - Commander exists and is a commander card
     /// - All cards exist in the database
     pub fn validate(&self, card_db: &CardDatabase) -> Result<(), DeckError> {
-        // Validate deck size (29 cards + commander = 30 total)
-        if self.cards.len() != 29 {
+        use crate::core::config::game;
+
+        // Validate deck size (MIN_DECK_SIZE to MAX_DECK_SIZE cards, excluding commander)
+        let card_count = self.cards.len();
+        if card_count < game::MIN_DECK_SIZE || card_count > game::MAX_DECK_SIZE {
             return Err(DeckError::InvalidDeckSize {
                 deck_id: self.id.clone(),
-                expected: 29,
-                actual: self.cards.len(),
+                min: game::MIN_DECK_SIZE,
+                max: game::MAX_DECK_SIZE,
+                actual: card_count,
             });
         }
 
@@ -391,8 +395,8 @@ pub enum DeckError {
     DuplicateId(String),
     /// Card not found in database
     InvalidCard { deck_id: String, card_id: u16 },
-    /// Invalid deck size
-    InvalidDeckSize { deck_id: String, expected: usize, actual: usize },
+    /// Invalid deck size (outside allowed range)
+    InvalidDeckSize { deck_id: String, min: usize, max: usize, actual: usize },
     /// Invalid commander
     InvalidCommander { deck_id: String, card_id: u16, reason: String },
 }
@@ -409,8 +413,8 @@ impl std::fmt::Display for DeckError {
             DeckError::InvalidCard { deck_id, card_id } => {
                 write!(f, "Card {} not found (deck: {})", card_id, deck_id)
             }
-            DeckError::InvalidDeckSize { deck_id, expected, actual } => {
-                write!(f, "Deck '{}' has {} cards (excluding commander), expected {}", deck_id, actual, expected)
+            DeckError::InvalidDeckSize { deck_id, min, max, actual } => {
+                write!(f, "Deck '{}' has {} cards (excluding commander), expected {}-{}", deck_id, actual, min, max)
             }
             DeckError::InvalidCommander { deck_id, card_id, reason } => {
                 write!(f, "Invalid commander {} in deck '{}': {}", card_id, deck_id, reason)
