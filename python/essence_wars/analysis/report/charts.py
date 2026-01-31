@@ -14,6 +14,7 @@ from plotly.subplots import make_subplots
 if TYPE_CHECKING:
     from .loaders.validation import DeckStats, ValidationData
     from .loaders.tuning import TuningData
+    from .loaders.elo import EloData, DeckRating
 
 # Faction colors matching the game's aesthetic
 FACTION_COLORS = {
@@ -603,5 +604,285 @@ def create_convergence_status(tuning_experiments: list["TuningData"]) -> str:
         margin={"t": 50, "b": 100, "l": 60, "r": 30},
         showlegend=False,
     )
+
+    return fig.to_html(full_html=False, include_plotlyjs=False)
+
+
+def create_elo_rankings_bar(elo_data: "EloData") -> str:
+    """Create a horizontal bar chart of ELO ratings.
+
+    Args:
+        elo_data: EloData object with ratings
+
+    Returns:
+        HTML string with embedded Plotly chart
+    """
+    ranked_decks = elo_data.get_ranked_decks()
+
+    names = [d.commander_name or d.deck_id for d in ranked_decks]
+    ratings = [d.rating for d in ranked_decks]
+    colors = [FACTION_COLORS.get(d.faction or "", DARK_THEME["text_secondary"]) for d in ranked_decks]
+    win_rates = [d.win_rate * 100 for d in ranked_decks]
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Bar(
+            y=names,
+            x=ratings,
+            orientation="h",
+            marker_color=colors,
+            customdata=win_rates,
+            hovertemplate="<b>%{y}</b><br>ELO: %{x:.0f}<br>Win Rate: %{customdata:.1f}%<extra></extra>",
+        )
+    )
+
+    # Add 1500 baseline reference
+    fig.add_vline(x=1500, line_dash="dash", line_color=DARK_THEME["text_secondary"], line_width=1)
+
+    fig.update_layout(
+        title={"text": "ELO Ratings", "font": {"color": DARK_THEME["text_primary"]}},
+        paper_bgcolor=DARK_THEME["bg_primary"],
+        plot_bgcolor=DARK_THEME["bg_secondary"],
+        font={"color": DARK_THEME["text_primary"]},
+        xaxis={
+            "title": "ELO Rating",
+            "gridcolor": DARK_THEME["grid"],
+            "zeroline": False,
+        },
+        yaxis={"title": None, "gridcolor": DARK_THEME["grid"], "autorange": "reversed"},
+        height=max(300, len(ranked_decks) * 35),
+        margin={"t": 50, "b": 50, "l": 150, "r": 30},
+        showlegend=False,
+    )
+
+    return fig.to_html(full_html=False, include_plotlyjs=False)
+
+
+def create_elo_timeline(elo_data: "EloData", max_decks: int = 6) -> str:
+    """Create a line chart showing ELO rating changes over time.
+
+    Args:
+        elo_data: EloData object with ratings
+        max_decks: Maximum number of decks to show (for readability)
+
+    Returns:
+        HTML string with embedded Plotly chart
+    """
+    # Get top decks by current rating
+    ranked_decks = elo_data.get_ranked_decks()[:max_decks]
+
+    fig = go.Figure()
+
+    # Color palette
+    colors = [
+        FACTION_COLORS.get(d.faction or "", DARK_THEME["text_secondary"])
+        for d in ranked_decks
+    ]
+
+    for i, deck in enumerate(ranked_decks):
+        timeline = deck.get_rating_timeline()
+        if not timeline:
+            continue
+
+        # Add starting point
+        dates = ["Start"] + [t[0] for t in timeline]
+        ratings = [1500.0] + [t[1] for t in timeline]
+
+        fig.add_trace(
+            go.Scatter(
+                x=list(range(len(dates))),
+                y=ratings,
+                name=deck.commander_name or deck.deck_id,
+                line={"color": colors[i], "width": 2},
+                mode="lines+markers",
+                marker={"size": 6},
+                hovertemplate=f"{deck.commander_name}<br>Rating: %{{y:.0f}}<extra></extra>",
+            )
+        )
+
+    # Add 1500 baseline
+    fig.add_hline(y=1500, line_dash="dash", line_color=DARK_THEME["text_secondary"], line_width=1)
+
+    fig.update_layout(
+        title={"text": "Rating History", "font": {"color": DARK_THEME["text_primary"]}},
+        paper_bgcolor=DARK_THEME["bg_primary"],
+        plot_bgcolor=DARK_THEME["bg_secondary"],
+        font={"color": DARK_THEME["text_primary"]},
+        xaxis={
+            "title": "Match Sequence",
+            "gridcolor": DARK_THEME["grid"],
+        },
+        yaxis={
+            "title": "ELO Rating",
+            "gridcolor": DARK_THEME["grid"],
+        },
+        height=350,
+        margin={"t": 50, "b": 50, "l": 60, "r": 30},
+        legend={
+            "orientation": "v",
+            "yanchor": "top",
+            "y": 1,
+            "xanchor": "left",
+            "x": 1.02,
+        },
+    )
+
+    return fig.to_html(full_html=False, include_plotlyjs=False)
+
+
+def create_elo_prediction_heatmap(elo_data: "EloData") -> str:
+    """Create a heatmap of predicted win rates based on ELO.
+
+    Args:
+        elo_data: EloData object with ratings
+
+    Returns:
+        HTML string with embedded Plotly chart
+    """
+    predictions = elo_data.get_matchup_predictions()
+    deck_ids = list(predictions.keys())
+
+    # Sort by rating
+    ranked_decks = elo_data.get_ranked_decks()
+    sorted_ids = [d.deck_id for d in ranked_decks]
+
+    # Build labels and matrix
+    labels = [
+        elo_data.ratings[d].commander_name or d
+        for d in sorted_ids
+        if d in predictions
+    ]
+
+    z_values = []
+    hover_text = []
+
+    for d1 in sorted_ids:
+        if d1 not in predictions:
+            continue
+        row = []
+        hover_row = []
+        for d2 in sorted_ids:
+            if d2 not in predictions:
+                continue
+            val = predictions[d1].get(d2, 0.5)
+            row.append(val)
+            name1 = elo_data.ratings[d1].commander_name or d1
+            name2 = elo_data.ratings[d2].commander_name or d2
+            hover_row.append(f"{name1} vs {name2}<br>Expected: {val*100:.1f}%")
+        z_values.append(row)
+        hover_text.append(hover_row)
+
+    fig = go.Figure(
+        data=go.Heatmap(
+            z=z_values,
+            x=labels,
+            y=labels,
+            colorscale=[
+                [0.0, "#dc3545"],  # Red for 0%
+                [0.4, "#ffc107"],  # Yellow for 40%
+                [0.5, "#ffffff"],  # White for 50%
+                [0.6, "#28a745"],  # Green for 60%
+                [1.0, "#00d26a"],  # Bright green for 100%
+            ],
+            zmin=0,
+            zmax=1,
+            text=hover_text,
+            hoverinfo="text",
+            colorbar={
+                "title": {"text": "Win Prob", "font": {"color": DARK_THEME["text_primary"]}},
+                "tickvals": [0, 0.25, 0.5, 0.75, 1.0],
+                "ticktext": ["0%", "25%", "50%", "75%", "100%"],
+                "tickfont": {"color": DARK_THEME["text_primary"]},
+            },
+        )
+    )
+
+    fig.update_layout(
+        title={"text": "Predicted Win Rates (ELO-based)", "font": {"color": DARK_THEME["text_primary"]}},
+        paper_bgcolor=DARK_THEME["bg_primary"],
+        plot_bgcolor=DARK_THEME["bg_secondary"],
+        font={"color": DARK_THEME["text_primary"]},
+        xaxis={"title": "Opponent", "tickangle": 45},
+        yaxis={"title": "Deck", "autorange": "reversed"},
+        height=max(400, len(labels) * 40),
+        margin={"t": 50, "b": 120, "l": 150, "r": 30},
+    )
+
+    return fig.to_html(full_html=False, include_plotlyjs=False)
+
+
+def create_faction_elo_comparison(elo_data: "EloData") -> str:
+    """Create a grouped bar chart comparing faction performance.
+
+    Args:
+        elo_data: EloData object with ratings
+
+    Returns:
+        HTML string with embedded Plotly chart
+    """
+    faction_standings = elo_data.get_faction_standings()
+
+    factions = list(faction_standings.keys())
+    avg_ratings = [faction_standings[f]["avg_rating"] for f in factions]
+    win_rates = [faction_standings[f]["win_rate"] * 100 for f in factions]
+    colors = [FACTION_COLORS.get(f, DARK_THEME["text_secondary"]) for f in factions]
+
+    fig = make_subplots(
+        rows=1,
+        cols=2,
+        subplot_titles=("Average ELO Rating", "Win Rate (%)"),
+        horizontal_spacing=0.15,
+    )
+
+    # Average rating bars
+    fig.add_trace(
+        go.Bar(
+            x=[f.title() for f in factions],
+            y=avg_ratings,
+            marker_color=colors,
+            name="Avg ELO",
+            showlegend=False,
+            hovertemplate="<b>%{x}</b><br>Avg ELO: %{y:.0f}<extra></extra>",
+        ),
+        row=1,
+        col=1,
+    )
+
+    # Win rate bars
+    fig.add_trace(
+        go.Bar(
+            x=[f.title() for f in factions],
+            y=win_rates,
+            marker_color=colors,
+            name="Win Rate",
+            showlegend=False,
+            hovertemplate="<b>%{x}</b><br>Win Rate: %{y:.1f}%<extra></extra>",
+        ),
+        row=1,
+        col=2,
+    )
+
+    # Add 1500 baseline to ELO chart
+    fig.add_hline(y=1500, line_dash="dash", line_color=DARK_THEME["text_secondary"], line_width=1, row=1, col=1)
+
+    # Add 50% baseline to win rate chart
+    fig.add_hline(y=50, line_dash="dash", line_color=DARK_THEME["text_secondary"], line_width=1, row=1, col=2)
+
+    fig.update_layout(
+        paper_bgcolor=DARK_THEME["bg_primary"],
+        plot_bgcolor=DARK_THEME["bg_secondary"],
+        font={"color": DARK_THEME["text_primary"]},
+        height=300,
+        margin={"t": 50, "b": 50, "l": 60, "r": 30},
+    )
+
+    # Update axes
+    fig.update_yaxes(gridcolor=DARK_THEME["grid"], row=1, col=1)
+    fig.update_yaxes(gridcolor=DARK_THEME["grid"], row=1, col=2)
+
+    # Style subplot titles
+    for annotation in fig["layout"]["annotations"]:
+        annotation["font"] = {"color": DARK_THEME["text_primary"]}
 
     return fig.to_html(full_html=False, include_plotlyjs=False)

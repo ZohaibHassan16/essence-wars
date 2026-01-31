@@ -27,7 +27,7 @@
 
 ## Opportunities Identified
 
-### 1. Cross-Binary Code Consolidation
+### ✅ 1. Cross-Binary Code Consolidation [DONE]
 
 ~~Significant duplication in data loading, bot configuration, weight resolution, and output formatting. Could extract into a cli_common module.~~
 
@@ -43,7 +43,7 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 
 ---
 
-### 2. Integration Gaps
+### ✅ 2. Integration Gaps [DONE]
 
 | Gap | Status |
 |-----|--------|
@@ -53,7 +53,7 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 
 ---
 
-### 3. Missing Capabilities
+### ✅ 3. Missing Capabilities [DONE]
 
 | Idea | Description | Status |
 |------|-------------|--------|
@@ -65,7 +65,7 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 
 ---
 
-### 4. Validate Enhancements
+### ✅ 4. Validate Enhancements [DONE]
 
 | Feature | Status |
 |---------|--------|
@@ -76,7 +76,7 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 
 ---
 
-### 5. Arena Enhancements
+### ✅ 5. Arena Enhancements [DONE]
 
 | Feature | Status |
 |---------|--------|
@@ -87,7 +87,7 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 
 ---
 
-### 6. Diagnose Enhancements
+### ✅ 6. Diagnose Enhancements [DONE]
 
 | Feature | Status |
 |---------|--------|
@@ -114,22 +114,25 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 ### Low Priority (Nice to Have)
 1. **Hyperparameter auto-tuning** - Adaptive CMA-ES parameters
 2. **True multi-objective optimization** - Pareto frontier for win rate vs game length
-3. **Tuning + ELO tabs in HTML reports** - Phase 3B/3C of report generator
 
 ---
 
 ## Recently Completed
 
-- **HTML report generator (MVP)** - DONE (2026-01-31)
+- **HTML report generator (Full)** - DONE (2026-01-31)
   - New Python script: `python/scripts/generate_report.py`
-  - Unified HTML report with tabs: Overview, Validation
+  - Unified HTML report with 4 tabs: Overview, Validation, Tuning, ELO
   - Health gauge showing overall balance score
   - Key metrics cards: total games, decks tested, P1/P2 balance, outlier count
   - Interactive Plotly charts: deck win rates, matchup heatmap, faction distribution
-  - Sortable deck performance table with confidence intervals
-  - Dark theme with faction colors
+  - Tuning tab with training curves (fitness, win rate, sigma), experiment comparison
+  - ELO tab with rankings, rating timeline, matchup predictions, match history
+  - Aggregated dashboard with `--aggregate` option
+  - Batch generation with `--generate-all`, `--since`, `--limit`, `--force`
+  - Dark/light theme support (`--theme light`)
+  - Sortable tables with confidence intervals
   - Run with: `uv run python python/scripts/generate_report.py --run-id latest`
-  - Core module: `python/essence_wars/analysis/report/` (~800 lines)
+  - Core module: `python/essence_wars/analysis/report/` (~2000 lines)
 
 - **Tune checkpoint resume** - DONE (2026-01-31)
   - `--resume <run_id>` flag to resume from interrupted runs

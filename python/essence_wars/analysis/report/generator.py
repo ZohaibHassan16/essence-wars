@@ -10,9 +10,11 @@ from pathlib import Path
 
 from .loaders.validation import ValidationData, find_latest_validation, load_validation_data
 from .loaders.tuning import load_multiple_tuning_experiments
+from .loaders.elo import load_elo_data, elo_file_exists
 from .tabs.overview import OverviewTab
 from .tabs.validation import ValidationTab
 from .tabs.tuning import TuningTab
+from .tabs.elo import EloTab
 
 # Default output directory
 DEFAULT_OUTPUT_DIR = Path("experiments/reports")
@@ -46,6 +48,7 @@ class ReportGenerator:
         run_id: str | None = None,
         validation_dir: Path | str = "experiments/validation",
         tuning_dir: Path | str = "experiments/mcts",
+        elo_file: Path | str | None = None,
         tabs: list[str] | None = None,
     ) -> Path:
         """Generate a report for a single validation run.
@@ -54,6 +57,7 @@ class ReportGenerator:
             run_id: Validation run ID ("latest" for most recent)
             validation_dir: Base directory for validation runs
             tuning_dir: Base directory for tuning experiments
+            elo_file: Path to ELO ratings file (default: data/ratings/deck_elo.json)
             tabs: List of tabs to include (default: all)
 
         Returns:
@@ -68,10 +72,20 @@ class ReportGenerator:
             limit=10,
         )
 
+        # Load ELO data if available
+        elo_data = None
+        if elo_file_exists(elo_file):
+            try:
+                elo_data = load_elo_data(elo_file)
+            except Exception:
+                pass  # Skip ELO tab if loading fails
+
         # Determine which tabs to include
         all_tabs = ["overview", "validation"]
         if tuning_experiments:
             all_tabs.append("tuning")
+        if elo_data and elo_data.ratings:
+            all_tabs.append("elo")
         tabs = tabs or all_tabs
         tabs = [t for t in tabs if t in all_tabs]
 
@@ -87,6 +101,8 @@ class ReportGenerator:
             tab_content["validation"] = ValidationTab(data).render()
         if "tuning" in tabs and tuning_experiments:
             tab_content["tuning"] = TuningTab(tuning_experiments).render()
+        if "elo" in tabs and elo_data:
+            tab_content["elo"] = EloTab(elo_data).render()
 
         # Generate HTML
         html = self._render_html(
@@ -780,6 +796,101 @@ body {
     color: var(--text-secondary);
 }
 
+/* ELO tab styles */
+.chart-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.trend-up { color: var(--success); font-weight: bold; }
+.trend-down { color: var(--danger); font-weight: bold; }
+.trend-stable { color: var(--text-secondary); }
+
+.form-win { color: var(--success); font-weight: 600; margin: 0 1px; }
+.form-loss { color: var(--danger); font-weight: 600; margin: 0 1px; }
+.form-draw { color: var(--warning); font-weight: 600; margin: 0 1px; }
+
+.history-section {
+    margin-top: 2rem;
+}
+
+.history-section h3 {
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.history-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.history-card {
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.history-header .deck-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.history-header .current-rating {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.35rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.history-item.history-win {
+    background: rgba(0, 210, 106, 0.1);
+}
+
+.history-item.history-loss {
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.history-item.history-draw {
+    background: rgba(255, 193, 7, 0.1);
+}
+
+.history-item .opponent {
+    color: var(--text-secondary);
+}
+
+.history-item .delta {
+    font-weight: 600;
+}
+
+.history-win .delta { color: var(--success); }
+.history-loss .delta { color: var(--danger); }
+.history-draw .delta { color: var(--warning); }
+
 /* Responsive */
 @media (max-width: 768px) {
     .report-header {
@@ -899,6 +1010,7 @@ function sortTable(table, columnIndex) {
         self,
         validation_dir: Path | str = "experiments/validation",
         tuning_dir: Path | str = "experiments/mcts",
+        elo_file: Path | str | None = None,
         since: datetime | None = None,
         limit: int | None = None,
         force: bool = False,
@@ -909,6 +1021,7 @@ function sortTable(table, columnIndex) {
         Args:
             validation_dir: Base directory for validation runs
             tuning_dir: Base directory for tuning experiments
+            elo_file: Path to ELO ratings file
             since: Only generate for runs after this date
             limit: Only generate for the N most recent runs
             force: Regenerate even if report already exists
@@ -936,6 +1049,7 @@ function sortTable(table, columnIndex) {
                     run_id=run_id,
                     validation_dir=validation_dir,
                     tuning_dir=tuning_dir,
+                    elo_file=elo_file,
                     tabs=tabs,
                 )
                 generated.append(path)

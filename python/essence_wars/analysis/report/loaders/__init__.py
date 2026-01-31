@@ -8,6 +8,13 @@ from .tuning import (
     find_all_tuning_experiments,
     load_multiple_tuning_experiments,
 )
+from .elo import (
+    EloData,
+    DeckRating,
+    RatingChange,
+    load_elo_data,
+    elo_file_exists,
+)
 
 __all__ = [
     "ValidationData",
@@ -18,4 +25,9 @@ __all__ = [
     "find_latest_tuning",
     "find_all_tuning_experiments",
     "load_multiple_tuning_experiments",
+    "EloData",
+    "DeckRating",
+    "RatingChange",
+    "load_elo_data",
+    "elo_file_exists",
 ]

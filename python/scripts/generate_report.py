@@ -100,6 +100,12 @@ Examples:
         help="Tuning experiments directory (default: experiments/mcts)",
     )
     parser.add_argument(
+        "--elo-file",
+        type=Path,
+        default=None,
+        help="ELO ratings file (default: data/ratings/deck_elo.json)",
+    )
+    parser.add_argument(
         "-o", "--output",
         type=Path,
         default=None,
@@ -177,6 +183,7 @@ Examples:
             generated = generator.generate_all_reports(
                 validation_dir=args.validation_dir,
                 tuning_dir=args.tuning_dir,
+                elo_file=args.elo_file,
                 since=since_date,
                 limit=args.limit,
                 force=args.force,
@@ -226,6 +233,7 @@ Examples:
                 run_id=args.run_id,
                 validation_dir=args.validation_dir,
                 tuning_dir=args.tuning_dir,
+                elo_file=args.elo_file,
                 tabs=args.tabs,
             )
             print(f"Report generated: {output_path}")
