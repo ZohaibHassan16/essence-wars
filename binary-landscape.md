@@ -72,7 +72,7 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 | Matchup matrix output (`--matrix`, `--matrix-csv`) | DONE |
 | Per-card win rate contribution (identify problematic cards, not just decks) | DONE (card_stats binary) |
 | Historical tracking (trend across versions) | DONE (timestamped dirs + balance_diff) |
-| HTML report generation with charts (in the experiments subfolder for the run) | OPEN |
+| HTML report generation with charts | DONE (generate_report.py) |
 
 ---
 
@@ -112,13 +112,24 @@ Comprehensive `execution/` module implemented (~3,600 lines):
 ## Remaining Open Items
 
 ### Low Priority (Nice to Have)
-1. **HTML report generation** - Charts and visualizations in experiments folder
-2. **Hyperparameter auto-tuning** - Adaptive CMA-ES parameters
-3. **True multi-objective optimization** - Pareto frontier for win rate vs game length
+1. **Hyperparameter auto-tuning** - Adaptive CMA-ES parameters
+2. **True multi-objective optimization** - Pareto frontier for win rate vs game length
+3. **Tuning + ELO tabs in HTML reports** - Phase 3B/3C of report generator
 
 ---
 
 ## Recently Completed
+
+- **HTML report generator (MVP)** - DONE (2026-01-31)
+  - New Python script: `python/scripts/generate_report.py`
+  - Unified HTML report with tabs: Overview, Validation
+  - Health gauge showing overall balance score
+  - Key metrics cards: total games, decks tested, P1/P2 balance, outlier count
+  - Interactive Plotly charts: deck win rates, matchup heatmap, faction distribution
+  - Sortable deck performance table with confidence intervals
+  - Dark theme with faction colors
+  - Run with: `uv run python python/scripts/generate_report.py --run-id latest`
+  - Core module: `python/essence_wars/analysis/report/` (~800 lines)
 
 - **Tune checkpoint resume** - DONE (2026-01-31)
   - `--resume <run_id>` flag to resume from interrupted runs

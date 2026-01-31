@@ -3,16 +3,22 @@
 
 Usage:
     # Generate report for latest validation run
-    python generate_report.py --run-id latest
+    uv run python python/scripts/generate_report.py --run-id latest
 
     # Generate report for specific run
-    python generate_report.py --run-id 2026-01-31_1542
+    uv run python python/scripts/generate_report.py --run-id 2026-01-31_1542
 
-    # Custom output directory and tabs
-    python generate_report.py --run-id latest --output ./my_reports --tabs overview validation
+    # Generate reports for all validation runs (skip existing)
+    uv run python python/scripts/generate_report.py --generate-all
 
-    # Open in browser after generation
-    python generate_report.py --run-id latest --open
+    # Generate all reports since a date
+    uv run python python/scripts/generate_report.py --generate-all --since 2026-01-25
+
+    # Generate aggregated dashboard
+    uv run python python/scripts/generate_report.py --aggregate
+
+    # Open report in browser after generation
+    uv run python python/scripts/generate_report.py --run-id latest --open
 """
 
 from __future__ import annotations
@@ -21,6 +27,7 @@ import argparse
 import subprocess
 import sys
 import webbrowser
+from datetime import datetime
 from pathlib import Path
 
 
@@ -32,12 +39,15 @@ def main() -> int:
 Examples:
   %(prog)s --run-id latest              # Generate report for most recent validation
   %(prog)s --run-id 2026-01-31_1542     # Specific validation run
+  %(prog)s --generate-all               # Generate all missing reports
+  %(prog)s --generate-all --limit 10    # Only 10 most recent runs
+  %(prog)s --generate-all --force       # Regenerate all (overwrite existing)
+  %(prog)s --aggregate                  # Generate aggregated dashboard
   %(prog)s --run-id latest --open       # Generate and open in browser
-  %(prog)s --all                        # Aggregated dashboard (future)
         """,
     )
 
-    # Input options
+    # Input options (mutually exclusive)
     input_group = parser.add_mutually_exclusive_group(required=True)
     input_group.add_argument(
         "--run-id",
@@ -45,9 +55,35 @@ Examples:
         help="Validation run ID ('latest' for most recent, or specific ID like '2026-01-31_1542')",
     )
     input_group.add_argument(
-        "--all",
+        "--generate-all",
         action="store_true",
-        help="Generate aggregated dashboard across all runs (future)",
+        help="Generate reports for all validation runs (skips existing unless --force)",
+    )
+    input_group.add_argument(
+        "--aggregate",
+        action="store_true",
+        help="Generate aggregated dashboard across all runs",
+    )
+
+    # Batch generation options
+    parser.add_argument(
+        "--since",
+        type=str,
+        default=None,
+        metavar="DATE",
+        help="Only include runs after this date (YYYY-MM-DD format, for --generate-all)",
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        metavar="N",
+        help="Only process N most recent runs (for --generate-all and --aggregate)",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Regenerate reports even if they already exist",
     )
 
     # Paths
@@ -58,10 +94,16 @@ Examples:
         help="Validation results directory (default: experiments/validation)",
     )
     parser.add_argument(
+        "--tuning-dir",
+        type=Path,
+        default=Path("experiments/mcts"),
+        help="Tuning experiments directory (default: experiments/mcts)",
+    )
+    parser.add_argument(
         "-o", "--output",
         type=Path,
-        default=Path("reports"),
-        help="Output directory (default: reports/)",
+        default=None,
+        help="Output directory (default: experiments/reports)",
     )
 
     # Content options
@@ -93,6 +135,15 @@ Examples:
 
     args = parser.parse_args()
 
+    # Parse --since date if provided
+    since_date = None
+    if args.since:
+        try:
+            since_date = datetime.strptime(args.since, "%Y-%m-%d")
+        except ValueError:
+            print(f"Error: Invalid date format '{args.since}'. Use YYYY-MM-DD.", file=sys.stderr)
+            return 1
+
     # Import here to avoid slow imports when just showing help
     try:
         from essence_wars.analysis.report import ReportGenerator
@@ -104,32 +155,83 @@ Examples:
         print("  uv sync --group analysis", file=sys.stderr)
         return 1
 
-    # Handle aggregated mode (future)
-    if args.all:
-        print("Aggregated dashboard mode is not yet implemented.", file=sys.stderr)
-        print("Use --run-id to generate a single-run report.", file=sys.stderr)
-        return 1
-
-    # Generate single-run report
     try:
         generator = ReportGenerator(
             output_dir=args.output,
             theme=args.theme,
         )
 
-        if args.verbose:
-            print(f"Loading validation data for: {args.run_id}")
+        output_path = None
 
-        output_path = generator.generate_validation_report(
-            run_id=args.run_id,
-            validation_dir=args.validation_dir,
-            tabs=args.tabs,
-        )
+        if args.generate_all:
+            # Batch generate all reports
+            if args.verbose:
+                print(f"Scanning for validation runs in: {args.validation_dir}")
+                if since_date:
+                    print(f"  Filtering runs since: {since_date.strftime('%Y-%m-%d')}")
+                if args.limit:
+                    print(f"  Limiting to {args.limit} most recent runs")
+                if args.force:
+                    print("  Force mode: will overwrite existing reports")
 
-        print(f"Report generated: {output_path}")
+            generated = generator.generate_all_reports(
+                validation_dir=args.validation_dir,
+                tuning_dir=args.tuning_dir,
+                since=since_date,
+                limit=args.limit,
+                force=args.force,
+                tabs=args.tabs,
+            )
 
-        if args.open:
-            # Try to open in browser
+            if generated:
+                print(f"Generated {len(generated)} report(s):")
+                for path in generated:
+                    print(f"  {path}")
+                output_path = generated[0]  # Open first one if --open
+            else:
+                print("No new reports to generate (all up to date)")
+
+            # Also regenerate aggregated dashboard after batch generation
+            if args.verbose:
+                print("Regenerating aggregated dashboard...")
+            dashboard_path = generator.generate_aggregated_dashboard(
+                validation_dir=args.validation_dir,
+                tuning_dir=args.tuning_dir,
+                limit=args.limit or 20,
+            )
+            print(f"Dashboard: {dashboard_path}")
+            if not generated:
+                output_path = dashboard_path
+
+        elif args.aggregate:
+            # Generate aggregated dashboard only
+            if args.verbose:
+                print("Generating aggregated dashboard...")
+                print(f"  Validation dir: {args.validation_dir}")
+                print(f"  Tuning dir: {args.tuning_dir}")
+
+            output_path = generator.generate_aggregated_dashboard(
+                validation_dir=args.validation_dir,
+                tuning_dir=args.tuning_dir,
+                limit=args.limit or 20,
+            )
+            print(f"Dashboard generated: {output_path}")
+
+        else:
+            # Single validation report
+            if args.verbose:
+                print(f"Loading validation data for: {args.run_id}")
+
+            output_path = generator.generate_validation_report(
+                run_id=args.run_id,
+                validation_dir=args.validation_dir,
+                tuning_dir=args.tuning_dir,
+                tabs=args.tabs,
+            )
+            print(f"Report generated: {output_path}")
+
+        # Open in browser if requested
+        if args.open and output_path:
             url = output_path.absolute().as_uri()
             if args.verbose:
                 print(f"Opening in browser: {url}")

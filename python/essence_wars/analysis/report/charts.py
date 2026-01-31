@@ -13,6 +13,7 @@ from plotly.subplots import make_subplots
 
 if TYPE_CHECKING:
     from .loaders.validation import DeckStats, ValidationData
+    from .loaders.tuning import TuningData
 
 # Faction colors matching the game's aesthetic
 FACTION_COLORS = {
@@ -364,6 +365,243 @@ def create_faction_distribution(deck_stats: list["DeckStats"]) -> str:
                 "showarrow": False,
             }
         ],
+    )
+
+    return fig.to_html(full_html=False, include_plotlyjs=False)
+
+
+def create_tuning_curves(tuning_data: "TuningData") -> str:
+    """Create a multi-axis chart showing fitness, win rate, and sigma over generations.
+
+    Args:
+        tuning_data: TuningData object with training curves
+
+    Returns:
+        HTML string with embedded Plotly chart
+    """
+
+    df = tuning_data.generations_df
+
+    # Create figure with secondary y-axis
+    fig = make_subplots(
+        rows=2,
+        cols=1,
+        shared_xaxes=True,
+        vertical_spacing=0.08,
+        subplot_titles=("Fitness & Win Rate", "Step Size (Sigma)"),
+        row_heights=[0.7, 0.3],
+    )
+
+    # Fitness trace
+    fig.add_trace(
+        go.Scatter(
+            x=df["generation"],
+            y=df["fitness"],
+            name="Fitness",
+            line={"color": DARK_THEME["success"], "width": 2},
+            mode="lines",
+            hovertemplate="Gen %{x}<br>Fitness: %{y:.1f}<extra></extra>",
+        ),
+        row=1,
+        col=1,
+    )
+
+    # Win rate trace
+    fig.add_trace(
+        go.Scatter(
+            x=df["generation"],
+            y=df["win_rate"],
+            name="Win Rate",
+            line={"color": FACTION_COLORS["argentum"], "width": 2},
+            mode="lines",
+            hovertemplate="Gen %{x}<br>Win Rate: %{y:.1f}%<extra></extra>",
+        ),
+        row=1,
+        col=1,
+    )
+
+    # Sigma trace (lower subplot)
+    fig.add_trace(
+        go.Scatter(
+            x=df["generation"],
+            y=df["sigma"],
+            name="Sigma",
+            line={"color": FACTION_COLORS["obsidion"], "width": 2},
+            fill="tozeroy",
+            fillcolor="rgba(0, 255, 255, 0.1)",
+            mode="lines",
+            hovertemplate="Gen %{x}<br>Sigma: %{y:.4f}<extra></extra>",
+        ),
+        row=2,
+        col=1,
+    )
+
+    fig.update_layout(
+        title={
+            "text": f"Training Curves: {tuning_data.tag}",
+            "font": {"color": DARK_THEME["text_primary"]},
+        },
+        paper_bgcolor=DARK_THEME["bg_primary"],
+        plot_bgcolor=DARK_THEME["bg_secondary"],
+        font={"color": DARK_THEME["text_primary"]},
+        height=450,
+        margin={"t": 70, "b": 50, "l": 60, "r": 30},
+        legend={
+            "orientation": "h",
+            "yanchor": "bottom",
+            "y": 1.02,
+            "xanchor": "right",
+            "x": 1,
+        },
+    )
+
+    # Update axes styling
+    fig.update_xaxes(
+        title_text="Generation",
+        gridcolor=DARK_THEME["grid"],
+        row=2,
+        col=1,
+    )
+    fig.update_yaxes(
+        title_text="Score",
+        gridcolor=DARK_THEME["grid"],
+        row=1,
+        col=1,
+    )
+    fig.update_yaxes(
+        title_text="Sigma",
+        gridcolor=DARK_THEME["grid"],
+        row=2,
+        col=1,
+    )
+
+    # Style subplot titles
+    for annotation in fig["layout"]["annotations"]:
+        annotation["font"] = {"color": DARK_THEME["text_primary"]}
+
+    return fig.to_html(full_html=False, include_plotlyjs=False)
+
+
+def create_tuning_comparison(tuning_experiments: list["TuningData"]) -> str:
+    """Create a comparison chart of multiple tuning experiments.
+
+    Args:
+        tuning_experiments: List of TuningData objects to compare
+
+    Returns:
+        HTML string with embedded Plotly chart
+    """
+
+    fig = go.Figure()
+
+    # Color palette for different experiments
+    colors = [
+        FACTION_COLORS["argentum"],
+        FACTION_COLORS["symbiote"],
+        FACTION_COLORS["obsidion"],
+        DARK_THEME["accent"],
+        DARK_THEME["success"],
+        DARK_THEME["warning"],
+    ]
+
+    for i, data in enumerate(tuning_experiments):
+        color = colors[i % len(colors)]
+        df = data.generations_df
+
+        fig.add_trace(
+            go.Scatter(
+                x=df["generation"],
+                y=df["fitness"],
+                name=data.tag[:25],  # Truncate long tags
+                line={"color": color, "width": 2},
+                mode="lines",
+                hovertemplate=f"{data.tag}<br>Gen %{{x}}<br>Fitness: %{{y:.1f}}<extra></extra>",
+            )
+        )
+
+    fig.update_layout(
+        title={
+            "text": "Experiment Comparison (Fitness)",
+            "font": {"color": DARK_THEME["text_primary"]},
+        },
+        paper_bgcolor=DARK_THEME["bg_primary"],
+        plot_bgcolor=DARK_THEME["bg_secondary"],
+        font={"color": DARK_THEME["text_primary"]},
+        xaxis={
+            "title": "Generation",
+            "gridcolor": DARK_THEME["grid"],
+        },
+        yaxis={
+            "title": "Fitness",
+            "gridcolor": DARK_THEME["grid"],
+        },
+        height=350,
+        margin={"t": 50, "b": 50, "l": 60, "r": 30},
+        legend={
+            "orientation": "v",
+            "yanchor": "top",
+            "y": 1,
+            "xanchor": "left",
+            "x": 1.02,
+        },
+    )
+
+    return fig.to_html(full_html=False, include_plotlyjs=False)
+
+
+def create_convergence_status(tuning_experiments: list["TuningData"]) -> str:
+    """Create a status summary chart for experiment convergence.
+
+    Args:
+        tuning_experiments: List of TuningData objects
+
+    Returns:
+        HTML string with embedded Plotly chart
+    """
+
+    names = []
+    fitness_values = []
+    colors = []
+
+    for data in tuning_experiments:
+        names.append(data.tag[:20])
+        fitness_values.append(data.final_fitness)
+        conv_info = data.get_convergence_info()
+        if conv_info["converged"]:
+            colors.append(DARK_THEME["success"])
+        else:
+            colors.append(DARK_THEME["warning"])
+
+    fig = go.Figure(
+        data=[
+            go.Bar(
+                x=names,
+                y=fitness_values,
+                marker_color=colors,
+                hovertemplate="<b>%{x}</b><br>Fitness: %{y:.1f}<extra></extra>",
+            )
+        ]
+    )
+
+    fig.update_layout(
+        title={
+            "text": "Final Fitness by Experiment",
+            "font": {"color": DARK_THEME["text_primary"]},
+        },
+        paper_bgcolor=DARK_THEME["bg_primary"],
+        plot_bgcolor=DARK_THEME["bg_secondary"],
+        font={"color": DARK_THEME["text_primary"]},
+        xaxis={
+            "title": None,
+            "tickangle": 45,
+        },
+        yaxis={
+            "title": "Fitness",
+            "gridcolor": DARK_THEME["grid"],
+        },
+        height=300,
+        margin={"t": 50, "b": 100, "l": 60, "r": 30},
+        showlegend=False,
     )
 
     return fig.to_html(full_html=False, include_plotlyjs=False)
