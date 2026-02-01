@@ -1,0 +1,575 @@
+name: "Neutral Creatures"
+cards:
+  - id: 4000
+    name: Bounty Hunter
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords:
+    - Ranged
+    rarity: Common
+    tags:
+    - Mercenary
+  - id: 4001
+    name: Berserker
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords:
+    - Charge
+    rarity: Uncommon
+    tags:
+    - Warrior
+  - id: 4002
+    name: Wasteland Scout
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Ranged
+    rarity: Common
+    tags:
+    - Scout
+  - id: 4003
+    name: Hired Blade
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: []
+    rarity: Common
+    tags:
+    - Mercenary
+  - id: 4004
+    name: War Veteran
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords:
+    - Charge
+    rarity: Uncommon
+    tags:
+    - Soldier
+  - id: 4005
+    name: Siege Giant
+    cost: 6
+    card_type: creature
+    attack: 6
+    health: 5
+    keywords:
+    - Piercing
+    rarity: Uncommon
+    tags:
+    - Giant
+  - id: 4006
+    name: Sharpshooter
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords:
+    - Ranged
+    rarity: Common
+    tags:
+    - Mercenary
+  - id: 4007
+    name: Reckless Charger
+    cost: 2
+    card_type: creature
+    attack: 4
+    health: 1
+    keywords:
+    - Charge
+    - Rush
+    rarity: Uncommon
+    tags:
+    - Warrior
+  - id: 4008
+    name: Scrap Golem
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 6
+    keywords: []
+    rarity: Common
+    tags:
+    - Construct
+  - id: 4009
+    name: The Warbringer
+    cost: 7
+    card_type: creature
+    attack: 7
+    health: 7
+    keywords:
+    - Charge
+    - Piercing
+    rarity: Legendary
+    tags:
+    - Giant
+  - id: 4017
+    name: Opportunist
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Mercenary
+    abilities:
+    - trigger: OnPlay
+      targeting: TargetEnemyCreature
+      effects:
+      - type: damage
+        amount: 2
+        filter:
+          max_health: 3
+  - id: 4019
+    name: Scavenger
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Mercenary
+    abilities:
+    - trigger: OnAllyDeath
+      targeting: NoTarget
+      effects:
+      - type: draw
+        count: 1
+  - id: 4020
+    name: Warded Sentinel
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Ward
+    rarity: Common
+    tags:
+    - Guardian
+  - id: 4021
+    name: Mystic Guardian
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords:
+    - Ward
+    - Guard
+    rarity: Uncommon
+    tags:
+    - Guardian
+  - id: 4022
+    name: Shield Mage
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: []
+    rarity: Rare
+    tags:
+    - Mage
+    abilities:
+    - trigger: OnPlay
+      targeting: TargetAllyCreature
+      effects:
+      - type: grant_keyword
+        keyword: Ward
+  - id: 4023
+    name: Arcane Protector
+    cost: 5
+    card_type: creature
+    attack: 3
+    health: 6
+    keywords:
+    - Ward
+    - Shield
+    rarity: Rare
+    tags:
+    - Guardian
+  - id: 4026
+    name: Token Master
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Rare
+    tags:
+    - Mage
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: summon_token
+        token:
+          name: Summoned Warrior
+          attack: 2
+          health: 2
+          keywords:
+          - Rush
+  - id: 4029
+    name: Wandering Recruit
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 1
+    keywords: []
+    rarity: Common
+    tags:
+    - Soldier
+  - id: 4030
+    name: Scout Runner
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 2
+    keywords: []
+    rarity: Common
+    tags:
+    - Scout
+  - id: 4031
+    name: Eager Sellsword
+    cost: 1
+    card_type: creature
+    attack: 2
+    health: 1
+    keywords:
+    - Rush
+    rarity: Uncommon
+    tags:
+    - Mercenary
+  - id: 4032
+    name: Caravan Guard
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Ward
+    rarity: Common
+    tags:
+    - Guardian
+  - id: 4033
+    name: Pack Mule
+    cost: 2
+    card_type: creature
+    attack: 1
+    health: 3
+    keywords: []
+    rarity: Common
+    tags:
+    - Beast
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: draw
+        count: 1
+  - id: 4034
+    name: Crossbow Militia
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords:
+    - Ranged
+    rarity: Common
+    tags:
+    - Soldier
+  - id: 4035
+    name: Wandering Mystic
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords:
+    - Regenerate
+    rarity: Uncommon
+    tags:
+    - Mage
+  - id: 4036
+    name: Contract Killer
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords:
+    - Lethal
+    rarity: Uncommon
+    tags:
+    - Mercenary
+  - id: 4037
+    name: Warded Scout
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Ward
+    - Ranged
+    rarity: Rare
+    tags:
+    - Scout
+  - id: 4038
+    name: Traveling Merchant
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Merchant
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: draw
+        count: 1
+  - id: 4039
+    name: Battle Hardened Veteran
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Soldier
+    abilities:
+    - trigger: OnDeath
+      targeting: NoTarget
+      effects:
+      - type: draw
+        count: 1
+  - id: 4040
+    name: Runebound Guardian
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 5
+    keywords:
+    - Ward
+    rarity: Rare
+    tags:
+    - Guardian
+  - id: 4041
+    name: Wandering Champion
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 5
+    keywords:
+    - Charge
+    rarity: Uncommon
+    tags:
+    - Warrior
+  - id: 4042
+    name: Elder Mystic
+    cost: 5
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: []
+    rarity: Rare
+    tags:
+    - Mage
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: grant_keyword
+        keyword: Ward
+        target: all_ally_creatures
+  - id: 4043
+    name: Colossus of War
+    cost: 6
+    card_type: creature
+    attack: 5
+    health: 7
+    keywords:
+    - Guard
+    rarity: Rare
+    tags:
+    - Giant
+  - id: 4054
+    name: Hired Scout
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 2
+    keywords: []
+    rarity: Common
+    tags:
+    - Mercenary
+  - id: 4055
+    name: Traveling Merchant
+    cost: 2
+    card_type: creature
+    attack: 1
+    health: 3
+    keywords: []
+    rarity: Common
+    tags:
+    - Mercenary
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: draw
+        count: 1
+  - id: 4056
+    name: Veteran Sellsword
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: []
+    rarity: Common
+    tags:
+    - Mercenary
+  - id: 4057
+    name: Wandering Healer
+    cost: 2
+    card_type: creature
+    attack: 1
+    health: 2
+    keywords: []
+    rarity: Common
+    tags:
+    - Mercenary
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: heal
+        amount: 3
+  - id: 4058
+    name: Caravan Guard
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Guard
+    rarity: Common
+    tags:
+    - Mercenary
+  - id: 4059
+    name: Frontier Ranger
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords:
+    - Ranged
+    rarity: Common
+    tags:
+    - Mercenary
+  - id: 4060
+    name: Bounty Hunter
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords:
+    - Rush
+    rarity: Uncommon
+    tags:
+    - Mercenary
+  - id: 4061
+    name: Arena Champion
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 3
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Mercenary
+  - id: 4062
+    name: Guild Enforcer
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: []
+    rarity: Common
+    tags:
+    - Mercenary
+  - id: 4063
+    name: War Elephant
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 5
+    keywords:
+    - Charge
+    rarity: Rare
+    tags:
+    - Beast
+  - id: 4064
+    name: Siege Engineer
+    cost: 5
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords:
+    - Ranged
+    - Piercing
+    rarity: Rare
+    tags:
+    - Mercenary
+  - id: 4065
+    name: Legendary Mercenary
+    cost: 6
+    card_type: creature
+    attack: 5
+    health: 5
+    keywords: []
+    rarity: Rare
+    tags:
+    - Mercenary
+  - id: 4075
+    name: Traveling Scholar
+    cost: 3
+    card_type: creature
+    attack: 1
+    health: 3
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Sage
+    abilities:
+    - trigger: Activated
+      essence_cost: 2
+      targeting: NoTarget
+      effects:
+      - type: draw
+        count: 1
+  - id: 4076
+    name: Essence Collector
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: []
+    rarity: Rare
+    tags:
+    - Mystic
+    abilities:
+    - trigger: Activated
+      essence_cost: 0
+      targeting: NoTarget
+      effects:
+      - type: gain_essence
+        amount: 1

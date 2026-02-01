@@ -1,0 +1,229 @@
+name: "Neutral Spells"
+cards:
+  - id: 4010
+    name: Hired Help
+    cost: 3
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 2
+      health: 2
+    rarity: Common
+  - id: 4011
+    name: Precision Shot
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 3
+    rarity: Common
+  - id: 4015
+    name: Temporal Shift
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: bounce
+    rarity: Common
+  - id: 4016
+    name: Triage
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: heal
+      amount: 4
+      filter:
+        max_health: 3
+    rarity: Uncommon
+  - id: 4018
+    name: Silencing Shot
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: silence
+      filter:
+        max_health: 4
+    rarity: Common
+  - id: 4024
+    name: Raise Militia
+    cost: 2
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: summon_token
+      token:
+        name: Militia
+        attack: 1
+        health: 1
+        keywords: []
+    rarity: Common
+  - id: 4025
+    name: Conjure Guardian
+    cost: 4
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: summon_token
+      token:
+        name: Arcane Guardian
+        attack: 2
+        health: 3
+        keywords:
+        - Guard
+    rarity: Uncommon
+  - id: 4027
+    name: Polymorph
+    cost: 5
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: transform
+      into:
+        name: Sheep
+        attack: 1
+        health: 1
+        keywords: []
+    rarity: Rare
+  - id: 4028
+    name: Mirror Image
+    cost: 4
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: copy
+    rarity: Uncommon
+  - id: 4044
+    name: Quick Strike
+    cost: 1
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 2
+    rarity: Common
+  - id: 4045
+    name: Second Wind
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: heal
+      amount: 3
+    - type: draw
+      count: 1
+    rarity: Uncommon
+  - id: 4046
+    name: Weaken
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: buff_stats
+      attack: -2
+      health: -1
+    rarity: Common
+  - id: 4047
+    name: War Cry
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: buff_stats
+      attack: 1
+      health: 1
+      target: all_ally_creatures
+    rarity: Uncommon
+  - id: 4048
+    name: Recruitment Drive
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: draw
+      count: 2
+    rarity: Uncommon
+  - id: 4049
+    name: Arcane Barrier
+    cost: 3
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: grant_keyword
+      keyword: Ward
+    rarity: Uncommon
+  - id: 4050
+    name: Mercenary Ambush
+    cost: 4
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 3
+    - type: damage
+      amount: 2
+      target: all_enemy_creatures
+    rarity: Rare
+  - id: 4066
+    name: Emergency Supplies
+    cost: 1
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: draw
+      count: 1
+    rarity: Common
+  - id: 4067
+    name: Quick Patch
+    cost: 1
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: heal
+      amount: 3
+    rarity: Common
+  - id: 4068
+    name: Combat Training
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 1
+      health: 1
+    rarity: Common
+  - id: 4069
+    name: Sabotage
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 2
+    rarity: Common
+  - id: 4070
+    name: Hired Muscle
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: summon_token
+      token:
+        name: Hired Thug
+        attack: 2
+        health: 2
+        keywords: []
+    rarity: Uncommon
+  - id: 4071
+    name: Strategic Retreat
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: bounce
+    - type: draw
+      count: 1
+    rarity: Uncommon

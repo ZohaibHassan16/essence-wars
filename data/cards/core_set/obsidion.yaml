@@ -938,3 +938,50 @@ cards:
       - modifier:
           attack_bonus: 1
     rarity: Rare
+
+  # =============================================================================
+  # Phase 10: Activated Ability Creatures (v0.9.0)
+  # Strategic depth through tap-to-activate abilities
+  # =============================================================================
+
+  # --- Blood Channeler (Female, Mage) ---
+  - id: 3075
+    name: "Blood Channeler"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: []
+    rarity: Uncommon
+    tags: [Mage]
+    abilities:
+      - trigger: Activated
+        essence_cost: 2
+        targeting: TargetEnemyCreature
+        effects:
+          - type: damage
+            amount: 3
+    # A dark mage who channels life force into destructive power. Tap and pay
+    # 2 essence to deal 3 damage to an enemy creature. High damage output
+    # but leaves the channeler vulnerable.
+
+  # --- Soul Leech (Ambiguous, Shade) ---
+  - id: 3076
+    name: "Soul Leech"
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: [Lifesteal]
+    rarity: Rare
+    tags: [Shade]
+    abilities:
+      - trigger: Activated
+        essence_cost: 1
+        targeting: TargetEnemyPlayer
+        effects:
+          - type: damage
+            amount: 2
+    # A creature that drains life force from the enemy commander. Tap and pay
+    # 1 essence to deal 2 damage directly to the enemy commander. Combined with
+    # Lifesteal keyword, it excels at sustained life advantage.

@@ -1,0 +1,69 @@
+name: "Obsidion Supports"
+cards:
+  - id: 3014
+    name: Dark Altar
+    cost: 4
+    card_type: support
+    durability: 3
+    passive_effects:
+    - modifier:
+        grant_keyword: Lifesteal
+    rarity: Rare
+  - id: 3028
+    name: Shadow Sanctum
+    cost: 3
+    card_type: support
+    durability: 3
+    passive_effects:
+    - modifier:
+        grant_keyword: Stealth
+    rarity: Rare
+  - id: 3029
+    name: Blood Font
+    cost: 4
+    card_type: support
+    durability: 4
+    triggered_effects:
+    - trigger: StartOfTurn
+      effects:
+      - type: heal
+        amount: 3
+    rarity: Uncommon
+  - id: 3049
+    name: Life Drain Aura
+    cost: 3
+    card_type: support
+    durability: 3
+    passive_effects:
+    - modifier:
+        grant_keyword: Lifesteal
+    rarity: Rare
+  - id: 3054
+    name: Shadow Network
+    cost: 4
+    card_type: support
+    durability: 3
+    passive_effects:
+    - modifier:
+        grant_keyword: Stealth
+    rarity: Rare
+  - id: 3061
+    name: Blood Altar
+    cost: 3
+    card_type: support
+    durability: 3
+    triggered_effects:
+    - trigger: StartOfTurn
+      effects:
+      - type: heal
+        amount: 2
+    rarity: Uncommon
+  - id: 3074
+    name: Shadow Nexus
+    cost: 4
+    card_type: support
+    durability: 3
+    passive_effects:
+    - modifier:
+        attack_bonus: 1
+    rarity: Rare

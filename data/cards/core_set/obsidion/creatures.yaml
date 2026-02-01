@@ -1,0 +1,567 @@
+name: "Obsidion Creatures"
+cards:
+  - id: 3000
+    name: Soul Fragment
+    cost: 1
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords:
+    - Ephemeral
+    rarity: Common
+    tags:
+    - Spirit
+  - id: 3001
+    name: Shadow Blade
+    cost: 2
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords:
+    - Stealth
+    - Lethal
+    rarity: Uncommon
+    tags:
+    - Assassin
+  - id: 3002
+    name: Blood Acolyte
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Quick
+    - Lifesteal
+    rarity: Common
+    tags:
+    - Cultist
+  - id: 3003
+    name: Void Walker
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords:
+    - Ephemeral
+    - Rush
+    rarity: Uncommon
+    tags:
+    - Spirit
+  - id: 3004
+    name: Hemomancer
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords:
+    - Lifesteal
+    rarity: Uncommon
+    tags:
+    - Mage
+  - id: 3005
+    name: Silent Assassin
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 3
+    keywords:
+    - Stealth
+    - Quick
+    rarity: Rare
+    tags:
+    - Assassin
+  - id: 3006
+    name: Ritual Master
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords: []
+    rarity: Rare
+    tags:
+    - Cultist
+    abilities:
+    - trigger: OnPlay
+      effects:
+      - type: damage
+        amount: 3
+    - trigger: OnPlay
+      effects:
+      - type: heal
+        amount: 3
+  - id: 3007
+    name: The Eternal One
+    cost: 7
+    card_type: creature
+    attack: 7
+    health: 7
+    keywords:
+    - Lifesteal
+    - Regenerate
+    rarity: Legendary
+    tags:
+    - Undead
+  - id: 3015
+    name: Phantom Striker
+    cost: 1
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Quick
+    rarity: Common
+    tags:
+    - Spirit
+  - id: 3016
+    name: Shade Lurker
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Stealth
+    rarity: Common
+    tags:
+    - Assassin
+  - id: 3017
+    name: Blood Seeker
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords:
+    - Lifesteal
+    rarity: Common
+    tags:
+    - Cultist
+  - id: 3018
+    name: Spectral Assassin
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords:
+    - Ephemeral
+    - Quick
+    rarity: Uncommon
+    tags:
+    - Spirit
+    - Assassin
+  - id: 3019
+    name: Nightstalker
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords:
+    - Stealth
+    - Lifesteal
+    - Regenerate
+    rarity: Rare
+    tags:
+    - Assassin
+  - id: 3020
+    name: Soul Reaver
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords:
+    - Quick
+    - Lifesteal
+    - Regenerate
+    rarity: Rare
+    tags:
+    - Undead
+  - id: 3021
+    name: Void Devourer
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Spirit
+    abilities:
+    - trigger: OnPlay
+      targeting: TargetEnemyCreature
+      effects:
+      - type: damage
+        amount: 4
+  - id: 3022
+    name: Twilight Executioner
+    cost: 6
+    card_type: creature
+    attack: 6
+    health: 5
+    keywords:
+    - Quick
+    - Lethal
+    rarity: Legendary
+    tags:
+    - Assassin
+  - id: 3023
+    name: Blood Ritualist
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: []
+    rarity: Common
+    tags:
+    - Cultist
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: heal
+        amount: 3
+  - id: 3024
+    name: Shadowmeld
+    cost: 2
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords:
+    - Stealth
+    - Ephemeral
+    rarity: Uncommon
+    tags:
+    - Spirit
+  - id: 3037
+    name: Reaper's Due
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords:
+    - Lifesteal
+    - Quick
+    rarity: Rare
+    tags:
+    - Assassin
+    abilities:
+    - trigger: OnKill
+      targeting: NoTarget
+      effects:
+      - type: heal
+        amount: 4
+  - id: 3038
+    name: Soul Collector
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords:
+    - Lifesteal
+    rarity: Uncommon
+    tags:
+    - Cultist
+    abilities:
+    - trigger: OnKill
+      targeting: NoTarget
+      effects:
+      - type: draw
+        count: 1
+  - id: 3039
+    name: Void Executioner
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords:
+    - Quick
+    rarity: Rare
+    tags:
+    - Assassin
+    abilities:
+    - trigger: OnPlay
+      targeting: TargetEnemyCreature
+      effects:
+      - type: destroy
+        filter:
+          max_health: 3
+  - id: 3041
+    name: Doppelganger
+    cost: 5
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: []
+    rarity: Rare
+    tags:
+    - Shade
+    abilities:
+    - trigger: OnPlay
+      targeting: TargetAllyCreature
+      effects:
+      - type: copy
+  - id: 3042
+    name: Mirror Assassin
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords:
+    - Stealth
+    rarity: Rare
+    tags:
+    - Assassin
+    abilities:
+    - trigger: OnKill
+      targeting: NoTarget
+      effects:
+      - type: copy
+  - id: 3043
+    name: Echo of the Void
+    cost: 6
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords:
+    - Quick
+    - Lifesteal
+    rarity: Legendary
+    tags:
+    - Shade
+    abilities:
+    - trigger: OnPlay
+      targeting: TargetAllyCreature
+      effects:
+      - type: copy
+  - id: 3046
+    name: Void Corruptor
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Cultist
+    abilities:
+    - trigger: OnPlay
+      targeting: TargetEnemyCreature
+      effects:
+      - type: transform
+        into:
+          name: Void Spawn
+          attack: 1
+          health: 1
+          keywords: []
+        filter:
+          max_health: 3
+  - id: 3047
+    name: Blood Cultist
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Lifesteal
+    rarity: Common
+    tags:
+    - Cultist
+  - id: 3048
+    name: Sanguine Lord
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 5
+    keywords:
+    - Lifesteal
+    rarity: Rare
+    tags:
+    - Noble
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: grant_keyword
+        keyword: Lifesteal
+  - id: 3051
+    name: Crimson Harvester
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords:
+    - Lifesteal
+    - Quick
+    rarity: Uncommon
+    tags:
+    - Assassin
+  - id: 3052
+    name: Shadow Stalker
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords:
+    - Stealth
+    - Quick
+    rarity: Uncommon
+    tags:
+    - Assassin
+  - id: 3055
+    name: Syndicate Collector
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords:
+    - Lifesteal
+    rarity: Uncommon
+    tags:
+    - Noble
+  - id: 3056
+    name: Alley Cutthroat
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 3
+    keywords:
+    - Quick
+    rarity: Uncommon
+    tags:
+    - Assassin
+  - id: 3057
+    name: Mistress of Echoes
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Stealth
+    rarity: Common
+    tags:
+    - Shapeshifter
+  - id: 3058
+    name: Void Initiate
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords:
+    - Quick
+    rarity: Common
+    tags:
+    - Mage
+  - id: 3059
+    name: Blood Acolyte
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords:
+    - Lifesteal
+    rarity: Common
+    tags:
+    - Cultist
+  - id: 3060
+    name: Vampiric Knight
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords:
+    - Lifesteal
+    rarity: Uncommon
+    tags:
+    - Noble
+  - id: 3063
+    name: Shadow Stalker
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords:
+    - Stealth
+    rarity: Common
+    tags:
+    - Assassin
+  - id: 3064
+    name: Nightblade
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 2
+    keywords:
+    - Stealth
+    - Lethal
+    rarity: Rare
+    tags:
+    - Assassin
+  - id: 3068
+    name: Shapeshifter Adept
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Shapeshifter
+    abilities:
+    - trigger: OnPlay
+      targeting: TargetAllyCreature
+      effects:
+      - type: copy
+  - id: 3070
+    name: Swift Shade
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 1
+    keywords:
+    - Quick
+    rarity: Common
+    tags:
+    - Shade
+  - id: 3071
+    name: Temporal Adept
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords:
+    - Quick
+    rarity: Uncommon
+    tags:
+    - Mage
+  - id: 3075
+    name: Blood Channeler
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Mage
+    abilities:
+    - trigger: Activated
+      essence_cost: 2
+      targeting: TargetEnemyCreature
+      effects:
+      - type: damage
+        amount: 3
+  - id: 3076
+    name: Soul Leech
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords:
+    - Lifesteal
+    rarity: Rare
+    tags:
+    - Shade
+    abilities:
+    - trigger: Activated
+      essence_cost: 1
+      targeting: TargetEnemyPlayer
+      effects:
+      - type: damage
+        amount: 2

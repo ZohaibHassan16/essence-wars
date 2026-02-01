@@ -1,0 +1,258 @@
+name: "Argentum Spells"
+cards:
+  - id: 1010
+    name: Reinforce
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 0
+      health: 3
+    rarity: Common
+  - id: 1011
+    name: Emergency Repairs
+    cost: 3
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: heal
+      amount: 5
+    rarity: Common
+  - id: 1012
+    name: Construct Protocol
+    cost: 4
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 1
+      health: 2
+    - type: grant_keyword
+      keyword: Guard
+    rarity: Uncommon
+  - id: 1024
+    name: Barricade
+    cost: 3
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 0
+      health: 4
+    - type: grant_keyword
+      keyword: Guard
+    rarity: Uncommon
+  - id: 1025
+    name: Execute
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: destroy
+      filter:
+        max_health: 3
+    rarity: Common
+  - id: 1026
+    name: Purge the Weak
+    cost: 4
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: damage
+      amount: 2
+      filter:
+        max_health: 3
+    rarity: Uncommon
+  - id: 1028
+    name: Rally the Guards
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: buff_stats
+      attack: 1
+      health: 1
+      filter:
+        has_keyword: 1
+    rarity: Uncommon
+  - id: 1029
+    name: Temporal Displacement
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: bounce
+    rarity: Common
+  - id: 1030
+    name: Mass Recall
+    cost: 5
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: bounce
+      filter:
+        max_health: 3
+    rarity: Rare
+  - id: 1033
+    name: Judgment Strike
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 3
+    conditional_effects:
+    - condition: target_died
+      effects:
+      - type: heal
+        amount: 3
+    rarity: Uncommon
+  - id: 1034
+    name: Culling Blade
+    cost: 4
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: destroy
+      filter:
+        max_health: 4
+    conditional_effects:
+    - condition: target_died
+      effects:
+      - type: draw
+        count: 1
+    rarity: Rare
+  - id: 1039
+    name: Transmutation Ray
+    cost: 4
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: transform
+      into:
+        name: Brass Cog
+        attack: 1
+        health: 1
+        keywords: []
+    rarity: Rare
+  - id: 1040
+    name: Assembly Protocol
+    cost: 5
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: copy
+    rarity: Rare
+  - id: 1045
+    name: Fortify Protocol
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 0
+      health: 2
+    - type: grant_keyword
+      keyword: Fortify
+    rarity: Uncommon
+  - id: 1049
+    name: Mass Production
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: summon_token
+      token:
+        name: Brass Cog
+        attack: 2
+        health: 2
+        keywords: []
+    - type: summon_token
+      token:
+        name: Brass Cog
+        attack: 2
+        health: 2
+        keywords: []
+    rarity: Uncommon
+  - id: 1052
+    name: Lockdown Protocol
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: silence
+    - type: damage
+      amount: 2
+    rarity: Uncommon
+  - id: 1053
+    name: Expose Weakness
+    cost: 1
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: remove_keyword
+      keyword: Stealth
+    - type: draw
+      count: 1
+    rarity: Common
+  - id: 1065
+    name: Reinforced Chassis
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 0
+      health: 3
+    - type: grant_keyword
+      keyword: Guard
+    rarity: Common
+  - id: 1066
+    name: Shield Formation
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: grant_keyword
+      keyword: Guard
+    rarity: Uncommon
+  - id: 1070
+    name: Precision Strike
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 3
+    rarity: Common
+  - id: 1072
+    name: Armor Plating
+    cost: 1
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 0
+      health: 2
+    rarity: Common
+  - id: 1073
+    name: Fortified Position
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: grant_keyword
+      keyword: Fortify
+    rarity: Uncommon
+  - id: 1074
+    name: Breaching Charge
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 4
+      filter:
+        has_keyword: 3
+    rarity: Uncommon

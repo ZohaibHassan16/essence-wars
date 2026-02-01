@@ -1,0 +1,85 @@
+name: "Symbiote Supports"
+cards:
+  - id: 2014
+    name: Spawning Pool
+    cost: 4
+    card_type: support
+    durability: 3
+    passive_effects:
+    - modifier:
+        attack_bonus: 1
+    rarity: Rare
+  - id: 2032
+    name: Feeding Grounds
+    cost: 3
+    card_type: support
+    durability: 3
+    passive_effects:
+    - modifier:
+        attack_bonus: 1
+    rarity: Uncommon
+  - id: 2033
+    name: Symbiotic Bond
+    cost: 4
+    card_type: support
+    durability: 3
+    passive_effects:
+    - modifier:
+        health_bonus: 2
+    rarity: Uncommon
+  - id: 2034
+    name: Spirit Nexus
+    cost: 5
+    card_type: support
+    durability: 4
+    passive_effects:
+    - modifier:
+        grant_keyword: Rush
+    rarity: Rare
+  - id: 2057
+    name: Symbiotic Growth
+    cost: 3
+    card_type: support
+    durability: 3
+    passive_effects:
+    - modifier:
+        health_bonus: 1
+    rarity: Uncommon
+  - id: 2058
+    name: Grove Network
+    cost: 4
+    card_type: support
+    durability: 2
+    triggered_effects:
+    - trigger: StartOfTurn
+      effects:
+      - type: draw
+        count: 1
+    rarity: Rare
+  - id: 2066
+    name: Spawning Den
+    cost: 4
+    card_type: support
+    durability: 3
+    triggered_effects:
+    - trigger: StartOfTurn
+      effects:
+      - type: summon_token
+        token:
+          name: Pack Whelp
+          attack: 1
+          health: 1
+          keywords:
+          - Rush
+    rarity: Rare
+  - id: 2073
+    name: Living Roots
+    cost: 3
+    card_type: support
+    durability: 4
+    triggered_effects:
+    - trigger: StartOfTurn
+      effects:
+      - type: heal
+        amount: 1
+    rarity: Common

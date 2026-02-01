@@ -5,7 +5,7 @@
 
 use crate::core::actions::Target;
 use crate::core::cards::CardType;
-use crate::core::effects::{Effect, EffectSource, EffectTarget, TokenEffect};
+use crate::core::effects::{Effect, EffectSource, EffectTarget, TokenEffect, Trigger};
 use crate::core::engine::effect_convert::effect_def_to_effect_with_target;
 use crate::core::types::Slot;
 
@@ -18,13 +18,14 @@ use super::ActionContext;
 ///
 /// Supports:
 /// 1. Token abilities (stored on creature.token_abilities)
-/// 2. Card-based abilities (looked up via card_db)
+/// 2. Card-based activated abilities (looked up via card_db, Trigger::Activated)
 ///
 /// # Errors
 /// - Returns error if no creature exists at the slot
 /// - Returns error if creature is silenced
+/// - Returns error if creature is exhausted
 /// - Returns error if ability_index is out of bounds
-/// - Returns error if insufficient essence for token ability
+/// - Returns error if insufficient essence
 pub fn execute_use_ability(
     ctx: &mut ActionContext,
     slot: Slot,
@@ -41,6 +42,11 @@ pub fn execute_use_ability(
     // Silenced creatures can't use abilities
     if creature.status.is_silenced() {
         return Err("Creature is silenced".to_string());
+    }
+
+    // Exhausted creatures can't use activated abilities
+    if creature.status.is_exhausted() {
+        return Err("Creature is exhausted".to_string());
     }
 
     // Check for token abilities first
@@ -72,6 +78,11 @@ fn execute_token_ability(
         return Err("Not enough essence".to_string());
     }
     player_state.current_essence -= ability.essence_cost;
+
+    // Exhaust the creature (tap it)
+    if let Some(creature) = player_state.get_creature_mut(slot) {
+        creature.status.set_exhausted(true);
+    }
 
     // Convert target to EffectTarget
     // For token abilities:
@@ -146,7 +157,7 @@ fn execute_card_ability(
 ) -> Result<(), String> {
     let current_player = ctx.state.active_player;
 
-    // Get creature at slot (need to re-fetch after potential mutation)
+    // Get creature at slot
     let creature = ctx.state.players[current_player.index()]
         .get_creature(slot)
         .ok_or("No creature at slot")?;
@@ -167,6 +178,23 @@ fn execute_card_ability(
     let ability = abilities.get(ability_index as usize)
         .ok_or("Invalid ability index")?;
 
+    // Verify this is an Activated ability
+    if ability.trigger != Trigger::Activated {
+        return Err("Not an activated ability".to_string());
+    }
+
+    // Check and deduct essence cost
+    let player_state = &mut ctx.state.players[current_player.index()];
+    if ability.essence_cost > player_state.current_essence {
+        return Err("Not enough essence".to_string());
+    }
+    player_state.current_essence -= ability.essence_cost;
+
+    // Exhaust the creature (tap it)
+    if let Some(creature) = player_state.get_creature_mut(slot) {
+        creature.status.set_exhausted(true);
+    }
+
     // Convert target to EffectTarget
     let effect_target = match target {
         Target::NoTarget => EffectTarget::None,
@@ -183,7 +211,9 @@ fn execute_card_ability(
     // Queue ability effects
     let source = EffectSource::Creature { owner: current_player, slot };
 
-    for effect_def in &ability.effects {
+    // Clone effects to avoid borrow issues
+    let effects = ability.effects.clone();
+    for effect_def in &effects {
         // Convert EffectDefinition to Effect with the resolved target
         if let Some(effect) = effect_def_to_effect_with_target(effect_def, effect_target, current_player) {
             ctx.effect_queue.push(effect, source);

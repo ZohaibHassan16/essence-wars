@@ -1025,3 +1025,50 @@ cards:
     rarity: Common
     tags: [Construct]
     # A small reconnaissance automaton that scouts ahead for the Combine
+
+  # =============================================================================
+  # Phase 10: Activated Ability Creatures (v0.9.0)
+  # Strategic depth through tap-to-activate abilities
+  # =============================================================================
+
+  # --- Field Surgeon (Female, Medic) ---
+  - id: 1076
+    name: "Field Surgeon"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags: [Medic, Soldier]
+    abilities:
+      - trigger: Activated
+        essence_cost: 2
+        targeting: TargetAllyCreature
+        effects:
+          - type: heal
+            amount: 3
+    # A battlefield medic who can patch up wounded soldiers. Tap and pay 2 essence
+    # to heal an ally creature for 3. Provides sustained healing but requires
+    # the creature to stay back from combat.
+
+  # --- Shield Technician (Male, Engineer) ---
+  - id: 1077
+    name: "Shield Technician"
+    cost: 4
+    card_type: creature
+    attack: 1
+    health: 5
+    keywords: [Guard]
+    rarity: Rare
+    tags: [Engineer, Construct]
+    abilities:
+      - trigger: Activated
+        essence_cost: 2
+        targeting: TargetAllyCreature
+        effects:
+          - type: grant_keyword
+            keyword: Shield
+    # An engineer who can deploy personal shield generators to protect allies.
+    # Tap and pay 2 essence to grant Shield to an ally creature. The Shield
+    # absorbs the next instance of damage, providing crucial protection.

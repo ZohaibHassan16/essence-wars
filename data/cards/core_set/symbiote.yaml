@@ -960,3 +960,51 @@ cards:
         attack: 0
         health: 2
     rarity: Uncommon
+
+  # =============================================================================
+  # Phase 10: Activated Ability Creatures (v0.9.0)
+  # Strategic depth through tap-to-activate abilities
+  # =============================================================================
+
+  # --- Brood Tender (Female, Beast) ---
+  - id: 2075
+    name: "Brood Tender"
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: []
+    rarity: Uncommon
+    tags: [Beast]
+    abilities:
+      - trigger: Activated
+        essence_cost: 1
+        targeting: TargetAllyCreature
+        effects:
+          - type: buff_stats
+            attack: 1
+            health: 1
+    # A caretaker of the pack who nurtures growth in her charges. Tap and pay
+    # 1 essence to permanently grant +1/+1 to an ally creature. Cheap and
+    # efficient, but requires investment over multiple turns.
+
+  # --- Spore Shaman (Ambiguous, Parasite) ---
+  - id: 2076
+    name: "Spore Shaman"
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Rare
+    tags: [Parasite]
+    abilities:
+      - trigger: Activated
+        essence_cost: 2
+        targeting: TargetEnemyCreature
+        effects:
+          - type: damage
+            amount: 2
+    # A fungal mystic who channels toxic spores at enemies. Tap and pay 2 essence
+    # to deal 2 damage to an enemy creature. Provides repeatable creature removal
+    # but at the cost of board presence.

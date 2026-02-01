@@ -1,0 +1,656 @@
+name: "Argentum Creatures"
+cards:
+  - id: 1000
+    name: Brass Sentinel
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 5
+    keywords:
+    - Guard
+    rarity: Common
+    tags:
+    - Construct
+  - id: 1001
+    name: Steam Knight
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords:
+    - Piercing
+    rarity: Common
+    tags:
+    - Soldier
+  - id: 1002
+    name: Cogwork Defender
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 5
+    keywords:
+    - Guard
+    rarity: Common
+    tags:
+    - Construct
+  - id: 1003
+    name: Factory Foreman
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Engineer
+    abilities:
+    - trigger: OnPlay
+      targeting: TargetAllyCreature
+      effects:
+      - type: buff_stats
+        attack: 0
+        health: 2
+  - id: 1004
+    name: Iron Colossus
+    cost: 5
+    card_type: creature
+    attack: 3
+    health: 7
+    keywords:
+    - Guard
+    rarity: Uncommon
+    tags:
+    - Construct
+  - id: 1005
+    name: Pressure Trooper
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords:
+    - Piercing
+    rarity: Common
+    tags:
+    - Soldier
+  - id: 1006
+    name: Shield Bearer
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords:
+    - Shield
+    rarity: Common
+    tags:
+    - Soldier
+  - id: 1007
+    name: Clockwork Medic
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Construct
+    abilities:
+    - trigger: OnPlay
+      effects:
+      - type: heal
+        amount: 2
+  - id: 1008
+    name: Siege Engine
+    cost: 6
+    card_type: creature
+    attack: 4
+    health: 6
+    keywords:
+    - Guard
+    - Piercing
+    rarity: Rare
+    tags:
+    - Construct
+  - id: 1009
+    name: Grand Constructor
+    cost: 7
+    card_type: creature
+    attack: 4
+    health: 6
+    keywords:
+    - Guard
+    rarity: Legendary
+    tags:
+    - Engineer
+    abilities:
+    - trigger: OnPlay
+      targeting: TargetAllyCreature
+      effects:
+      - type: buff_stats
+        attack: 1
+        health: 2
+  - id: 1015
+    name: Forge Master
+    cost: 5
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: []
+    rarity: Rare
+    tags:
+    - Engineer
+    abilities:
+    - trigger: StartOfTurn
+      targeting: NoTarget
+      effects:
+      - type: damage
+        amount: 1
+  - id: 1016
+    name: Steam Cannon
+    cost: 6
+    card_type: creature
+    attack: 3
+    health: 7
+    keywords:
+    - Guard
+    rarity: Rare
+    tags:
+    - Construct
+    abilities:
+    - trigger: StartOfTurn
+      targeting: NoTarget
+      effects:
+      - type: damage
+        amount: 1
+  - id: 1017
+    name: Artillery Tower
+    cost: 5
+    card_type: creature
+    attack: 2
+    health: 6
+    keywords: []
+    rarity: Legendary
+    tags:
+    - Construct
+    abilities:
+    - trigger: StartOfTurn
+      targeting: NoTarget
+      effects:
+      - type: damage
+        amount: 1
+  - id: 1020
+    name: Ironclad Bulwark
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 8
+    keywords:
+    - Guard
+    rarity: Uncommon
+    tags:
+    - Construct
+  - id: 1021
+    name: Bronze Gatekeeper
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords:
+    - Guard
+    rarity: Common
+    tags:
+    - Construct
+  - id: 1022
+    name: Armored Sentinel
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 5
+    keywords:
+    - Guard
+    - Shield
+    rarity: Uncommon
+    tags:
+    - Construct
+  - id: 1023
+    name: Field Medic
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: []
+    rarity: Common
+    tags:
+    - Soldier
+    abilities:
+    - trigger: OnPlay
+      targeting: TargetAllyCreature
+      effects:
+      - type: heal
+        amount: 3
+  - id: 1027
+    name: Shield Wall Captain
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 5
+    keywords:
+    - Guard
+    rarity: Uncommon
+    tags:
+    - Soldier
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: grant_keyword
+        keyword: Shield
+        filter:
+          has_keyword: 1
+  - id: 1031
+    name: Stalwart Defender
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 7
+    keywords:
+    - Guard
+    rarity: Uncommon
+    tags:
+    - Soldier
+  - id: 1032
+    name: Siege Breaker
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 4
+    keywords:
+    - Piercing
+    rarity: Rare
+    tags:
+    - Construct
+    abilities:
+    - trigger: OnPlay
+      targeting: TargetEnemyCreature
+      effects:
+      - type: damage
+        amount: 2
+        filter:
+          max_health: 4
+  - id: 1035
+    name: Hardened Vanguard
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords:
+    - Guard
+    - Fortify
+    rarity: Common
+    tags:
+    - Soldier
+  - id: 1036
+    name: Armored Titan
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 7
+    keywords:
+    - Fortify
+    rarity: Uncommon
+    tags:
+    - Construct
+  - id: 1037
+    name: Bulwark Commander
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 5
+    keywords:
+    - Guard
+    - Fortify
+    rarity: Rare
+    tags:
+    - Soldier
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: grant_keyword
+        keyword: Fortify
+        filter:
+          has_keyword: 8
+  - id: 1038
+    name: Fortress Wall
+    cost: 6
+    card_type: creature
+    attack: 3
+    health: 10
+    keywords:
+    - Guard
+    - Fortify
+    - Shield
+    rarity: Legendary
+    tags:
+    - Construct
+  - id: 1041
+    name: Fortified Sentinel
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Fortify
+    rarity: Common
+    tags:
+    - Construct
+  - id: 1042
+    name: Steel Templar
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 5
+    keywords:
+    - Fortify
+    - Guard
+    rarity: Uncommon
+    tags:
+    - Soldier
+  - id: 1043
+    name: Unyielding Champion
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 6
+    keywords:
+    - Fortify
+    rarity: Uncommon
+    tags:
+    - Soldier
+  - id: 1044
+    name: Bastion Lord
+    cost: 6
+    card_type: creature
+    attack: 4
+    health: 8
+    keywords:
+    - Fortify
+    - Guard
+    rarity: Legendary
+    tags:
+    - Soldier
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: grant_keyword
+        keyword: Fortify
+  - id: 1046
+    name: Assembly Overseer
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 5
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Engineer
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: summon_token
+        token:
+          name: Brass Cog
+          attack: 2
+          health: 2
+          keywords: []
+  - id: 1047
+    name: Factory Heart
+    cost: 5
+    card_type: creature
+    attack: 3
+    health: 5
+    keywords: []
+    rarity: Rare
+    tags:
+    - Construct
+    abilities:
+    - trigger: StartOfTurn
+      targeting: NoTarget
+      effects:
+      - type: summon_token
+        token:
+          name: Brass Cog
+          attack: 2
+          health: 2
+          keywords: []
+  - id: 1050
+    name: Interceptor
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords:
+    - Guard
+    rarity: Uncommon
+    tags:
+    - Construct
+    abilities:
+    - trigger: OnPlay
+      targeting: TargetEnemyCreature
+      effects:
+      - type: damage
+        amount: 2
+        filter:
+          has_keyword: 4
+  - id: 1051
+    name: Spotlight Tower
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Construct
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: remove_keyword
+        keyword: Stealth
+  - id: 1056
+    name: Cogwheel Engineer
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Construct
+    - Engineer
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: summon_token
+        token:
+          name: Repair Drone
+          attack: 0
+          health: 2
+          keywords: []
+  - id: 1057
+    name: Field Medic Vera
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 5
+    keywords:
+    - Regenerate
+    rarity: Uncommon
+    tags:
+    - Medic
+    - Soldier
+  - id: 1058
+    name: Gatehouse Sentry
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords:
+    - Guard
+    rarity: Common
+    tags:
+    - Soldier
+  - id: 1059
+    name: Workshop Forewoman
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords:
+    - Fortify
+    rarity: Common
+    tags:
+    - Construct
+    - Engineer
+  - id: 1060
+    name: Cog Assembler
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: []
+    rarity: Common
+    tags:
+    - Construct
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: summon_token
+        token:
+          name: Brass Cog
+          attack: 2
+          health: 2
+          keywords: []
+  - id: 1061
+    name: Forge Overseer
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Construct
+    passive_effects:
+    - modifier:
+        attack_bonus: 1
+  - id: 1063
+    name: Bulwark Sentinel
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords:
+    - Guard
+    rarity: Common
+    tags:
+    - Construct
+  - id: 1064
+    name: Iron Bastion
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 6
+    keywords:
+    - Guard
+    - Fortify
+    rarity: Uncommon
+    tags:
+    - Construct
+  - id: 1067
+    name: Siege Cannon
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords:
+    - Piercing
+    - Ranged
+    rarity: Uncommon
+    tags:
+    - Construct
+  - id: 1068
+    name: Battering Ram
+    cost: 5
+    card_type: creature
+    attack: 5
+    health: 3
+    keywords:
+    - Piercing
+    rarity: Rare
+    tags:
+    - Construct
+  - id: 1069
+    name: Clockwork Dragon
+    cost: 6
+    card_type: creature
+    attack: 5
+    health: 5
+    keywords:
+    - Piercing
+    - Charge
+    rarity: Rare
+    tags:
+    - Construct
+    - Dragon
+  - id: 1075
+    name: Brass Scout
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 2
+    keywords: []
+    rarity: Common
+    tags:
+    - Construct
+  - id: 1076
+    name: Field Surgeon
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Medic
+    - Soldier
+    abilities:
+    - trigger: Activated
+      essence_cost: 2
+      targeting: TargetAllyCreature
+      effects:
+      - type: heal
+        amount: 3
+  - id: 1077
+    name: Shield Technician
+    cost: 4
+    card_type: creature
+    attack: 1
+    health: 5
+    keywords:
+    - Guard
+    rarity: Rare
+    tags:
+    - Engineer
+    - Construct
+    abilities:
+    - trigger: Activated
+      essence_cost: 2
+      targeting: TargetAllyCreature
+      effects:
+      - type: grant_keyword
+        keyword: Shield

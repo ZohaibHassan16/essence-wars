@@ -1,0 +1,99 @@
+name: "Neutral Supports"
+cards:
+  - id: 4012
+    name: Supply Depot
+    cost: 3
+    card_type: support
+    durability: 4
+    triggered_effects:
+    - trigger: StartOfTurn
+      effects:
+      - type: heal
+        amount: 1
+    rarity: Uncommon
+  - id: 4013
+    name: Mercenary Camp
+    cost: 4
+    card_type: support
+    durability: 3
+    passive_effects:
+    - modifier:
+        attack_bonus: 1
+    rarity: Uncommon
+  - id: 4014
+    name: Artillery Platform
+    cost: 5
+    card_type: support
+    durability: 2
+    triggered_effects:
+    - trigger: StartOfTurn
+      effects:
+      - type: damage
+        amount: 2
+    rarity: Rare
+  - id: 4051
+    name: Scout Post
+    cost: 2
+    card_type: support
+    durability: 3
+    triggered_effects:
+    - trigger: StartOfTurn
+      effects:
+      - type: draw
+        count: 1
+    rarity: Uncommon
+  - id: 4052
+    name: Training Grounds
+    cost: 3
+    card_type: support
+    durability: 4
+    passive_effects:
+    - modifier:
+        health_bonus: 1
+    rarity: Uncommon
+  - id: 4053
+    name: Sanctuary
+    cost: 4
+    card_type: support
+    durability: 3
+    triggered_effects:
+    - trigger: StartOfTurn
+      effects:
+      - type: heal
+        amount: 2
+    rarity: Rare
+  - id: 4072
+    name: Supply Cache
+    cost: 2
+    card_type: support
+    durability: 2
+    triggered_effects:
+    - trigger: StartOfTurn
+      effects:
+      - type: draw
+        count: 1
+    rarity: Common
+  - id: 4073
+    name: Mercenary Camp
+    cost: 4
+    card_type: support
+    durability: 3
+    triggered_effects:
+    - trigger: StartOfTurn
+      effects:
+      - type: summon_token
+        token:
+          name: Mercenary
+          attack: 1
+          health: 1
+          keywords: []
+    rarity: Uncommon
+  - id: 4074
+    name: War Banner
+    cost: 3
+    card_type: support
+    durability: 4
+    passive_effects:
+    - modifier:
+        attack_bonus: 1
+    rarity: Uncommon

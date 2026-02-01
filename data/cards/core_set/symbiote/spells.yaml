@@ -1,0 +1,217 @@
+name: "Symbiote Spells"
+cards:
+  - id: 2012
+    name: Rapid Mutation
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 2
+      health: 0
+    - type: grant_keyword
+      keyword: Rush
+    rarity: Uncommon
+  - id: 2013
+    name: Consume
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 3
+    rarity: Uncommon
+  - id: 2029
+    name: Primal Fury
+    cost: 1
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 2
+      health: 0
+    - type: grant_keyword
+      keyword: Frenzy
+    rarity: Uncommon
+  - id: 2030
+    name: Adaptive Shell
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 0
+      health: 3
+    - type: grant_keyword
+      keyword: Regenerate
+    rarity: Uncommon
+  - id: 2031
+    name: Berserk Rage
+    cost: 3
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 3
+      health: 0
+    - type: grant_keyword
+      keyword: Rush
+    rarity: Rare
+  - id: 2035
+    name: Soul Reaper
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 3
+    conditional_effects:
+    - condition: target_died
+      effects:
+      - type: draw
+        count: 1
+    rarity: Uncommon
+  - id: 2036
+    name: Feast
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 2
+    conditional_effects:
+    - condition: target_died
+      effects:
+      - type: buff_stats
+        attack: 2
+        health: 2
+    rarity: Uncommon
+  - id: 2037
+    name: Predatory Strike
+    cost: 4
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 4
+    conditional_effects:
+    - condition: target_died
+      effects:
+      - type: heal
+        amount: 4
+    rarity: Rare
+  - id: 2039
+    name: Evolution Burst
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: buff_stats
+      attack: 2
+      health: 1
+      filter:
+        has_keyword: 8
+    rarity: Uncommon
+  - id: 2040
+    name: Pack Recall
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: bounce
+    - type: draw
+      count: 1
+    rarity: Common
+  - id: 2044
+    name: Consume the Fallen
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: destroy
+      filter:
+        max_health: 3
+    conditional_effects:
+    - condition: target_died
+      effects:
+      - type: buff_stats
+        attack: 1
+        health: 1
+    rarity: Uncommon
+  - id: 2054
+    name: Pack Tactics
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 1
+      health: 1
+    - type: grant_keyword
+      keyword: Rush
+    rarity: Common
+  - id: 2055
+    name: Adaptive Form
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 0
+      health: 2
+    - type: grant_keyword
+      keyword: Regenerate
+    rarity: Common
+  - id: 2056
+    name: Pack Fury
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: buff_stats
+      attack: 1
+      health: 0
+    rarity: Uncommon
+  - id: 2065
+    name: Pack Tactics
+    cost: 2
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: buff_stats
+      attack: 1
+      health: 0
+    rarity: Common
+  - id: 2069
+    name: Toxic Spores
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: grant_keyword
+      keyword: Volatile
+    rarity: Common
+  - id: 2071
+    name: Bloodfury
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 2
+      health: 0
+    - type: grant_keyword
+      keyword: Frenzy
+    rarity: Uncommon
+  - id: 2074
+    name: Nature's Resilience
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: grant_keyword
+      keyword: Regenerate
+    - type: buff_stats
+      attack: 0
+      health: 2
+    rarity: Uncommon

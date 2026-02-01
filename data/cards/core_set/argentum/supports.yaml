@@ -1,0 +1,100 @@
+name: "Argentum Supports"
+cards:
+  - id: 1013
+    name: Assembly Line
+    cost: 4
+    card_type: support
+    durability: 3
+    triggered_effects:
+    - trigger: StartOfTurn
+      effects:
+      - type: heal
+        amount: 2
+    rarity: Uncommon
+  - id: 1014
+    name: Fortification
+    cost: 3
+    card_type: support
+    durability: 4
+    passive_effects:
+    - modifier:
+        health_bonus: 1
+    rarity: Uncommon
+  - id: 1018
+    name: Reinforced Walls
+    cost: 3
+    card_type: support
+    durability: 4
+    passive_effects:
+    - modifier:
+        health_bonus: 2
+    rarity: Uncommon
+  - id: 1019
+    name: Shield Generator
+    cost: 4
+    card_type: support
+    durability: 3
+    passive_effects:
+    - modifier:
+        grant_keyword: Shield
+    rarity: Rare
+  - id: 1048
+    name: Forge of Creation
+    cost: 4
+    card_type: support
+    durability: 3
+    triggered_effects:
+    - trigger: StartOfTurn
+      effects:
+      - type: summon_token
+        token:
+          name: Brass Sentinel
+          attack: 2
+          health: 2
+          keywords:
+          - Guard
+    rarity: Rare
+  - id: 1054
+    name: Repair Station
+    cost: 3
+    card_type: support
+    durability: 4
+    triggered_effects:
+    - trigger: StartOfTurn
+      effects:
+      - type: heal
+        amount: 2
+    rarity: Uncommon
+  - id: 1055
+    name: Dampening Field
+    cost: 5
+    card_type: support
+    durability: 3
+    passive_effects:
+    - modifier:
+        grant_keyword: Fortify
+    rarity: Rare
+  - id: 1062
+    name: War Factory
+    cost: 5
+    card_type: support
+    durability: 3
+    triggered_effects:
+    - trigger: StartOfTurn
+      effects:
+      - type: summon_token
+        token:
+          name: Battle Drone
+          attack: 2
+          health: 1
+          keywords: []
+    rarity: Rare
+  - id: 1071
+    name: Defensive Matrix
+    cost: 3
+    card_type: support
+    durability: 3
+    passive_effects:
+    - modifier:
+        health_bonus: 1
+    rarity: Uncommon

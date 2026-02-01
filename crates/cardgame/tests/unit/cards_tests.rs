@@ -193,12 +193,12 @@ fn test_load_from_directory() {
         CardDatabase::load_from_directory(cardgame::data_dir().join("cards/core_set")).expect("Failed to load cards from directory");
 
     // Verify we loaded all card sets:
-    // - Core Set: 300 cards (Foundation Set complete!)
-    //   - Argentum: IDs 1000-1074 (75 cards) - includes 4 commanders
-    //   - Symbiote: IDs 2000-2074 (75 cards) - includes 4 commanders
-    //   - Obsidion: IDs 3000-3074 (75 cards) - includes 4 commanders
-    //   - Free-Walkers: IDs 4000-4074 (75 cards) - no commanders (mercenaries)
-    assert_eq!(db.len(), 301);
+    // - Core Set: 300 cards (Foundation Set complete!) + 8 activated ability creatures
+    //   - Argentum: IDs 1000-1077 (77 cards) - includes 4 commanders + 2 activated ability creatures
+    //   - Symbiote: IDs 2000-2076 (77 cards) - includes 4 commanders + 2 activated ability creatures
+    //   - Obsidion: IDs 3000-3076 (77 cards) - includes 4 commanders + 2 activated ability creatures
+    //   - Free-Walkers: IDs 4000-4076 (77 cards) - no commanders + 2 activated ability creatures
+    assert_eq!(db.len(), 309);
 
     // Verify specific cards exist from each faction
     let brass_sentinel = db.get(CardId(1000)).expect("Card 1000 not found");
@@ -403,8 +403,8 @@ fn test_card_database_with_commanders() {
 
     let full_db = card_db.with_commanders(commanders);
 
-    // Verify cards (301 after Brass Scout added in v0.8.0)
-    assert_eq!(full_db.len(), 301);
+    // Verify cards (309 after activated ability creatures added)
+    assert_eq!(full_db.len(), 309);
 
     // Verify commanders
     assert_eq!(full_db.commander_count(), 12);
@@ -433,7 +433,7 @@ fn test_load_with_commanders_convenience() {
         cardgame::data_dir().join("commanders"),
     ).expect("Failed to load cards and commanders");
 
-    assert_eq!(full_db.len(), 301);
+    assert_eq!(full_db.len(), 309);
     assert_eq!(full_db.commander_count(), 12);
 }
 

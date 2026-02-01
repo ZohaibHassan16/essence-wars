@@ -5,7 +5,7 @@
 
 use std::sync::Arc;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use crate::core::types::*;
@@ -18,6 +18,9 @@ pub struct AbilityDefinition {
     pub trigger: Trigger,
     #[serde(default)]
     pub targeting: TargetingRule,
+    /// Essence cost to activate (only used for Trigger::Activated abilities)
+    #[serde(default)]
+    pub essence_cost: u8,
     pub effects: Vec<EffectDefinition>,
     /// Effects that trigger conditionally based on the result of the primary effects
     #[serde(default)]
@@ -729,15 +732,30 @@ impl CardDatabase {
 
         let mut all_cards = Vec::new();
 
-        for entry in fs::read_dir(dir_path)? {
-            let entry = entry?;
-            let file_path = entry.path();
-
-            if file_path.extension().is_some_and(|ext| ext == "yaml" || ext == "yml") {
-                let yaml_content = fs::read_to_string(&file_path)?;
-                let card_set: CardSet = serde_yaml::from_str(&yaml_content)?;
-                all_cards.extend(card_set.cards);
+        // Recursively collect all YAML files from the directory and subdirectories
+        fn collect_yaml_files(dir: &Path, files: &mut Vec<PathBuf>) -> std::io::Result<()> {
+            for entry in fs::read_dir(dir)? {
+                let entry = entry?;
+                let path = entry.path();
+                if path.is_dir() {
+                    collect_yaml_files(&path, files)?;
+                } else if path.extension().is_some_and(|ext| ext == "yaml" || ext == "yml") {
+                    files.push(path);
+                }
             }
+            Ok(())
+        }
+
+        let mut yaml_files = Vec::new();
+        collect_yaml_files(dir_path, &mut yaml_files)?;
+
+        // Sort for deterministic loading order
+        yaml_files.sort();
+
+        for file_path in yaml_files {
+            let yaml_content = fs::read_to_string(&file_path)?;
+            let card_set: CardSet = serde_yaml::from_str(&yaml_content)?;
+            all_cards.extend(card_set.cards);
         }
 
         // Validate that we loaded at least one card

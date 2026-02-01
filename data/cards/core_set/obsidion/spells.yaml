@@ -1,0 +1,304 @@
+name: "Obsidion Spells"
+cards:
+  - id: 3008
+    name: Soul Drain
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 3
+    rarity: Common
+  - id: 3009
+    name: Dark Insight
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: draw
+      count: 2
+    rarity: Uncommon
+  - id: 3010
+    name: Shadow Strike
+    cost: 1
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 2
+    - type: heal
+      amount: 1
+    rarity: Common
+  - id: 3011
+    name: Obliteration
+    cost: 4
+    card_type: spell
+    targeting: TargetAny
+    effects:
+    - type: destroy
+    rarity: Uncommon
+  - id: 3012
+    name: Mind Shatter
+    cost: 3
+    card_type: spell
+    targeting: TargetAny
+    effects:
+    - type: damage
+      amount: 3
+    rarity: Uncommon
+  - id: 3013
+    name: Cataclysm
+    cost: 6
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: damage
+      amount: 4
+    rarity: Rare
+  - id: 3025
+    name: Life Tap
+    cost: 1
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 2
+    - type: heal
+      amount: 2
+    rarity: Common
+  - id: 3026
+    name: Dark Empowerment
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 2
+      health: 1
+    - type: grant_keyword
+      keyword: Quick
+    rarity: Uncommon
+  - id: 3027
+    name: Void Rift
+    cost: 4
+    card_type: spell
+    targeting: TargetAny
+    effects:
+    - type: damage
+      amount: 5
+    rarity: Rare
+  - id: 3030
+    name: Soul Harvest
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 3
+    conditional_effects:
+    - condition: target_died
+      effects:
+      - type: heal
+        amount: 3
+    rarity: Uncommon
+  - id: 3031
+    name: Consume Essence
+    cost: 4
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: destroy
+      filter:
+        max_health: 4
+    conditional_effects:
+    - condition: target_died
+      effects:
+      - type: draw
+        count: 2
+    rarity: Rare
+  - id: 3032
+    name: Vampiric Execution
+    cost: 5
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 5
+    conditional_effects:
+    - condition: target_died
+      effects:
+      - type: heal
+        amount: 5
+      - type: draw
+        count: 1
+    rarity: Rare
+  - id: 3033
+    name: Shadow Return
+    cost: 2
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: bounce
+    - type: damage
+      amount: 1
+    rarity: Common
+  - id: 3034
+    name: Mass Dispersion
+    cost: 5
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: bounce
+      filter:
+        max_health: 3
+    rarity: Rare
+  - id: 3035
+    name: Vampiric Surge
+    cost: 3
+    card_type: spell
+    targeting: NoTarget
+    effects:
+    - type: buff_stats
+      attack: 2
+      health: 0
+      filter:
+        has_keyword: 4
+    rarity: Uncommon
+  - id: 3036
+    name: Blood Pact
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 1
+      health: 2
+    - type: grant_keyword
+      keyword: Lifesteal
+    rarity: Uncommon
+  - id: 3040
+    name: Shadow Clone
+    cost: 3
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: copy
+    rarity: Uncommon
+  - id: 3044
+    name: Corruption
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: transform
+      into:
+        name: Corrupted Shade
+        attack: 2
+        health: 2
+        keywords: []
+    rarity: Uncommon
+  - id: 3045
+    name: Dark Metamorphosis
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: transform
+      into:
+        name: Shadow Beast
+        attack: 4
+        health: 4
+        keywords:
+        - Quick
+    rarity: Rare
+  - id: 3050
+    name: Bloodthirst
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 2
+      health: 1
+    - type: grant_keyword
+      keyword: Lifesteal
+    rarity: Uncommon
+  - id: 3053
+    name: Cloak of Shadows
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: buff_stats
+      attack: 1
+      health: 1
+    - type: grant_keyword
+      keyword: Stealth
+    rarity: Uncommon
+  - id: 3062
+    name: Sanguine Blessing
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: grant_keyword
+      keyword: Lifesteal
+    - type: buff_stats
+      attack: 1
+      health: 0
+    rarity: Common
+  - id: 3065
+    name: Cloak of Shadows
+    cost: 2
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: grant_keyword
+      keyword: Stealth
+    rarity: Common
+  - id: 3066
+    name: Ambush
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 4
+    rarity: Uncommon
+  - id: 3067
+    name: Mirror Image
+    cost: 3
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: copy
+    rarity: Uncommon
+  - id: 3069
+    name: Identity Theft
+    cost: 5
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: copy
+    rarity: Rare
+  - id: 3072
+    name: Haste
+    cost: 1
+    card_type: spell
+    targeting: TargetAllyCreature
+    effects:
+    - type: grant_keyword
+      keyword: Quick
+    - type: refresh_creature
+    rarity: Common
+  - id: 3073
+    name: Void Strike
+    cost: 3
+    card_type: spell
+    targeting: TargetEnemyCreature
+    effects:
+    - type: damage
+      amount: 3
+    - type: draw
+      count: 1
+    rarity: Uncommon

@@ -180,6 +180,7 @@ mod tests {
                         target_slot: Some(2),
                         hand_index: None,
                         card_id: None,
+                        ability_index: None,
                     },
                     visits: 512,
                     win_rate: 0.58,

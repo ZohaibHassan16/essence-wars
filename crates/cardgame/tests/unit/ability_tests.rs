@@ -376,3 +376,309 @@ fn test_volatile_overload_damages_enemy_commander() {
         "P2 commander should have taken 2 damage from Volatile Overload"
     );
 }
+
+// =============================================================================
+// CARD-BASED ACTIVATED ABILITY TESTS
+// =============================================================================
+
+use cardgame::cards::{CommanderDefinition, CommanderAbility, CommanderPassiveAbility, CommanderPassiveEffect, Faction};
+use cardgame::types::Rarity;
+
+/// Helper to create a card database with a test creature that has an activated ability
+fn create_test_db_with_activated_ability() -> CardDatabase {
+    let yaml = r#"
+name: test_set
+cards:
+  - id: 9001
+    name: "Test Buffer"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 4
+    abilities:
+      - trigger: Activated
+        essence_cost: 2
+        targeting: NoTarget
+        effects:
+          - type: buff_stats
+            attack: 1
+            health: 1
+  - id: 9002
+    name: "Test Damager"
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    abilities:
+      - trigger: Activated
+        essence_cost: 1
+        targeting: TargetEnemyCreature
+        effects:
+          - type: damage
+            amount: 2
+  - id: 9003
+    name: "Basic Creature"
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 2
+"#;
+    let card_db = CardDatabase::load_from_yaml(yaml).expect("Failed to load test card YAML");
+
+    // Add a simple test commander
+    let commanders = vec![
+        CommanderDefinition {
+            id: 9999,
+            name: "Test Commander".to_string(),
+            faction: Faction::Neutral,
+            rarity: Rarity::Common,
+            ability: CommanderAbility::Passive {
+                passive_ability: CommanderPassiveAbility {
+                    description: "Test passive".to_string(),
+                    effect: CommanderPassiveEffect::BuffStats { attack: 0, health: 0 },
+                },
+            },
+            flavor: None,
+        },
+    ];
+    card_db.with_commanders(commanders)
+}
+
+/// Helper to create a minimal game with test cards
+fn setup_test_game_with_activated_abilities(
+    engine: &mut GameEngine,
+    seed: u64,
+) {
+    // Create decks with our test cards
+    let deck1: Vec<CardId> = vec![CardId(9001), CardId(9002), CardId(9003)]
+        .into_iter()
+        .cycle()
+        .take(30)
+        .collect();
+    let deck2: Vec<CardId> = vec![CardId(9003); 30];
+
+    // Use test commander
+    engine.start_game_raw(
+        deck1,
+        deck2,
+        CardId(9999), // Test commander
+        CardId(9999), // Test commander
+        seed,
+        GameMode::default(),
+    ).unwrap();
+}
+
+#[test]
+fn test_card_based_activated_ability_legal_actions() {
+    // Test that card-based activated abilities appear in legal actions
+    let card_db = create_test_db_with_activated_ability();
+    let mut engine = GameEngine::new(&card_db);
+
+    setup_test_game_with_activated_abilities(&mut engine, 42);
+
+    // Give enough essence
+    engine.state.players[0].current_essence = 10;
+
+    // Find the Test Buffer (9001) in hand and play it
+    let hand_idx = engine.state.players[0].hand.iter()
+        .position(|c| c.card_id == CardId(9001))
+        .expect("Test Buffer should be in hand");
+
+    let action = Action::PlayCard { hand_index: hand_idx as u8, slot: Slot(0) };
+    engine.apply_action(action).expect("Should play Test Buffer");
+
+    // Verify creature is on board with correct card
+    let creature = engine.state.players[0].get_creature(Slot(0));
+    assert!(creature.is_some(), "Test Buffer should be on board");
+    let creature = creature.unwrap();
+    assert_eq!(creature.card_id, CardId(9001), "Should be Test Buffer");
+
+    // Un-exhaust the creature (normally exhausted from summoning sickness)
+    if let Some(creature) = engine.state.players[0].get_creature_mut(Slot(0)) {
+        creature.status.set_exhausted(false);
+    }
+
+    // Check legal actions for UseAbility
+    let legal = engine.get_legal_actions();
+    let has_ability_action = legal.iter().any(|a| matches!(a, Action::UseAbility { .. }));
+
+    assert!(
+        has_ability_action,
+        "Should have UseAbility action for Test Buffer's activated ability"
+    );
+}
+
+#[test]
+fn test_card_based_activated_ability_requires_essence() {
+    // Test that activated abilities check essence cost
+    let card_db = create_test_db_with_activated_ability();
+    let mut engine = GameEngine::new(&card_db);
+
+    setup_test_game_with_activated_abilities(&mut engine, 42);
+
+    // Give enough essence to play the creature
+    engine.state.players[0].current_essence = 10;
+
+    // Find and play Test Buffer (9001)
+    let hand_idx = engine.state.players[0].hand.iter()
+        .position(|c| c.card_id == CardId(9001))
+        .expect("Test Buffer should be in hand");
+    let action = Action::PlayCard { hand_index: hand_idx as u8, slot: Slot(0) };
+    engine.apply_action(action).expect("Should play Test Buffer");
+
+    // Un-exhaust so ability would normally be available
+    if let Some(creature) = engine.state.players[0].get_creature_mut(Slot(0)) {
+        creature.status.set_exhausted(false);
+    }
+
+    // Set essence to 1 - below the 2 cost for the ability
+    engine.state.players[0].current_essence = 1;
+
+    // Check legal actions - should NOT have UseAbility since we need 2 essence
+    let legal = engine.get_legal_actions();
+    let has_ability_action = legal.iter().any(|a| matches!(a, Action::UseAbility { slot, .. } if *slot == Slot(0)));
+
+    assert!(
+        !has_ability_action,
+        "Should NOT have UseAbility when essence is insufficient"
+    );
+}
+
+#[test]
+fn test_card_based_activated_ability_exhausts_creature() {
+    // Test that using an activated ability exhausts the creature
+    let card_db = create_test_db_with_activated_ability();
+    let mut engine = GameEngine::new(&card_db);
+
+    setup_test_game_with_activated_abilities(&mut engine, 42);
+
+    // Give enough essence
+    engine.state.players[0].current_essence = 10;
+
+    // Find and play Test Buffer (9001)
+    let hand_idx = engine.state.players[0].hand.iter()
+        .position(|c| c.card_id == CardId(9001))
+        .expect("Test Buffer should be in hand");
+    let action = Action::PlayCard { hand_index: hand_idx as u8, slot: Slot(0) };
+    engine.apply_action(action).expect("Should play Test Buffer");
+
+    // Un-exhaust the creature so it can use ability
+    if let Some(creature) = engine.state.players[0].get_creature_mut(Slot(0)) {
+        creature.status.set_exhausted(false);
+    }
+
+    // Check that ability action is available
+    let legal = engine.get_legal_actions();
+    let ability_action = legal.iter().find(|a| matches!(a, Action::UseAbility { slot, .. } if *slot == Slot(0)));
+    assert!(ability_action.is_some(), "Should have ability action before use");
+
+    // Use the ability
+    engine.apply_action(ability_action.unwrap().clone()).expect("Should use ability");
+
+    // Verify creature is now exhausted
+    let creature = engine.state.players[0].get_creature(Slot(0)).expect("Creature should exist");
+    assert!(
+        creature.status.is_exhausted(),
+        "Creature should be exhausted after using activated ability"
+    );
+}
+
+#[test]
+fn test_card_based_activated_ability_deducts_essence() {
+    // Test that using an activated ability deducts essence
+    let card_db = create_test_db_with_activated_ability();
+    let mut engine = GameEngine::new(&card_db);
+
+    setup_test_game_with_activated_abilities(&mut engine, 42);
+
+    // Give enough essence
+    engine.state.players[0].current_essence = 10;
+
+    // Find and play Test Buffer (9001)
+    let hand_idx = engine.state.players[0].hand.iter()
+        .position(|c| c.card_id == CardId(9001))
+        .expect("Test Buffer should be in hand");
+    let action = Action::PlayCard { hand_index: hand_idx as u8, slot: Slot(0) };
+    engine.apply_action(action).expect("Should play Test Buffer");
+
+    // Set essence to known amount after play
+    engine.state.players[0].current_essence = 5;
+    let essence_before = engine.state.players[0].current_essence;
+
+    // Make creature ready
+    if let Some(creature) = engine.state.players[0].get_creature_mut(Slot(0)) {
+        creature.status.set_exhausted(false);
+    }
+
+    // Use the ability (costs 2 essence)
+    let legal = engine.get_legal_actions();
+    let ability_action = legal.iter().find(|a| matches!(a, Action::UseAbility { slot, .. } if *slot == Slot(0)));
+    assert!(ability_action.is_some(), "Should have ability action");
+    engine.apply_action(ability_action.unwrap().clone()).expect("Should use ability");
+
+    // Verify essence was deducted
+    let essence_after = engine.state.players[0].current_essence;
+    assert_eq!(
+        essence_after,
+        essence_before - 2,
+        "Essence should be deducted by ability cost (2)"
+    );
+}
+
+#[test]
+fn test_card_based_activated_ability_cannot_use_when_exhausted() {
+    // Test that exhausted creatures cannot use abilities
+    let card_db = create_test_db_with_activated_ability();
+    let mut engine = GameEngine::new(&card_db);
+
+    setup_test_game_with_activated_abilities(&mut engine, 42);
+
+    engine.state.players[0].current_essence = 10;
+
+    // Play Test Healer
+    let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
+    engine.apply_action(action).expect("Should play Test Healer");
+
+    // Creature starts exhausted (summoning sickness), so should not have ability
+    let legal = engine.get_legal_actions();
+    let has_ability_for_slot_0 = legal.iter().any(|a| {
+        matches!(a, Action::UseAbility { slot, .. } if *slot == Slot(0))
+    });
+
+    assert!(
+        !has_ability_for_slot_0,
+        "Exhausted creature should NOT have UseAbility action"
+    );
+}
+
+#[test]
+fn test_card_based_activated_ability_silenced_creature_cannot_use() {
+    // Test that silenced creatures cannot use abilities
+    let card_db = create_test_db_with_activated_ability();
+    let mut engine = GameEngine::new(&card_db);
+
+    setup_test_game_with_activated_abilities(&mut engine, 42);
+
+    engine.state.players[0].current_essence = 10;
+
+    // Play Test Healer
+    let action = Action::PlayCard { hand_index: 0, slot: Slot(0) };
+    engine.apply_action(action).expect("Should play Test Healer");
+
+    // Make creature ready but silenced
+    if let Some(creature) = engine.state.players[0].get_creature_mut(Slot(0)) {
+        creature.status.set_exhausted(false);
+        creature.status.set_silenced(true);
+    }
+
+    // Check that no ability actions are available for this creature
+    let legal = engine.get_legal_actions();
+    let has_ability_for_slot_0 = legal.iter().any(|a| {
+        matches!(a, Action::UseAbility { slot, .. } if *slot == Slot(0))
+    });
+
+    assert!(
+        !has_ability_for_slot_0,
+        "Silenced creature should NOT have UseAbility action"
+    );
+}

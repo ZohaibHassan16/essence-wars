@@ -221,6 +221,7 @@ pub fn card_playing_test_db() -> CardDatabase {
                 abilities: vec![AbilityDefinition {
                     trigger: Trigger::OnPlay,
                     targeting: TargetingRule::NoTarget,
+                    essence_cost: 0,
                     effects: vec![EffectDefinition::Draw { count: 1 }],
                     conditional_effects: vec![],
                 }],
@@ -278,6 +279,7 @@ pub fn card_playing_test_db() -> CardDatabase {
                 triggered_effects: vec![AbilityDefinition {
                     trigger: Trigger::OnPlay,
                     targeting: TargetingRule::NoTarget,
+                    essence_cost: 0,
                     effects: vec![EffectDefinition::Draw { count: 1 }],
                     conditional_effects: vec![],
                 }],
@@ -368,6 +370,7 @@ pub fn card_playing_test_db() -> CardDatabase {
                 triggered_effects: vec![AbilityDefinition {
                     trigger: Trigger::StartOfTurn,
                     targeting: TargetingRule::NoTarget,
+                    essence_cost: 0,
                     effects: vec![EffectDefinition::Heal { amount: 2, filter: None }],
                     conditional_effects: vec![],
                 }],

@@ -61,6 +61,7 @@ fn death_cascade_test_db() -> CardDatabase {
                 abilities: vec![AbilityDefinition {
                     trigger: Trigger::OnDeath,
                     targeting: TargetingRule::NoTarget, // Ignored by engine
+                    essence_cost: 0,
                     effects: vec![EffectDefinition::Damage { amount: 2, filter: None }],
                     conditional_effects: vec![],
                 }],
@@ -80,6 +81,7 @@ fn death_cascade_test_db() -> CardDatabase {
                 abilities: vec![AbilityDefinition {
                     trigger: Trigger::OnDeath,
                     targeting: TargetingRule::NoTarget, // Ignored by engine
+                    essence_cost: 0,
                     effects: vec![EffectDefinition::Damage { amount: 3, filter: None }],
                     conditional_effects: vec![],
                 }],
@@ -99,6 +101,7 @@ fn death_cascade_test_db() -> CardDatabase {
                 abilities: vec![AbilityDefinition {
                     trigger: Trigger::OnAllyDeath,
                     targeting: TargetingRule::NoTarget,
+                    essence_cost: 0,
                     effects: vec![EffectDefinition::BuffStats { attack: 1, health: 1, filter: None }],
                     conditional_effects: vec![],
                 }],
@@ -118,6 +121,7 @@ fn death_cascade_test_db() -> CardDatabase {
                 abilities: vec![AbilityDefinition {
                     trigger: Trigger::OnAllyDeath,
                     targeting: TargetingRule::NoTarget,
+                    essence_cost: 0,
                     effects: vec![EffectDefinition::Draw { count: 1 }],
                     conditional_effects: vec![],
                 }],

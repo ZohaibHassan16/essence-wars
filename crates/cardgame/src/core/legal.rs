@@ -11,7 +11,7 @@ use crate::core::types::Slot;
 use crate::core::actions::{Action, Target};
 use crate::core::state::GameState;
 use crate::core::cards::{CardDatabase, CardType};
-use crate::core::effects::TargetingRule;
+use crate::core::effects::{TargetingRule, Trigger};
 
 /// Maximum number of legal actions possible in any game state
 pub const MAX_LEGAL_ACTIONS: usize = 64;
@@ -215,12 +215,12 @@ fn generate_attack_actions(
 ///
 /// This generates actions for:
 /// 1. Token abilities (stored on creature.token_abilities)
-/// 2. Card-based activated abilities (with Trigger::Activated) - future
+/// 2. Card-based activated abilities (with Trigger::Activated)
 ///
-/// UseAbility actions use action space indices 75-253.
+/// UseAbility actions use action space indices 150-249.
 fn generate_ability_actions(
     state: &GameState,
-    _card_db: &CardDatabase,  // Will be used when card-based Activated abilities are implemented
+    card_db: &CardDatabase,
     actions: &mut ArrayVec<Action, MAX_LEGAL_ACTIONS>,
 ) {
     let player = state.active_player_state();
@@ -232,81 +232,179 @@ fn generate_ability_actions(
             continue;
         }
 
-        // Check token abilities
+        // Skip exhausted creatures - activated abilities require tapping
+        if creature.status.is_exhausted() {
+            continue;
+        }
+
+        // Check token abilities first
         if let Some(ref abilities) = creature.token_abilities {
-            for (ability_idx, ability) in abilities.iter().enumerate() {
-                // Check essence cost
-                if ability.essence_cost > player.current_essence {
+            generate_actions_for_abilities_token(
+                creature.slot,
+                abilities,
+                player.current_essence,
+                opponent,
+                actions,
+            );
+        }
+
+        // Check card-based activated abilities
+        if let Some(card_def) = card_db.get(creature.card_id) {
+            if let CardType::Creature { abilities, .. } = &card_def.card_type {
+                generate_actions_for_abilities_card(
+                    creature.slot,
+                    abilities,
+                    player.current_essence,
+                    player,
+                    opponent,
+                    actions,
+                );
+            }
+        }
+    }
+}
+
+/// Generate UseAbility actions for token abilities
+fn generate_actions_for_abilities_token(
+    slot: Slot,
+    abilities: &[crate::core::effects::TokenAbility],
+    current_essence: u8,
+    opponent: &crate::core::state::PlayerState,
+    actions: &mut ArrayVec<Action, MAX_LEGAL_ACTIONS>,
+) {
+    for (ability_idx, ability) in abilities.iter().enumerate() {
+        // Check essence cost
+        if ability.essence_cost > current_essence {
+            continue;
+        }
+
+        generate_targeting_actions(
+            slot,
+            ability_idx as u8,
+            &ability.targeting,
+            None, // player state not needed for token abilities
+            opponent,
+            actions,
+        );
+    }
+}
+
+/// Generate UseAbility actions for card-based abilities
+fn generate_actions_for_abilities_card(
+    slot: Slot,
+    abilities: &[crate::core::cards::AbilityDefinition],
+    current_essence: u8,
+    player: &crate::core::state::PlayerState,
+    opponent: &crate::core::state::PlayerState,
+    actions: &mut ArrayVec<Action, MAX_LEGAL_ACTIONS>,
+) {
+    for (ability_idx, ability) in abilities.iter().enumerate() {
+        // Only process Activated trigger abilities
+        if ability.trigger != Trigger::Activated {
+            continue;
+        }
+
+        // Check essence cost
+        if ability.essence_cost > current_essence {
+            continue;
+        }
+
+        generate_targeting_actions(
+            slot,
+            ability_idx as u8,
+            &ability.targeting,
+            Some(player),
+            opponent,
+            actions,
+        );
+    }
+}
+
+/// Generate actions based on targeting rule (shared by token and card abilities)
+fn generate_targeting_actions(
+    slot: Slot,
+    ability_idx: u8,
+    targeting: &TargetingRule,
+    player: Option<&crate::core::state::PlayerState>,
+    opponent: &crate::core::state::PlayerState,
+    actions: &mut ArrayVec<Action, MAX_LEGAL_ACTIONS>,
+) {
+    match targeting {
+        TargetingRule::TargetAny => {
+            // Can target any enemy creature
+            for enemy_creature in &opponent.creatures {
+                if enemy_creature.keywords.has_stealth() {
                     continue;
                 }
-
-                // Generate actions based on targeting rule
-                match &ability.targeting {
-                    TargetingRule::TargetAny => {
-                        // Can target any enemy creature
-                        for enemy_creature in &opponent.creatures {
-                            // Skip stealthed creatures
-                            if enemy_creature.keywords.has_stealth() {
-                                continue;
-                            }
-                            if actions.len() < MAX_LEGAL_ACTIONS {
-                                actions.push(Action::UseAbility {
-                                    slot: creature.slot,
-                                    ability_index: ability_idx as u8,
-                                    target: Target::EnemySlot(enemy_creature.slot),
-                                });
-                            }
-                        }
-                        // Can also target enemy commander (NoTarget = face)
-                        if actions.len() < MAX_LEGAL_ACTIONS {
-                            actions.push(Action::UseAbility {
-                                slot: creature.slot,
-                                ability_index: ability_idx as u8,
-                                target: Target::NoTarget,
-                            });
-                        }
-                    }
-                    TargetingRule::TargetEnemyCreature => {
-                        for enemy_creature in &opponent.creatures {
-                            if enemy_creature.keywords.has_stealth() {
-                                continue;
-                            }
-                            if actions.len() < MAX_LEGAL_ACTIONS {
-                                actions.push(Action::UseAbility {
-                                    slot: creature.slot,
-                                    ability_index: ability_idx as u8,
-                                    target: Target::EnemySlot(enemy_creature.slot),
-                                });
-                            }
-                        }
-                    }
-                    TargetingRule::TargetEnemyPlayer => {
-                        if actions.len() < MAX_LEGAL_ACTIONS {
-                            actions.push(Action::UseAbility {
-                                slot: creature.slot,
-                                ability_index: ability_idx as u8,
-                                target: Target::NoTarget,
-                            });
-                        }
-                    }
-                    TargetingRule::NoTarget => {
-                        if actions.len() < MAX_LEGAL_ACTIONS {
-                            actions.push(Action::UseAbility {
-                                slot: creature.slot,
-                                ability_index: ability_idx as u8,
-                                target: Target::NoTarget,
-                            });
-                        }
-                    }
-                    // Other targeting rules not yet implemented for token abilities
-                    _ => {}
+                if actions.len() < MAX_LEGAL_ACTIONS {
+                    actions.push(Action::UseAbility {
+                        slot,
+                        ability_index: ability_idx,
+                        target: Target::EnemySlot(enemy_creature.slot),
+                    });
+                }
+            }
+            // Can also target enemy commander (NoTarget = face)
+            if actions.len() < MAX_LEGAL_ACTIONS {
+                actions.push(Action::UseAbility {
+                    slot,
+                    ability_index: ability_idx,
+                    target: Target::NoTarget,
+                });
+            }
+        }
+        TargetingRule::TargetEnemyCreature => {
+            for enemy_creature in &opponent.creatures {
+                if enemy_creature.keywords.has_stealth() {
+                    continue;
+                }
+                if actions.len() < MAX_LEGAL_ACTIONS {
+                    actions.push(Action::UseAbility {
+                        slot,
+                        ability_index: ability_idx,
+                        target: Target::EnemySlot(enemy_creature.slot),
+                    });
                 }
             }
         }
-
-        // TODO: Also check card-based activated abilities (Trigger::Activated)
-        // This would require looking up the card definition and checking abilities
-        // with trigger == Trigger::Activated. Leaving as future enhancement.
+        TargetingRule::TargetAllyCreature => {
+            // Can target any ally creature
+            if let Some(player_state) = player {
+                for ally_creature in &player_state.creatures {
+                    if actions.len() < MAX_LEGAL_ACTIONS {
+                        actions.push(Action::UseAbility {
+                            slot,
+                            ability_index: ability_idx,
+                            target: Target::Self_, // Self_ is used for ally targeting via slot encoding
+                        });
+                    }
+                    // Note: For now, using Self_ for ally targeting. In the future,
+                    // we may want to add a Target::AllySlot variant for more precise targeting.
+                    let _ = ally_creature; // Use the variable to avoid warning
+                    break; // Only add one action for now (self-target)
+                }
+            }
+        }
+        TargetingRule::TargetEnemyPlayer => {
+            if actions.len() < MAX_LEGAL_ACTIONS {
+                actions.push(Action::UseAbility {
+                    slot,
+                    ability_index: ability_idx,
+                    target: Target::NoTarget,
+                });
+            }
+        }
+        TargetingRule::NoTarget => {
+            if actions.len() < MAX_LEGAL_ACTIONS {
+                actions.push(Action::UseAbility {
+                    slot,
+                    ability_index: ability_idx,
+                    target: Target::NoTarget,
+                });
+            }
+        }
+        // Other targeting rules not yet fully implemented
+        _ => {}
     }
 }
 

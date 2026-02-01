@@ -558,6 +558,7 @@ fn ability_test_db() -> cardgame::cards::CardDatabase {
                 abilities: vec![AbilityDefinition {
                     trigger: Trigger::OnPlay, // Using OnPlay as trigger for manual activation
                     targeting: TargetingRule::TargetEnemyCreature,
+                    essence_cost: 0,
                     effects: vec![EffectDefinition::Damage { amount: 2, filter: None }],
                     conditional_effects: vec![],
                 }],
@@ -577,6 +578,7 @@ fn ability_test_db() -> cardgame::cards::CardDatabase {
                 abilities: vec![AbilityDefinition {
                     trigger: Trigger::OnPlay,
                     targeting: TargetingRule::NoTarget,
+                    essence_cost: 0,
                     effects: vec![EffectDefinition::BuffStats { attack: 1, health: 1, filter: None }],
                     conditional_effects: vec![],
                 }],

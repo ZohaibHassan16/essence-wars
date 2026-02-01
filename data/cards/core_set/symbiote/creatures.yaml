@@ -1,0 +1,650 @@
+name: "Symbiote Creatures"
+cards:
+  - id: 2000
+    name: Spore Crawler
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 3
+    keywords: []
+    rarity: Common
+    tags:
+    - Parasite
+  - id: 2001
+    name: Venom Fang
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Lethal
+    rarity: Uncommon
+    tags:
+    - Beast
+  - id: 2002
+    name: Regenerating Ooze
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords:
+    - Regenerate
+    rarity: Uncommon
+    tags:
+    - Ooze
+  - id: 2003
+    name: Pack Whelp
+    cost: 1
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords:
+    - Rush
+    rarity: Common
+    tags:
+    - Beast
+  - id: 2004
+    name: Grove Guardian
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 6
+    keywords:
+    - Guard
+    - Regenerate
+    rarity: Rare
+    tags:
+    - Beast
+  - id: 2005
+    name: Pack Hunter
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Rush
+    rarity: Common
+    tags:
+    - Beast
+  - id: 2006
+    name: Parasitic Larva
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 2
+    keywords:
+    - Lethal
+    rarity: Uncommon
+    tags:
+    - Parasite
+  - id: 2007
+    name: Growth Chamber
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Structure
+    abilities:
+    - trigger: OnPlay
+      targeting: TargetAllyCreature
+      effects:
+      - type: buff_stats
+        attack: 1
+        health: 1
+  - id: 2008
+    name: Alpha Predator
+    cost: 5
+    card_type: creature
+    attack: 5
+    health: 5
+    keywords:
+    - Rush
+    - Lethal
+    rarity: Rare
+    tags:
+    - Beast
+  - id: 2009
+    name: Den Mother
+    cost: 6
+    card_type: creature
+    attack: 4
+    health: 6
+    keywords:
+    - Regenerate
+    rarity: Rare
+    tags:
+    - Beast
+    abilities:
+    - trigger: StartOfTurn
+      effects:
+      - type: buff_stats
+        attack: 1
+        health: 0
+  - id: 2010
+    name: Acid Spitter
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords:
+    - Ranged
+    rarity: Common
+    tags:
+    - Beast
+  - id: 2011
+    name: Scaled Warrior
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 6
+    keywords:
+    - Regenerate
+    rarity: Common
+    tags:
+    - Beast
+  - id: 2015
+    name: Feral Striker
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords:
+    - Frenzy
+    rarity: Uncommon
+    tags:
+    - Beast
+  - id: 2016
+    name: Frenzied Pack
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Frenzy
+    rarity: Uncommon
+    tags:
+    - Beast
+  - id: 2017
+    name: Ravager Alpha
+    cost: 5
+    card_type: creature
+    attack: 4
+    health: 3
+    keywords:
+    - Frenzy
+    rarity: Rare
+    tags:
+    - Beast
+  - id: 2018
+    name: Unstable Spore
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 1
+    keywords:
+    - Volatile
+    rarity: Common
+    tags:
+    - Parasite
+  - id: 2019
+    name: Volatile Whelp
+    cost: 2
+    card_type: creature
+    attack: 1
+    health: 2
+    keywords:
+    - Rush
+    - Volatile
+    rarity: Uncommon
+    tags:
+    - Beast
+  - id: 2020
+    name: Deathburst Lurker
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords:
+    - Volatile
+    rarity: Rare
+    tags:
+    - Beast
+  - id: 2021
+    name: Bloodrage Berserker
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords:
+    - Frenzy
+    rarity: Uncommon
+    tags:
+    - Beast
+  - id: 2022
+    name: Frenzy Pack Leader
+    cost: 5
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords:
+    - Frenzy
+    rarity: Rare
+    tags:
+    - Beast
+  - id: 2023
+    name: Rabid Charger
+    cost: 2
+    card_type: creature
+    attack: 1
+    health: 3
+    keywords:
+    - Frenzy
+    - Charge
+    rarity: Uncommon
+    tags:
+    - Beast
+  - id: 2024
+    name: Savage Cub
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 1
+    keywords:
+    - Frenzy
+    rarity: Common
+    tags:
+    - Beast
+  - id: 2025
+    name: Walking Bomb
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 1
+    keywords:
+    - Volatile
+    - Ephemeral
+    rarity: Uncommon
+    tags:
+    - Parasite
+  - id: 2026
+    name: Festering Plague
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords:
+    - Volatile
+    - Lethal
+    rarity: Rare
+    tags:
+    - Parasite
+  - id: 2027
+    name: Volatile Matriarch
+    cost: 6
+    card_type: creature
+    attack: 5
+    health: 5
+    keywords:
+    - Volatile
+    rarity: Legendary
+    tags:
+    - Beast
+  - id: 2028
+    name: Plague Bearer
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Volatile
+    - Guard
+    rarity: Uncommon
+    tags:
+    - Beast
+  - id: 2038
+    name: Pounce Hunter
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords:
+    - Rush
+    rarity: Uncommon
+    tags:
+    - Beast
+    abilities:
+    - trigger: OnKill
+      targeting: NoTarget
+      effects:
+      - type: draw
+        count: 1
+  - id: 2041
+    name: Spawn Caller
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Beast
+    abilities:
+    - trigger: OnPlay
+      targeting: TargetEnemyCreature
+      effects:
+      - type: damage
+        amount: 2
+        filter:
+          max_health: 2
+  - id: 2042
+    name: Feral Striker
+    cost: 2
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords:
+    - Rush
+    rarity: Common
+    tags:
+    - Beast
+  - id: 2043
+    name: Pack Ambusher
+    cost: 4
+    card_type: creature
+    attack: 4
+    health: 3
+    keywords:
+    - Rush
+    - Lethal
+    rarity: Rare
+    tags:
+    - Beast
+  - id: 2045
+    name: Forest Sprite
+    cost: 1
+    card_type: creature
+    attack: 1
+    health: 1
+    keywords: []
+    rarity: Common
+    tags:
+    - Spirit
+  - id: 2046
+    name: Den Keeper
+    cost: 2
+    card_type: creature
+    attack: 1
+    health: 3
+    keywords: []
+    rarity: Common
+    tags:
+    - Beast
+    abilities:
+    - trigger: OnPlay
+      targeting: TargetAllyCreature
+      effects:
+      - type: buff_stats
+        attack: 0
+        health: 1
+  - id: 2047
+    name: Spore Colony
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Common
+    tags:
+    - Parasite
+  - id: 2048
+    name: Blight Spawn
+    cost: 2
+    card_type: creature
+    attack: 1
+    health: 2
+    keywords:
+    - Volatile
+    rarity: Common
+    tags:
+    - Parasite
+  - id: 2049
+    name: Volatile Stalker
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords:
+    - Volatile
+    - Rush
+    rarity: Uncommon
+    tags:
+    - Beast
+  - id: 2050
+    name: Regenerating Spawn
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords:
+    - Regenerate
+    rarity: Common
+    tags:
+    - Ooze
+  - id: 2051
+    name: Forest Scout
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Ranged
+    rarity: Common
+    tags:
+    - Beast
+  - id: 2052
+    name: Den Protector
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 5
+    keywords:
+    - Guard
+    rarity: Common
+    tags:
+    - Beast
+  - id: 2053
+    name: Pack Caller
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Beast
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: summon_token
+        token:
+          name: Pack Whelp
+          attack: 1
+          health: 1
+          keywords:
+          - Rush
+  - id: 2059
+    name: Pack Overlord
+    cost: 6
+    card_type: creature
+    attack: 5
+    health: 6
+    keywords: []
+    rarity: Rare
+    tags:
+    - Beast
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: grant_keyword
+        keyword: Rush
+  - id: 2060
+    name: Grove Tender
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 4
+    keywords:
+    - Rush
+    rarity: Uncommon
+    tags:
+    - Beast
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: summon_token
+        token:
+          name: Forest Sprite
+          attack: 1
+          health: 1
+          keywords: []
+  - id: 2061
+    name: Blight Carrier
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 3
+    keywords:
+    - Volatile
+    rarity: Uncommon
+    tags:
+    - Parasite
+  - id: 2062
+    name: Pack Runner
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords:
+    - Rush
+    rarity: Common
+    tags:
+    - Beast
+  - id: 2063
+    name: Thornwood Sapling
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords:
+    - Regenerate
+    rarity: Common
+    tags:
+    - Structure
+  - id: 2064
+    name: Pack Herald
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords:
+    - Rush
+    rarity: Common
+    tags:
+    - Beast
+    abilities:
+    - trigger: OnPlay
+      targeting: NoTarget
+      effects:
+      - type: summon_token
+        token:
+          name: Young Wolf
+          attack: 1
+          health: 1
+          keywords:
+          - Rush
+  - id: 2067
+    name: Plague Bearer
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords:
+    - Volatile
+    rarity: Common
+    tags:
+    - Parasite
+  - id: 2068
+    name: Death Blossom
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords:
+    - Volatile
+    - Lethal
+    rarity: Uncommon
+    tags:
+    - Parasite
+  - id: 2070
+    name: Rabid Hunter
+    cost: 3
+    card_type: creature
+    attack: 3
+    health: 2
+    keywords:
+    - Frenzy
+    rarity: Common
+    tags:
+    - Beast
+  - id: 2072
+    name: Grove Warden
+    cost: 4
+    card_type: creature
+    attack: 3
+    health: 5
+    keywords:
+    - Regenerate
+    rarity: Uncommon
+    tags:
+    - Beast
+  - id: 2075
+    name: Brood Tender
+    cost: 3
+    card_type: creature
+    attack: 2
+    health: 3
+    keywords: []
+    rarity: Uncommon
+    tags:
+    - Beast
+    abilities:
+    - trigger: Activated
+      essence_cost: 1
+      targeting: TargetAllyCreature
+      effects:
+      - type: buff_stats
+        attack: 1
+        health: 1
+  - id: 2076
+    name: Spore Shaman
+    cost: 4
+    card_type: creature
+    attack: 2
+    health: 4
+    keywords: []
+    rarity: Rare
+    tags:
+    - Parasite
+    abilities:
+    - trigger: Activated
+      essence_cost: 2
+      targeting: TargetEnemyCreature
+      effects:
+      - type: damage
+        amount: 2

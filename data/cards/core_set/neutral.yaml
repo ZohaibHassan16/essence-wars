@@ -910,3 +910,50 @@ cards:
       - modifier:
           attack_bonus: 1
     rarity: Uncommon
+
+  # =============================================================================
+  # Phase 10: Activated Ability Creatures (v0.9.0)
+  # Strategic depth through tap-to-activate abilities
+  # =============================================================================
+
+  # --- Traveling Scholar (Female, Sage) ---
+  - id: 4075
+    name: "Traveling Scholar"
+    cost: 3
+    card_type: creature
+    attack: 1
+    health: 3
+    keywords: []
+    rarity: Uncommon
+    tags: [Sage]
+    abilities:
+      - trigger: Activated
+        essence_cost: 2
+        targeting: NoTarget
+        effects:
+          - type: draw
+            count: 1
+    # A wandering academic who shares knowledge for a price. Tap and pay 2 essence
+    # to draw a card. Provides sustained card advantage but is vulnerable and
+    # ties up resources each turn.
+
+  # --- Essence Collector (Ambiguous, Mystic) ---
+  - id: 4076
+    name: "Essence Collector"
+    cost: 2
+    card_type: creature
+    attack: 2
+    health: 2
+    keywords: []
+    rarity: Rare
+    tags: [Mystic]
+    abilities:
+      - trigger: Activated
+        essence_cost: 0
+        targeting: NoTarget
+        effects:
+          - type: gain_essence
+            amount: 1
+    # A mystic who can gather ambient essence from the battlefield. Tap (no essence
+    # cost) to gain 1 essence. Enables ramping strategies but requires the creature
+    # to survive and not attack.
