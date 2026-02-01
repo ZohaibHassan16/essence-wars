@@ -6,14 +6,12 @@
 //! - Experiment directory management
 //! - Generalist mode (optimize across multiple decks)
 //! - Specialist mode (optimize for a single deck matchup)
-//! - Post-tuning validation
 //! - Checkpoint/resume functionality for long runs
 
 pub mod checkpoint;
 mod cmaes;
 mod evaluator;
 mod experiment;
-mod validation;
 
 pub use checkpoint::{
     is_interrupted, load_checkpoint, register_interrupt_handler, save_checkpoint,
@@ -22,6 +20,3 @@ pub use checkpoint::{
 pub use cmaes::{CmaEs, CmaEsConfig};
 pub use evaluator::{CandidateType, Evaluator, EvaluatorConfig, FitnessResult, TuningMode};
 pub use experiment::{deploy_weights, ExperimentConfig, ExperimentDir};
-pub use validation::{
-    run_post_tuning_validation, PostTuningValidationConfig, PostTuningValidationResult,
-};

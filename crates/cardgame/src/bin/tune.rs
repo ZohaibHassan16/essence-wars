@@ -22,10 +22,9 @@ use cardgame::cards::CardDatabase;
 use cardgame::decks::{DeckDefinition, DeckRegistry, Faction};
 use cardgame::execution::GameData;
 use cardgame::tuning::{
-    deploy_weights, is_interrupted, load_checkpoint, register_interrupt_handler,
-    run_post_tuning_validation, save_checkpoint, CmaEs, CmaEsConfig, Evaluator, EvaluatorConfig,
-    EvaluatorCheckpoint, ExperimentConfig, ExperimentDir, PostTuningValidationConfig,
-    TuningCheckpoint, TuningConfig, TuningMode,
+    deploy_weights, is_interrupted, load_checkpoint, register_interrupt_handler, save_checkpoint,
+    CmaEs, CmaEsConfig, Evaluator, EvaluatorCheckpoint, EvaluatorConfig, ExperimentConfig,
+    ExperimentDir, TuningCheckpoint, TuningConfig, TuningMode,
 };
 use cardgame::version;
 
@@ -134,11 +133,6 @@ struct Args {
     /// Path to deck definitions directory
     #[arg(long, default_value = "data/decks")]
     decks: PathBuf,
-
-    // ===== Post-tuning Validation =====
-    /// Skip post-tuning validation
-    #[arg(long)]
-    skip_validation: bool,
 
     // ===== Resume =====
     /// Resume from a previous run checkpoint (run ID or partial match)
@@ -743,69 +737,11 @@ Best win rate: {:.1}%\n",
         eprintln!("Warning: Could not save summary: {}", e);
     }
 
-    // Run post-tuning validation unless skipped
-    if !args.skip_validation {
-        // Try to load previous weights for comparison
-        let previous_weights = load_previous_weights(&args.mode, args.archetype.as_deref());
-
-        let weights_f32: Vec<f32> = best_weights.iter().map(|&x| x as f32).collect();
-        if let Some(tuned) = GreedyWeights::from_vec(&weights_f32) {
-            let validation_config = PostTuningValidationConfig {
-                games_per_matchup: 20,
-                alphabeta_depth: 6,
-                seed: args.seed,
-            };
-
-            if let Err(e) = run_post_tuning_validation(
-                &card_db,
-                &deck_registry,
-                &tuned,
-                previous_weights.as_ref(),
-                &validation_config,
-            ) {
-                eprintln!("\n⚠️  Validation error: {}", e);
-            }
-        }
-    } else {
-        println!("\n⏭️  Skipping post-tuning validation (--skip-validation)");
-    }
-
     println!("\n📁 All results saved to: {:?}", experiment.root);
     println!(
         "   Run 'python python/scripts/analyze_tuning.py {:?}' to generate visualizations",
         experiment.root
     );
-}
-
-/// Load previous weights for comparison during validation.
-fn load_previous_weights(mode: &str, archetype: Option<&str>) -> Option<GreedyWeights> {
-    use cardgame::bots::BotWeights;
-    use std::path::Path;
-
-    // Determine the path based on mode
-    let path = match mode {
-        "archetype" => {
-            if let Some(arch) = archetype {
-                format!("data/weights/archetypes/{}.toml", arch)
-            } else {
-                return None;
-            }
-        }
-        "generalist" | "agent-generalist" => {
-            "data/weights/generalist.toml".to_string()
-        }
-        _ => return None,
-    };
-
-    let path = Path::new(&path);
-    if !path.exists() {
-        return None;
-    }
-
-    // Load BotWeights and extract the greedy weights
-    BotWeights::load(path)
-        .ok()
-        .map(|bw| bw.default.greedy)
 }
 
 /// Create matchups for generalist mode using all available decks.
