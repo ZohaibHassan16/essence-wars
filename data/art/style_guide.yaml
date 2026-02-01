@@ -1,7 +1,7 @@
 # Essence Wars Card Art Style Guide
 # Shared art direction for all card sets
 
-version: "1.0"
+version: "1.1"
 
 # Image dimensions (portrait card format)
 dimensions:
@@ -10,6 +10,14 @@ dimensions:
 
 # Base art style applied to all cards
 base_style: "90s Magic the Gathering card art, painted fantasy illustration"
+
+# Reference artists for style inspiration
+reference_artists:
+  - "Frank Frazetta (dynamic poses, heroic figures)"
+  - "Greg Rutkowski (detailed fantasy environments)"
+  - "Rebecca Guay (classical MTG)"
+  - "Terese Nielsen (classical MTG)"
+  - "Ron Spencer (classical MTG)"
 
 # Default negative prompt (can be overridden per card)
 default_negative: "blurry, low quality, anime, cartoon, 3d render, photograph"
@@ -33,47 +41,186 @@ loras:
 factions:
   argentum:
     theme: "Order & Industry - Art Deco steampunk"
-    palette: "White, gold, brass, polished steel"
-    elements:
+    palette:
+      primary: "White marble, polished brass, white steel"
+      accent: "Gold filigree, soft blue essence energy"
+      energy: "Glowing blue essence (NEVER orange or fire)"
+      lighting: "Golden sunlight, blue sky always visible"
+    materials:
+      - "Polished brass (mirror-finish)"
+      - "White marble (pristine)"
+      - "White steel"
+      - "Blue essence crystals"
+    architecture:
       - "Art Deco geometric patterns"
+      - "White marble columns and temples"
       - "Steam-powered machinery"
-      - "White marble architecture"
-      - "Brass and gold filigree"
+      - "Brass conduits and reinforcement"
+      - "Defensive fortifications"
+    character_types:
+      soldiers:
+        description: "Polished white and gold armor with Art Deco patterns"
+        lora: "frazetta:0.4, classical-painting:0.6"
+      engineers:
+        description: "White coats/robes with brass mechanical augmentations"
+        lora: "rutkowski:0.4, classical-painting:0.7"
+      constructs:
+        description: "Brass frames with blue glowing essence cores"
+        lora: "rutkowski:0.4, classical-painting:0.7"
     default_lora: "classical-painting:0.7"
     default_negative: "organic, soft, natural, blurry, low quality"
+    always_avoid:
+      - "Orange, red, or fire colors"
+      - "Gothic or dark architecture"
+      - "Furnace/molten aesthetics"
+      - "Dark, moody lighting"
 
   symbiote:
     theme: "Growth & Adaptation - Urza's Saga nature magic"
-    palette: "Deep forest green, amber, bone white, earth browns"
-    elements:
-      - "Fur, leather, and bone armor"
-      - "Ancient forest environments"
-      - "Wolf packs, great cats, serpents"
-      - "Living wood and druidic magic"
+    palette:
+      primary: "Deep forest green, earth brown, moss tones"
+      accent: "Purple and green bioluminescence (magical, not alien)"
+      energy: "Green druidic energy, purple spirit magic"
+      lighting: "Dappled forest light, moonlit clearings, bioluminescent fungi"
+    materials:
+      - "Leather, fur, bone"
+      - "Living wood"
+      - "Natural armor (NOT chitin)"
+    environment:
+      - "Ancient primordial forests"
+      - "Sacred groves with bioluminescent plants"
+      - "Jungle clearings with stone ruins"
+      - "Pack dens and hunting grounds"
+    beasts:
+      - "Wolves and dire wolves (swarm/rush)"
+      - "Great cats - tigers, panthers, lions (lethal/stalker)"
+      - "Serpents and wurms (large creatures)"
+      - "Bears and boars (defensive/guard)"
+      - "Forest spirits and treants (regenerating)"
+      - "Birds of prey (ranged/scout)"
+    character_types:
+      druids:
+        description: "Elegant shamans with natural materials, animal companions"
+        lora: "frazetta:0.5, classical-painting:0.5"
+      hunters:
+        description: "Muscular pack alphas with feral energy"
+        lora: "frazetta:0.5, classical-painting:0.5"
+      beasts:
+        description: "Fantasy predators - wolves, cats, serpents"
+        lora: "rutkowski:0.4, classical-painting:0.6"
     default_lora: "classical-painting:0.6"
     default_negative: "mechanical, industrial, chitin, insect, alien, blurry, low quality"
+    always_avoid:
+      - "Alien/insectoid aesthetics (compound eyes, mandibles, chitin)"
+      - "Sci-fi bio-engineering language"
+      - "Xenomorph/Zerg visual references"
+      - "Mechanical or industrial elements"
+    terminology_guide:
+      avoid_terms:
+        - "Hive → Pack/Grove/Circle"
+        - "Swarm → Pack/Flock/Pride"
+        - "Chitin → Fur/Scales/Natural armor"
+        - "Broodling → Pack whelp/Young predator"
+        - "Compound eyes → Predator eyes/Golden eyes"
+        - "Mandibles → Fangs/Jaws/Tusks"
+        - "Bio-engineered → Evolved/Blessed by nature"
 
   obsidion:
     theme: "Knowledge & Ambition - Gothic Victorian"
-    palette: "Crimson, black, neon blue essence"
-    elements:
-      - "Gothic Victorian architecture"
-      - "Glowing essence tubes"
-      - "Blood magic and vampiric aesthetics"
-      - "Dark spires and cathedrals"
+    palette:
+      primary: "Crimson blood red, deep black, pale skin"
+      accent: "Neon blue essence, gold trim on nobles"
+      energy: "Crimson blood tendrils, neon blue essence tubes"
+      lighting: "Candlelit chambers, moonlight through stained glass"
+    materials:
+      - "Black stone"
+      - "Dark iron"
+      - "Velvet and leather"
+      - "Glass essence vials"
+    architecture:
+      - "Gothic cathedrals with stained glass"
+      - "Victorian manor houses"
+      - "Assassin guild hideouts"
+      - "Blood altars and ritual chambers"
+      - "Spire towers in storm clouds"
+    character_types:
+      vampires:
+        description: "Elegant aristocrats in crimson velvet, blood magic"
+        lora: "classical-painting:0.5, frazetta:0.4"
+      assassins:
+        description: "Sleek black leather, concealed daggers, shadows"
+        lora: "frazetta:0.5, classical-painting:0.5"
+      cultists:
+        description: "Dark robes, essence tubes, arcane symbols"
+        lora: "classical-painting:0.5, frazetta:0.4"
+      spirits:
+        description: "Translucent forms, ethereal glow, fading edges"
+        lora: "rutkowski:0.4, classical-painting:0.6"
+    keywords_visual:
+      lifesteal: "Crimson blood tendrils flowing from victim to attacker"
+      quick: "Blur effects, temporal distortion, clockwork motifs"
+      stealth: "Shadows clinging, partial invisibility"
+      ephemeral: "Translucent forms, fading edges, ghostly glow"
+      lethal: "Venom dripping, skull motifs, death imagery"
     default_lora: "classical-painting:0.5, frazetta:0.4"
     default_negative: "organic nature, bright, cheerful, blurry, low quality"
+    always_avoid:
+      - "Bright, cheerful colors (no yellows, bright greens)"
+      - "Natural/organic settings (forests, jungles)"
+      - "Industrial/mechanical elements"
+      - "Crude or brutish characters"
+      - "Modern clothing or technology"
 
   neutral:
     theme: "Mercenaries & Guilds - Wasteland frontier"
-    palette: "Earth tones, rust, mixed faction elements"
-    elements:
-      - "Patchwork armor from multiple factions"
-      - "Desert and wasteland environments"
-      - "Practical mercenary gear"
-      - "Trade roads and frontier towns"
+    palette:
+      primary: "Dusty browns, earth tones, sun-bleached leather"
+      accent: "Copper/brass metallics, weathered steel"
+      equipment: "Mixed faction elements (brass + dark leather + bone)"
+      lighting: "Desert sun, golden hour, campfire warmth"
+    materials:
+      - "Worn leather"
+      - "Salvaged metal"
+      - "Practical cloth"
+      - "Rope and weathered wood"
+    environment:
+      - "Desert ruins and abandoned outposts"
+      - "Mercenary camps with tents"
+      - "Trade caravans on dusty roads"
+      - "Frontier taverns and guild halls"
+    character_types:
+      warriors:
+        description: "Practical armor mixing all faction elements"
+        lora: "frazetta:0.5, classical-painting:0.5"
+      scouts:
+        description: "Light leather armor, fantasy crossbows/bows"
+        lora: "frazetta:0.4, classical-painting:0.6"
+      merchants:
+        description: "Colorful trade clothes, laden with goods"
+        lora: "rutkowski:0.4, classical-painting:0.6"
+    hybrid_gear:
+      argentum_elements: "Brass pauldrons, gear insignia, blue-tinted goggles"
+      symbiote_elements: "Bone trinkets, leather straps, fur trim"
+      obsidion_elements: "Dark leather pieces, crimson cloth accents"
+    weapons:
+      allowed:
+        - "Fantasy crossbows"
+        - "Composite bows"
+        - "Throwing knives"
+        - "Swords and spears"
+        - "Shields"
+      forbidden:
+        - "Modern firearms"
+        - "Rifles"
+        - "Pistols"
+        - "Guns of any kind"
     default_lora: "frazetta:0.6"
-    default_negative: "blurry, low quality"
+    default_negative: "blurry, low quality, modern firearms, rifles, guns, pistols"
+    always_avoid:
+      - "Modern weapons (firearms of any kind)"
+      - "Strong single-faction alignment"
+      - "Clean, pristine equipment"
+      - "Gothic or heavily industrial settings"
 
 # Generation settings (for FLUX models)
 generation:

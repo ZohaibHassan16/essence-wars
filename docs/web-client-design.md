@@ -790,12 +790,18 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [ ] Players can play a game without having to read any rulebook
 
 ### Phase 10: Art Pass
+
+**Artwork**:
 - Generate better backgrounds that fit the art direction of the game, replace existing ones (Collages of Commanders, Scenes, Key Locations? Worldmap?)
 - Discuss and overhaul all Menus and Boards to be polished
+- Create more Banners, Flags, Symbols, Frames etc to give it all more flair and style
+- Audit for all token images `crates/essence-wars-ui/static/tokens/`, following our art direction outlined in `docs/art-direction.md`, and create a prompt file for using flux dev. See other prompt files for reference in `data/art/prompts/core_set`. Create a generate token python script in `scripts/`, see `scripts/generate-card-art.py` for reference.
+
+**Audio**:
 - Audit SFX Library, current creature sounds are placeholders. Web Search for a consistent art asset pack that fits our theme and replace the existing ones.
 
 ### Phase 11: Release Prep
-- [ ] Discuss Distribution Options, DevOps, Storage Solutions (For all Art Assets, the Github Repo is becoming too big, we can't keep git committing the static/ folder)
+- [ ] Discuss Distribution Options, DevOps, Storage Solutions (For all Art Assets, the Github Repo is becoming too big, we can't keep git committing the static/ folder, maybe all images and sfx/music need to be git removed once they are stored somewhere else)
 - [ ] Containerization?
 - [ ] Build for Windows
 - [ ] Build for Linux
