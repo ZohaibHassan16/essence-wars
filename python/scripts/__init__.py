@@ -8,7 +8,7 @@ Organized into categories:
 - analysis/    - Training analysis and diagnostics
 - benchmark/   - Performance profiling scripts
 - reporting/   - HTML report generation
-- utils/       - Utility scripts (card art, testing)
+- utils/       - Utility scripts
 
 Each script can be run directly or imported:
     python -m scripts.training.ppo --help

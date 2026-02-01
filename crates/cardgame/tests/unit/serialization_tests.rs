@@ -161,6 +161,7 @@ fn test_creature_roundtrip() {
         turn_played: 3,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     };
     let roundtrip = test_json_roundtrip(&creature);
     assert_eq!(creature.instance_id, roundtrip.instance_id);
@@ -314,6 +315,7 @@ fn test_game_state_with_creatures_roundtrip() {
         turn_played: 1,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     });
 
     // Add a creature to player 2
@@ -332,6 +334,7 @@ fn test_game_state_with_creatures_roundtrip() {
         turn_played: 2,
         frenzy_stacks: 1,
         token_abilities: None,
+        token_name: None,
     });
 
     let roundtrip = test_json_roundtrip(&state);

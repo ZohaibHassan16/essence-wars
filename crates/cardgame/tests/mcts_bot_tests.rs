@@ -65,6 +65,7 @@ fn test_mcts_finds_lethal() {
         turn_played: engine.turn_number(),
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -135,6 +136,7 @@ fn test_attack_face_ends_game() {
         turn_played: engine.turn_number(),
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     };
     engine.state.players[0].creatures.push(creature);
 

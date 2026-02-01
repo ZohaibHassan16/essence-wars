@@ -153,6 +153,7 @@ fn test_creature_encoding_occupied_slot() {
         turn_played: 1,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     };
     state.players[0].creatures.push(creature);
 
@@ -203,6 +204,7 @@ fn test_keywords_encoded_correctly() {
         turn_played: 1,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     };
     state.players[0].creatures.push(creature);
 
@@ -316,6 +318,7 @@ fn test_tensor_values_in_expected_ranges() {
         turn_played: 10,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     };
     state.players[0].creatures.push(creature);
 
@@ -395,6 +398,7 @@ fn test_exhausted_creature_encoding() {
         turn_played: 1,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     };
     creature.status.set_exhausted(true);
     state.players[0].creatures.push(creature);
@@ -428,6 +432,7 @@ fn test_silenced_creature_encoding() {
         turn_played: 1,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     };
     creature.status.set_silenced(true);
     state.players[0].creatures.push(creature);

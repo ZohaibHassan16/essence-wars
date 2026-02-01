@@ -120,6 +120,7 @@ fn make_creature(
         turn_played,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     }
 }
 
@@ -773,6 +774,7 @@ fn test_token_ability_generates_use_ability_action() {
         turn_played: 1, // Not summoning sick
         frenzy_stacks: 0,
         token_abilities: Some(token_abilities),
+        token_name: Some("Brass Cog".to_string()),
     };
     state.players[0].creatures.push(token);
 
@@ -825,6 +827,7 @@ fn test_token_ability_requires_essence() {
         turn_played: 1,
         frenzy_stacks: 0,
         token_abilities: Some(token_abilities),
+        token_name: Some("Brass Cog".to_string()),
     };
     state.players[0].creatures.push(token);
 
@@ -872,6 +875,7 @@ fn test_silenced_token_cannot_use_ability() {
         turn_played: 1,
         frenzy_stacks: 0,
         token_abilities: Some(token_abilities),
+        token_name: Some("Brass Cog".to_string()),
     };
     token.status.set_silenced(true);
     state.players[0].creatures.push(token);
@@ -924,6 +928,7 @@ fn test_token_ability_action_indices() {
         turn_played: 1,
         frenzy_stacks: 0,
         token_abilities: Some(token_abilities),
+        token_name: Some("Brass Cog".to_string()),
     };
     state.players[0].creatures.push(token);
 
@@ -943,6 +948,7 @@ fn test_token_ability_action_indices() {
         turn_played: 1,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     };
     state.players[1].creatures.push(enemy);
 

@@ -143,6 +143,7 @@ fn test_effect_queue_heal() {
         turn_played: 0,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     };
     state.players[0].creatures.push(creature);
 
@@ -189,6 +190,7 @@ fn test_effect_queue_heal_max_cap() {
         turn_played: 0,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     };
     state.players[0].creatures.push(creature);
 
@@ -678,6 +680,7 @@ fn test_effect_queue_refresh_creature() {
         turn_played: 0,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     };
     creature.status.set_exhausted(true);
     state.players[0].creatures.push(creature);

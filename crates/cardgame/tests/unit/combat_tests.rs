@@ -160,6 +160,7 @@ fn create_test_creature(
         turn_played: 1, // Played last turn, so no summoning sickness
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     }
 }
 

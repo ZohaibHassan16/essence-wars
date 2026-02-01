@@ -47,3 +47,19 @@ Search and review all Asset related Scripts, Data, Prompts, Artwork, Documention
   There already exists a Tutorial but it needs to be reworked, the ai enemy commander is not following the steps (e.g. not playing a creature etc), and the highlight / shading is too dark, I can not see much outside of the highlighted area, which is not really helpful, as I can not see where I need to click. I think it should be following a different style, maybe a light glow on the area where we want to focus the player on, not darkening the rest of the board? E.g. first glow the card that needs to be clicked, than the glow the goal that needs to be clicked. Also, Glow on the resources and the commanders as they are presented, and so on. It can be blocking so that the new player not accidently clicks wrong, only the actual glowing/highlighted intended next action, so that the tutorial does not break.
 
   It must not be a complete full game, that would enduce fatigue and frustrate new players, it can remain open ended, ending with the AI Hint system for players that might need more help (which basically auto plays for you if you want, you can just click it).
+
+  ### (I) Discuss Expansion
+
+  See `expansion.md`.
+
+  ### (J) Essential Audit Checklist
+
+  Work through `essential-audit-checklist.md`.
+
+  ### (K) Python Linting
+
+  Work through all ruff and mypy issues for the python modules.
+
+  ### (L) Test Suite
+
+  Improve Test Coverage for vital Systems (Crates and Python)

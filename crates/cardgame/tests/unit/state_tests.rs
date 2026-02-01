@@ -47,6 +47,7 @@ fn test_player_state_creature_slots() {
         turn_played: 1,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     });
 
     // Next empty slot should be 1
@@ -86,6 +87,7 @@ fn test_creature_can_attack() {
         turn_played: 1,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     };
 
     // Can attack on turn 2 (no summoning sickness)
@@ -140,6 +142,7 @@ fn test_debug_validate_with_creatures() {
         turn_played: 1,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     });
 
     state.debug_validate(); // Should not panic
@@ -167,6 +170,7 @@ fn test_debug_validate_catches_wrong_owner() {
         turn_played: 1,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     });
 
     state.debug_validate(); // Should panic
@@ -194,6 +198,7 @@ fn test_debug_validate_catches_dead_creature() {
         turn_played: 1,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     });
 
     state.debug_validate(); // Should panic
@@ -221,6 +226,7 @@ fn test_debug_validate_catches_duplicate_slot() {
         turn_played: 1,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     });
     state.players[0].creatures.push(Creature {
         instance_id: CreatureInstanceId(1),
@@ -237,6 +243,7 @@ fn test_debug_validate_catches_duplicate_slot() {
         turn_played: 1,
         frenzy_stacks: 0,
         token_abilities: None,
+        token_name: None,
     });
 
     state.debug_validate(); // Should panic
