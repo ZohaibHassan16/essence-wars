@@ -86,9 +86,13 @@ dev = [
     "ruff>=0.1.0",
     "mypy>=1.0.0",
 ]
+# Cloud computing (Modal for distributed validation)
+cloud = [
+    "modal>=0.68.0",
+]
 # All optional dependencies
 all = [
-    "essence-wars[train,analysis,hub,pettingzoo]",
+    "essence-wars[train,analysis,hub,pettingzoo,cloud]",
 ]
 
 [tool.maturin]
@@ -275,4 +279,9 @@ analysis = [
 # Huggingface Hub integration for model/dataset sharing
 hub = [
     "huggingface_hub>=0.20.0",
+]
+
+# Cloud computing (Modal for distributed validation)
+cloud = [
+    "modal>=0.68.0",
 ]
