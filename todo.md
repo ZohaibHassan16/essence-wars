@@ -6,6 +6,7 @@
 - Choose Faction -> Choose Commander
 - Choose Cards from Faction + Neutral Cards 
 - Save as Deck, add Description
+- App should automatically detect which playstyle the deck falls into 
 - Be able to play with custom decks
 - Cannot edit or overwrite the prebuilt 12 Starter Decks, only custom decks
 
