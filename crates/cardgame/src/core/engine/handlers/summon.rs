@@ -61,6 +61,7 @@ impl EffectHandler for SummonHandler {
             turn_played: ctx.state.current_turn,
             frenzy_stacks: 0,
             token_abilities: None, // Regular creatures don't have token abilities
+            token_name: None, // Regular creatures get name from card database
         };
 
         ctx.state.players[self.owner.index()].creatures.push(creature);
@@ -131,6 +132,7 @@ impl EffectHandler for SummonTokenHandler {
             turn_played: ctx.state.current_turn,
             frenzy_stacks: 0,
             token_abilities,
+            token_name: Some(self.token.name.clone()), // Store token name for UI display
         };
 
         ctx.state.players[self.owner.index()].creatures.push(creature);
@@ -196,6 +198,7 @@ impl EffectHandler for TransformHandler {
             turn_played: ctx.state.current_turn,
             frenzy_stacks: 0,
             token_abilities,
+            token_name: Some(self.into.name.clone()), // Store transformed token name
         };
 
         // Check if the transformed creature has <= 0 health before adding (edge case)
@@ -236,6 +239,7 @@ impl EffectHandler for CopyHandler {
         let base_health = source.base_health;
         let keywords = source.keywords;
         let token_abilities = source.token_abilities.clone();
+        let token_name = source.token_name.clone();
 
         // Find empty slot for the copy
         let target_slot = match ctx.state.players[self.owner.index()].find_empty_creature_slot() {
@@ -261,6 +265,7 @@ impl EffectHandler for CopyHandler {
             turn_played: ctx.state.current_turn,
             frenzy_stacks: 0,
             token_abilities,
+            token_name, // Copy token name from source (if it was a token)
         };
 
         ctx.state.players[self.owner.index()].creatures.push(creature);

@@ -782,14 +782,16 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 
 ### Phase 9 Tutorial and Onboarding
 - [ ] Update Ingame Tutorial (Human vs AI Mode)
-    - Explaining the Rules, how the game works, turns, Commanders, using seeded game replay game to now what will happen at every step along the tutorial 
-    - Use Seed and check it via Claude Code MCP Game and replay binary
+    - Explaining the Rules, how the game works, turns, Commanders,create curated tutorial that plays the same steps everytime
+    - Use Seed and check it via Claude Code MCP Game and replay binary (several times to ensure it is the same)
+    - Investigate why current tutorial script is not following the steps as it should
+    - Instruct Chris on which screenshots he needs to make to document it for claude and/or descriptions on each Step
+    - Improve the UI/UX, glowing highlight instead of darkening?
 - [ ] Players can play a game without having to read any rulebook
 
 ### Phase 10: Art Pass
 - Generate better backgrounds that fit the art direction of the game, replace existing ones (Collages of Commanders, Scenes, Key Locations? Worldmap?)
-- Use Flux Dev to create decorations and props, populate the Menus with thoughtful additions (not plastering it, but making it look nice). Include the prompts to have pure white background, so that the background can be removed and replaed with transparency programatically. Readfile tool every generated final asset before using it, regenerate/iterate if needed.
-- Overhaul all Menus and Boards etc to be visually stunning and professionally polished
+- Discuss and overhaul all Menus and Boards to be polished
 - Audit SFX Library, current creature sounds are placeholders. Web Search for a consistent art asset pack that fits our theme and replace the existing ones.
 
 ### Phase 11: Release Prep

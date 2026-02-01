@@ -37,6 +37,22 @@ export interface CardDto {
   keywords: string[];
   durability?: number;
   artPath?: string;
+  /** Effect description for support cards */
+  effectDescription?: string;
+}
+
+/** Activated ability on a creature (typically tokens) */
+export interface AbilityDto {
+  /** Ability index (0-5) for action matching */
+  index: number;
+  /** Display name (e.g., "Fungal Rot") */
+  name: string;
+  /** Essence cost to activate */
+  essenceCost: number;
+  /** Targeting type: "no_target", "enemy_creature", "enemy_player", "any", etc. */
+  targetingType: string;
+  /** Human-readable effect description */
+  description: string;
 }
 
 export interface CreatureDto {
@@ -53,6 +69,8 @@ export interface CreatureDto {
   canAttack: boolean;
   isExhausted: boolean;
   artPath?: string;
+  /** Activated abilities (empty for most creatures, populated for tokens with abilities) */
+  abilities: AbilityDto[];
 }
 
 export interface SupportDto {
@@ -62,6 +80,8 @@ export interface SupportDto {
   faction: string;
   durability: number;
   artPath?: string;
+  /** Human-readable description of what this support does */
+  effectDescription: string;
 }
 
 export interface CommanderDto {
@@ -107,6 +127,8 @@ export interface ActionInfo {
   targetSlot?: number;
   handIndex?: number;
   cardId?: number;
+  /** For use_ability actions: which ability (0-5) */
+  abilityIndex?: number;
 }
 
 export interface GameEventDto {

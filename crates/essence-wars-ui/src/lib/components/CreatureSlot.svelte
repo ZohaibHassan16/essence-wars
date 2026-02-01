@@ -21,7 +21,7 @@
     isHighlighted?: boolean;
     isSelected?: boolean;
     isValidTarget?: boolean;
-    onClick?: () => void;
+    onClick?: (event?: MouseEvent) => void;
     showKeyHint?: boolean;
   } = $props();
 
@@ -66,6 +66,39 @@
   const healthPercent = $derived(creature ? Math.max(0, (creature.health / creature.maxHealth) * 100) : 0);
   const isDamaged = $derived(creature ? creature.health < creature.maxHealth : false);
   const isBuffed = $derived(creature ? creature.attack > creature.baseAttack : false);
+  const hasAbilities = $derived(creature?.abilities && creature.abilities.length > 0);
+
+  // Track whether we've fallen back to generic art
+  let usesFallbackArt = $state(false);
+
+  // Reset fallback state when creature changes
+  $effect(() => {
+    if (creature) {
+      usesFallbackArt = false;
+    }
+  });
+
+  // Generate fallback art path based on faction
+  const fallbackArtPath = $derived(
+    creature ? `tokens/generic/${creature.faction || 'neutral'}.webp` : null
+  );
+
+  // Current art path to use (primary or fallback)
+  const currentArtPath = $derived(
+    usesFallbackArt ? fallbackArtPath : creature?.artPath
+  );
+
+  // Handle image load error - try fallback, then hide
+  function handleImageError(e: Event) {
+    const img = e.currentTarget as HTMLImageElement;
+    if (!usesFallbackArt && fallbackArtPath) {
+      // First failure - try the fallback
+      usesFallbackArt = true;
+    } else {
+      // Fallback also failed - hide the image
+      img.style.display = 'none';
+    }
+  }
 </script>
 
 <div class="relative">
@@ -82,10 +115,10 @@
            {creature && isPlayerSide ? 'hover:scale-102 cursor-pointer' : creature ? 'cursor-pointer' : 'cursor-default'}
            disabled:cursor-not-allowed"
     style="width: var(--card-creature-width); height: var(--card-creature-height);"
-    onclick={() => {
+    onclick={(e: MouseEvent) => {
       if (onClick) {
         if (creature) playSound('cardSelect');
-        onClick();
+        onClick(e);
       }
     }}
     onmouseenter={() => {
@@ -96,16 +129,16 @@
     disabled={!onClick}
   >
     {#if creature}
-      <!-- Creature art background -->
-      {#if creature.artPath}
+      <!-- Creature art background (with fallback support) -->
+      {#if currentArtPath}
         <div class="absolute inset-0 overflow-hidden rounded-lg">
           <img
-            src="/{creature.artPath}"
+            src="/{currentArtPath}"
             alt=""
             class="w-full h-full object-cover object-top opacity-70"
             loading="lazy"
             decoding="async"
-            onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            onerror={handleImageError}
           />
           <div class="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/40"></div>
         </div>
@@ -123,6 +156,15 @@
       <!-- Can attack indicator -->
       {#if creature.canAttack && isPlayerSide}
         <div class="absolute top-2 right-2 w-3 h-3 rounded-full bg-health animate-pulse"></div>
+      {/if}
+
+      <!-- Ability indicator (shows for player creatures with abilities) -->
+      {#if hasAbilities && isPlayerSide}
+        <div class="absolute top-2 right-7 w-4 h-4 rounded-full bg-purple-500/90 animate-pulse
+                    flex items-center justify-center z-10 border border-purple-300/50"
+             title="Has activated ability">
+          <span class="text-white text-xs font-bold">✦</span>
+        </div>
       {/if}
 
       <!-- Keyboard hint badge (only for player creatures that can attack) -->

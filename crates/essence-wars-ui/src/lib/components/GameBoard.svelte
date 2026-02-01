@@ -11,6 +11,7 @@
   import TurnTransition from "./TurnTransition.svelte";
   import TutorialOverlay from "./TutorialOverlay.svelte";
   import AudioControls from "./AudioControls.svelte";
+  import CreatureActionMenu from "./CreatureActionMenu.svelte";
   import { playSound, playMusic } from "$lib/audio";
 
   // Play battle music when component mounts
@@ -37,7 +38,7 @@
     lastActivePlayer = currentPlayer ?? null;
   });
 
-  function handlePlayerCreatureClick(slot: number) {
+  function handlePlayerCreatureClick(slot: number, event?: MouseEvent) {
     if (!isPlayerTurn) return;
 
     const action = gameStore.getActionForTarget(slot);
@@ -46,13 +47,20 @@
       if (tutorialStore.isActive && !tutorialStore.isActionAllowed(action.index)) {
         return;
       }
+      // Play ability sound if this is an ability action
+      if (action.actionType === "use_ability") {
+        playSound('abilityActivate');
+      }
       gameStore.applyAction(action.index);
       tutorialStore.checkAdvanceCondition(action.actionType);
     } else if (gameStore.selectedCardIndex === null) {
-      // Select creature for attack
+      // Select creature for attack or ability
       const creature = gameState?.player.creatures[slot];
-      if (creature?.canAttack) {
-        gameStore.selectCreature(slot);
+      if (creature) {
+        const hasActions = gameStore.hasAttackActions(slot) || gameStore.hasAbilityActions(slot);
+        if (hasActions) {
+          gameStore.selectCreature(slot, event);
+        }
       }
     }
   }
@@ -203,6 +211,8 @@
         isActive={!isPlayerTurn}
         isPlayer={false}
         tutorialId="opponent-commander"
+        isValidFaceTarget={gameStore.canTargetFace}
+        onFaceTargetClick={() => gameStore.executeAbilityOnFace()}
       />
       <!-- Opponent compact stats below commander -->
       <div class="mt-2 flex items-center gap-3 text-xs text-ui-text-dim">
@@ -389,6 +399,17 @@
     </div>
   </CollapsibleSidebar>
 </div>
+
+<!-- Creature Action Menu (Attack/Ability selection) -->
+{#if gameStore.showActionMenu && gameStore.actionMenuPosition && gameStore.selectedCreatureSlot !== null}
+  {@const selectedCreature = gameState?.player.creatures[gameStore.selectedCreatureSlot]}
+  {#if selectedCreature}
+    <CreatureActionMenu
+      creature={selectedCreature}
+      position={gameStore.actionMenuPosition}
+    />
+  {/if}
+{/if}
 
 <!-- Tutorial overlay -->
 <TutorialOverlay />

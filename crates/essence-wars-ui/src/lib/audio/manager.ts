@@ -22,6 +22,8 @@ export type SoundEffect =
   | 'damage'
   | 'creatureDeath'
   | 'heal'
+  // Ability sounds
+  | 'abilityActivate'
   // Game state sounds
   | 'turnStartPlayer'
   | 'turnStartOpponent'
@@ -85,6 +87,9 @@ const SOUND_FILES: Record<SoundEffect, string[]> = {
     '/sounds/rpg/item_gem_02.ogg',
     '/sounds/rpg/item_gem_03.ogg',
   ],
+
+  // Ability Sounds
+  abilityActivate: ['/sounds/rpg/spell_01.ogg', '/sounds/rpg/spell_02.ogg'],
 
   // Game State Sounds
   turnStartPlayer: ['/sounds/interface/confirmation_003.ogg'],

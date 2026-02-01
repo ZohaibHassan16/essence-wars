@@ -215,6 +215,7 @@ mod tests {
             turn_played: 1,
             frenzy_stacks: 0,
             token_abilities: None,
+            token_name: None,
         }
     }
 

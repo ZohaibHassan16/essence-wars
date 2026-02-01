@@ -54,6 +54,9 @@ pub struct Creature {
     /// Activated abilities for tokens (None for regular creatures from card database)
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub token_abilities: Option<Vec<TokenAbility>>,
+    /// Token name (only set for tokens created by SummonToken effects, None for regular creatures)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub token_name: Option<String>,
 }
 
 impl Creature {

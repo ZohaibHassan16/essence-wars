@@ -42,6 +42,38 @@
   } : null);
 
   const showPreview = $derived(isHovered && support !== null);
+
+  // Track whether we've fallen back to generic art
+  let usesFallbackArt = $state(false);
+
+  // Reset fallback state when support changes
+  $effect(() => {
+    if (support) {
+      usesFallbackArt = false;
+    }
+  });
+
+  // Generate fallback art path based on faction
+  const fallbackArtPath = $derived(
+    support ? `tokens/generic/${support.faction || 'neutral'}.webp` : null
+  );
+
+  // Current art path to use (primary or fallback)
+  const currentArtPath = $derived(
+    usesFallbackArt ? fallbackArtPath : support?.artPath
+  );
+
+  // Handle image load error - try fallback, then hide
+  function handleImageError(e: Event) {
+    const img = e.currentTarget as HTMLImageElement;
+    if (!usesFallbackArt && fallbackArtPath) {
+      // First failure - try the fallback
+      usesFallbackArt = true;
+    } else {
+      // Fallback also failed - hide the image
+      img.style.display = 'none';
+    }
+  }
 </script>
 
 <div class="relative">
@@ -60,14 +92,14 @@
     data-tutorial-id="{isPlayerSide ? 'player' : 'opponent'}-support-{slot}"
   >
     {#if support}
-      <!-- Support art background -->
-      {#if support.artPath}
+      <!-- Support art background (with fallback support) -->
+      {#if currentArtPath}
         <div class="absolute inset-0 overflow-hidden rounded-md">
           <img
-            src="/{support.artPath}"
+            src="/{currentArtPath}"
             alt=""
             class="w-full h-full object-cover object-top opacity-40"
-            onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            onerror={handleImageError}
           />
           <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/70"></div>
         </div>
@@ -97,8 +129,8 @@
     {/if}
   </button>
 
-  <!-- Card preview on hover -->
+  <!-- Card preview on hover - positioned above since supports are at the bottom of the screen -->
   {#if showPreview && cardForPreview}
-    <CardPreview card={cardForPreview} position="right" />
+    <CardPreview card={cardForPreview} support={support} position="top" />
   {/if}
 </div>

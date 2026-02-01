@@ -42,6 +42,12 @@ class GameStore {
   selectedCreatureSlot = $state<number | null>(null);
   highlightedSlots = $state<number[]>([]);
 
+  // Ability selection state
+  selectedAbilityIndex = $state<number | null>(null);
+  actionMenuPosition = $state<{ x: number; y: number } | null>(null);
+  /** Whether to highlight opponent commander as valid target for face-targeting abilities */
+  canTargetFace = $state(false);
+
   // Action history
   actionHistory = $state<LoggedAction[]>([]);
   eventHistory = $state<GameEventDto[]>([]);
@@ -65,7 +71,48 @@ class GameStore {
     return this.gameState?.id ?? null;
   }
 
+  // =========================================================================
+  // Ability/Attack Action Helpers
+  // =========================================================================
+
+  /** Check if creature at slot has any legal attack actions */
+  hasAttackActions(slot: number): boolean {
+    return this.legalActions.some(
+      a => a.actionType === "attack" && a.sourceSlot === slot
+    );
+  }
+
+  /** Check if creature at slot has any legal ability actions */
+  hasAbilityActions(slot: number): boolean {
+    return this.legalActions.some(
+      a => a.actionType === "use_ability" && a.sourceSlot === slot
+    );
+  }
+
+  /** Get all ability actions for a creature, optionally filtered by ability index */
+  getAbilityActions(slot: number, abilityIndex?: number): ActionInfo[] {
+    return this.legalActions.filter(a =>
+      a.actionType === "use_ability" &&
+      a.sourceSlot === slot &&
+      (abilityIndex === undefined || a.abilityIndex === abilityIndex)
+    );
+  }
+
+  /** Whether to show action menu (creature has both attack and ability options) */
+  get showActionMenu(): boolean {
+    if (this.selectedCreatureSlot === null) return false;
+    // Only show menu if we haven't already selected an ability or attack mode
+    if (this.selectedAbilityIndex !== null) return false;
+    // Show menu if creature has multiple action types available
+    const canAttack = this.hasAttackActions(this.selectedCreatureSlot);
+    const hasAbilities = this.hasAbilityActions(this.selectedCreatureSlot);
+    return this.actionMenuPosition !== null && (canAttack || hasAbilities);
+  }
+
+  // =========================================================================
   // Actions
+  // =========================================================================
+
   async loadDecksAndBots() {
     this.isLoading = true;
     this.error = null;
@@ -274,24 +321,141 @@ class GameStore {
     }
   }
 
-  selectCreature(slot: number) {
-    if (this.selectedCreatureSlot === slot) {
+  /**
+   * Select a creature for action (attack or ability).
+   * If creature has both attack and abilities, shows action menu.
+   * @param slot The creature slot to select
+   * @param event Optional mouse event for positioning action menu
+   */
+  selectCreature(slot: number, event?: MouseEvent) {
+    // If clicking the same creature again without being in ability mode, deselect
+    if (this.selectedCreatureSlot === slot && this.selectedAbilityIndex === null && !this.actionMenuPosition) {
       this.clearSelection();
-    } else {
-      this.selectedCreatureSlot = slot;
-      this.selectedCardIndex = null;
+      return;
+    }
+
+    this.selectedCreatureSlot = slot;
+    this.selectedCardIndex = null;
+    this.selectedAbilityIndex = null;
+
+    // Determine available actions
+    const canAttack = this.hasAttackActions(slot);
+    const hasAbilities = this.hasAbilityActions(slot);
+
+    if (canAttack && hasAbilities && event) {
+      // Both options available - show action menu
+      this.actionMenuPosition = { x: event.clientX, y: event.clientY };
+      this.highlightedSlots = [];
+      this.canTargetFace = false;
+    } else if (canAttack) {
+      // Only attack - go straight to attack targeting
+      this.actionMenuPosition = null;
       this.updateHighlights();
+    } else if (hasAbilities) {
+      // Only abilities - check if single ability
+      const creature = this.gameState?.player.creatures[slot];
+      const abilityActions = this.getAbilityActions(slot);
+
+      if (creature && creature.abilities.length === 1) {
+        // Single ability - check targeting type
+        const ability = creature.abilities[0];
+        if (ability.targetingType === "no_target" || ability.targetingType === "enemy_player") {
+          // No-target ability - execute immediately
+          this.executeAbilityImmediate(0);
+        } else {
+          // Targeted ability - go to targeting mode
+          this.selectAbility(0);
+        }
+      } else if (event) {
+        // Multiple abilities - show menu
+        this.actionMenuPosition = { x: event.clientX, y: event.clientY };
+        this.highlightedSlots = [];
+        this.canTargetFace = false;
+      }
+    } else {
+      // No actions available
+      this.actionMenuPosition = null;
+      this.highlightedSlots = [];
+      this.canTargetFace = false;
+    }
+  }
+
+  /** Select attack mode (from action menu) */
+  selectAttackMode() {
+    this.selectedAbilityIndex = null;
+    this.actionMenuPosition = null;
+    this.updateHighlights();
+  }
+
+  /** Select an ability (from action menu or when creature has only abilities) */
+  selectAbility(abilityIndex: number) {
+    if (this.selectedCreatureSlot === null) return;
+
+    const creature = this.gameState?.player.creatures[this.selectedCreatureSlot];
+    if (!creature) return;
+
+    const ability = creature.abilities[abilityIndex];
+    if (!ability) return;
+
+    // Check if this is a no-target ability
+    if (ability.targetingType === "no_target" || ability.targetingType === "enemy_player") {
+      // Execute immediately
+      this.executeAbilityImmediate(abilityIndex);
+    } else {
+      // Enter targeting mode
+      this.selectedAbilityIndex = abilityIndex;
+      this.actionMenuPosition = null;
+      this.updateHighlights();
+    }
+  }
+
+  /** Execute a no-target ability immediately */
+  async executeAbilityImmediate(abilityIndex: number) {
+    if (this.selectedCreatureSlot === null) return;
+
+    // Find the action for this ability (no-target abilities have targetSlot === undefined)
+    const action = this.legalActions.find(a =>
+      a.actionType === "use_ability" &&
+      a.sourceSlot === this.selectedCreatureSlot &&
+      a.abilityIndex === abilityIndex
+    );
+
+    if (action) {
+      playSound('abilityActivate');
+      await this.applyAction(action.index);
+    }
+  }
+
+  /** Execute ability on face (opponent commander) */
+  async executeAbilityOnFace() {
+    if (this.selectedCreatureSlot === null || this.selectedAbilityIndex === null) return;
+
+    // Find the action targeting face (targetSlot === undefined for face)
+    const action = this.legalActions.find(a =>
+      a.actionType === "use_ability" &&
+      a.sourceSlot === this.selectedCreatureSlot &&
+      a.abilityIndex === this.selectedAbilityIndex &&
+      a.targetSlot === undefined
+    );
+
+    if (action) {
+      playSound('abilityActivate');
+      await this.applyAction(action.index);
     }
   }
 
   clearSelection() {
     this.selectedCardIndex = null;
     this.selectedCreatureSlot = null;
+    this.selectedAbilityIndex = null;
+    this.actionMenuPosition = null;
     this.highlightedSlots = [];
+    this.canTargetFace = false;
   }
 
   updateHighlights() {
     const slots: number[] = [];
+    let canTargetFace = false;
 
     if (this.selectedCardIndex !== null) {
       // Find play_card actions for this hand index
@@ -303,17 +467,34 @@ class GameStore {
         }
       }
     } else if (this.selectedCreatureSlot !== null) {
-      // Find attack actions for this creature
-      for (const action of this.legalActions) {
-        if (action.actionType === "attack" && action.sourceSlot === this.selectedCreatureSlot) {
-          if (action.targetSlot !== undefined) {
-            slots.push(action.targetSlot);
+      if (this.selectedAbilityIndex !== null) {
+        // Ability targeting - highlight valid targets from legal actions
+        for (const action of this.legalActions) {
+          if (action.actionType === "use_ability" &&
+              action.sourceSlot === this.selectedCreatureSlot &&
+              action.abilityIndex === this.selectedAbilityIndex) {
+            if (action.targetSlot !== undefined) {
+              slots.push(action.targetSlot);
+            } else {
+              // targetSlot === undefined means face targeting is available
+              canTargetFace = true;
+            }
+          }
+        }
+      } else {
+        // Attack targeting
+        for (const action of this.legalActions) {
+          if (action.actionType === "attack" && action.sourceSlot === this.selectedCreatureSlot) {
+            if (action.targetSlot !== undefined) {
+              slots.push(action.targetSlot);
+            }
           }
         }
       }
     }
 
     this.highlightedSlots = slots;
+    this.canTargetFace = canTargetFace;
   }
 
   getActionForTarget(targetSlot: number): ActionInfo | null {
@@ -324,11 +505,22 @@ class GameStore {
              a.targetSlot === targetSlot
       ) ?? null;
     } else if (this.selectedCreatureSlot !== null) {
-      return this.legalActions.find(
-        a => a.actionType === "attack" &&
-             a.sourceSlot === this.selectedCreatureSlot &&
-             a.targetSlot === targetSlot
-      ) ?? null;
+      if (this.selectedAbilityIndex !== null) {
+        // Find ability action for this target
+        return this.legalActions.find(
+          a => a.actionType === "use_ability" &&
+               a.sourceSlot === this.selectedCreatureSlot &&
+               a.abilityIndex === this.selectedAbilityIndex &&
+               a.targetSlot === targetSlot
+        ) ?? null;
+      } else {
+        // Find attack action
+        return this.legalActions.find(
+          a => a.actionType === "attack" &&
+               a.sourceSlot === this.selectedCreatureSlot &&
+               a.targetSlot === targetSlot
+        ) ?? null;
+      }
     }
     return null;
   }

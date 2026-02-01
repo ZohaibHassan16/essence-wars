@@ -14,6 +14,10 @@
     insightIndicator = false,
     onInsightClick,
     tutorialId = undefined,
+    /** Whether this commander is a valid target for face-targeting abilities */
+    isValidFaceTarget = false,
+    /** Called when commander is clicked as a face target */
+    onFaceTargetClick,
   }: {
     commander: CommanderDto | null;
     life: number;
@@ -26,6 +30,8 @@
     insightIndicator?: boolean;
     onInsightClick?: () => void;
     tutorialId?: string;
+    isValidFaceTarget?: boolean;
+    onFaceTargetClick?: () => void;
   } = $props();
 
   // Track life changes for animation
@@ -148,14 +154,24 @@
   });
 </script>
 
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div
   class="commander-card relative flex flex-col rounded-xl border-2 bg-gradient-to-b transition-all duration-300
-         {factionColors().gradient} {factionColors().border} {factionColors().glow}"
+         {factionColors().gradient} {factionColors().border} {factionColors().glow}
+         {isValidFaceTarget ? 'ring-2 ring-damage ring-offset-2 ring-offset-black cursor-pointer animate-pulse' : ''}"
   class:opacity-60={!commander}
-  class:active-pulse={isActive}
+  class:active-pulse={isActive && !isValidFaceTarget}
   style="width: var(--commander-card-width, 250px); overflow: visible;"
   onmouseenter={() => showPopup = true}
   onmouseleave={() => showPopup = false}
+  onclick={() => {
+    if (isValidFaceTarget && onFaceTargetClick) {
+      playSound('abilityActivate');
+      onFaceTargetClick();
+    }
+  }}
   role="region"
   aria-label={commander ? `${commander.name} - ${life} HP` : "No commander"}
   data-tutorial-id={tutorialId}

@@ -5,6 +5,8 @@ use cardgame::{
 };
 use cardgame::cards::CommanderDefinition;
 use cardgame::client_api::GameEvent;
+use cardgame::core::cards::{AbilityDefinition, EffectDefinition, PassiveEffectDefinition, PassiveModifier};
+use cardgame::core::effects::{TargetingRule, TokenAbility, TokenEffect, Trigger};
 use cardgame::core::state::GameResult;
 use cardgame::types::CardId;
 use serde::{Deserialize, Serialize};
@@ -113,6 +115,25 @@ pub struct CardDto {
 
     // Art path (relative to assets)
     pub art_path: Option<String>,
+
+    /// Effect description for support cards (None for creatures/spells)
+    pub effect_description: Option<String>,
+}
+
+/// Activated ability on a creature (typically tokens)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AbilityDto {
+    /// Ability index (0-5) for action matching
+    pub index: u8,
+    /// Display name (e.g., "Fungal Rot")
+    pub name: String,
+    /// Essence cost to activate
+    pub essence_cost: u8,
+    /// Targeting type: "no_target", "enemy_creature", "enemy_player", "any", etc.
+    pub targeting_type: String,
+    /// Human-readable effect description
+    pub description: String,
 }
 
 /// Creature on board
@@ -135,6 +156,9 @@ pub struct CreatureDto {
     pub is_exhausted: bool,
 
     pub art_path: Option<String>,
+
+    /// Activated abilities (empty for most creatures, populated for tokens with abilities)
+    pub abilities: Vec<AbilityDto>,
 }
 
 /// Support on board
@@ -149,6 +173,9 @@ pub struct SupportDto {
     pub durability: u8,
 
     pub art_path: Option<String>,
+
+    /// Human-readable description of what this support does
+    pub effect_description: String,
 }
 
 /// Action information for the UI
@@ -164,6 +191,9 @@ pub struct ActionInfo {
     pub target_slot: Option<u8>,
     pub hand_index: Option<u8>,
     pub card_id: Option<u16>,
+
+    /// For use_ability actions: which ability (0-5)
+    pub ability_index: Option<u8>,
 }
 
 /// Game state update after an action
@@ -310,6 +340,14 @@ impl CardDto {
         // Art path matches files in static/cards/core_set/{id}.webp
         let art_path = Some(format!("cards/core_set/{}.webp", card.id));
 
+        // Generate effect description for support cards
+        let effect_description = match &card.card_type {
+            CardType::Support { passive_effects, triggered_effects, .. } => {
+                Some(describe_support_effects(passive_effects, triggered_effects))
+            }
+            _ => None,
+        };
+
         Self {
             card_id: card.id,
             name: card.name.clone(),
@@ -321,6 +359,7 @@ impl CardDto {
             keywords,
             durability: card.durability(),
             art_path,
+            effect_description,
         }
     }
 
@@ -336,7 +375,178 @@ impl CardDto {
             keywords: Vec::new(),
             durability: None,
             art_path: None, // Hidden cards use CSS card back design
+            effect_description: None,
         }
+    }
+}
+
+/// Convert a TargetingRule to a frontend-friendly string
+fn targeting_rule_to_string(rule: &TargetingRule) -> &'static str {
+    match rule {
+        TargetingRule::NoTarget => "no_target",
+        TargetingRule::TargetCreature(_) => "creature",
+        TargetingRule::TargetAllyCreature => "ally_creature",
+        TargetingRule::TargetEnemyCreature => "enemy_creature",
+        TargetingRule::TargetPlayer => "player",
+        TargetingRule::TargetEnemyPlayer => "enemy_player",
+        TargetingRule::TargetAny => "any",
+        TargetingRule::TargetSlot => "slot",
+    }
+}
+
+/// Generate a human-readable description of token effects
+fn describe_token_effects(effects: &[TokenEffect]) -> String {
+    let parts: Vec<String> = effects
+        .iter()
+        .filter_map(|effect| match effect {
+            TokenEffect::DestroySelf => None, // Don't mention self-sacrifice in description
+            TokenEffect::Damage { amount } => Some(format!("{} damage", amount)),
+            TokenEffect::Debuff { attack, health } => {
+                if *attack != 0 && *health != 0 {
+                    Some(format!("{:+}/{:+}", attack, health))
+                } else if *attack != 0 {
+                    Some(format!("{:+} attack", attack))
+                } else {
+                    Some(format!("{:+} health", health))
+                }
+            }
+            TokenEffect::HealSelf { amount } => Some(format!("heal {} to self", amount)),
+        })
+        .collect();
+
+    if parts.is_empty() {
+        "Activate".to_string()
+    } else {
+        parts.join(", ")
+    }
+}
+
+/// Convert token abilities to AbilityDto list
+fn token_abilities_to_dtos(abilities: &Option<Vec<TokenAbility>>) -> Vec<AbilityDto> {
+    abilities
+        .as_ref()
+        .map(|abs| {
+            abs.iter()
+                .enumerate()
+                .map(|(i, ability)| AbilityDto {
+                    index: i as u8,
+                    name: ability.name.clone(),
+                    essence_cost: ability.essence_cost,
+                    targeting_type: targeting_rule_to_string(&ability.targeting).to_string(),
+                    description: describe_token_effects(&ability.effects),
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// Describe a trigger in human-readable form
+fn trigger_to_string(trigger: &Trigger) -> &'static str {
+    match trigger {
+        Trigger::OnPlay => "On play",
+        Trigger::OnAttack => "On attack",
+        Trigger::OnDealDamage => "On deal damage",
+        Trigger::OnTakeDamage => "On take damage",
+        Trigger::OnKill => "On kill",
+        Trigger::OnDeath => "On death",
+        Trigger::StartOfTurn => "Start of turn",
+        Trigger::EndOfTurn => "End of turn",
+        Trigger::OnAllyPlayed => "On ally played",
+        Trigger::OnAllyDeath => "On ally death",
+        Trigger::OnEnemyDeath => "On enemy death",
+        Trigger::OnCreaturePlayed => "On creature played",
+        Trigger::Activated => "Activated",
+    }
+}
+
+/// Describe an effect in human-readable form
+fn describe_effect(effect: &EffectDefinition) -> String {
+    match effect {
+        EffectDefinition::Damage { amount, filter } => {
+            let target = filter.as_ref().map_or("target", |_| "filtered targets");
+            format!("Deal {} damage to {}", amount, target)
+        }
+        EffectDefinition::Heal { amount, filter } => {
+            let target = filter.as_ref().map_or("your commander", |_| "filtered creatures");
+            format!("Heal {} to {}", amount, target)
+        }
+        EffectDefinition::Draw { count } => {
+            if *count == 1 {
+                "Draw a card".to_string()
+            } else {
+                format!("Draw {} cards", count)
+            }
+        }
+        EffectDefinition::BuffStats { attack, health, filter } => {
+            let target = filter.as_ref().map_or("target", |_| "filtered creatures");
+            format!("Give {} {:+}/{:+}", target, attack, health)
+        }
+        EffectDefinition::Destroy { .. } => "Destroy target".to_string(),
+        EffectDefinition::GrantKeyword { keyword, .. } => {
+            format!("Grant {}", keyword)
+        }
+        EffectDefinition::RemoveKeyword { keyword, .. } => {
+            format!("Remove {}", keyword)
+        }
+        EffectDefinition::Silence { .. } => "Silence target".to_string(),
+        EffectDefinition::GainEssence { amount } => {
+            format!("Gain {} essence", amount)
+        }
+        EffectDefinition::RefreshCreature => "Refresh creature".to_string(),
+        EffectDefinition::Bounce { .. } => "Return to hand".to_string(),
+        EffectDefinition::SummonToken { token } => {
+            format!("Summon a {}/{} {}", token.attack, token.health, token.name)
+        }
+        EffectDefinition::Transform { into } => {
+            format!("Transform into {}/{} {}", into.attack, into.health, into.name)
+        }
+        EffectDefinition::Copy => "Create a copy".to_string(),
+    }
+}
+
+/// Describe a passive modifier
+fn describe_passive(passive: &PassiveEffectDefinition) -> String {
+    match &passive.modifier {
+        PassiveModifier::AttackBonus(amount) => {
+            format!("Your creatures have {:+} Attack", amount)
+        }
+        PassiveModifier::HealthBonus(amount) => {
+            format!("Your creatures have {:+} Health", amount)
+        }
+        PassiveModifier::GrantKeyword(keyword) => {
+            format!("Your creatures have {}", keyword)
+        }
+    }
+}
+
+/// Describe a triggered ability
+fn describe_triggered_ability(ability: &AbilityDefinition) -> String {
+    let trigger = trigger_to_string(&ability.trigger);
+    let effects: Vec<String> = ability.effects.iter().map(describe_effect).collect();
+    format!("{}: {}", trigger, effects.join(", "))
+}
+
+/// Generate a human-readable description of what a support does
+fn describe_support_effects(
+    passives: &[PassiveEffectDefinition],
+    triggered: &[AbilityDefinition],
+) -> String {
+    let mut parts = Vec::new();
+
+    // Add passive effects
+    for passive in passives {
+        parts.push(describe_passive(passive));
+    }
+
+    // Add triggered effects
+    for ability in triggered {
+        parts.push(describe_triggered_ability(ability));
+    }
+
+    if parts.is_empty() {
+        "No effects".to_string()
+    } else {
+        parts.join(". ")
     }
 }
 
@@ -348,6 +558,9 @@ impl CreatureDto {
         // Art path matches files in static/cards/core_set/{id}.webp
         let art_path = Some(format!("cards/core_set/{}.webp", card.id));
 
+        // Convert token abilities to DTOs
+        let abilities = token_abilities_to_dtos(&creature.token_abilities);
+
         Self {
             instance_id: creature.instance_id.0,
             card_id: card.id,
@@ -362,6 +575,7 @@ impl CreatureDto {
             can_attack: creature.can_attack(current_turn),
             is_exhausted: creature.status.is_exhausted(),
             art_path,
+            abilities,
         }
     }
 
@@ -370,12 +584,27 @@ impl CreatureDto {
     pub fn from_token(creature: &Creature, current_turn: u16) -> Self {
         let keywords = keywords_to_strings(&creature.keywords);
 
+        // Convert token abilities to DTOs
+        let abilities = token_abilities_to_dtos(&creature.token_abilities);
+
+        // Get token name from the creature (stored during token creation)
+        let name = creature
+            .token_name
+            .clone()
+            .unwrap_or_else(|| "Token".to_string());
+
+        // Infer faction from keywords for styling
+        let faction = infer_faction_from_keywords(&creature.keywords);
+
+        // Generate art path: try named token first, then generic fallback
+        let art_path = Some(token_art_path(&name));
+
         Self {
             instance_id: creature.instance_id.0,
             card_id: 0,
-            name: "Token".to_string(),
+            name,
             slot: creature.slot.0,
-            faction: "neutral".to_string(),
+            faction,
             attack: creature.attack,
             base_attack: creature.base_attack,
             health: creature.current_health,
@@ -383,9 +612,39 @@ impl CreatureDto {
             keywords,
             can_attack: creature.can_attack(current_turn),
             is_exhausted: creature.status.is_exhausted(),
-            art_path: None, // Tokens don't have art
+            art_path,
+            abilities,
         }
     }
+}
+
+/// Infer faction from creature keywords for tokens
+/// Uses the faction-characteristic keywords as hints
+fn infer_faction_from_keywords(keywords: &Keywords) -> String {
+    // Argentum: Guard, Piercing, Shield, Fortify
+    if keywords.has_guard() || keywords.has_piercing() || keywords.has_shield() {
+        return "argentum".to_string();
+    }
+    // Symbiote: Rush, Lethal, Regenerate, Volatile
+    if keywords.has_rush() || keywords.has_lethal() || keywords.has_regenerate() {
+        return "symbiote".to_string();
+    }
+    // Obsidion: Lifesteal, Stealth, Quick
+    if keywords.has_lifesteal() || keywords.has_stealth() || keywords.has_quick() {
+        return "obsidion".to_string();
+    }
+    "neutral".to_string()
+}
+
+/// Generate token art path (snake_case name)
+fn token_art_path(name: &str) -> String {
+    let snake_name = name.to_lowercase().replace(' ', "_");
+    format!("tokens/named/{}.webp", snake_name)
+}
+
+/// Generate fallback art path for a faction
+pub fn fallback_art_path(faction: &str) -> String {
+    format!("tokens/generic/{}.webp", faction)
 }
 
 impl SupportDto {
@@ -395,6 +654,14 @@ impl SupportDto {
         // Art path matches files in static/cards/core_set/{id}.webp
         let art_path = Some(format!("cards/core_set/{}.webp", card.id));
 
+        // Generate effect description from the card definition
+        let effect_description = match &card.card_type {
+            CardType::Support { passive_effects, triggered_effects, .. } => {
+                describe_support_effects(passive_effects, triggered_effects)
+            }
+            _ => "Unknown support".to_string(),
+        };
+
         Self {
             card_id: card.id,
             name: card.name.clone(),
@@ -402,6 +669,7 @@ impl SupportDto {
             faction: faction.to_string(),
             durability: support.current_durability,
             art_path,
+            effect_description,
         }
     }
 }
@@ -416,6 +684,7 @@ pub fn action_to_info(action: &Action, index: u8) -> ActionInfo {
             target_slot: Some(slot.0),
             hand_index: Some(*hand_index),
             card_id: None,
+            ability_index: None,
         },
         Action::Attack { attacker, defender } => ActionInfo {
             index,
@@ -425,6 +694,7 @@ pub fn action_to_info(action: &Action, index: u8) -> ActionInfo {
             target_slot: Some(defender.0),
             hand_index: None,
             card_id: None,
+            ability_index: None,
         },
         Action::UseAbility { slot, ability_index, target } => {
             let target_desc = match target {
@@ -443,6 +713,7 @@ pub fn action_to_info(action: &Action, index: u8) -> ActionInfo {
                 },
                 hand_index: None,
                 card_id: None,
+                ability_index: Some(*ability_index),
             }
         }
         Action::CommanderInsight => ActionInfo {
@@ -453,6 +724,7 @@ pub fn action_to_info(action: &Action, index: u8) -> ActionInfo {
             target_slot: None,
             hand_index: None,
             card_id: None,
+            ability_index: None,
         },
         Action::EndTurn => ActionInfo {
             index,
@@ -462,6 +734,7 @@ pub fn action_to_info(action: &Action, index: u8) -> ActionInfo {
             target_slot: None,
             hand_index: None,
             card_id: None,
+            ability_index: None,
         },
     }
 }

@@ -1,14 +1,16 @@
 <script lang="ts">
-  import type { CardDto, CreatureDto } from "$lib/api/types";
+  import type { CardDto, CreatureDto, SupportDto } from "$lib/api/types";
   import KeywordIcon from "./KeywordIcon.svelte";
 
   let {
     card,
     creature = null,
+    support = null,
     position = "right",
   }: {
     card: CardDto | null;
     creature?: CreatureDto | null;
+    support?: SupportDto | null;
     position?: "left" | "right" | "top" | "bottom";
   } = $props();
 
@@ -67,6 +69,38 @@
     top: "bottom-full mb-4",
     bottom: "top-full mt-4",
   }[position]);
+
+  // Track whether we've fallen back to generic art
+  let usesFallbackArt = $state(false);
+
+  // Reset fallback state when card changes
+  $effect(() => {
+    if (card) {
+      usesFallbackArt = false;
+    }
+  });
+
+  // Generate fallback art path based on faction
+  const fallbackArtPath = $derived(
+    card ? `tokens/generic/${card.faction || 'neutral'}.webp` : null
+  );
+
+  // Current art path to use (primary or fallback)
+  const currentArtPath = $derived(
+    usesFallbackArt ? fallbackArtPath : card?.artPath
+  );
+
+  // Handle image load error - try fallback, then show placeholder
+  function handleImageError(e: Event) {
+    const img = e.currentTarget as HTMLImageElement;
+    if (!usesFallbackArt && fallbackArtPath) {
+      // First failure - try the fallback
+      usesFallbackArt = true;
+    } else {
+      // Fallback also failed - hide the image
+      img.style.display = 'none';
+    }
+  }
 </script>
 
 {#if card}
@@ -88,18 +122,18 @@
       </div>
     </div>
 
-    <!-- Card Art -->
+    <!-- Card Art (with fallback support) -->
     <div class="h-48 bg-gray-800/50 overflow-hidden border-b border-gray-700 relative">
-      {#if card.artPath}
+      {#if currentArtPath}
         <img
-          src="/{card.artPath}"
+          src="/{currentArtPath}"
           alt={card.name}
           class="w-full h-full object-cover object-center"
-          onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+          onerror={handleImageError}
         />
       {/if}
       <div class="absolute inset-0 flex items-center justify-center text-ui-text-dim text-sm pointer-events-none"
-           class:hidden={card.artPath}>
+           class:hidden={currentArtPath}>
         [No Art]
       </div>
     </div>
@@ -121,9 +155,17 @@
     {:else if card.cardType === "support" && card.durability}
       <div class="px-4 py-3 border-b border-gray-700">
         <div class="flex items-center gap-3">
-          <span class="text-mana font-bold text-xl">{card.durability}</span>
+          <span class="text-mana font-bold text-xl">{support?.durability ?? card.durability}</span>
           <span class="text-ui-text-dim text-base">Durability</span>
         </div>
+      </div>
+    {/if}
+
+    <!-- Support Effect Description (from card or support DTO) -->
+    {#if card.effectDescription || support?.effectDescription}
+      <div class="px-4 py-3 border-b border-gray-700">
+        <div class="text-xs font-semibold text-ui-text-dim uppercase tracking-wide mb-1">Effect</div>
+        <p class="text-sm text-ui-text leading-relaxed">{card.effectDescription ?? support?.effectDescription}</p>
       </div>
     {/if}
 

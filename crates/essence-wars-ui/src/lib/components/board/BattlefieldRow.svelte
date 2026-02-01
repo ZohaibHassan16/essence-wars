@@ -21,7 +21,7 @@
     selectedCreatureSlot?: number | null;
     highlightedSlots?: number[];
     validAttackTargets?: number[];
-    onCreatureClick?: (slot: number) => void;
+    onCreatureClick?: (slot: number, event?: MouseEvent) => void;
     onSupportClick?: (slot: number) => void;
     showKeyHints?: boolean;
   } = $props();
@@ -53,7 +53,7 @@
         isHighlighted={highlightedSlots.includes(i)}
         isSelected={selectedCreatureSlot === i}
         isValidTarget={validAttackTargets.includes(i)}
-        onClick={onCreatureClick ? () => onCreatureClick(i) : undefined}
+        onClick={onCreatureClick ? (e) => onCreatureClick(i, e) : undefined}
         showKeyHint={showKeyHints}
       />
     {/each}
