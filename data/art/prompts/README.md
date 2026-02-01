@@ -69,16 +69,9 @@ python3 scripts/generate-commander-art.py --faction argentum --dry-run
 - Card art: `crates/essence-wars-ui/static/cards/core_set/{id}.webp`
 - Commander portraits: `crates/essence-wars-ui/static/portrait/{name}.webp`
 
-## Deprecated Files
-
-The following files have been replaced by the YAML-based system:
-
-- `commander_portraits.md.deprecated` - Old markdown format (replaced by `commanders.yaml`)
-- `scripts/generate-commander-portraits.sh.deprecated` - Old bash script (replaced by `generate-commander-art.py`)
-
 ## Style Guide
 
-See `data/art/style_guide.yaml` for:
+See `data/art/style_guide.yaml` and `docs/art-direction.md` for:
 - Faction aesthetics
 - Color palettes
 - Art direction guidelines

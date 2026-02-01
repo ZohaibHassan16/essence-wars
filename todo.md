@@ -2,15 +2,12 @@
 
 ## (A) Deck Builder
 
-Custom Deck Builder
-
-Choose Faction -> Choose Commander
-
-Choose Cards from Faction + Neutral Cards 
-
-Save as Deck, add Description
-
-Be able to play with it
+- Custom Deck Builder
+- Choose Faction -> Choose Commander
+- Choose Cards from Faction + Neutral Cards 
+- Save as Deck, add Description
+- Be able to play with custom decks
+- Cannot edit or overwrite the prebuilt 12 Starter Decks, only custom decks
 
 ## (B) Update Lore
 
@@ -31,3 +28,7 @@ Update and Enhance the Diagnosis/Analysis Screen in Spectator Mode, using the no
 
 - Look into the changes, update and integrate everything
 - Create new, updated Github Action workflows - Fresh workflows with current best practices for Maturin/PyPI for Publishing to Github Packages / PyPI
+
+## (G) Review if Asset Pipeline is still in sync
+
+Search and review all Asset related Scripts, Data, Prompts, Artwork, Documention etc, and bring them up to date and in sync.
