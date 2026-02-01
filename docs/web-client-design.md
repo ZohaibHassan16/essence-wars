@@ -814,16 +814,104 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 **Audio**:
 - Audit SFX Library, current creature sounds are placeholders. Web Search for a consistent art asset pack that fits our theme and replace the existing ones.
 
-### Phase 11: Release Prep
-- [ ] Discuss Distribution Options, DevOps, Storage Solutions (For all Art Assets, the Github Repo is becoming too big, we can't keep git committing the static/ folder, maybe all images and sfx/music need to be git removed once they are stored somewhere else)
-  - We still need a simple .exe binary for local testing which has packed everything inside it. Maybe we can create two builds, one packed binary (for quick local testing/dev), one that loads from external files (the installer for distribution to players) 
-- [ ] Containerization necessary?
-- [ ] Build for Windows
-- [ ] Build for Linux
-- [ ] Installer/package creation
-- [ ] Final testing on both platforms
-- [ ] Documentation
-- [ ] Disuss free Hosting Providers (itch.io, Google Drive, ...)
+### Phase 11: Release Prep & Distribution
+
+#### 11.1 Repository Size Analysis
+- **Total Git repo**: ~227 MB
+- **Static assets**: ~130 MB (59 MB cards, 58 MB music, 6 MB sounds, 4 MB backgrounds, 2.2 MB portraits, 1.8 MB tokens)
+- **Source code**: <10 MB
+- **Status**: Size is acceptable for GitHub Releases (2 GB limit per file)
+
+#### 11.2 Distribution Strategy (Open Source Project)
+
+**Current Approach (✅ Recommended)**
+- Use **GitHub Releases** for binary distribution
+- 130 MB static assets are fine bundled in the executable
+- Free, version-controlled, no external dependencies
+- Simple workflow: `git clone` → `build-windows.sh` → release
+
+**Future Option (If needed)**
+- **itch.io**: Free hosting up to 1 GB, great for open source games
+- Good for community visibility and easier download experience
+- Optional revenue/donation support built-in
+
+#### 11.3 Contributor DX Concerns
+
+**Problem**: Monorepo with heavy assets (~130 MB) impacts contributors who only want to work on:
+- Rust engine (`crates/cardgame/`)
+- Python AI/research (`python/`, `research/`)
+- Not the UI/assets
+
+**Solutions to Consider**:
+
+1. **Git LFS (Lazy Download)**
+   ```bash
+   # Moves large assets to Git LFS, only downloads on-demand
+   git lfs track "crates/essence-wars-ui/static/cards/**"
+   git lfs track "crates/essence-wars-ui/static/music/**"
+   
+   # Contributors can skip LFS pull
+   git lfs install --skip-smudge  # Skips asset download
+   ```
+   - ✅ Keeps assets in repo (easy for CI/releases)
+   - ✅ Contributors can opt-out of downloads
+   - ❌ Requires Git LFS setup (~2 GB free GitHub LFS quota)
+
+2. **Asset Download Script (Optional Assets)**
+   ```bash
+   # Add scripts/download-assets.sh
+   # Only needed for UI development, CI automatically fetches
+   ```
+   - ✅ Smallest clone size
+   - ✅ Engine/Python work unaffected
+   - ❌ Extra step for UI contributors
+   - ❌ Need external asset hosting (GitHub Releases, CDN)
+
+3. **Separate Assets Repository**
+   ```bash
+   # essence-wars (code only, <10 MB)
+   # essence-wars-assets (static/ folder, 130 MB, git submodule)
+   ```
+   - ✅ Clean separation
+   - ❌ More complex workflow (submodules)
+   - ❌ Overkill for current 130 MB size
+
+**Recommendation for Now**: 
+- **Keep assets in main repo** (130 MB is reasonable)
+- Add `.github/CONTRIBUTING.md` noting asset size
+- Consider **Git LFS** only if assets grow >500 MB
+- Focus on CI automation for releases instead
+
+#### 11.4 Build & Release Workflow
+
+**Tasks:**
+- [ ] Fix Linux build configuration in `tauri.conf.json`
+- [ ] Set up GitHub Actions for automated cross-platform builds
+  - [ ] Windows .exe (already working via `build-windows.sh`)
+  - [ ] Linux AppImage or .deb
+  - [ ] Auto-upload to GitHub Releases on tag
+- [ ] Create release checklist (versioning, changelog, testing)
+- [ ] Document build process for contributors
+- [ ] Optional: Set up itch.io project page for community visibility
+
+**Containerization**: 
+- ❌ Not necessary for desktop game distribution
+- Use native OS installers (Windows NSIS, Linux AppImage/deb)
+
+**No Commercial CDN Needed**: 
+- GitHub Releases handles bandwidth for open source
+- No need for external storage (Google Drive, Cloudflare R2, etc.)
+
+#### 11.5 Build Variants
+
+**Single Build Strategy (Recommended)**:
+- All-in-one executable with embedded assets (current approach)
+- Simpler maintenance, one binary per platform
+- 130 MB download is acceptable for modern internet
+
+**Alternative (If assets grow significantly)**:
+- Slim installer (~10 MB) + asset downloader
+- Only worthwhile if static/ exceeds 500+ MB
 
 ---
 
