@@ -6,33 +6,38 @@ tags = ["commander", "argentum"]
 commander = 5001
 
 cards = [
-    # === 1-COST (4 cards) - Early game presence ===
-    1075, 1075,        # Brass Scout x2 (1c 1/2) → 1/4 Ward
-    4030, 4030,        # Scout Runner x2 (1c 1/2) → 1/4 Ward
+    # === 1-COST (4 cards) - Early presence ===
+    1075, 1075,        # Brass Scout x2 (1c 1/2) → 1/4 Ward - untargetable blocker
+    4030, 4030,        # Scout Runner x2 (1c 1/2) → 1/4 Ward - neutral early game
 
     # === 2-COST (6 cards) - Defensive foundation ===
-    1006, 1006,        # Shield Bearer x2 (2c 2/4 Shield) → 2/6 Ward+Shield
-    1021, 1021,        # Bronze Gatekeeper x2 (2c 2/4 Guard) → 2/6 Ward+Guard
+    1006, 1006,        # Shield Bearer x2 (2c 2/4 Shield) → 2/6 Ward+Shield - double protection
+    1021, 1021,        # Bronze Gatekeeper x2 (2c 2/4 Guard) → 2/6 Ward+Guard - [ABILITY: 1E grant Guard]
     4033, 4033,        # Pack Mule x2 (2c 1/3 draw) → 1/5 Ward + card draw
 
-    # === 3-COST (8 cards) - Core threats ===
-    1001, 1001,        # Steam Knight x2 (3c 3/4 Piercing) → 3/6 Ward+Piercing
+    # === 3-COST (10 cards) - Core threats ===
+    1001, 1001,        # Steam Knight x2 (3c 3/4 Piercing) → 3/6 Ward+Piercing - [ABILITY: 1E deal 2 damage]
     1005, 1005,        # Pressure Trooper x2 (3c 3/2 Piercing) → 3/4 Ward+Piercing
     1002, 1002,        # Cogwork Defender x2 (3c 3/5 Guard) → 3/7 Ward+Guard
-    4003, 4003,        # Hired Blade x2 (3c 3/3) → 3/5 Ward
+    1007, 1007,        # Clockwork Medic x2 (3c 3/4) → 3/6 Ward - [ABILITY: 1E heal 3]
+    4003, 4003,        # Hired Blade x2 (3c 3/3) → 3/5 Ward - solid body
 
-    # === 4-COST (4 cards) - Midgame power ===
-    1067, 1067,        # Siege Cannon x2 (4c 3/2 Piercing+Ranged) → 3/4 Ward+Piercing+Ranged
-    1031, 1031,        # Stalwart Defender x2 (4c 3/7 Guard) → 3/9 Ward+Guard
+    # === 4-COST (8 cards) - Midgame power ===
+    1067, 1067,        # Siege Cannon x2 (4c 3/2 Piercing+Ranged) → 3/4 Ward - [ABILITY: 1E deal 2 damage]
+    1031, 1031,        # Stalwart Defender x2 (4c 3/7 Guard) → 3/9 Ward+Guard - [ABILITY: 1E heal 2]
+    1056, 1056,        # Cogwheel Engineer x2 (4c 3/4) → 3/6 Ward - [ABILITY: 1E heal 2]
+    4021, 4021,        # Mystic Guardian x2 (4c 3/4 Ward+Guard) - native Ward - [ABILITY: 2E grant Ward]
 
-    # === 5-COST (4 cards) - Heavy hitters ===
-    1032, 1032,        # Siege Breaker x2 (5c 4/4 Piercing) → 4/6 Ward+Piercing
-    1068, 1068,        # Battering Ram x2 (5c 5/3 Piercing) → 5/5 Ward+Piercing
+    # === 5-COST (6 cards) - Heavy hitters ===
+    1032, 1032,        # Siege Breaker x2 (5c 4/4 Piercing) → 4/6 Ward+Piercing - [ABILITY: 2E deal 3 damage]
+    1068, 1068,        # Battering Ram x2 (5c 5/3 Piercing) → 5/5 Ward+Piercing - [ABILITY: 2E deal 4 damage]
+    4023, 4023,        # Arcane Protector x2 (5c 3/6 Ward+Shield) - native Ward - [ABILITY: 2E grant Shield]
 
     # === 6-COST (2 cards) - Finishers ===
-    1069,              # Clockwork Dragon (6c 5/5 Piercing+Charge) → 5/7 Ward+Piercing+Charge
-    4005,              # Siege Giant (6c 6/5 Piercing) → 6/7 Ward+Piercing
+    1069,              # Clockwork Dragon (6c 5/5 Piercing+Charge) → 5/7 Ward - [ABILITY: 3E deal 4 damage]
+    4005,              # Siege Giant (6c 6/5 Piercing) → 6/7 Ward+Piercing - [ABILITY: 2E deal 3 damage]
 
-    # === SPELLS (2 cards) - Removal ===
-    1070, 1070,        # Precision Strike x2 (2c 3dmg) - targeted removal
+    # === SPELLS (4 cards) - Removal ===
+    1070, 1070,        # Precision Strike x2 (2c 3 damage) - targeted removal
+    1025, 1025,        # Execute x2 (2c destroy ≤3 health) - efficient removal
 ]

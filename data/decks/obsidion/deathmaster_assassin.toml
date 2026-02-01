@@ -6,27 +6,37 @@ tags = ["commander", "obsidion"]
 commander = 5009
 
 cards = [
-    # LETHAL CORE - Lethal creatures gain Quick from commander
-    3001, 3001, 3001,  # Shadow Blade x3 (2c 3/2→3/4 Stealth+Lethal) - survives 3-attack
-    4036, 4036, 4036,  # Contract Killer x3 (3c 3/2→3/4 Lethal) - neutral assassin
-    3064, 3064, 3064,  # Nightblade x3 (4c 4/2→4/4 Stealth+Lethal) - survives most trades
-    3022, 3022,        # Twilight Executioner x2 (6c 6/5→6/7 Quick+Lethal) - near-unkillable
-
-    # Quick creatures (tempo, synergy with assassin theme)
+    # === 1-COST (4 cards) - Fast openers ===
     3015, 3015, 3015,  # Phantom Striker x3 (1c 2/3 Quick) - early pressure
+    4031,              # Eager Sellsword (1c 2/1 Rush) - [ABILITY: 0E +1/+0 buff]
+
+    # === 2-COST (8 cards) - Lethal assassins (gain Quick!) ===
+    3001, 3001, 3001,  # Shadow Blade x3 (2c 3/2 Stealth+Lethal) - [ABILITY: 2E deal 1 damage]
     3002, 3002,        # Blood Acolyte x2 (2c 2/3 Quick+Lifesteal) - sustain
-    3005, 3005,        # Silent Assassin x2 (4c 4/3 Stealth+Quick) - finisher
+    3024, 3024,        # Shadowmeld x2 (2c 3/2 Stealth+Ephemeral) - [ABILITY: 1E grant Stealth]
+    3016,              # Shade Lurker (2c 2/3 Stealth) - cheap Stealth body
 
-    # Lifesteal support (sustain while assassins work)
-    3017, 3017,        # Blood Seeker x2 (3c 3/3 Lifesteal) - midrange sustain
-    3020,              # Soul Reaver (5c 4/4 Quick+Lifesteal+Regen) - top-end threat
+    # === 3-COST (10 cards) - Lethal core ===
+    4036, 4036, 4036,  # Contract Killer x3 (3c 3/2 Lethal) - [ABILITY: 2E deal 1 damage]
+    3018, 3018,        # Spectral Assassin x2 (3c 3/3 Ephemeral+Quick) - [ABILITY: 1E deal 2 damage]
+    3038, 3038,        # Soul Collector x2 (3c 3/3 Lifesteal) - [ABILITY: 1E heal 2 ally]
+    3052, 3052,        # Shadow Stalker x2 (3c 3/3 Stealth+Quick) - [ABILITY: 2E deal 2 damage]
+    3075,              # Blood Channeler (3c 3/3) - [ABILITY: 2E deal 3 damage]
 
-    # Removal (clear blockers for Lethal creatures)
-    3010, 3010,        # Shadow Strike x2 (1c 2dmg) - cheap removal
-    3008, 3008,        # Soul Drain x2 (2c 3dmg) - efficient removal
-    3011,              # Obliteration (4c Destroy) - hard removal
+    # === 4-COST (10 cards) - Elite assassins ===
+    3064, 3064, 3064,  # Nightblade x3 (4c 4/2 Stealth+Lethal) - [ABILITY: 2E deal 1 damage]
+    3005, 3005,        # Silent Assassin x2 (4c 4/3 Stealth+Quick) - [ABILITY: 3E deal 4 damage]
+    3037, 3037,        # Reaper's Due x2 (4c 3/3 Lifesteal+Quick) - [ABILITY: 2E deal 2 damage]
+    3042, 3042,        # Mirror Assassin x2 (4c 3/3 Stealth) - [ABILITY: 2E deal 2 damage]
+    3004,              # Hemomancer (4c 4/4 Lifesteal) - [ABILITY: 2E deal 2 + heal 2]
 
-    # Additional support
-    3004,              # Hemomancer (4c 4/4 Lifesteal) - solid body
-    4031, 4031,        # Eager Sellsword x2 (1c 2/1 Rush) - early aggression
+    # === 5-COST (4 cards) - Heavy hitters ===
+    3020, 3020,        # Soul Reaver x2 (5c 4/4 Quick+Lifesteal+Regen) - [ABILITY: 3E deal 3 + heal 3]
+    3021, 3021,        # Void Devourer x2 (5c 4/4) - [ABILITY: 2E deal 3 damage]
+
+    # === 6-COST (2 cards) - Finishers ===
+    3022, 3022,        # Twilight Executioner x2 (6c 6/5 Quick+Lethal) - ultimate assassin
+
+    # === SPELLS (2 cards) - Removal ===
+    3008, 3008,        # Soul Drain x2 (2c 3 damage) - efficient removal
 ]

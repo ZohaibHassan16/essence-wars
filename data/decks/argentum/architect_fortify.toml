@@ -6,34 +6,42 @@ tags = ["commander", "argentum"]
 commander = 5003
 
 cards = [
-    # 1-cost creatures (early game presence)
-    1075, 1075,        # Brass Scout x2 (1c 1/2)
+    # === 1-COST (2 cards) - Early presence ===
+    1075, 1075,        # Brass Scout x2 (1c 1/2) - early blocker, becomes 1/4 with Fortify
 
-    # Guard creatures WITHOUT Fortify (gain Fortify from commander)
-    1000, 1000, 1000,  # Brass Sentinel x3 (2c 2/5 Guard)
-    1021, 1021,        # Bronze Gatekeeper x2 (2c 2/4 Guard)
-    1002, 1002,        # Cogwork Defender x2 (3c 3/5 Guard)
-    1022,              # Armored Sentinel (3c 3/5 Guard+Shield)
-    1027,              # Shield Wall Captain (3c 2/5 Guard, grants Shield to Guards)
-    1031, 1031,        # Stalwart Defender x2 (4c 3/7 Guard)
-    1020,              # Ironclad Bulwark (4c 2/8 Guard)
-    1004,              # Iron Colossus (5c 3/7 Guard)
-    1008,              # Siege Engine (6c 4/6 Guard+Piercing)
+    # === 2-COST (7 cards) - Defensive foundation ===
+    1000, 1000, 1000,  # Brass Sentinel x3 (2c 2/5 Guard) - core defender, becomes 2/7 Fortify
+    1021, 1021,        # Bronze Gatekeeper x2 (2c 2/4 Guard) - [ABILITY: 1E grant Guard]
+    1006, 1006,        # Shield Bearer x2 (2c 2/4 Shield) - Shield stacks with Fortify
 
-    # High-health non-Guard creatures (also benefit from Fortify)
-    1006, 1006,        # Shield Bearer x2 (2c 2/4 Shield)
-    1007,              # Clockwork Medic (3c 2/4, heals on play)
+    # === 3-COST (9 cards) - Midrange core ===
+    1002, 1002,        # Cogwork Defender x2 (3c 3/5 Guard) - solid Guard body
+    1022, 1022,        # Armored Sentinel x2 (3c 3/5 Guard+Shield) - [ABILITY: 2E deal 2 damage]
+    1027, 1027,        # Shield Wall Captain x2 (3c 3/5 Guard) - [ABILITY: 1E grant Shield]
+    1050, 1050,        # Interceptor x2 (3c 3/4 Guard) - [ABILITY: 1E deal 2 damage]
+    1007,              # Clockwork Medic (3c 3/4) - [ABILITY: 1E heal 3]
 
-    # Removal and utility spells
-    1025, 1025,        # Execute x2 (2c destroy ≤3 health)
-    1070, 1070,        # Precision Strike x2 (2c 3dmg)
-    1052,              # Lockdown Protocol (2c silence+2dmg)
+    # === 4-COST (10 cards) - Power plays ===
+    1031, 1031,        # Stalwart Defender x2 (4c 3/7 Guard) - [ABILITY: 1E heal 2]
+    1020, 1020,        # Ironclad Bulwark x2 (4c 3/8 Guard) - [ABILITY: 2E +0/+2 buff]
+    1042, 1042,        # Steel Templar x2 (4c 4/5 Fortify+Guard) - [ABILITY: 2E deal 3 damage]
+    1064,              # Iron Bastion (4c 2/6 Guard+Fortify) - [ABILITY: 2E heal 2]
+    1037,              # Bulwark Commander (4c 3/5 Guard+Fortify) - [ABILITY: 2E grant Guard aura]
+    4021, 4021,        # Mystic Guardian x2 (4c 3/4 Ward+Guard) - [ABILITY: 2E grant Ward]
 
-    # Supports
-    1048,              # Forge of Creation (4c, summons Guard tokens)
-    4012,              # Supply Depot (3c heal)
+    # === 5-COST (4 cards) - Heavy hitters ===
+    1004, 1004,        # Iron Colossus x2 (5c 3/7 Guard) - [ABILITY: 2E grant Fortify]
+    1036,              # Armored Titan (5c 4/7 Fortify) - [ABILITY: 2E grant Shield]
+    4043,              # Colossus of War (6c 5/7 Guard) - [ABILITY: 2E deal 2 damage]
 
-    # Neutral - utility
-    4003, 4003,        # Hired Blade x2 (3c 3/3)
-    4021,              # Mystic Guardian (4c 3/4 Ward+Guard)
+    # === 6-COST (2 cards) - Finishers ===
+    1008, 1008,        # Siege Engine x2 (6c 4/6 Guard+Piercing) - [ABILITY: 2E deal 3 damage]
+
+    # === SPELLS (4 cards) - Removal ===
+    1025, 1025,        # Execute x2 (2c destroy ≤3 health) - efficient removal
+    1070, 1070,        # Precision Strike x2 (2c 3 damage) - targeted removal
+
+    # === SUPPORTS (2 cards) - Value ===
+    1048,              # Forge of Creation (4c) - summons 2/2 Guard tokens
+    4012,              # Supply Depot (3c) - heal 2 per turn
 ]

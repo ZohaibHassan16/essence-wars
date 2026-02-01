@@ -6,30 +6,36 @@ tags = ["commander", "obsidion"]
 commander = 5011
 
 cards = [
-    # Lethal creatures (Quick + Lethal = guaranteed kill)
-    3001, 3001, 3001,  # Shadow Blade x3 (2c 3/2 Stealth+Lethal)
-    3064, 3064,        # Nightblade x2 (4c 4/2 Stealth+Lethal)
+    # === 1-COST (4 cards) - Fast openers ===
+    3015, 3015, 3015,  # Phantom Striker x3 (1c 2/3 Quick) - early Quick pressure
+    4031,              # Eager Sellsword (1c 2/1 Rush) - [ABILITY: 0E +1/+0 buff]
 
-    # High-attack creatures (4+ ATK, kill enemies outright with Quick)
-    3006, 3006,        # Ritual Master x2 (4c 4/4)
-    3004,              # Hemomancer (4c 4/4 Lifesteal)
-    3048,              # Sanguine Lord (5c 4/5 Lifesteal)
-    3021,              # Void Devourer (5c 4/4)
+    # === 2-COST (8 cards) - Lethal + Quick assassins ===
+    3001, 3001, 3001,  # Shadow Blade x3 (2c 3/2 Stealth+Lethal) - [ABILITY: 2E deal 1 damage]
+    4007, 4007,        # Reckless Charger x2 (2c 4/1 Charge+Rush) - [ABILITY: 0E +1/+0 buff]
+    3002, 3002,        # Blood Acolyte x2 (2c 2/3 Quick+Lifesteal) - sustain
+    4076,              # Essence Collector (2c 2/2) - [ABILITY: 0E gain 1 essence]
 
-    # Mid-attack aggressive creatures
-    3023, 3023, 3023,  # Blood Ritualist x3 (3c 3/4 - survives trades)
-    3019,              # Nightstalker (4c 3/4 Stealth+Lifesteal+Regen)
-    3017, 3017, 3017,  # Blood Seeker x3 (3c 3/3 Lifesteal)
+    # === 3-COST (10 cards) - Midrange power ===
+    4036, 4036, 4036,  # Contract Killer x3 (3c 3/2 Lethal) - [ABILITY: 2E deal 1 damage]
+    3023, 3023, 3023,  # Blood Ritualist x3 (3c 3/4) - durable bodies
+    3017, 3017,        # Blood Seeker x2 (3c 3/3 Lifesteal) - sustain
+    3075, 3075,        # Blood Channeler x2 (3c 3/3) - [ABILITY: 2E deal 3 damage]
 
-    # Removal spells
-    3010, 3010,        # Shadow Strike x2
-    3008, 3008,        # Soul Drain x2
-    3025,              # Life Tap
+    # === 4-COST (10 cards) - Elite threats ===
+    3064, 3064,        # Nightblade x2 (4c 4/2 Stealth+Lethal) - [ABILITY: 2E deal 1 damage]
+    3006, 3006,        # Ritual Master x2 (4c 4/4) - [ABILITY: 2E deal 2 damage]
+    3056, 3056,        # Alley Cutthroat x2 (4c 4/3 Quick) - [ABILITY: 2E deal 3 damage]
+    3004, 3004,        # Hemomancer x2 (4c 4/4 Lifesteal) - [ABILITY: 2E deal 2 + heal 2]
+    4039, 4039,        # Battle Hardened Veteran x2 (4c 4/4) - [ABILITY: 1E +1/+1 buff]
 
-    # Neutral - High attack and Lethal
-    4007, 4007,        # Reckless Charger x2 (2c 4/1 Charge+Rush)
-    4036, 4036,        # Contract Killer x2 (3c 3/2 Lethal)
-    4004,              # War Veteran (4c 4/4 Charge)
-    4039,              # Battle Hardened Veteran (4c 4/4)
-    4012,              # Supply Depot
+    # === 5-COST (4 cards) - Heavy hitters ===
+    3021, 3021,        # Void Devourer x2 (5c 4/4) - [ABILITY: 2E deal 3 damage]
+    3048, 3048,        # Sanguine Lord x2 (5c 4/5 Lifesteal) - [ABILITY: 2E grant Lifesteal]
+
+    # === 6-COST (2 cards) - Finishers ===
+    3022, 3022,        # Twilight Executioner x2 (6c 6/5 Quick+Lethal) - ultimate assassin
+
+    # === SUPPORTS (2 cards) - Value ===
+    4012, 4012,        # Supply Depot x2 (3c) - StartOfTurn: heal 2
 ]

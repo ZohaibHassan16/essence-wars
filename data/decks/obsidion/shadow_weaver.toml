@@ -5,32 +5,37 @@ playstyle = "Aggro"
 tags = ["commander", "obsidion"]
 commander = 5010
 
-# Rebuilt with NON-Stealth creatures (v0.8.0) - commander grants Stealth!
 cards = [
-    # 1-cost (5 cards) - aggressive openers
-    3015, 3015, 3015,  # Phantom Striker x3 (1c 2/3 Quick) - Quick + Stealth = immediate safe damage
-    4031, 4031,        # Eager Sellsword x2 (1c 2/1 Rush) - Rush + Stealth = burst damage
+    # === 1-COST (4 cards) - Aggressive openers (gain Stealth) ===
+    3015, 3015, 3015,  # Phantom Striker x3 (1c 2/3 Quick) - Quick + Stealth = safe early damage
+    4031,              # Eager Sellsword (1c 2/1 Rush) - [ABILITY: 0E +1/+0 buff]
 
-    # 2-cost (5 cards) - tempo creatures
+    # === 2-COST (8 cards) - Tempo creatures ===
     3002, 3002, 3002,  # Blood Acolyte x3 (2c 2/3 Quick+Lifesteal) - sustain while invisible
-    4007, 4007,        # Reckless Charger x2 (2c 4/1 Charge+Rush) - 4 damage burst, protected by Stealth!
+    4007, 4007, 4007,  # Reckless Charger x3 (2c 4/1 Charge+Rush) - [ABILITY: 0E +1/+0 buff]
+    4076, 4076,        # Essence Collector x2 (2c 2/2) - [ABILITY: 0E gain 1 essence]
 
-    # 3-cost (8 cards) - midrange threats
-    3017, 3017,        # Blood Seeker x2 (3c 3/3 Lifesteal) - solid body + lifesteal
-    3038, 3038,        # Soul Collector x2 (3c 3/3 Lifesteal) - lifesteal sustain
-    3058, 3058,        # Void Initiate x2 (3c 3/2 Quick) - quick strikes while hidden
-    4036, 4036,        # Contract Killer x2 (3c 3/2 Lethal) - Lethal + Stealth = guaranteed kills
+    # === 3-COST (10 cards) - Midrange threats ===
+    3017, 3017,        # Blood Seeker x2 (3c 3/3 Lifesteal) - solid body
+    3038, 3038,        # Soul Collector x2 (3c 3/3 Lifesteal) - [ABILITY: 1E heal 2 ally]
+    3058, 3058,        # Void Initiate x2 (3c 3/2 Quick) - quick strikes
+    4036, 4036,        # Contract Killer x2 (3c 3/2 Lethal) - [ABILITY: 2E deal 1 damage]
+    3075, 3075,        # Blood Channeler x2 (3c 3/3) - [ABILITY: 2E deal 3 damage]
 
-    # 4-cost (6 cards) - finishers
-    3004, 3004,        # Hemomancer x2 (4c 4/4 Lifesteal) - big lifesteal body
-    3051, 3051,        # Crimson Harvester x2 (4c 3/4 Lifesteal+Quick) - quick lifesteal
-    3006, 3006,        # Ritual Master x2 (4c 4/4 OnPlay: 3dmg+3heal) - removal on a body
+    # === 4-COST (10 cards) - Power plays ===
+    3004, 3004,        # Hemomancer x2 (4c 4/4 Lifesteal) - [ABILITY: 2E deal 2 + heal 2]
+    3051, 3051,        # Crimson Harvester x2 (4c 3/4 Lifesteal+Quick) - [ABILITY: 2E heal 3 ally]
+    3006, 3006,        # Ritual Master x2 (4c 4/4) - [ABILITY: 2E deal 2 damage]
+    3056, 3056,        # Alley Cutthroat x2 (4c 4/3 Quick) - [ABILITY: 2E deal 3 damage]
+    4039, 4039,        # Battle Hardened Veteran x2 (4c 4/4) - [ABILITY: 1E +1/+1 buff]
 
-    # 5-cost (2 cards) - top-end
-    3020,              # Soul Reaver (5c 4/4 Quick+Lifesteal+Regen) - unkillable threat
-    3022,              # Twilight Executioner (6c 6/5 Quick+Lethal) - ultimate finisher
+    # === 5-COST (4 cards) - Heavy hitters ===
+    3020, 3020,        # Soul Reaver x2 (5c 4/4 Quick+Lifesteal+Regen) - [ABILITY: 3E deal 3 + heal 3]
+    3048, 3048,        # Sanguine Lord x2 (5c 4/5 Lifesteal) - [ABILITY: 2E grant Lifesteal]
 
-    # Removal (4 cards) - clear blockers
-    3010, 3010,        # Shadow Strike x2 (1c 2 damage)
-    3008, 3008,        # Soul Drain x2 (2c 3 damage)
+    # === 6-COST (2 cards) - Finishers ===
+    3022, 3022,        # Twilight Executioner x2 (6c 6/5 Quick+Lethal) - ultimate finisher
+
+    # === SPELLS (2 cards) - Removal ===
+    3008, 3008,        # Soul Drain x2 (2c 3 damage) - clear blockers
 ]

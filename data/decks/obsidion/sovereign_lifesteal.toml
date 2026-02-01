@@ -6,31 +6,36 @@ tags = ["commander", "obsidion"]
 commander = 5008
 
 cards = [
-    # High-attack Stealth creatures (heal a lot from granted Lifesteal)
-    3001, 3001, 3001,  # Shadow Blade x3 (2c 3/2 Stealth+Lethal)
-    3005,              # Silent Assassin (4c 4/3 Stealth+Quick)
-    3064,              # Nightblade (4c 4/2 Stealth+Lethal)
-    3052, 3052,        # Shadow Stalker x2 (3c 3/3 Stealth+Quick)
+    # === 1-COST (4 cards) - Fast openers ===
+    3015, 3015, 3015,  # Phantom Striker x3 (1c 2/3 Quick) - Quick + Lifesteal = early healing
+    4031,              # Eager Sellsword (1c 2/1 Rush) - [ABILITY: 0E +1/+0 buff]
 
-    # High-attack Quick creatures (strike first, heal)
-    3058, 3058,        # Void Initiate x2 (3c 3/2 Quick)
-    3056,              # Alley Cutthroat (4c 4/3 Quick)
-    3022,              # Twilight Executioner (6c 6/5 Quick+Lethal)
+    # === 2-COST (8 cards) - High-attack (heal more with Lifesteal) ===
+    3001, 3001, 3001,  # Shadow Blade x3 (2c 3/2 Stealth+Lethal) - [ABILITY: 2E deal 1 damage]
+    4007, 4007, 4007,  # Reckless Charger x3 (2c 4/1 Charge+Rush) - [ABILITY: 0E +1/+0 buff]
+    3002, 3002,        # Blood Acolyte x2 (2c 2/3 Quick+Lifesteal) - native Lifesteal
 
-    # Solid stat creatures (gain Lifesteal value)
-    3023, 3023, 3023,  # Blood Ritualist x3 (3c 3/4)
-    3006, 3006,        # Ritual Master x2 (4c 4/4)
+    # === 3-COST (10 cards) - Midrange threats ===
+    3052, 3052,        # Shadow Stalker x2 (3c 3/3 Stealth+Quick) - [ABILITY: 2E deal 2 damage]
+    3058, 3058,        # Void Initiate x2 (3c 3/2 Quick) - fast damage
+    3023, 3023, 3023,  # Blood Ritualist x3 (3c 3/4) - durable + gains Lifesteal
+    3038,              # Soul Collector (3c 3/3 Lifesteal) - [ABILITY: 1E heal 2 ally]
+    4001, 4001,        # Berserker x2 (3c 3/2 Charge) - [ABILITY: 1E +2/+0 buff]
 
-    # Removal spells
-    3010, 3010,        # Shadow Strike x2
-    3008, 3008,        # Soul Drain x2
-    3025,              # Life Tap
+    # === 4-COST (10 cards) - Power plays ===
+    3006, 3006,        # Ritual Master x2 (4c 4/4) - [ABILITY: 2E deal 2 damage]
+    3056, 3056,        # Alley Cutthroat x2 (4c 4/3 Quick) - [ABILITY: 2E deal 3 damage]
+    3055, 3055,        # Syndicate Collector x2 (4c 3/4 Lifesteal) - [ABILITY: 1E gain 1 essence]
+    3060, 3060,        # Vampiric Knight x2 (4c 3/4 Lifesteal) - [ABILITY: 1E heal 2 player]
+    3005, 3005,        # Silent Assassin x2 (4c 4/3 Stealth+Quick) - [ABILITY: 3E deal 4 damage]
 
-    # Neutral - High attack (heal more with Lifesteal)
-    4007, 4007,        # Reckless Charger x2 (2c 4/1 Charge+Rush)
-    4036,              # Contract Killer (3c 3/2 Lethal)
-    4001,              # Berserker (3c 3/2 Charge)
-    4003, 4003,        # Hired Blade x2 (3c 3/3)
-    4031,              # Eager Sellsword (1c 2/1 Rush)
-    4012,              # Supply Depot
+    # === 5-COST (4 cards) - Heavy hitters ===
+    3048, 3048,        # Sanguine Lord x2 (5c 4/5 Lifesteal) - [ABILITY: 2E grant Lifesteal]
+    3020, 3020,        # Soul Reaver x2 (5c 4/4 Quick+Lifesteal+Regen) - [ABILITY: 3E deal 3 + heal 3]
+
+    # === 6-COST (2 cards) - Finishers ===
+    3022, 3022,        # Twilight Executioner x2 (6c 6/5 Quick+Lethal) - huge Lifesteal swings
+
+    # === SUPPORTS (2 cards) - Value ===
+    4012, 4012,        # Supply Depot x2 (3c) - StartOfTurn: heal 2
 ]

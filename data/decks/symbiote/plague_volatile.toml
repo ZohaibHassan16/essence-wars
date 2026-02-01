@@ -6,41 +6,37 @@ tags = ["commander", "symbiote"]
 commander = 5005
 
 cards = [
-    # Volatile Creatures (deal damage on death)
-    2026, 2026, 2026,  # Festering Plague x3
-    2027,              # Volatile Matriarch
-    2028,              # Plague Bearer
+    # === 1-COST (4 cards) - Cheap explosive bodies ===
+    2018, 2018,        # Unstable Spore x2 (1c 1/1 Volatile) - cheap explosion
+    2006, 2006,        # Parasitic Larva x2 (1c 1/2 Lethal) - trade up
 
-    # Regenerate Creatures (hard to kill, good value)
-    2002,              # Regenerating Ooze
-    2004,              # Grove Guardian
-    2063,              # Thornwood Sapling
+    # === 2-COST (8 cards) - Volatile foundation ===
+    2019, 2019, 2019,  # Volatile Whelp x3 (2c 1/2 Rush+Volatile) - [ABILITY: 0E deal 1 damage]
+    2025, 2025,        # Walking Bomb x2 (2c 2/1 Volatile+Ephemeral) - [ABILITY: 0E deal 2 damage]
+    2048, 2048,        # Blight Spawn x2 (2c 1/2 Volatile) - cheap Volatile body
+    4019,              # Scavenger (2c 2/2) - [ABILITY: 1E draw 1]
 
-    # Rush Creatures (aggressive trades)
-    2003, 2003, 2003,  # Pack Whelp x3
-    2005, 2005,        # Pack Hunter x2
-    2019,              # Volatile Whelp
+    # === 3-COST (10 cards) - Midrange explosions ===
+    2026, 2026, 2026,  # Festering Plague x3 (3c 2/2 Volatile+Lethal) - [ABILITY: 2E deal 1 AoE]
+    2049, 2049,        # Volatile Stalker x2 (3c 2/2 Volatile+Rush) - [ABILITY: 1E grant Rush]
+    2067, 2067,        # Plague Bearer x2 (3c 2/3 Volatile) - more Volatile bodies
+    4036, 4036,        # Contract Killer x2 (3c 3/2 Lethal) - [ABILITY: 2E deal 1 damage]
+    4017,              # Opportunist (3c 3/3) - [ABILITY: 1E deal 2 damage]
 
-    # Token Generators (more death triggers)
-    2038,              # Pounce Hunter
-    2042,              # Feral Striker
-    2049,              # Volatile Stalker
+    # === 4-COST (10 cards) - Volatile power ===
+    2020, 2020,        # Deathburst Lurker x2 (4c 3/3 Volatile) - [ABILITY: 1E grant Volatile]
+    2028, 2028,        # Plague Bearer x2 (4c 2/3 Volatile+Guard) - [ABILITY: 2E grant Volatile]
+    2061, 2061,        # Blight Carrier x2 (4c 3/3 Volatile) - [ABILITY: 1E deal 1 damage]
+    2068, 2068,        # Death Blossom x2 (4c 3/2 Volatile+Lethal) - [ABILITY: 2E deal 2 damage]
+    4060, 4060,        # Bounty Hunter x2 (4c 3/3 Rush) - [ABILITY: 2E deal 3 damage]
 
-    # Lethal Creatures (trade efficiently)
-    2001, 2001,        # Venom Fang x2
-    2006,              # Parasitic Larva
+    # === 5-COST (4 cards) - Heavy explosives ===
+    2008, 2008,        # Alpha Predator x2 (5c 5/5 Rush+Lethal) - [ABILITY: 3E deal 3 damage]
+    4041, 4041,        # Wandering Champion x2 (5c 4/5 Charge) - [ABILITY: 2E deal 2 damage]
 
-    # Board Presence
-    2000, 2000,        # Spore Crawler x2
+    # === 6-COST (2 cards) - Finishers ===
+    2027, 2027,        # Volatile Matriarch x2 (6c 5/5 Volatile) - big explosion!
 
-    # Spells/Creatures
-    2010,              # Acid Spitter
-    2013,              # Consume (spell)
-    2016,              # Frenzied Pack
-
-    # Neutral Support
-    4000,              # Wandering Merchant
-    4001,              # Road Warden
-    4003,              # Hedge Wizard
-    4010,              # Supply Cache
+    # === SUPPORTS (2 cards) - Value ===
+    4012, 4012,        # Supply Depot x2 (3c) - StartOfTurn: heal 2
 ]

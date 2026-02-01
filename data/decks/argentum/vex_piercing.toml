@@ -1,38 +1,41 @@
 id = "vex_piercing"
 name = "Siege Marshal Vex"
-description = "No defense can stand against the Combine's siege engines. Your creatures gain +1 Attack, turning even small units into lethal threats that cleave through guards."
+description = "No defense can stand against the Combine's siege engines. Your creatures gain +2 Attack, turning even small units into lethal threats that cleave through guards."
 playstyle = "Aggro"
 tags = ["commander", "argentum"]
 commander = 5002
 
 cards = [
-    # 1-cost creatures (+1 Attack makes them efficient)
-    4031, 4031, 4031,  # Eager Sellsword x3 (1c 2/1 Rush → 3/1 Rush!)
+    # === 1-COST (6 cards) - Explosive openers ===
+    4031, 4031, 4031,  # Eager Sellsword x3 (1c 2/1 Rush) → 4/1 Rush! - [ABILITY: 0E +1/+0 buff]
+    1075, 1075, 1075,  # Brass Scout x3 (1c 1/2) → 3/2 - efficient early attacker
 
-    # 2-cost creatures (sweet spot for aggro)
-    4007, 4007, 4007,  # Reckless Charger x3 (2c 4/1 Charge+Rush → 5/1!)
-    1000, 1000,        # Brass Sentinel x2 (2c 2/5 Guard → 3/5)
-    4000, 4000,        # Bounty Hunter x2 (2c 2/2 Ranged → 3/2)
+    # === 2-COST (8 cards) - Aggressive core ===
+    4007, 4007, 4007,  # Reckless Charger x3 (2c 4/1 Charge+Rush) → 6/1! - [ABILITY: 0E +1/+0 buff]
+    1000, 1000,        # Brass Sentinel x2 (2c 2/5 Guard) → 4/5 - defensive option
+    4000, 4000,        # Bounty Hunter x2 (2c 2/2 Ranged) → 4/2 Ranged
+    4076,              # Essence Collector (2c 2/2) → 4/2 - [ABILITY: 0E gain 1 essence]
 
-    # 3-cost Piercing creatures (core damage dealers)
-    1001, 1001, 1001,  # Steam Knight x3 (3c 3/4 Piercing → 4/4)
-    1005, 1005, 1005,  # Pressure Trooper x3 (3c 3/2 Piercing → 4/2)
-    4001, 4001,        # Berserker x2 (3c 3/2 Charge → 4/2)
+    # === 3-COST (10 cards) - Piercing damage ===
+    1001, 1001, 1001,  # Steam Knight x3 (3c 3/4 Piercing) → 5/4 Piercing - [ABILITY: 1E deal 2 damage]
+    1005, 1005, 1005,  # Pressure Trooper x3 (3c 3/2 Piercing) → 5/2 Piercing
+    4001, 4001,        # Berserker x2 (3c 3/2 Charge) → 5/2 Charge - [ABILITY: 1E +2/+0 buff]
+    4036, 4036,        # Contract Killer x2 (3c 3/2 Lethal) → 5/2 Lethal - [ABILITY: 2E deal 2 damage]
 
-    # 4-cost creatures
-    1067, 1067,        # Siege Cannon x2 (4c 3/2 Piercing+Ranged → 4/2)
-    1002,              # Cogwork Defender (3c 3/5 Guard → 4/5)
+    # === 4-COST (8 cards) - Midgame threats ===
+    1067, 1067, 1067,  # Siege Cannon x3 (4c 3/2 Piercing+Ranged) → 5/2 - [ABILITY: 1E deal 2 damage]
+    4004, 4004,        # War Veteran x2 (4c 4/4 Charge) → 6/4 Charge - [ABILITY: 1E grant Charge]
+    4039, 4039,        # Battle Hardened Veteran x2 (4c 4/4) → 6/4 - [ABILITY: 1E +1/+1 buff]
+    4060,              # Bounty Hunter x1 (4c 3/3 Rush) → 5/3 Rush - [ABILITY: 2E deal 3 damage]
 
-    # 5-6 cost finishers
-    1068,              # Battering Ram (5c 5/3 Piercing → 6/3)
-    1032,              # Siege Breaker (5c 4/4 Piercing → 5/4)
-    1069,              # Clockwork Dragon (6c 5/5 Piercing+Charge → 6/5)
-    4005,              # Siege Giant (6c 6/5 Piercing → 7/5)
+    # === 5-COST (4 cards) - Closers ===
+    1032, 1032,        # Siege Breaker x2 (5c 4/4 Piercing) → 6/4 Piercing - [ABILITY: 2E deal 3 damage]
+    1068, 1068,        # Battering Ram x2 (5c 5/3 Piercing) → 7/3 Piercing - [ABILITY: 2E deal 4 damage]
 
-    # Combat spells
-    1070, 1070,        # Precision Strike x2 (2c 3dmg)
-    1074,              # Breaching Charge (3c 4dmg to Guard)
+    # === 6-COST (2 cards) - Finishers ===
+    1069,              # Clockwork Dragon (6c 5/5 Piercing+Charge) → 7/5 - [ABILITY: 3E deal 4 damage]
+    4005,              # Siege Giant (6c 6/5 Piercing) → 8/5 Piercing - [ABILITY: 2E deal 3 damage]
 
-    # Support
-    4012,              # Supply Depot (3c heal)
+    # === SPELLS (2 cards) - Removal ===
+    1070, 1070,        # Precision Strike x2 (2c 3 damage) - clear blockers
 ]
