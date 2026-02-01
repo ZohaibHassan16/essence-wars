@@ -57,6 +57,38 @@
 
   const isHidden = $derived(card.cardId === 0);
   const showPreview = $derived(isHovered && !isHidden && !isSelected);
+
+  // Track whether we've fallen back to generic art
+  let usesFallbackArt = $state(false);
+
+  // Reset fallback state when card changes
+  $effect(() => {
+    if (card) {
+      usesFallbackArt = false;
+    }
+  });
+
+  // Generate fallback art path based on faction
+  const fallbackArtPath = $derived(
+    card ? `tokens/generic/${card.faction || 'neutral'}.webp` : null
+  );
+
+  // Current art path to use (primary or fallback)
+  const currentArtPath = $derived(
+    usesFallbackArt ? fallbackArtPath : card?.artPath
+  );
+
+  // Handle image load error - try fallback, then hide
+  function handleImageError(e: Event) {
+    const img = e.currentTarget as HTMLImageElement;
+    if (!usesFallbackArt && fallbackArtPath) {
+      // First failure - try the fallback
+      usesFallbackArt = true;
+    } else {
+      // Fallback also failed - hide the image
+      img.style.display = 'none';
+    }
+  }
 </script>
 
 <div class="relative">
@@ -107,16 +139,16 @@
         <div class="absolute bottom-3 right-3 w-3 h-3 border-r border-b border-amber-700/30"></div>
       </div>
     {:else}
-      <!-- Card art background -->
-      {#if card.artPath}
+      <!-- Card art background (with fallback support) -->
+      {#if currentArtPath}
         <div class="absolute inset-0 overflow-hidden rounded-md">
           <img
-            src="/{card.artPath}"
+            src="/{currentArtPath}"
             alt=""
             class="w-full h-full object-cover object-top opacity-60"
             loading="lazy"
             decoding="async"
-            onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            onerror={handleImageError}
           />
           <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/50"></div>
         </div>

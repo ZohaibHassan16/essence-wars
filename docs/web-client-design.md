@@ -788,6 +788,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
     - Instruct Chris on which screenshots he needs to make to document it for claude and/or descriptions on each Step
     - Improve the UI/UX, glowing highlight instead of darkening?
 - [ ] Players can play a game without having to read any rulebook
+- [ ] Create Tutorial for Deck Builder (short)
 
 ### Phase 10: Art Pass
 

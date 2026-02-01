@@ -5,6 +5,7 @@
   import BattlefieldRow from "./board/BattlefieldRow.svelte";
   import FanningHand from "./board/FanningHand.svelte";
   import CommanderCardLarge from "./board/CommanderCardLarge.svelte";
+  import EssenceBar from "./board/EssenceBar.svelte";
   import CollapsibleSidebar from "./board/CollapsibleSidebar.svelte";
   import ActionLog from "./ActionLog.svelte";
   import HintPanel from "./HintPanel.svelte";
@@ -202,18 +203,26 @@
        style="width: var(--commander-card-width, 250px);">
     <!-- Opponent Commander (top) -->
     <div class="flex flex-col items-center overflow-visible">
-      <CommanderCardLarge
-        commander={gameState?.opponent.commander ?? null}
-        life={gameState?.opponent.life ?? 0}
-        maxLife={gameState?.opponent.maxLife ?? 30}
-        essence={gameState?.opponent.essence ?? 0}
-        maxEssence={gameState?.opponent.maxEssence ?? 0}
-        isActive={!isPlayerTurn}
-        isPlayer={false}
-        tutorialId="opponent-commander"
-        isValidFaceTarget={gameStore.canTargetFace}
-        onFaceTargetClick={() => gameStore.executeAbilityOnFace()}
-      />
+      <div class="flex items-stretch gap-2">
+        <!-- Opponent Essence Bar -->
+        <EssenceBar
+          current={gameState?.opponent.essence ?? 0}
+          max={gameState?.opponent.maxEssence ?? 0}
+          isPlayer={false}
+        />
+        <CommanderCardLarge
+          commander={gameState?.opponent.commander ?? null}
+          life={gameState?.opponent.life ?? 0}
+          maxLife={gameState?.opponent.maxLife ?? 30}
+          essence={gameState?.opponent.essence ?? 0}
+          maxEssence={gameState?.opponent.maxEssence ?? 0}
+          isActive={!isPlayerTurn}
+          isPlayer={false}
+          tutorialId="opponent-commander"
+          isValidFaceTarget={gameStore.canTargetFace}
+          onFaceTargetClick={() => gameStore.executeAbilityOnFace()}
+        />
+      </div>
       <!-- Opponent compact stats below commander -->
       <div class="mt-2 flex items-center gap-3 text-xs text-ui-text-dim">
         <span title="Cards in hand">
@@ -248,19 +257,27 @@
           AP: {gameState?.player.actionPoints ?? 0}
         </span>
       </div>
-      <CommanderCardLarge
-        commander={gameState?.player.commander ?? null}
-        life={gameState?.player.life ?? 0}
-        maxLife={gameState?.player.maxLife ?? 30}
-        essence={gameState?.player.essence ?? 0}
-        maxEssence={gameState?.player.maxEssence ?? 0}
-        isActive={isPlayerTurn}
-        isPlayer={true}
-        insightAvailable={gameStore.insightAvailable && isPlayerTurn}
-        insightIndicator={showInsightIndicator() && !gameStore.insightAvailable}
-        onInsightClick={() => gameStore.applyCommanderInsight()}
-        tutorialId="player-commander"
-      />
+      <div class="flex items-stretch gap-2">
+        <!-- Player Essence Bar -->
+        <EssenceBar
+          current={gameState?.player.essence ?? 0}
+          max={gameState?.player.maxEssence ?? 0}
+          isPlayer={true}
+        />
+        <CommanderCardLarge
+          commander={gameState?.player.commander ?? null}
+          life={gameState?.player.life ?? 0}
+          maxLife={gameState?.player.maxLife ?? 30}
+          essence={gameState?.player.essence ?? 0}
+          maxEssence={gameState?.player.maxEssence ?? 0}
+          isActive={isPlayerTurn}
+          isPlayer={true}
+          insightAvailable={gameStore.insightAvailable && isPlayerTurn}
+          insightIndicator={showInsightIndicator() && !gameStore.insightAvailable}
+          onInsightClick={() => gameStore.applyCommanderInsight()}
+          tutorialId="player-commander"
+        />
+      </div>
     </div>
   </div>
 
