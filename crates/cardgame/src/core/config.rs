@@ -92,8 +92,8 @@ pub mod actions {
     /// Maximum hand positions for PlayCard
     pub const MAX_HAND_POSITIONS: usize = 10;
 
-    /// Maximum ability index per creature
-    pub const MAX_ABILITIES: usize = 6;
+    /// Maximum ability index per creature (reduced from 6 to fit Self_ target in action space)
+    pub const MAX_ABILITIES: usize = 5;
 }
 
 /// Tensor constants for neural network interface

@@ -8,11 +8,23 @@
 use crate::cards::{CardDatabase, CardDefinition};
 use crate::decks::{DeckDefinition, DeckRegistry};
 
-// Embed card YAML files at compile time
-const ARGENTUM_CARDS_YAML: &str = include_str!("../../../data/cards/core_set/argentum.yaml");
-const SYMBIOTE_CARDS_YAML: &str = include_str!("../../../data/cards/core_set/symbiote.yaml");
-const OBSIDION_CARDS_YAML: &str = include_str!("../../../data/cards/core_set/obsidion.yaml");
-const NEUTRAL_CARDS_YAML: &str = include_str!("../../../data/cards/core_set/neutral.yaml");
+// Embed card YAML files at compile time (organized by faction and card type)
+// Argentum
+const ARGENTUM_CREATURES_YAML: &str = include_str!("../../../data/cards/core_set/argentum/creatures.yaml");
+const ARGENTUM_SPELLS_YAML: &str = include_str!("../../../data/cards/core_set/argentum/spells.yaml");
+const ARGENTUM_SUPPORTS_YAML: &str = include_str!("../../../data/cards/core_set/argentum/supports.yaml");
+// Symbiote
+const SYMBIOTE_CREATURES_YAML: &str = include_str!("../../../data/cards/core_set/symbiote/creatures.yaml");
+const SYMBIOTE_SPELLS_YAML: &str = include_str!("../../../data/cards/core_set/symbiote/spells.yaml");
+const SYMBIOTE_SUPPORTS_YAML: &str = include_str!("../../../data/cards/core_set/symbiote/supports.yaml");
+// Obsidion
+const OBSIDION_CREATURES_YAML: &str = include_str!("../../../data/cards/core_set/obsidion/creatures.yaml");
+const OBSIDION_SPELLS_YAML: &str = include_str!("../../../data/cards/core_set/obsidion/spells.yaml");
+const OBSIDION_SUPPORTS_YAML: &str = include_str!("../../../data/cards/core_set/obsidion/supports.yaml");
+// Neutral
+const NEUTRAL_CREATURES_YAML: &str = include_str!("../../../data/cards/core_set/neutral/creatures.yaml");
+const NEUTRAL_SPELLS_YAML: &str = include_str!("../../../data/cards/core_set/neutral/spells.yaml");
+const NEUTRAL_SUPPORTS_YAML: &str = include_str!("../../../data/cards/core_set/neutral/supports.yaml");
 
 // Embed deck TOML files at compile time
 // Argentum decks
@@ -55,22 +67,33 @@ struct FactionCards {
 /// assert!(card_db.len() >= 300);
 /// ```
 pub fn load_embedded_cards() -> Result<CardDatabase, String> {
-    let mut all_cards: Vec<CardDefinition> = Vec::with_capacity(300);
+    let mut all_cards: Vec<CardDefinition> = Vec::with_capacity(320);
 
-    // Parse each faction's cards (YAML files have { name, cards: [...] } structure)
-    let argentum: FactionCards = serde_yaml::from_str(ARGENTUM_CARDS_YAML)
-        .map_err(|e| format!("Failed to parse Argentum cards: {}", e))?;
-    let symbiote: FactionCards = serde_yaml::from_str(SYMBIOTE_CARDS_YAML)
-        .map_err(|e| format!("Failed to parse Symbiote cards: {}", e))?;
-    let obsidion: FactionCards = serde_yaml::from_str(OBSIDION_CARDS_YAML)
-        .map_err(|e| format!("Failed to parse Obsidion cards: {}", e))?;
-    let neutral: FactionCards = serde_yaml::from_str(NEUTRAL_CARDS_YAML)
-        .map_err(|e| format!("Failed to parse Neutral cards: {}", e))?;
+    // All embedded card YAML files (organized by faction and card type)
+    let card_yamls: &[(&str, &str)] = &[
+        // Argentum
+        ("Argentum creatures", ARGENTUM_CREATURES_YAML),
+        ("Argentum spells", ARGENTUM_SPELLS_YAML),
+        ("Argentum supports", ARGENTUM_SUPPORTS_YAML),
+        // Symbiote
+        ("Symbiote creatures", SYMBIOTE_CREATURES_YAML),
+        ("Symbiote spells", SYMBIOTE_SPELLS_YAML),
+        ("Symbiote supports", SYMBIOTE_SUPPORTS_YAML),
+        // Obsidion
+        ("Obsidion creatures", OBSIDION_CREATURES_YAML),
+        ("Obsidion spells", OBSIDION_SPELLS_YAML),
+        ("Obsidion supports", OBSIDION_SUPPORTS_YAML),
+        // Neutral
+        ("Neutral creatures", NEUTRAL_CREATURES_YAML),
+        ("Neutral spells", NEUTRAL_SPELLS_YAML),
+        ("Neutral supports", NEUTRAL_SUPPORTS_YAML),
+    ];
 
-    all_cards.extend(argentum.cards);
-    all_cards.extend(symbiote.cards);
-    all_cards.extend(obsidion.cards);
-    all_cards.extend(neutral.cards);
+    for (name, yaml_str) in card_yamls {
+        let faction_cards: FactionCards = serde_yaml::from_str(yaml_str)
+            .map_err(|e| format!("Failed to parse {}: {}", name, e))?;
+        all_cards.extend(faction_cards.cards);
+    }
 
     Ok(CardDatabase::new(all_cards))
 }

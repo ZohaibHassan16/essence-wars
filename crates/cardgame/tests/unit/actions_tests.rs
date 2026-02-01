@@ -88,11 +88,11 @@ fn test_attack_indices() {
 
 #[test]
 fn test_use_ability_indices() {
-    // UseAbility indices should be 75-254
-    // Using target indices 0-5 (NoTarget and EnemySlot only, not Self_)
+    // UseAbility indices should be 75-249
+    // 5 slots × 5 abilities × 7 targets = 175 combinations
     for slot in 0..5 {
-        for ability in 0..6 {
-            for target in 0..6 {
+        for ability in 0..5 {
+            for target in 0..7 {
                 let target_enum = Target::from_index(target).unwrap();
                 let action = Action::UseAbility {
                     slot: Slot(slot),
@@ -101,14 +101,14 @@ fn test_use_ability_indices() {
                 };
                 let index = action.to_index();
                 assert!(
-                    index >= 75 && index <= 254,
+                    index >= 75 && index <= 249,
                     "UseAbility index {} out of range for slot={}, ability={}, target={}",
                     index,
                     slot,
                     ability,
                     target
                 );
-                assert_eq!(index, 75 + slot * 36 + ability * 6 + target);
+                assert_eq!(index, 75 + slot * 35 + ability * 7 + target);
             }
         }
     }
@@ -121,13 +121,14 @@ fn test_use_ability_indices() {
     };
     assert_eq!(first.to_index(), 75);
 
-    // Last valid UseAbility: slot=4, ability=5, target=5 (EnemySlot(4))
+    // Last valid UseAbility: slot=4, ability=4, target=6 (Self_)
+    // Index = 75 + 4*35 + 4*7 + 6 = 75 + 140 + 28 + 6 = 249
     let last = Action::UseAbility {
         slot: Slot(4),
-        ability_index: 5,
-        target: Target::EnemySlot(Slot(4)),
+        ability_index: 4,
+        target: Target::Self_,
     };
-    assert_eq!(last.to_index(), 254);
+    assert_eq!(last.to_index(), 249);
 }
 
 #[test]
@@ -168,17 +169,10 @@ fn test_attack_round_trip() {
 
 #[test]
 fn test_use_ability_round_trip() {
-    // Only test targets 0-5 (NoTarget and EnemySlot) which fit in the index range.
-    // Note: The combination (slot=4, ability=5, target=5) would produce index 254,
-    // which is now assigned to CommanderInsight. This combination is skipped since
-    // no creature in the game has 6 abilities anyway.
+    // Test all valid UseAbility combinations (5 slots × 5 abilities × 7 targets)
     for slot in 0..5 {
-        for ability in 0..6 {
-            for target_idx in 0..6 {
-                // Skip the edge case that would collide with CommanderInsight
-                if slot == 4 && ability == 5 && target_idx == 5 {
-                    continue;
-                }
+        for ability in 0..5 {
+            for target_idx in 0..7 {
                 let target = Target::from_index(target_idx).unwrap();
                 let original = Action::UseAbility {
                     slot: Slot(slot),
@@ -243,8 +237,8 @@ fn test_index_ranges_complete() {
         }
     }
 
-    // UseAbility: 75-253 (179 indices = 5 slots * 6 abilities * 6 targets, minus 1 for CommanderInsight)
-    for i in 75..=253 {
+    // UseAbility: 75-249 (175 indices = 5 slots * 5 abilities * 7 targets)
+    for i in 75..=249 {
         assert!(
             Action::from_index(i).is_some(),
             "UseAbility index {} should be valid",
@@ -254,6 +248,15 @@ fn test_index_ranges_complete() {
             Action::UseAbility { .. } => {}
             _ => panic!("Index {} should be UseAbility", i),
         }
+    }
+
+    // Unused indices: 250-253 (gap in action space)
+    for i in 250..=253 {
+        assert!(
+            Action::from_index(i).is_none(),
+            "Index {} should be unused",
+            i
+        );
     }
 
     // CommanderInsight: 254
@@ -273,8 +276,8 @@ fn test_index_ranges_complete() {
 
 #[test]
 fn test_invalid_indices_out_of_range() {
-    // All indices 0-255 are valid, so test that from_index doesn't panic
-    // and returns Some for all valid indices
+    // Most indices 0-255 are valid, some are unused (250-253)
+    // Test that from_index doesn't panic and returns correct count
     let mut valid_count = 0;
     for i in 0u8..=255 {
         if Action::from_index(i).is_some() {
@@ -282,6 +285,7 @@ fn test_invalid_indices_out_of_range() {
         }
     }
 
-    // Expected: 50 + 25 + 180 + 1 = 256
-    assert_eq!(valid_count, 256);
+    // Expected: 50 (PlayCard) + 25 (Attack) + 175 (UseAbility) + 1 (CommanderInsight) + 1 (EndTurn) = 252
+    // Indices 250-253 are unused
+    assert_eq!(valid_count, 252);
 }

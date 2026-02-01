@@ -104,26 +104,25 @@ impl Action {
     const ATTACK_START: u8 = 50;
     const ATTACK_END: u8 = 74;
     const USE_ABILITY_START: u8 = 75;
-    const USE_ABILITY_END: u8 = 253;
+    const USE_ABILITY_END: u8 = 249; // 75 + (5 slots × 5 abilities × 7 targets) - 1 = 249
     const COMMANDER_INSIGHT_INDEX: u8 = 254;
     const END_TURN_INDEX: u8 = 255;
 
     // Limits
     const NUM_SLOTS: u8 = 5;
-    const MAX_ABILITIES: u8 = 6;
-    const NUM_TARGETS: u8 = 6; // 0 (no target) + 5 (enemy slots) - formula uses ability * 6 + target
+    const MAX_ABILITIES: u8 = 5; // Reduced from 6 to fit Self_ target (index 6) in action space
+    const NUM_TARGETS: u8 = 7; // 0=NoTarget, 1-5=EnemySlot(0-4), 6=Self_
 
     /// Convert action to neural network output index (0-255)
     ///
     /// Index mapping:
     /// - PlayCard: hand_idx * 5 + slot (0-49)
     /// - Attack: 50 + attacker * 5 + defender (50-74)
-    /// - UseAbility: 75 + slot * 36 + ability * 6 + target (75-253)
+    /// - UseAbility: 75 + slot * 35 + ability * 7 + target (75-249)
     /// - CommanderInsight: 254
     /// - EndTurn: 255
     ///
-    /// Note: For UseAbility, target indices 0-5 are used (NoTarget and EnemySlot only).
-    /// Self_ target (index 6) would exceed the index range and should not be used.
+    /// Target indices: 0=NoTarget, 1-5=EnemySlot(0-4), 6=Self_
     pub fn to_index(&self) -> u8 {
         match self {
             Action::PlayCard { hand_index, slot } => hand_index * Self::NUM_SLOTS + slot.0,
@@ -190,6 +189,8 @@ impl Action {
             }
             Self::COMMANDER_INSIGHT_INDEX => Some(Action::CommanderInsight),
             Self::END_TURN_INDEX => Some(Action::EndTurn),
+            // Indices 250-253 are unused (gap between USE_ABILITY_END and COMMANDER_INSIGHT)
+            _ => None,
         }
     }
 }

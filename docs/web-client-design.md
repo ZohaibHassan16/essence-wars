@@ -793,6 +793,19 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 ### Phase 10: Art Pass
 
 **Artwork**:
+- Generate artwork for the missing cards:
+
+| Faction  │       Card        │
+|---       |---                |
+| Argentum │ Field Surgeon     │ 
+| Argentum │ Shield Technician │
+│ Symbiote │ Brood Tender      │
+│ Symbiote │ Spore Shaman      │
+│ Obsidion │ Blood Channeler   │
+│ Obsidion │ Soul Leech        │
+│ Neutral  │ Traveling Scholar │
+│ Neutral  │ Essence Collector │
+
 - Generate better backgrounds that fit the art direction of the game, replace existing ones (Collages of Commanders, Scenes, Key Locations? Worldmap?)
 - Discuss and overhaul all Menus and Boards to be polished and fitting our art direction
 - Create more Banners, Flags, Symbols, Frames etc to give it all more flair and style

@@ -296,8 +296,8 @@ fn test_load_from_directory_empty_directory() {
 
 #[test]
 fn test_load_from_directory_file_not_directory() {
-    // Use a known file that exists
-    let file_path = cardgame::data_dir().join("cards/core_set/argentum.yaml");
+    // Use a known file that exists (now in subfolder)
+    let file_path = cardgame::data_dir().join("cards/core_set/argentum/creatures.yaml");
     let result = CardDatabase::load_from_directory(&file_path);
     assert!(result.is_err());
     let err = result.unwrap_err();

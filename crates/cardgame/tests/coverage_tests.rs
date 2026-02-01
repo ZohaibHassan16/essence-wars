@@ -700,10 +700,12 @@ fn test_action_index_roundtrip_exhaustive() {
     // We expect:
     // - 50 PlayCard (0-49)
     // - 25 Attack (50-74)
-    // - Some UseAbility (75-254, but only slot 0-4 are valid = 5 * 36 = 180)
+    // - 175 UseAbility (75-249: 5 slots × 5 abilities × 7 targets)
+    // - 1 CommanderInsight (254)
     // - 1 EndTurn (255)
-    // Total valid: 50 + 25 + 180 + 1 = 256 (all should be valid by design)
-    assert_eq!(valid_count, 256, "All 256 indices should be valid actions");
+    // - 4 unused indices (250-253, gap in action space)
+    // Total valid: 50 + 25 + 175 + 1 + 1 = 252
+    assert_eq!(valid_count, 252, "Expected 252 valid action indices (4 unused in 250-253 range)");
 }
 
 #[test]

@@ -61,17 +61,17 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
         deck1_id: "broodmother_pack",
         deck2_id: "broodmother_pack",
         expected_winner: Some(0), // P1 wins
-        expected_turns: 11,       // Updated for CommanderInsight action priority
-        expected_action_count: 41,
+        expected_turns: 13,       // Updated for activated abilities
+        expected_action_count: 51,
     },
     GoldenTestCase {
         name: "greedy_mirror_seed_600",
         seed: 600,
         deck1_id: "broodmother_pack",
         deck2_id: "broodmother_pack",
-        expected_winner: Some(0), // P1 wins (updated for v0.8.0 token abilities)
-        expected_turns: 17,       // Updated for v0.8.0 token abilities
-        expected_action_count: 86,
+        expected_winner: Some(0), // P1 wins
+        expected_turns: 19,       // Updated for activated abilities
+        expected_action_count: 87,
     },
 ];
 
@@ -403,7 +403,7 @@ fn test_regression_all_games_valid() {
                 }
                 Action::UseAbility { slot, ability_index, .. } => {
                     assert!(slot.0 < 5, "Test '{}': Action {}: Invalid ability slot", test.name, i);
-                    assert!(*ability_index < 6, "Test '{}': Action {}: Invalid ability index", test.name, i);
+                    assert!(*ability_index < 5, "Test '{}': Action {}: Invalid ability index", test.name, i);
                 }
                 Action::CommanderInsight => {}
                 Action::EndTurn => {}
