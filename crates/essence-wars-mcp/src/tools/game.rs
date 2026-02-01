@@ -3,8 +3,10 @@
 use crate::ascii;
 use crate::session::SessionManager;
 use crate::tools::ui_sync::try_push_state_to_ui;
+use cardgame::core::cards::EffectDefinition;
+use cardgame::core::effects::{TargetingRule, Trigger};
 use cardgame::core::state::GameResult;
-use cardgame::{Action, Target};
+use cardgame::{Action, CardType, Target};
 
 /// Start a new game session.
 pub fn start_game(
@@ -403,12 +405,40 @@ fn format_action_description(
 
             format!("{} attacks {}", attacker_name, defender_name)
         }
-        Action::UseAbility { slot, .. } => {
-            let creature_name = player
-                .get_creature(*slot)
-                .and_then(|c| card_db.get(c.card_id))
-                .map(|c| c.name.as_str())
-                .unwrap_or("creature");
+        Action::UseAbility {
+            slot,
+            ability_index,
+            target,
+        } => {
+            let creature = player.get_creature(*slot);
+            let card = creature.and_then(|c| card_db.get(c.card_id));
+
+            let creature_name = card.map(|c| c.name.as_str()).unwrap_or("creature");
+
+            // Get ability details if available
+            if let Some(card) = card {
+                if let CardType::Creature { abilities, .. } = &card.card_type {
+                    if let Some(ability) = abilities.get(*ability_index as usize) {
+                        let cost_str = if ability.trigger == Trigger::Activated {
+                            if ability.essence_cost > 0 {
+                                format!(" ({} essence)", ability.essence_cost)
+                            } else {
+                                " (free)".to_string()
+                            }
+                        } else {
+                            String::new()
+                        };
+
+                        let effect_str = format_effects_brief(&ability.effects);
+                        let target_str = format_ability_target(target, &ability.targeting);
+
+                        return format!(
+                            "{}{}: {}{}",
+                            creature_name, cost_str, effect_str, target_str
+                        );
+                    }
+                }
+            }
 
             format!("Use {}'s ability", creature_name)
         }
@@ -427,5 +457,51 @@ fn format_game_result(result: GameResult, player_id: cardgame::PlayerId) -> Stri
             }
         }
         GameResult::Draw => "**DRAW** - Turn limit reached with equal life.".to_string(),
+    }
+}
+
+/// Format effects for brief display in action list.
+fn format_effects_brief(effects: &[EffectDefinition]) -> String {
+    effects
+        .iter()
+        .map(|e| match e {
+            EffectDefinition::Damage { amount, .. } => format!("Deal {} dmg", amount),
+            EffectDefinition::Heal { amount, .. } => format!("Heal {}", amount),
+            EffectDefinition::Draw { count } => {
+                if *count == 1 {
+                    "Draw".to_string()
+                } else {
+                    format!("Draw {}", count)
+                }
+            }
+            EffectDefinition::BuffStats { attack, health, .. } => {
+                format!("{:+}/{:+}", attack, health)
+            }
+            EffectDefinition::Destroy { .. } => "Destroy".to_string(),
+            EffectDefinition::GrantKeyword { keyword, .. } => format!("Grant {}", keyword),
+            EffectDefinition::RemoveKeyword { keyword, .. } => format!("Remove {}", keyword),
+            EffectDefinition::Silence { .. } => "Silence".to_string(),
+            EffectDefinition::GainEssence { amount } => format!("+{} essence", amount),
+            EffectDefinition::RefreshCreature => "Refresh".to_string(),
+            EffectDefinition::Bounce { .. } => "Bounce".to_string(),
+            EffectDefinition::SummonToken { token } => {
+                format!("Summon {}/{}", token.attack, token.health)
+            }
+            EffectDefinition::Transform { into } => format!("Transform {}/{}", into.attack, into.health),
+            EffectDefinition::Copy => "Copy".to_string(),
+        })
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
+/// Format ability target for display.
+fn format_ability_target(target: &Target, targeting: &TargetingRule) -> String {
+    match (target, targeting) {
+        (Target::NoTarget, _) => String::new(),
+        (Target::Self_, _) => " on self".to_string(),
+        (Target::EnemySlot(slot), TargetingRule::TargetEnemyCreature) => {
+            format!(" on enemy slot {}", slot.0)
+        }
+        (Target::EnemySlot(slot), _) => format!(" on slot {}", slot.0),
     }
 }
