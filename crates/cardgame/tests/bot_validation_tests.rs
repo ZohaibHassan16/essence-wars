@@ -276,6 +276,7 @@ fn test_greedy_vs_random_100_games() {
 }
 
 #[test]
+#[ignore = "tier_quick"] // ~55s: 20 AlphaBeta depth-4 games
 fn test_alphabeta_vs_greedy_20_games() {
     let card_db = load_card_db();
     let deck = arena_test_deck();

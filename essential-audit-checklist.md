@@ -1,5 +1,45 @@
 # Essential Pre-Audit Checklist
 
+## 🧟‍♀️ Phase 0: The Dead and Unused Code Search
+
+*Before auditing behavior, clean up the corpses! Dead code increases complexity, confuses reviewers, and hides real bugs.*
+
+* [ ] **The "Cargo Graveyard" (Unused Dependencies):**
+  * Run: `cargo +nightly udeps --all-targets` (install with `cargo install cargo-udeps`)
+  * **Goal:** Remove any crates listed as "unused" from your `Cargo.toml` files.
+  * *Why?* Each dependency adds compile time and potential security vulnerabilities.
+  * **Quick Check:** Look at your `Cargo.toml` workspace - do you still use everything in `[dependencies]`?
+
+
+* [ ] **The "Rust Zombie Hunter" (Dead Code Warnings):**
+  * Run: `cargo build --all-targets 2>&1 | grep "warning: .*never used"`
+  * **Better:** Run `cargo clippy -- -W dead_code` to get more aggressive detection.
+  * **Goal:** Either delete unused functions/structs or add `#[allow(dead_code)]` with a comment explaining *why* you're keeping them (e.g., "Planned for 0.7.0").
+
+
+* [ ] **The "TODO Archaeology":**
+  * Search: `rg "TODO|FIXME|XXX|HACK" --type rust --type python`
+  * **Goal:** Count them. If you have 200+ TODOs, some are ancient and outdated.
+  * *Action:* Delete TODOs that are no longer relevant, or convert critical ones into GitHub Issues.
+
+
+* [ ] **The "Commented-Out Code" Scan:**
+  * Search for blocks of commented code: `rg "^\s*// [a-z_]+\(" crates/ -A 2`
+  * **Goal:** If it's commented out, either delete it (git remembers!) or move it to a feature flag.
+  * *Why?* Commented code rots faster than documentation.
+
+
+* [ ] **The "Python Import Cleaner":**
+  * Run: `uv run autoflake --check --remove-all-unused-imports --recursive python/`
+  * **Fix Mode:** `uv run autoflake --in-place --remove-all-unused-imports --recursive python/`
+  * **Goal:** Your 20k lines of Python likely have leftover imports from refactoring.
+
+
+* [ ] **The "Unreachable Code" Check:**
+  * Clippy can detect this: `cargo clippy -- -W unreachable_code`
+  * **Goal:** Find any `return` statements followed by code that can never execute.
+
+
 ## 🕵️‍♀️ Phase 1: The "Butterfly Effect" Test (Determinism)
 
 *Most critical for Strategy Games & Replay Systems.*
