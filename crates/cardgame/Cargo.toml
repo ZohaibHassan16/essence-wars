@@ -78,6 +78,11 @@ path = "src/bin/validate.rs"
 required-features = ["parallel"]
 
 [[bin]]
+name = "benchmark"
+path = "src/bin/benchmark.rs"
+required-features = ["parallel"]
+
+[[bin]]
 name = "diagnose"
 path = "src/bin/diagnose.rs"
 required-features = ["parallel"]

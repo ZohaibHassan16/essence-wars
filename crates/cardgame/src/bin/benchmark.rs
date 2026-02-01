@@ -1,14 +1,15 @@
-//! Quick Balance Validation CLI - Fast sanity check for game balance.
+//! Thorough Balance Benchmark CLI - Statistical analysis with strong bots.
 //!
-//! Tests all deck combinations across faction pairs using Greedy bot for speed.
-//! Designed for quick validation after card changes, CI pipelines, and sanity checks.
+//! Tests all deck combinations across faction pairs using Alpha-Beta or MCTS bots.
+//! Designed for overnight runs, pre-release validation, and statistical rigor.
 //!
-//! For thorough statistical analysis with stronger bots, use `benchmark` instead.
+//! For quick sanity checks, use `validate` instead (Greedy bot, ~1 sec).
 //!
 //! Usage:
-//!   cargo run --release --bin validate                         # Quick check (~1 sec)
-//!   cargo run --release --bin validate -- --games-per-matchup 50  # More games for confidence
-//!   cargo run --release --bin validate -- --progress           # Show progress
+//!   cargo run --release --bin benchmark -- --progress           # Default: Alpha-Beta depth 6
+//!   cargo run --release --bin benchmark -- --bot mcts --progress  # Use MCTS instead
+//!   cargo run --release --bin benchmark -- --ab-depth 8 --progress  # Deeper search
+//!   cargo run --release --bin benchmark -- -n 100 --progress     # More games for confidence
 
 use std::path::PathBuf;
 use std::process;
@@ -20,30 +21,42 @@ use cardgame::bots::BotType;
 use cardgame::execution::{configure_thread_pool, GameData, MatchupBuilder};
 use cardgame::validation::{
     export_json, export_matrix_csv, find_outliers, print_matchup_matrix, print_results,
-    run_outlier_diagnostics, save_validation_results, ArchetypeWeights, AutoDiagnoseConfig,
+    run_outlier_diagnostics, ArchetypeWeights, AutoDiagnoseConfig,
     BalanceAnalyzer, ValidationConfig, ValidationExecutor, ValidationResults,
 };
 use cardgame::version::{self, VersionInfo};
 
-/// Quick Balance Validation - Fast sanity check with Greedy bot
+/// Thorough Balance Benchmark - Statistical analysis with strong bots
 #[derive(Parser, Debug)]
-#[command(name = "validate")]
-#[command(about = "Quick balance validation using Greedy bot (~1 sec for default settings)", long_about = None)]
+#[command(name = "benchmark")]
+#[command(about = "Thorough balance benchmark using Alpha-Beta or MCTS (for overnight runs)", long_about = None)]
 struct Args {
     /// Games per matchup per player order (total = matchups × 2 × games)
-    #[arg(long, short = 'n', default_value = "10")]
+    #[arg(long, short = 'n', default_value = "50")]
     games_per_matchup: usize,
+
+    /// Bot type: alphabeta (default) or mcts
+    #[arg(long, default_value = "alphabeta")]
+    bot: String,
+
+    /// Alpha-Beta search depth (only used with --bot alphabeta)
+    #[arg(long, default_value = "6")]
+    ab_depth: u32,
+
+    /// MCTS simulations per move (only used with --bot mcts)
+    #[arg(long, default_value = "200")]
+    mcts_sims: u32,
 
     /// Output JSON file path (legacy, prefer --run-id for full output)
     #[arg(long, short = 'o')]
     output: Option<PathBuf>,
 
-    /// Output directory for validation results (creates experiments/validation/{run_id}/)
+    /// Output directory for benchmark results (creates experiments/benchmark/{run_id}/)
     /// If not specified, uses timestamp: YYYY-MM-DD_HHMM
     #[arg(long)]
     run_id: Option<String>,
 
-    /// Show progress indicator
+    /// Show progress indicator (recommended for long runs)
     #[arg(long)]
     progress: bool,
 
@@ -83,7 +96,7 @@ struct Args {
     #[arg(long)]
     matrix_csv: Option<PathBuf>,
 
-    /// Auto-diagnose outlier decks after validation
+    /// Auto-diagnose outlier decks after benchmark
     #[arg(long)]
     auto_diagnose: bool,
 
@@ -96,12 +109,29 @@ struct Args {
     diagnose_games: usize,
 }
 
+fn parse_bot_type(bot_str: &str) -> Result<BotType, String> {
+    match bot_str.to_lowercase().as_str() {
+        "alphabeta" | "alpha-beta" | "ab" => Ok(BotType::AlphaBeta),
+        "mcts" => Ok(BotType::Mcts),
+        _ => Err(format!(
+            "Invalid bot type '{}'. Valid options: alphabeta, mcts",
+            bot_str
+        )),
+    }
+}
+
 fn main() {
     env_logger::init();
     let args = Args::parse();
 
-    // Greedy bot is hardcoded for fast validation
-    let bot_type = BotType::Greedy;
+    // Parse bot type (only alphabeta or mcts allowed)
+    let bot_type = match parse_bot_type(&args.bot) {
+        Ok(bt) => bt,
+        Err(e) => {
+            eprintln!("Error: {}", e);
+            process::exit(1);
+        }
+    };
 
     // Configure thread pool
     let num_threads = configure_thread_pool(args.threads);
@@ -124,7 +154,7 @@ fn main() {
     // Load archetype weights for bots
     let archetype_weights = ArchetypeWeights::load_from_directory(&args.weights, !args.progress);
 
-    // Build matchups using new MatchupBuilder (preserves commander info)
+    // Build matchups using MatchupBuilder (preserves commander info)
     let builder = MatchupBuilder::new(&game_data.deck_registry);
     let mut matchups = builder.build_inter_faction_matchups();
 
@@ -146,24 +176,54 @@ fn main() {
     }
 
     // Print header
-    println!("=== Quick Balance Validation ===");
+    println!("=== Thorough Balance Benchmark ===");
     println!("Version: {}", version::version_string());
+    let bot_config_str = match bot_type {
+        BotType::AlphaBeta => format!("Alpha-Beta depth {}", args.ab_depth),
+        BotType::Mcts => format!("MCTS {} sims", args.mcts_sims),
+        _ => unreachable!(),
+    };
     println!(
-        "Config: {} games/matchup, Greedy bot, {} threads",
-        args.games_per_matchup, num_threads
+        "Config: {} games/matchup, {}, {} threads",
+        args.games_per_matchup, bot_config_str, num_threads
     );
     println!("Matchups: {} deck pairs (round-robin)", matchups.len());
+    let total_games = matchups.len() * 2 * args.games_per_matchup;
     println!(
         "Total games: {} (matchups × 2 directions × {})",
-        matchups.len() * 2 * args.games_per_matchup,
-        args.games_per_matchup
+        total_games, args.games_per_matchup
     );
+
+    // Estimate time
+    let estimated_time = match bot_type {
+        BotType::AlphaBeta => {
+            let secs_per_game = match args.ab_depth {
+                d if d <= 4 => 0.5,
+                d if d <= 6 => 2.0,
+                d if d <= 8 => 10.0,
+                _ => 30.0,
+            };
+            total_games as f64 * secs_per_game / num_threads as f64
+        }
+        BotType::Mcts => {
+            let secs_per_game = args.mcts_sims as f64 * 0.01; // rough estimate
+            total_games as f64 * secs_per_game / num_threads as f64
+        }
+        _ => 0.0,
+    };
+    if estimated_time > 60.0 {
+        println!(
+            "Estimated time: ~{:.0} minutes",
+            estimated_time / 60.0
+        );
+    }
     println!();
 
-    // Run validation with greedy bot (no MCTS sims needed, but API requires it)
+    // Run benchmark
     let start_time = Instant::now();
-    let executor = ValidationExecutor::new(&game_data.card_db, 0)
+    let executor = ValidationExecutor::new(&game_data.card_db, args.mcts_sims)
         .with_bot_type(bot_type.clone())
+        .with_alphabeta_depth(args.ab_depth)
         .with_progress(args.progress);
 
     let matchup_results = match executor.run_all(
@@ -185,7 +245,7 @@ fn main() {
     let summary = analyzer.analyze(&matchup_results);
 
     // Create full results
-    let config = ValidationConfig::new(args.games_per_matchup, 0, args.seed, num_threads)
+    let config = ValidationConfig::new(args.games_per_matchup, args.mcts_sims, args.seed, num_threads)
         .with_matchup_filter(args.matchup.clone());
 
     let results = ValidationResults {
@@ -222,8 +282,12 @@ fn main() {
         }
         None
     } else {
-        // New mode: save full results to timestamped directory
-        match save_validation_results(&results, total_time, args.run_id.as_deref()) {
+        // Save to experiments/benchmark/ instead of experiments/validation/
+        let run_id = args.run_id.as_deref().unwrap_or_else(|| {
+            // Will be generated by save function
+            ""
+        });
+        match save_benchmark_results(&results, total_time, if run_id.is_empty() { None } else { Some(run_id) }) {
             Ok(dir) => Some(dir),
             Err(e) => {
                 eprintln!("Error saving results: {}", e);
@@ -255,8 +319,8 @@ fn main() {
             let diagnose_config = AutoDiagnoseConfig {
                 games: args.diagnose_games,
                 bot_type: bot_type.clone(),
-                alphabeta_depth: 6, // Not used for greedy, but required by struct
-                mcts_sims: 0,
+                alphabeta_depth: args.ab_depth,
+                mcts_sims: args.mcts_sims,
                 seed: args.seed,
             };
 
@@ -266,7 +330,7 @@ fn main() {
                     .as_ref()
                     .and_then(|p| p.parent())
                     .map(|p| p.to_path_buf())
-                    .unwrap_or_else(|| PathBuf::from("experiments/validation/diagnostics"))
+                    .unwrap_or_else(|| PathBuf::from("experiments/benchmark/diagnostics"))
             });
 
             if let Err(e) = run_outlier_diagnostics(
@@ -282,4 +346,87 @@ fn main() {
             }
         }
     }
+}
+
+/// Save benchmark results to experiments/benchmark/{run_id}/
+fn save_benchmark_results(
+    results: &ValidationResults,
+    total_time: std::time::Duration,
+    run_id: Option<&str>,
+) -> Result<PathBuf, String> {
+    use std::fs;
+    use std::io::Write;
+
+    // Generate run_id from timestamp if not provided
+    let run_id = run_id
+        .map(String::from)
+        .unwrap_or_else(|| chrono::Local::now().format("%Y-%m-%d_%H%M").to_string());
+
+    // Create output directory
+    let output_dir = PathBuf::from(format!("experiments/benchmark/{}", run_id));
+    fs::create_dir_all(&output_dir).map_err(|e| format!("Failed to create directory: {}", e))?;
+
+    // Save JSON results
+    let json_path = output_dir.join("results.json");
+    let json_content =
+        serde_json::to_string_pretty(results).map_err(|e| format!("JSON error: {}", e))?;
+    fs::write(&json_path, json_content).map_err(|e| format!("Write error: {}", e))?;
+
+    // Save human-readable summary
+    let summary_path = output_dir.join("summary.txt");
+    let mut summary_file =
+        fs::File::create(&summary_path).map_err(|e| format!("Create error: {}", e))?;
+
+    writeln!(summary_file, "=== Benchmark Summary ===").ok();
+    writeln!(summary_file, "Timestamp: {}", results.timestamp).ok();
+    writeln!(summary_file, "Version: {}", results.version.version).ok();
+    writeln!(summary_file, "Git: {}", results.version.git_hash.as_deref().unwrap_or("unknown")).ok();
+    writeln!(summary_file, "Total time: {:.1}s", total_time.as_secs_f64()).ok();
+    writeln!(summary_file).ok();
+    writeln!(
+        summary_file,
+        "Games per matchup: {}",
+        results.config.games_per_matchup
+    )
+    .ok();
+    writeln!(summary_file, "Seed: {}", results.config.seed).ok();
+    writeln!(summary_file).ok();
+    writeln!(
+        summary_file,
+        "P1 Win Rate: {:.1}%",
+        results.summary.p1_win_rate * 100.0
+    )
+    .ok();
+    writeln!(
+        summary_file,
+        "Max Faction Delta: {:.1}%",
+        results.summary.max_faction_delta * 100.0
+    )
+    .ok();
+    writeln!(summary_file, "Faction Status: {:?}", results.summary.faction_status).ok();
+
+    // Save config
+    let config_path = output_dir.join("config.toml");
+    let config_content = format!(
+        r#"# Benchmark Configuration
+[benchmark]
+games_per_matchup = {}
+seed = {}
+threads = {}
+timestamp = "{}"
+"#,
+        results.config.games_per_matchup,
+        results.config.seed,
+        results.config.threads,
+        results.timestamp
+    );
+    fs::write(&config_path, config_content).map_err(|e| format!("Write error: {}", e))?;
+
+    println!();
+    println!("💾 Benchmark results saved to: {}", output_dir.display());
+    println!("   📄 results.json - Full JSON data");
+    println!("   📝 summary.txt  - Human-readable summary");
+    println!("   ⚙️  config.toml  - Run configuration");
+
+    Ok(output_dir)
 }

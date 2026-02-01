@@ -32,9 +32,13 @@ cargo run --release --bin arena -- --list-decks
 ./scripts/tune-archetypes.sh --dry-run          # Preview commands
 cargo run --release --bin tune -- --mode generalist --tag my_run --generations 50
 
-# Balance validation (deck/commander performance is key metric)
-cargo run --release --bin validate -- --games 50 --progress
-cargo run --release --bin validate -- --games 100 --bot mcts --mcts-sims 200
+# Quick balance validation (~1 sec, greedy bot, for CI and sanity checks)
+cargo run --release --bin validate -- --progress
+cargo run --release --bin validate -- --games-per-matchup 50 --progress
+
+# Thorough benchmark (overnight runs with strong bots)
+cargo run --release --bin benchmark -- --progress                    # Alpha-Beta depth 6
+cargo run --release --bin benchmark -- --bot mcts --mcts-sims 200    # MCTS instead
 
 # P1/P2 asymmetry analysis
 cargo run --release --bin diagnose -- 200
@@ -53,7 +57,7 @@ cargo bench -p cardgame
 
 # Enable logging (optional)
 RUST_LOG=info cargo run --release --bin arena -- --bot1 greedy --bot2 random --games 10
-RUST_LOG=debug cargo run --release --bin validate -- --games 10  # More verbose
+RUST_LOG=debug cargo run --release --bin benchmark -- -n 10 --progress  # Verbose benchmark
 ```
 
 ## Python CLI
@@ -94,9 +98,9 @@ The library uses `log` crate for diagnostic messages (weight loading, errors). C
 
 ```bash
 # Log levels: error, warn, info, debug, trace
-RUST_LOG=info cargo run --release --bin arena -- ...    # See weight loading info
-RUST_LOG=warn cargo run --release --bin validate -- ... # Only warnings/errors
-RUST_LOG=debug cargo run --release --bin tune -- ...    # Verbose debugging
+RUST_LOG=info cargo run --release --bin arena -- ...      # See weight loading info
+RUST_LOG=warn cargo run --release --bin benchmark -- ...  # Only warnings/errors
+RUST_LOG=debug cargo run --release --bin tune -- ...      # Verbose debugging
 ```
 
 ## Project Structure
@@ -112,7 +116,7 @@ RUST_LOG=debug cargo run --release --bin tune -- ...    # Verbose debugging
 - `crates/cardgame/src/core/` - Game types, state, actions, combat
 - `crates/cardgame/src/engine/` - GameEngine, effect processing
 - `crates/cardgame/src/bots/` - RandomBot, GreedyBot, MctsBot
-- `crates/cardgame/src/bin/` - CLIs: arena, swiss, tune, validate, diagnose, replay
+- `crates/cardgame/src/bin/` - CLIs: arena, swiss, tune, validate, benchmark, diagnose, replay
 - `crates/cardgame/tests/unit/` - Unit tests (separate from src)
 - `python/essence_wars/` - Python bindings and ML agents
 - `python/essence_wars/agents/` - PPO, AlphaZero, Card2Vec, embeddings
@@ -387,26 +391,48 @@ CMA-ES optimizer with parallel evaluation. Outputs to `experiments/mcts/YYYY-MM-
 
 See `docs/bots-tuning-pipeline.md` for full options.
 
-## Balance Validation
+## Balance Validation & Benchmarking
 
-The `validate` binary runs cross-faction matchups and reports balance metrics.
+Two tools for balance testing with different speed/accuracy tradeoffs:
 
-**Key metric: Per-deck/commander performance** (not faction averages).
+| Tool | Bot | Speed | Use Case |
+|------|-----|-------|----------|
+| `validate` | Greedy (fixed) | ~1 sec | Quick sanity checks, CI, after card changes |
+| `benchmark` | Alpha-Beta/MCTS | Hours | Overnight runs, statistical rigor, pre-release |
+
+### Quick Validation (`validate`)
+
+Fast balance check using Greedy bot. Default: 10 games per matchup (~1 sec total).
 
 ```bash
-cargo run --release --bin validate -- --games 50 --progress --run-id my_run
+cargo run --release --bin validate -- --progress              # Quick check (~1 sec)
+cargo run --release --bin validate -- -n 50 --progress        # More games for confidence
+cargo run --release --bin validate -- --run-id my_run         # Named output directory
 ```
 
-Output includes:
+### Thorough Benchmark (`benchmark`)
+
+Statistical analysis with Alpha-Beta (default) or MCTS. Default: 50 games per matchup.
+
+```bash
+cargo run --release --bin benchmark -- --progress             # Alpha-Beta depth 6 (default)
+cargo run --release --bin benchmark -- --ab-depth 8           # Deeper search (slower)
+cargo run --release --bin benchmark -- --bot mcts --mcts-sims 200  # Use MCTS instead
+cargo run --release --bin benchmark -- -n 100 --progress      # More games
+```
+
+**Output includes:**
 - Per-deck win rates with 95% confidence intervals
 - Best/worst matchups per deck
 - Visual indicators: ▲ (>60% win rate), ▼ (<40% win rate)
-- Results saved to `experiments/validation/{run_id}/`
+- Results saved to `experiments/validation/` or `experiments/benchmark/`
 
 **Balance thresholds:**
 - Balanced deck: 40-60% win rate
 - Outlier deck: <40% or >60% win rate
 - Sample size: 50+ games per matchup recommended for statistical confidence
+
+**Note:** The `--games-per-matchup` (or `-n`) flag sets games *per matchup per direction*. With 48 matchups × 2 directions, `-n 50` runs 4,800 total games.
 
 ## ELO Ratings & Swiss Tournaments
 
