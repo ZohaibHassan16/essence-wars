@@ -21,7 +21,7 @@ Update and Enhance the Diagnosis/Analysis Screen in Spectator Mode, using the no
 ## (D) Review and Update MCP Server
 
 - Bring up to date
-- Discuss if a needed `explain_rules()` function should be added, that concisely explain all rules, so that LLM Agents can play with confidence
+- Discuss if a `explain_rules()` function should be added, that concisely explain all rules, so that LLM Agents can play with confidence
 - Review and Audit complete Package
 - Improve/Enhance AI Hint function
 

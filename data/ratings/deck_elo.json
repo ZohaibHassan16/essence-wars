@@ -1,12 +1,12 @@
 {
   "version": 1,
-  "last_updated": "2026-02-01T14:52:03.951685305+00:00",
+  "last_updated": "2026-02-01T19:46:45.407492+00:00",
   "ratings": {
     "architect_fortify": {
-      "rating": 1498.0,
-      "games": 30,
-      "wins": 17,
-      "losses": 13,
+      "rating": 1572.0,
+      "games": 110,
+      "wins": 84,
+      "losses": 26,
       "draws": 0,
       "history": [
         {
@@ -43,14 +43,70 @@
           "delta": -11,
           "result": "loss",
           "games": 5
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "broodmother_pack",
+          "delta": 12,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "alpha_frenzy",
+          "delta": 17,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "grove_regenerate",
+          "delta": -2,
+          "result": "draw",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "plague_volatile",
+          "delta": 16,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "archon_burst",
+          "delta": 2,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "deathmaster_assassin",
+          "delta": 11,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "shadow_weaver",
+          "delta": 12,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "sovereign_lifesteal",
+          "delta": 6,
+          "result": "win",
+          "games": 10
         }
       ]
     },
     "alpha_frenzy": {
-      "rating": 1526.0,
-      "games": 35,
-      "wins": 23,
-      "losses": 12,
+      "rating": 1468.0,
+      "games": 115,
+      "wins": 45,
+      "losses": 70,
       "draws": 0,
       "history": [
         {
@@ -94,14 +150,70 @@
           "delta": 5,
           "result": "win",
           "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "architect_fortify",
+          "delta": -17,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "artificer_tokens",
+          "delta": -16,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "sanctum_healer",
+          "delta": 6,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "vex_piercing",
+          "delta": -15,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "archon_burst",
+          "delta": -1,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "deathmaster_assassin",
+          "delta": 2,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "shadow_weaver",
+          "delta": -8,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "sovereign_lifesteal",
+          "delta": -9,
+          "result": "loss",
+          "games": 10
         }
       ]
     },
     "sanctum_healer": {
-      "rating": 1498.0,
-      "games": 15,
-      "wins": 7,
-      "losses": 8,
+      "rating": 1489.0,
+      "games": 95,
+      "wins": 44,
+      "losses": 51,
       "draws": 0,
       "history": [
         {
@@ -124,14 +236,70 @@
           "delta": 4,
           "result": "win",
           "games": 5
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "broodmother_pack",
+          "delta": -14,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "alpha_frenzy",
+          "delta": -6,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "grove_regenerate",
+          "delta": -13,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "plague_volatile",
+          "delta": 5,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "archon_burst",
+          "delta": 5,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "deathmaster_assassin",
+          "delta": 16,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "shadow_weaver",
+          "delta": -2,
+          "result": "draw",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "sovereign_lifesteal",
+          "delta": 0,
+          "result": "draw",
+          "games": 10
         }
       ]
     },
     "artificer_tokens": {
-      "rating": 1514.0,
-      "games": 25,
-      "wins": 17,
-      "losses": 8,
+      "rating": 1542.0,
+      "games": 55,
+      "wins": 42,
+      "losses": 13,
       "draws": 0,
       "history": [
         {
@@ -161,14 +329,35 @@
           "delta": 15,
           "result": "win",
           "games": 5
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "broodmother_pack",
+          "delta": 4,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "alpha_frenzy",
+          "delta": 16,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "deathmaster_assassin",
+          "delta": 8,
+          "result": "win",
+          "games": 10
         }
       ]
     },
     "archon_burst": {
-      "rating": 1522.0,
-      "games": 15,
-      "wins": 11,
-      "losses": 4,
+      "rating": 1541.0,
+      "games": 75,
+      "wins": 49,
+      "losses": 26,
       "draws": 0,
       "history": [
         {
@@ -191,14 +380,56 @@
           "delta": -4,
           "result": "loss",
           "games": 5
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "architect_fortify",
+          "delta": -2,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "sanctum_healer",
+          "delta": -5,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "vex_piercing",
+          "delta": 7,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "broodmother_pack",
+          "delta": 8,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "alpha_frenzy",
+          "delta": 1,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "grove_regenerate",
+          "delta": 10,
+          "result": "win",
+          "games": 10
         }
       ]
     },
     "plague_volatile": {
-      "rating": 1515.0,
-      "games": 25,
-      "wins": 15,
-      "losses": 10,
+      "rating": 1496.0,
+      "games": 55,
+      "wins": 24,
+      "losses": 31,
       "draws": 0,
       "history": [
         {
@@ -235,14 +466,35 @@
           "delta": -3,
           "result": "loss",
           "games": 5
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "architect_fortify",
+          "delta": -16,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "sanctum_healer",
+          "delta": -5,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "vex_piercing",
+          "delta": 2,
+          "result": "draw",
+          "games": 10
         }
       ]
     },
     "sovereign_lifesteal": {
-      "rating": 1485.0,
-      "games": 25,
-      "wins": 9,
-      "losses": 16,
+      "rating": 1493.0,
+      "games": 85,
+      "wins": 40,
+      "losses": 45,
       "draws": 0,
       "history": [
         {
@@ -272,14 +524,56 @@
           "delta": -5,
           "result": "loss",
           "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "architect_fortify",
+          "delta": -6,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "sanctum_healer",
+          "delta": 0,
+          "result": "draw",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "vex_piercing",
+          "delta": 0,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "broodmother_pack",
+          "delta": 16,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "alpha_frenzy",
+          "delta": 9,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "grove_regenerate",
+          "delta": -11,
+          "result": "loss",
+          "games": 10
         }
       ]
     },
     "deathmaster_assassin": {
-      "rating": 1503.0,
-      "games": 15,
-      "wins": 8,
-      "losses": 7,
+      "rating": 1460.0,
+      "games": 85,
+      "wins": 27,
+      "losses": 58,
       "draws": 0,
       "history": [
         {
@@ -302,14 +596,63 @@
           "delta": -4,
           "result": "loss",
           "games": 5
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "architect_fortify",
+          "delta": -11,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "artificer_tokens",
+          "delta": -8,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "sanctum_healer",
+          "delta": -16,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "vex_piercing",
+          "delta": -4,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "broodmother_pack",
+          "delta": -6,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "alpha_frenzy",
+          "delta": -2,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "grove_regenerate",
+          "delta": 4,
+          "result": "win",
+          "games": 10
         }
       ]
     },
     "shadow_weaver": {
-      "rating": 1465.0,
-      "games": 15,
-      "wins": 2,
-      "losses": 13,
+      "rating": 1459.0,
+      "games": 75,
+      "wins": 26,
+      "losses": 49,
       "draws": 0,
       "history": [
         {
@@ -332,14 +675,56 @@
           "delta": -15,
           "result": "loss",
           "games": 5
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "architect_fortify",
+          "delta": -12,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "sanctum_healer",
+          "delta": 2,
+          "result": "draw",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "vex_piercing",
+          "delta": -9,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "broodmother_pack",
+          "delta": 8,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "alpha_frenzy",
+          "delta": 8,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "grove_regenerate",
+          "delta": -3,
+          "result": "loss",
+          "games": 10
         }
       ]
     },
     "grove_regenerate": {
       "rating": 1480.0,
-      "games": 35,
-      "wins": 13,
-      "losses": 22,
+      "games": 105,
+      "wins": 46,
+      "losses": 59,
       "draws": 0,
       "history": [
         {
@@ -383,14 +768,63 @@
           "delta": -3,
           "result": "loss",
           "games": 5
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "architect_fortify",
+          "delta": 2,
+          "result": "draw",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "sanctum_healer",
+          "delta": 13,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "vex_piercing",
+          "delta": -15,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "archon_burst",
+          "delta": -10,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "deathmaster_assassin",
+          "delta": -4,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "shadow_weaver",
+          "delta": 3,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "sovereign_lifesteal",
+          "delta": 11,
+          "result": "win",
+          "games": 10
         }
       ]
     },
     "vex_piercing": {
-      "rating": 1515.0,
-      "games": 15,
-      "wins": 10,
-      "losses": 5,
+      "rating": 1544.0,
+      "games": 95,
+      "wins": 64,
+      "losses": 31,
       "draws": 0,
       "history": [
         {
@@ -413,14 +847,70 @@
           "delta": 9,
           "result": "win",
           "games": 5
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "broodmother_pack",
+          "delta": -5,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "alpha_frenzy",
+          "delta": 15,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "grove_regenerate",
+          "delta": 15,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "plague_volatile",
+          "delta": -2,
+          "result": "draw",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "archon_burst",
+          "delta": -7,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "deathmaster_assassin",
+          "delta": 4,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "shadow_weaver",
+          "delta": 9,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "sovereign_lifesteal",
+          "delta": 0,
+          "result": "win",
+          "games": 10
         }
       ]
     },
     "broodmother_pack": {
-      "rating": 1479.0,
-      "games": 60,
-      "wins": 23,
-      "losses": 37,
+      "rating": 1456.0,
+      "games": 140,
+      "wins": 54,
+      "losses": 86,
       "draws": 0,
       "history": [
         {
@@ -485,6 +975,62 @@
           "delta": 11,
           "result": "win",
           "games": 5
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "architect_fortify",
+          "delta": -12,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "artificer_tokens",
+          "delta": -4,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "sanctum_healer",
+          "delta": 14,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "vex_piercing",
+          "delta": 5,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "archon_burst",
+          "delta": -8,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "deathmaster_assassin",
+          "delta": 6,
+          "result": "win",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "shadow_weaver",
+          "delta": -8,
+          "result": "loss",
+          "games": 10
+        },
+        {
+          "date": "2026-02-01",
+          "opponent": "sovereign_lifesteal",
+          "delta": -16,
+          "result": "loss",
+          "games": 10
         }
       ]
     }

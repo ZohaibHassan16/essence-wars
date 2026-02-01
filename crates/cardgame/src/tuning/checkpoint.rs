@@ -256,7 +256,7 @@ pub fn load_checkpoint(
             .collect();
 
         // Sort by name (most recent first due to timestamp prefix)
-        matches.sort_by(|a, b| b.file_name().cmp(&a.file_name()));
+        matches.sort_by_key(|b| std::cmp::Reverse(b.file_name()));
 
         if let Some(entry) = matches.first() {
             let checkpoint_path = entry.path().join("checkpoint.toml");
@@ -352,7 +352,7 @@ pub fn find_experiment_dir(
             .collect();
 
         // Sort by name (most recent first)
-        matches.sort_by(|a, b| b.file_name().cmp(&a.file_name()));
+        matches.sort_by_key(|b| std::cmp::Reverse(b.file_name()));
 
         if let Some(entry) = matches.first() {
             return Ok(entry.path());

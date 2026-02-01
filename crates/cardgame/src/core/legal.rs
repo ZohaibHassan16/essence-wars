@@ -370,7 +370,7 @@ fn generate_targeting_actions(
         TargetingRule::TargetAllyCreature => {
             // Can target any ally creature
             if let Some(player_state) = player {
-                for ally_creature in &player_state.creatures {
+                if let Some(ally_creature) = player_state.creatures.iter().next() {
                     if actions.len() < MAX_LEGAL_ACTIONS {
                         actions.push(Action::UseAbility {
                             slot,
@@ -381,7 +381,7 @@ fn generate_targeting_actions(
                     // Note: For now, using Self_ for ally targeting. In the future,
                     // we may want to add a Target::AllySlot variant for more precise targeting.
                     let _ = ally_creature; // Use the variable to avoid warning
-                    break; // Only add one action for now (self-target)
+                    // Only add one action for now (self-target)
                 }
             }
         }

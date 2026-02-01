@@ -643,6 +643,7 @@ fn token_art_path(name: &str) -> String {
 }
 
 /// Generate fallback art path for a faction
+#[allow(dead_code)]
 pub fn fallback_art_path(faction: &str) -> String {
     format!("tokens/generic/{}.webp", faction)
 }
