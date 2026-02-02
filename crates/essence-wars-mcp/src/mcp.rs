@@ -13,6 +13,7 @@ use crate::session::SessionManager;
 use crate::tools::{
     ai::ai_hint,
     discovery::{list_bots, list_decks},
+    explain::{explain_card, explain_keywords, explain_rules},
     game::{end_game, legal_actions, play_action, show_hand, show_state, start_game},
     ui_sync::sync_to_ui,
 };
@@ -252,16 +253,66 @@ impl McpServer {
             },
             ToolDefinition {
                 name: "ai_hint".to_string(),
-                description: "Get AI analysis with recommended move and win rate estimates using MCTS".to_string(),
+                description: "Get AI analysis with recommended move using MCTS".to_string(),
                 input_schema: json!({
                     "type": "object",
                     "properties": {
                         "simulations": {
                             "type": "integer",
                             "description": "Number of MCTS simulations for analysis (default 500, higher = more accurate but slower)"
+                        },
+                        "use_mcts": {
+                            "type": "boolean",
+                            "description": "Use MCTS instead of Alpha-Beta (default: false = Alpha-Beta)"
+                        },
+                        "depth": {
+                            "type": "integer",
+                            "description": "Alpha-Beta search depth (default 6, higher = stronger but slower)"
                         }
                     },
                     "required": []
+                }),
+            },
+            ToolDefinition {
+                name: "explain_keywords".to_string(),
+                description: "Explain game keywords. Call without arguments for a list of all keywords, or with a keyword name for detailed explanation.".to_string(),
+                input_schema: json!({
+                    "type": "object",
+                    "properties": {
+                        "keyword": {
+                            "type": "string",
+                            "description": "Keyword to explain (e.g., 'Rush', 'Guard', 'Lethal'). Omit for list of all keywords."
+                        }
+                    },
+                    "required": []
+                }),
+            },
+            ToolDefinition {
+                name: "explain_rules".to_string(),
+                description: "Explain game rules by topic. Topics: overview, turn, combat, essence, victory, commanders, cards, actions.".to_string(),
+                input_schema: json!({
+                    "type": "object",
+                    "properties": {
+                        "topic": {
+                            "type": "string",
+                            "description": "Topic to explain (overview, turn, combat, essence, victory, commanders, cards, actions). Omit for general overview."
+                        }
+                    },
+                    "required": []
+                }),
+            },
+            ToolDefinition {
+                name: "explain_card".to_string(),
+                description: "Get detailed information about a specific card by its ID.".to_string(),
+                input_schema: json!({
+                    "type": "object",
+                    "properties": {
+                        "card_id": {
+                            "type": "integer",
+                            "description": "Card ID (Argentum: 1000-1074, Symbiote: 2000-2074, Obsidion: 3000-3074, Neutral: 4000-4074, Commanders: 5000-5011)"
+                        }
+                    },
+                    "required": ["card_id"]
                 }),
             },
             ToolDefinition {
@@ -369,9 +420,42 @@ impl McpServer {
                     .get("simulations")
                     .and_then(|v| v.as_u64())
                     .unwrap_or(500) as u32;
+                let use_mcts = arguments
+                    .get("use_mcts")
+                    .and_then(|v| v.as_bool())
+                    .unwrap_or(false);
+                let depth = arguments
+                    .get("depth")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(6) as u32;
 
                 let manager = self.session_manager.read();
-                ai_hint(&manager, simulations)
+                ai_hint(&manager, simulations, use_mcts, depth)
+            }
+            "explain_keywords" => {
+                let keyword = arguments
+                    .get("keyword")
+                    .and_then(|v| v.as_str());
+                explain_keywords(keyword)
+            }
+            "explain_rules" => {
+                let topic = arguments
+                    .get("topic")
+                    .and_then(|v| v.as_str());
+                explain_rules(topic)
+            }
+            "explain_card" => {
+                let card_id = arguments
+                    .get("card_id")
+                    .and_then(|v| v.as_u64())
+                    .ok_or_else(|| JsonRpcError {
+                        code: -32602,
+                        message: "Missing card_id argument".to_string(),
+                        data: None,
+                    })? as u16;
+
+                let manager = self.session_manager.read();
+                explain_card(&manager, card_id)
             }
             "end_game" => {
                 let mut manager = self.session_manager.write();

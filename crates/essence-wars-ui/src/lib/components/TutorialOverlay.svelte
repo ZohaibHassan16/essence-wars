@@ -168,7 +168,7 @@
       <rect
         width="100%"
         height="100%"
-        fill="rgba(0, 0, 0, 0.8)"
+        fill="rgba(0, 0, 0, 0.35)"
         mask="url(#tutorial-spotlight-mask)"
       />
     </svg>
@@ -182,7 +182,7 @@
           top: {spotlightRect.y - 12}px;
           width: {spotlightRect.width + 24}px;
           height: {spotlightRect.height + 24}px;
-          box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+          box-shadow: 0 0 40px rgba(168, 85, 247, 0.7), 0 0 80px rgba(168, 85, 247, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.2);
         "
       ></div>
     {/if}

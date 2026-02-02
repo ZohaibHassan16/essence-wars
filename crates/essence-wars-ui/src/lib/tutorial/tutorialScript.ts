@@ -25,7 +25,7 @@ export const TUTORIAL_OPPONENT_DECK = 'broodmother_pack';
 export const TUTORIAL_BOT = 'random';
 
 // Tutorial steps - friendly, engaging tone
-// Designed to teach mechanics without tutorial fatigue (~17 steps)
+// Simplified to work with RandomBot - no assumptions about opponent actions (~15 steps)
 export const tutorialSteps: TutorialStep[] = [
   // === PHASE 1: WELCOME & BOARD TOUR (4 steps) ===
   {
@@ -59,7 +59,7 @@ export const tutorialSteps: TutorialStep[] = [
     advanceCondition: { type: 'click_next' },
   },
 
-  // === PHASE 2: FIRST TURNS (3 steps) ===
+  // === PHASE 2: FIRST TURNS (2 steps) ===
   {
     id: 'turn_1_end',
     title: 'End Your First Turn',
@@ -69,16 +69,10 @@ export const tutorialSteps: TutorialStep[] = [
     advanceCondition: { type: 'turn_ended' },
   },
   {
-    id: 'opponent_turn_1',
+    id: 'opponent_turn_intro',
     title: "Opponent's Turn",
-    message: `Your opponent (The Broodmother) also has limited Essence. Watch what they do...`,
-    advanceCondition: { type: 'auto', delayMs: 2000 },
-  },
-  {
-    id: 'opponent_rush_attack',
-    title: 'Rush Attack!',
-    message: `The opponent played a creature with Rush - it can attack immediately! Their Commander gives ALL creatures Rush. You took damage to your life total.`,
-    advanceCondition: { type: 'auto', delayMs: 3500 },
+    message: `The Broodmother's creatures have Rush - they can attack immediately when played! Watch their turn, then we'll fight back.`,
+    advanceCondition: { type: 'auto', delayMs: 2500 },
   },
 
   // === PHASE 3: PLAY YOUR FIRST CREATURE (3 steps) ===
@@ -105,23 +99,17 @@ export const tutorialSteps: TutorialStep[] = [
     advanceCondition: { type: 'turn_ended' },
   },
 
-  // === PHASE 4: COMBAT & KEYWORDS (4 steps) ===
-  {
-    id: 'opponent_attacks_again',
-    title: 'Under Attack!',
-    message: `The enemy is attacking again! Watch how their Rush creatures keep hitting you. You need to fight back!`,
-    advanceCondition: { type: 'auto', delayMs: 3500 },
-  },
+  // === PHASE 4: COMBAT & KEYWORDS (3 steps) ===
   {
     id: 'attack_intro',
-    title: 'Attack!',
-    message: `Your creature is ready! Click on it, then click an enemy creature to attack. Combat is simultaneous - both creatures deal damage to each other.`,
+    title: 'Time to Attack!',
+    message: `Your creature is ready to fight! Click on it, then click an enemy creature (or the opponent's commander if no creatures) to attack. Combat is simultaneous - both deal damage!`,
     advanceCondition: { type: 'creature_attacked' },
   },
   {
     id: 'lethal_lifesteal_explain',
     title: 'Powerful Keywords!',
-    message: `Amazing! Lethal killed their creature instantly (any damage = death). Lifesteal healed you for the damage dealt! These keywords work together beautifully.`,
+    message: `Your Contract Killer has Lethal (any damage kills instantly) and Lifesteal (heals you for damage dealt). These keywords synergize beautifully - kill enemies while healing yourself!`,
     advanceCondition: { type: 'click_next' },
   },
   {

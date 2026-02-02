@@ -9,9 +9,9 @@
 |------|--------|-------|
 | Core Engine | Stable | 759 tests passing, deterministic |
 | Performance | **Recovered** | 2.2-2.4x improvement after token data separation |
-| MCP Server | 80% complete | Missing explain tools, win rate |
+| MCP Server | ✅ Complete | 13 tools including explain_*, hybrid ai_hint |
 | Python Gym | Code ready | Missing CI/CD for PyPI publishing |
-| Tutorial | Broken | Random bot, dark overlay, seed mismatch |
+| Tutorial | ✅ Improved | 35% overlay, enhanced glow, 15 simplified steps |
 | UI (Tauri) | Functional | Deck selection wizard complete |
 
 ### Performance Baseline (v0.8.0 Post-Sprint 1)
@@ -41,18 +41,16 @@
 
 **Result:** Performance recovered, win conditions reframed with thematic naming (Tactical Stability + Essence Extraction).
 
-### Sprint 2: User Experience
+### Sprint 2: User Experience ✅ COMPLETE
 
 | Task | Priority | Status | Notes |
 |------|----------|--------|-------|
-| Tutorial: ScriptedBot implementation | P0 | Not started | Predictable opponent actions |
-| Tutorial: UI fixes | P1 | Not started | Reduce overlay to 30-50% |
-| Tutorial: Seed/deck alignment | P1 | Not started | Match seed finder to tutorial decks |
-| MCP: `explain_rules()` tool | P1 | Not started | LLM-friendly rules summary |
-| MCP: `explain_keywords()` tool | P2 | Not started | 16 keyword reference |
-| MCP: `explain_card(card_id)` tool | P2 | Not started | Detailed card info |
-| MCP: Win rate in AI hint | P2 | Not started | Expose MCTS win estimates |
-| MCP: Use Alpha-Beta for hints | P2 | Not started | Better than MCTS for hints |
+| MCP: `explain_rules()` tool | P1 | ✅ Done | 8 topics: overview, turn, combat, essence, victory, commanders, cards, actions |
+| MCP: `explain_keywords()` tool | P1 | ✅ Done | All 16 keywords with detailed descriptions |
+| MCP: `explain_card(card_id)` tool | P1 | ✅ Done | Query CardDatabase, format stats/abilities |
+| MCP: Hybrid AI hints | P1 | ✅ Done | Alpha-Beta default (fast), MCTS optional |
+| Tutorial: UI fixes | P1 | ✅ Done | Overlay 35%, enhanced multi-layer glow |
+| Tutorial: Simplify steps | P1 | ✅ Done | 17→15 steps, removed opponent-dependent assumptions |
 
 **Goal:** Polished onboarding experience, enhanced MCP for LLM agents.
 
