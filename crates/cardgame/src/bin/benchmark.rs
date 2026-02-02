@@ -1,15 +1,16 @@
 //! Thorough Balance Benchmark CLI - Statistical analysis with strong bots.
 //!
 //! Tests all deck combinations across faction pairs using Alpha-Beta or MCTS bots.
-//! Designed for overnight runs, pre-release validation, and statistical rigor.
+//! Designed for daily CI, overnight runs, and pre-release validation.
 //!
 //! For quick sanity checks, use `validate` instead (Greedy bot, ~1 sec).
 //!
 //! Usage:
-//!   cargo run --release --bin benchmark -- --progress           # Default: Alpha-Beta depth 6
-//!   cargo run --release --bin benchmark -- --bot mcts --progress  # Use MCTS instead
-//!   cargo run --release --bin benchmark -- --ab-depth 8 --progress  # Deeper search
-//!   cargo run --release --bin benchmark -- -n 100 --progress     # More games for confidence
+//!   cargo run --release --bin benchmark -- --progress                    # Default: depth 4 (~2h for full suite)
+//!   cargo run --release --bin benchmark -- --preset overnight --progress # Depth 6 (~80h, run overnight)
+//!   cargo run --release --bin benchmark -- --preset release --progress   # Depth 8 (~400h, pre-release only)
+//!   cargo run --release --bin benchmark -- --ab-depth 6 --progress       # Custom depth
+//!   cargo run --release --bin benchmark -- --bot mcts --progress         # Use MCTS instead
 
 use std::path::PathBuf;
 use std::process;
@@ -29,8 +30,15 @@ use cardgame::version::{self, VersionInfo};
 /// Thorough Balance Benchmark - Statistical analysis with strong bots
 #[derive(Parser, Debug)]
 #[command(name = "benchmark")]
-#[command(about = "Thorough balance benchmark using Alpha-Beta or MCTS (for overnight runs)", long_about = None)]
+#[command(about = "Thorough balance benchmark using Alpha-Beta or MCTS", long_about = None)]
 struct Args {
+    /// Preset configuration (overrides individual settings)
+    /// - fast: depth 4, 50 games (~2h for full suite, daily CI)
+    /// - overnight: depth 6, 200 games (~80h, weekly validation)
+    /// - release: depth 8, 500 games (~400h, pre-release only)
+    #[arg(long, value_parser = ["fast", "overnight", "release"])]
+    preset: Option<String>,
+
     /// Games per matchup per player order (total = matchups × 2 × games)
     #[arg(long, short = 'n', default_value = "50")]
     games_per_matchup: usize,
@@ -40,7 +48,8 @@ struct Args {
     bot: String,
 
     /// Alpha-Beta search depth (only used with --bot alphabeta)
-    #[arg(long, default_value = "6")]
+    /// Recommended: 4 (fast), 6 (strong), 8 (exhaustive)
+    #[arg(long, default_value = "4")]
     ab_depth: u32,
 
     /// MCTS simulations per move (only used with --bot mcts)
@@ -122,7 +131,32 @@ fn parse_bot_type(bot_str: &str) -> Result<BotType, String> {
 
 fn main() {
     env_logger::init();
-    let args = Args::parse();
+    let mut args = Args::parse();
+
+    // Apply preset if specified
+    if let Some(ref preset) = args.preset {
+        match preset.as_str() {
+            "fast" => {
+                args.ab_depth = 4;
+                args.games_per_matchup = 50;
+                args.mcts_sims = 200;
+            }
+            "overnight" => {
+                args.ab_depth = 6;
+                args.games_per_matchup = 200;
+                args.mcts_sims = 500;
+            }
+            "release" => {
+                args.ab_depth = 8;
+                args.games_per_matchup = 500;
+                args.mcts_sims = 1000;
+            }
+            _ => {
+                eprintln!("Error: Invalid preset '{}'. Valid options: fast, overnight, release", preset);
+                process::exit(1);
+            }
+        }
+    }
 
     // Parse bot type (only alphabeta or mcts allowed)
     let bot_type = match parse_bot_type(&args.bot) {
@@ -194,23 +228,30 @@ fn main() {
         total_games, args.games_per_matchup
     );
 
-    // Estimate time (based on empirical measurements)
-    // Note: These estimates are conservative to avoid surprising users with longer runs
+    // Estimate time (based on empirical measurements from Feb 2026)
+    // Hardware baseline: 16-thread CPU (Ryzen/similar), parallel execution
     let estimated_time = match bot_type {
         BotType::AlphaBeta => {
-            // Empirical: depth 6 with 4800 games took ~14000s on 8 threads
-            // That's ~23s/game effective (including parallelization overhead)
+            // Empirical measurements (100 games, 16 threads):
+            // - Depth 4: 269ms/game effective (5.4s wall-clock / 2 bots)
+            // - Depth 6: 10.8s/game effective (78s wall-clock / 100 games for MCTS matchup)
+            // Conservative estimates accounting for parallelization overhead:
             let secs_per_game = match args.ab_depth {
-                d if d <= 4 => 5.0,
-                d if d <= 6 => 25.0,   // ~23s observed, round up
-                d if d <= 8 => 120.0,  // Much slower, exponential growth
-                _ => 600.0,            // Depth 10+ is very slow
+                d if d <= 3 => 2.0,    // Very fast
+                d if d <= 4 => 5.0,    // Measured: 2.7s, use 5s for safety
+                d if d <= 5 => 12.0,   // Interpolated
+                d if d <= 6 => 25.0,   // Measured: ~11s, use 25s for safety
+                d if d <= 7 => 60.0,   // Exponential growth
+                d if d <= 8 => 120.0,  // Depth 8 is 4-5× slower than depth 6
+                d if d <= 9 => 300.0,  // Very slow
+                _ => 600.0,            // Depth 10+ is extremely slow
             };
             total_games as f64 * secs_per_game / num_threads as f64
         }
         BotType::Mcts => {
             // MCTS scales roughly linearly with simulations
-            let secs_per_game = (args.mcts_sims as f64 * 0.05).max(5.0);
+            // Measured: 500 sims ≈ 425ms per decision
+            let secs_per_game = (args.mcts_sims as f64 * 0.001).max(5.0);
             total_games as f64 * secs_per_game / num_threads as f64
         }
         _ => 0.0,
