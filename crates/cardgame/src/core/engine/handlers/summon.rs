@@ -1,7 +1,7 @@
 //! Summon effect handlers (summon, token, transform, copy).
 
 use crate::core::cards::CardType;
-use crate::core::effects::{EffectTarget, TokenDefinition, Trigger};
+use crate::core::effects::{EffectTarget, TokenData, TokenDefinition, Trigger};
 use crate::core::keywords::Keywords;
 use crate::core::state::Creature;
 use crate::core::types::{CardId, PlayerId, Slot};
@@ -61,8 +61,7 @@ impl EffectHandler for SummonHandler {
             status: Default::default(),
             turn_played: ctx.state.current_turn,
             frenzy_stacks: 0,
-            token_abilities: None, // Regular creatures don't have token abilities
-            token_name: None, // Regular creatures get name from card database
+            token_data: None, // Regular creatures get data from card database
         };
 
         ctx.state.players[self.owner.index()].creatures.push(creature);
@@ -117,12 +116,11 @@ impl EffectHandler for SummonTokenHandler {
         let instance_id = ctx.state.next_creature_instance_id();
         let keywords = Keywords(self.token.keywords);
 
-        // Convert token abilities if present
-        let token_abilities = if self.token.abilities.is_empty() {
-            None
-        } else {
-            Some(self.token.abilities.clone())
-        };
+        // Create token data (boxed to minimize Creature struct size)
+        let token_data = Some(Box::new(TokenData {
+            name: self.token.name.clone(),
+            abilities: self.token.abilities.clone(),
+        }));
 
         let creature = Creature {
             instance_id,
@@ -138,8 +136,7 @@ impl EffectHandler for SummonTokenHandler {
             status: Default::default(),
             turn_played: ctx.state.current_turn,
             frenzy_stacks: 0,
-            token_abilities,
-            token_name: Some(self.token.name.clone()), // Store token name for UI display
+            token_data,
         };
 
         ctx.state.players[self.owner.index()].creatures.push(creature);
@@ -189,12 +186,11 @@ impl EffectHandler for TransformHandler {
         let instance_id = ctx.state.next_creature_instance_id();
         let keywords = Keywords(self.into.keywords);
 
-        // Convert token abilities if present
-        let token_abilities = if self.into.abilities.is_empty() {
-            None
-        } else {
-            Some(self.into.abilities.clone())
-        };
+        // Create token data (boxed to minimize Creature struct size)
+        let token_data = Some(Box::new(TokenData {
+            name: self.into.name.clone(),
+            abilities: self.into.abilities.clone(),
+        }));
 
         let creature = Creature {
             instance_id,
@@ -210,8 +206,7 @@ impl EffectHandler for TransformHandler {
             status: Default::default(),
             turn_played: ctx.state.current_turn,
             frenzy_stacks: 0,
-            token_abilities,
-            token_name: Some(self.into.name.clone()), // Store transformed token name
+            token_data,
         };
 
         // Check if the transformed creature has <= 0 health before adding (edge case)
@@ -257,8 +252,7 @@ impl EffectHandler for CopyHandler {
         let base_attack = source.base_attack;
         let base_health = source.base_health;
         let keywords = source.keywords;
-        let token_abilities = source.token_abilities.clone();
-        let token_name = source.token_name.clone();
+        let token_data = source.token_data.clone(); // Clone token data if source was a token
 
         // Find empty slot for the copy
         let target_slot = match ctx.state.players[self.owner.index()].find_empty_creature_slot() {
@@ -283,8 +277,7 @@ impl EffectHandler for CopyHandler {
             status: Default::default(),
             turn_played: ctx.state.current_turn,
             frenzy_stacks: 0,
-            token_abilities,
-            token_name, // Copy token name from source (if it was a token)
+            token_data,
         };
 
         ctx.state.players[self.owner.index()].creatures.push(creature);

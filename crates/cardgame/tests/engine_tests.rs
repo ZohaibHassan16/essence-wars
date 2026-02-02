@@ -123,8 +123,7 @@ fn test_turn_start_creatures_can_attack() {
         status: CreatureStatus::default(),
         turn_played: 0, // Played on a previous turn
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -180,8 +179,7 @@ fn test_win_by_damage() {
         status: CreatureStatus::default(),
         turn_played: 0, // Not summoning sick
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -382,8 +380,7 @@ fn test_creature_combat() {
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     };
     engine.state.players[0].creatures.push(p1_creature);
 
@@ -401,8 +398,7 @@ fn test_creature_combat() {
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     };
     engine.state.players[1].creatures.push(p2_creature);
 
@@ -449,8 +445,7 @@ fn test_direct_face_attack() {
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -631,8 +626,7 @@ fn test_use_ability_basic() {
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -673,8 +667,7 @@ fn test_use_ability_silenced_fails() {
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     };
     // Silence the creature
     creature.status.set_silenced(true);
@@ -695,8 +688,7 @@ fn test_use_ability_silenced_fails() {
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     };
     engine.state.players[1].creatures.push(target_creature);
 
@@ -757,8 +749,7 @@ fn test_use_ability_invalid_ability_index() {
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -798,8 +789,7 @@ fn test_use_ability_self_target() {
         status: CreatureStatus::default(),
         turn_played: 0,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     };
     engine.state.players[0].creatures.push(creature);
 
@@ -941,8 +931,7 @@ fn test_conditional_spell_triggers_on_kill() {
         status: CreatureStatus::default(),
         turn_played: 1,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     };
     engine.state.players[1].creatures.push(creature);
 
@@ -1005,8 +994,7 @@ fn test_conditional_spell_does_not_trigger_when_target_survives() {
         status: CreatureStatus::default(),
         turn_played: 1,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     };
     engine.state.players[1].creatures.push(creature);
 
@@ -1085,17 +1073,17 @@ fn test_high_artificer_token_has_ability() {
         engine.state.players[0].creatures.iter().map(|c| c.card_id).collect::<Vec<_>>()
     );
 
-    // The token should have abilities
+    // The token should have abilities (using helper method for token_data access)
     let token = tokens[0];
     assert!(
-        token.token_abilities.is_some(),
+        token.token_abilities().is_some(),
         "Brass Cog token should have token_abilities. Token: card_id={:?}, attack={}, health={}",
         token.card_id,
         token.attack,
         token.current_health
     );
 
-    let abilities = token.token_abilities.as_ref().unwrap();
+    let abilities = token.token_abilities().unwrap();
     assert_eq!(abilities.len(), 1, "Brass Cog should have exactly 1 ability");
     assert_eq!(abilities[0].name, "Volatile Overload", "Ability should be Volatile Overload");
     assert_eq!(abilities[0].essence_cost, 1, "Volatile Overload should cost 1 essence");

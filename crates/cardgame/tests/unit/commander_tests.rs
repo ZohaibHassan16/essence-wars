@@ -682,7 +682,7 @@ fn test_plague_sovereign_spawns_sporelings() {
 
     // Verify Sporeling has token abilities (Fungal Rot)
     assert!(
-        sporeling.token_abilities.is_some(),
+        sporeling.token_abilities().is_some(),
         "Sporeling should have token abilities (Fungal Rot)"
     );
 }

@@ -17,7 +17,7 @@ use super::ActionContext;
 /// The ability is identified by ability_index (0-based).
 ///
 /// Supports:
-/// 1. Token abilities (stored on creature.token_abilities)
+/// 1. Token abilities (stored in creature.token_data)
 /// 2. Card-based activated abilities (looked up via card_db, Trigger::Activated)
 ///
 /// # Errors
@@ -49,9 +49,9 @@ pub fn execute_use_ability(
         return Err("Creature is exhausted".to_string());
     }
 
-    // Check for token abilities first
-    if let Some(ref abilities) = creature.token_abilities.clone() {
-        return execute_token_ability(ctx, slot, ability_index, target, abilities);
+    // Check for token abilities first (clone to avoid borrow issues with ctx mutation)
+    if let Some(token_data) = creature.token_data.clone() {
+        return execute_token_ability(ctx, slot, ability_index, target, &token_data.abilities);
     }
 
     // Fall back to card-based abilities

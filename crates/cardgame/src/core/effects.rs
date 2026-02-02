@@ -91,6 +91,18 @@ pub struct TokenAbility {
     pub effects: Vec<TokenEffect>,
 }
 
+/// Token-specific data stored on the heap to minimize Creature struct size.
+/// Only allocated for tokens (created by SummonToken effects), not regular creatures.
+/// This reduces Creature from 72 bytes to ~32 bytes for the common case.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TokenData {
+    /// Display name for the token
+    pub name: String,
+    /// Activated abilities for this token (may be empty)
+    #[serde(default)]
+    pub abilities: Vec<TokenAbility>,
+}
+
 /// Simplified effect types for token abilities
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]

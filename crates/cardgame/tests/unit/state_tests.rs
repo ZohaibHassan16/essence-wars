@@ -46,8 +46,7 @@ fn test_player_state_creature_slots() {
         status: CreatureStatus::default(),
         turn_played: 1,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     });
 
     // Next empty slot should be 1
@@ -86,8 +85,7 @@ fn test_creature_can_attack() {
         status: CreatureStatus::default(),
         turn_played: 1,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     };
 
     // Can attack on turn 2 (no summoning sickness)
@@ -141,8 +139,7 @@ fn test_debug_validate_with_creatures() {
         status: CreatureStatus::default(),
         turn_played: 1,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     });
 
     state.debug_validate(); // Should not panic
@@ -169,8 +166,7 @@ fn test_debug_validate_catches_wrong_owner() {
         status: CreatureStatus::default(),
         turn_played: 1,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     });
 
     state.debug_validate(); // Should panic
@@ -197,8 +193,7 @@ fn test_debug_validate_catches_dead_creature() {
         status: CreatureStatus::default(),
         turn_played: 1,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     });
 
     state.debug_validate(); // Should panic
@@ -225,8 +220,7 @@ fn test_debug_validate_catches_duplicate_slot() {
         status: CreatureStatus::default(),
         turn_played: 1,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     });
     state.players[0].creatures.push(Creature {
         instance_id: CreatureInstanceId(1),
@@ -242,8 +236,7 @@ fn test_debug_validate_catches_duplicate_slot() {
         status: CreatureStatus::default(),
         turn_played: 1,
         frenzy_stacks: 0,
-        token_abilities: None,
-        token_name: None,
+        token_data: None,
     });
 
     state.debug_validate(); // Should panic

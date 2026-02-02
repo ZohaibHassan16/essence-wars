@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::core::config::{board, game, player};
 use crate::core::types::*;
 use crate::core::keywords::Keywords;
-use crate::core::effects::TokenAbility;
+use crate::core::effects::TokenData;
 
 /// Pre-resolved commander passive for fast creature application.
 ///
@@ -63,7 +63,10 @@ impl CreatureStatus {
     }
 }
 
-/// A creature on the battlefield
+/// A creature on the battlefield.
+///
+/// Optimized for size: regular creatures are ~32 bytes, tokens add heap allocation.
+/// The `token_data` field uses `Box` to keep the common case (non-tokens) small.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Creature {
     pub instance_id: CreatureInstanceId,
@@ -79,12 +82,10 @@ pub struct Creature {
     pub status: CreatureStatus,
     pub turn_played: u16,
     pub frenzy_stacks: u8,    // Frenzy bonus: +1 attack per stack (resets at end of turn)
-    /// Activated abilities for tokens (None for regular creatures from card database).
+    /// Token-specific data (name + abilities). None for regular creatures from card database.
+    /// Boxed to minimize struct size: Option<Box<T>> is 8 bytes vs 48 bytes for inline fields.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub token_abilities: Option<Vec<TokenAbility>>,
-    /// Token name (only set for tokens created by SummonToken effects, None for regular creatures)
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub token_name: Option<String>,
+    pub token_data: Option<Box<TokenData>>,
 }
 
 impl Creature {
@@ -105,6 +106,24 @@ impl Creature {
     /// Check if this creature is alive
     pub fn is_alive(&self) -> bool {
         self.current_health > 0
+    }
+
+    /// Check if this is a token creature (created by SummonToken effect)
+    #[inline]
+    pub fn is_token(&self) -> bool {
+        self.token_data.is_some()
+    }
+
+    /// Get the token name if this is a token, None for regular creatures
+    #[inline]
+    pub fn token_name(&self) -> Option<&str> {
+        self.token_data.as_ref().map(|d| d.name.as_str())
+    }
+
+    /// Get the token abilities if this is a token, None for regular creatures
+    #[inline]
+    pub fn token_abilities(&self) -> Option<&[crate::core::effects::TokenAbility]> {
+        self.token_data.as_ref().map(|d| d.abilities.as_slice())
     }
 }
 

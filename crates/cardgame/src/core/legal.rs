@@ -214,7 +214,7 @@ fn generate_attack_actions(
 /// Generate all legal UseAbility actions
 ///
 /// This generates actions for:
-/// 1. Token abilities (stored on creature.token_abilities)
+/// 1. Token abilities (stored in creature.token_data)
 /// 2. Card-based activated abilities (with Trigger::Activated)
 ///
 /// UseAbility actions use action space indices 150-249.
@@ -237,8 +237,8 @@ fn generate_ability_actions(
             continue;
         }
 
-        // Check token abilities first
-        if let Some(ref abilities) = creature.token_abilities {
+        // Check token abilities first (using helper method for token_data access)
+        if let Some(abilities) = creature.token_abilities() {
             generate_actions_for_abilities_token(
                 creature.slot,
                 abilities,
