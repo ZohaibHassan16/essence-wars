@@ -240,23 +240,42 @@ pub enum GamePhase {
     Ended,
 }
 
-/// Win reason
+/// Win reason - describes how a player won the game.
+///
+/// # Lore Context
+/// - "Life" represents Tactical Stability - reaching 0 means forced retreat
+/// - "Essence Extracted" (total_damage_dealt) represents magical energy harvested from opponent
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum WinReason {
+    /// Commander's Tactical Stability reached zero (forced retreat)
     LifeReachedZero,
-    TurnLimitHigherLife,
-    VictoryPointsReached,
+    /// Turn limit reached, winner determined by tiebreaker (VP or life depending on mode)
+    TurnLimitTiebreaker,
+    /// Extracted enough essence to achieve victory (50+ VP in EssenceWar mode)
+    EssenceExtractionReached,
+    /// Player conceded the match
     Concession,
 }
 
-/// Game mode determines victory conditions
+/// Game mode determines victory conditions.
+///
+/// # Essence War (Default)
+/// The canonical Essence Wars experience: race to extract 50 essence from your opponent
+/// while maintaining your own Tactical Stability. Two paths to victory:
+/// 1. Extract 50+ essence (cumulative face damage dealt)
+/// 2. Reduce opponent's Tactical Stability (life) to 0
+///
+/// # Attrition (Legacy)
+/// Classic life-based victory. Reduce opponent to 0 life, or at turn 30,
+/// player with higher life wins.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum GameMode {
     /// Attrition: Reduce enemy to 0 life, or turn 30 → higher life wins
-    #[default]
     Attrition,
-    /// Essence Duel: First to 50 VP (cumulative face damage) or reduce to 0 life
-    EssenceDuel,
+    /// Essence War: First to 50 essence extracted OR reduce opponent to 0 life
+    /// At turn limit, player with more essence extracted wins
+    #[default]
+    EssenceWar,
 }
 
 /// Game result

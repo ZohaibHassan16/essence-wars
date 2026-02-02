@@ -496,13 +496,13 @@ fn main() {
         BotWeights::load(path).expect("Failed to load weights")
     });
 
-    // Parse game mode
+    // Parse game mode (essence-war is default, accept legacy names for compatibility)
     let game_mode = match args.game_mode.to_lowercase().as_str() {
         "attrition" => GameMode::Attrition,
-        "essence-duel" | "essenceduel" => GameMode::EssenceDuel,
+        "essence-war" | "essencewar" | "essence-duel" | "essenceduel" => GameMode::EssenceWar,
         _ => {
-            eprintln!("Unknown game mode: {}. Using Attrition.", args.game_mode);
-            GameMode::Attrition
+            eprintln!("Unknown game mode: {}. Using EssenceWar (default).", args.game_mode);
+            GameMode::EssenceWar
         }
     };
 

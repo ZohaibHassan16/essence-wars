@@ -206,8 +206,8 @@ fn test_game_phase_roundtrip() {
 fn test_win_reason_roundtrip() {
     let reasons = vec![
         WinReason::LifeReachedZero,
-        WinReason::TurnLimitHigherLife,
-        WinReason::VictoryPointsReached,
+        WinReason::TurnLimitTiebreaker,
+        WinReason::EssenceExtractionReached,
         WinReason::Concession,
     ];
     for reason in reasons {
@@ -218,7 +218,7 @@ fn test_win_reason_roundtrip() {
 #[test]
 fn test_game_mode_roundtrip() {
     assert_eq!(GameMode::Attrition, test_json_roundtrip(&GameMode::Attrition));
-    assert_eq!(GameMode::EssenceDuel, test_json_roundtrip(&GameMode::EssenceDuel));
+    assert_eq!(GameMode::EssenceWar, test_json_roundtrip(&GameMode::EssenceWar));
 }
 
 #[test]

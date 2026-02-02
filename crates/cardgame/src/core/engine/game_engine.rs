@@ -291,10 +291,10 @@ impl<'a> GameEngine<'a> {
         victory::check_life_victory(&mut self.state);
     }
 
-    /// Check if a player has won via Victory Points (Essence Duel mode only).
-    /// In Essence Duel, first player to deal 50 cumulative face damage wins.
-    pub fn check_victory_points_victory(&mut self) {
-        victory::check_victory_points_victory(&mut self.state);
+    /// Check if a player has won via Essence Extraction (EssenceWar mode only).
+    /// In EssenceWar, first player to extract 50 essence (cumulative face damage) wins.
+    pub fn check_essence_extraction_victory(&mut self) {
+        victory::check_essence_extraction_victory(&mut self.state);
     }
 
     /// Execute Commander's Insight action.

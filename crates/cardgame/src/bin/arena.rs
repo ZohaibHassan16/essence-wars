@@ -384,18 +384,18 @@ fn main() {
         println!("Alpha-Beta: depth {}", alphabeta_config.max_depth);
     }
 
-    // Parse game mode
+    // Parse game mode (essence-war is default, accept legacy names for compatibility)
     let game_mode = match args.mode.to_lowercase().as_str() {
         "attrition" => GameMode::Attrition,
-        "essence-duel" | "essenceduel" | "duel" => GameMode::EssenceDuel,
+        "essence-war" | "essencewar" | "essence-duel" | "essenceduel" | "duel" => GameMode::EssenceWar,
         other => {
-            eprintln!("Unknown game mode: '{}'. Use 'attrition' or 'essence-duel'.", other);
+            eprintln!("Unknown game mode: '{}'. Use 'attrition' or 'essence-war'.", other);
             process::exit(1);
         }
     };
 
-    if game_mode == GameMode::EssenceDuel {
-        println!("Mode: Essence Duel (first to 50 VP wins)");
+    if game_mode == GameMode::EssenceWar {
+        println!("Mode: Essence War (first to 50 essence extracted wins)");
     }
 
     // Build match configuration

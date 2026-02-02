@@ -42,7 +42,7 @@ pub use game_engine::GameEngine;
 pub use environment::GameEnvironment;
 pub use actions::ActionContext;
 pub use init::{initialize_game, initialize_game_raw, draw_card, GameInitError};
-pub use victory::{check_victory_conditions, check_turn_limit_victory, check_life_victory, check_victory_points_victory};
+pub use victory::{check_victory_conditions, check_turn_limit_victory, check_life_victory, check_essence_extraction_victory};
 pub use turn::{start_turn, end_turn};
 
 /// Seeded shuffle using Linear Congruential Generator for deterministic results.

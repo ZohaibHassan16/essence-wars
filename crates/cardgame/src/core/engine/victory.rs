@@ -1,9 +1,9 @@
 //! Victory condition checking functions.
 //!
 //! Handles all win/loss/draw conditions including:
-//! - Life reaching zero
-//! - Turn limit with life tiebreaker
-//! - Victory Points (Essence Duel mode)
+//! - Life (Tactical Stability) reaching zero → forced retreat
+//! - Essence extraction threshold (50 VP in EssenceWar mode)
+//! - Turn limit tiebreaker (VP in EssenceWar, life in Attrition)
 
 use crate::core::config::game;
 use crate::core::state::{GameMode, GamePhase, GameResult, GameState, WinReason};
@@ -14,25 +14,41 @@ use crate::core::types::PlayerId;
 /// Call this after each action to check for game-ending conditions.
 pub fn check_victory_conditions(state: &mut GameState) {
     check_life_victory(state);
-    check_victory_points_victory(state);
+    check_essence_extraction_victory(state);
 }
 
 /// Check for turn limit victory condition.
 ///
-/// Player with higher life wins. On tie, Player 1 wins.
+/// In EssenceWar mode: Player with more essence extracted wins.
+/// In Attrition mode: Player with higher life wins.
+/// On tie, Player 1 wins.
 pub fn check_turn_limit_victory(state: &mut GameState) {
-    let p1_life = state.players[0].life;
-    let p2_life = state.players[1].life;
-
-    let winner = if p1_life >= p2_life {
-        PlayerId::PLAYER_ONE
-    } else {
-        PlayerId::PLAYER_TWO
+    let winner = match state.game_mode {
+        GameMode::EssenceWar => {
+            // In EssenceWar, winner is determined by essence extracted (VP)
+            let p1_vp = state.players[0].total_damage_dealt;
+            let p2_vp = state.players[1].total_damage_dealt;
+            if p1_vp >= p2_vp {
+                PlayerId::PLAYER_ONE
+            } else {
+                PlayerId::PLAYER_TWO
+            }
+        }
+        GameMode::Attrition => {
+            // In Attrition, winner is determined by life remaining
+            let p1_life = state.players[0].life;
+            let p2_life = state.players[1].life;
+            if p1_life >= p2_life {
+                PlayerId::PLAYER_ONE
+            } else {
+                PlayerId::PLAYER_TWO
+            }
+        }
     };
 
     state.result = Some(GameResult::Win {
         winner,
-        reason: WinReason::TurnLimitHigherLife,
+        reason: WinReason::TurnLimitTiebreaker,
     });
     state.phase = GamePhase::Ended;
 }
@@ -68,12 +84,12 @@ pub fn check_life_victory(state: &mut GameState) {
     }
 }
 
-/// Check if a player has won via Victory Points (Essence Duel mode only).
+/// Check if a player has won via Essence Extraction (EssenceWar mode only).
 ///
-/// In Essence Duel, first player to deal 50 cumulative face damage wins.
-pub fn check_victory_points_victory(state: &mut GameState) {
-    // Only applies in Essence Duel mode
-    if state.game_mode != GameMode::EssenceDuel {
+/// In EssenceWar, first player to extract 50 essence (cumulative face damage) wins.
+pub fn check_essence_extraction_victory(state: &mut GameState) {
+    // Only applies in EssenceWar mode
+    if state.game_mode != GameMode::EssenceWar {
         return;
     }
 
@@ -83,12 +99,12 @@ pub fn check_victory_points_victory(state: &mut GameState) {
     }
 
     for player_idx in 0..2 {
-        let vp = state.players[player_idx].total_damage_dealt;
-        if vp >= game::VICTORY_POINTS_THRESHOLD {
+        let essence_extracted = state.players[player_idx].total_damage_dealt;
+        if essence_extracted >= game::VICTORY_POINTS_THRESHOLD {
             let winner = PlayerId(player_idx as u8);
             state.result = Some(GameResult::Win {
                 winner,
-                reason: WinReason::VictoryPointsReached,
+                reason: WinReason::EssenceExtractionReached,
             });
             state.phase = GamePhase::Ended;
             return;

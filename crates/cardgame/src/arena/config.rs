@@ -31,7 +31,7 @@ pub struct MatchConfig {
     pub alphabeta_config: AlphaBetaConfig,
     /// Whether to show progress during execution
     pub show_progress: bool,
-    /// Game mode (Attrition or EssenceDuel)
+    /// Game mode (Attrition or EssenceWar)
     pub game_mode: GameMode,
 }
 

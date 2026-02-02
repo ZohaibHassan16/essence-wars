@@ -1,4 +1,4 @@
-//! Tests for game mode system (Attrition vs Essence Duel).
+//! Tests for game mode system (Attrition vs Essence War).
 
 use cardgame::cards::CardDatabase;
 use cardgame::core::config::game;
@@ -39,14 +39,14 @@ fn get_test_deck() -> Vec<CardId> {
 }
 
 #[test]
-fn test_game_mode_default_is_attrition() {
+fn test_game_mode_default_is_essence_war() {
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
     engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
 
-    assert_eq!(engine.state.game_mode, GameMode::Attrition);
+    assert_eq!(engine.state.game_mode, GameMode::EssenceWar);
 }
 
 #[test]
@@ -55,99 +55,99 @@ fn test_start_game_with_mode_sets_mode() {
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
-    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceDuel).unwrap();
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceWar).unwrap();
 
-    assert_eq!(engine.state.game_mode, GameMode::EssenceDuel);
+    assert_eq!(engine.state.game_mode, GameMode::EssenceWar);
 }
 
 #[test]
-fn test_essence_duel_vp_threshold_is_50() {
+fn test_essence_war_vp_threshold_is_50() {
     assert_eq!(game::VICTORY_POINTS_THRESHOLD, 50);
 }
 
 #[test]
-fn test_essence_duel_vp_victory_at_threshold() {
+fn test_essence_war_vp_victory_at_threshold() {
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
-    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceDuel).unwrap();
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceWar).unwrap();
 
     // Simulate player 1 dealing exactly 50 face damage
     engine.state.players[0].total_damage_dealt = 50;
-    engine.check_victory_points_victory();
+    engine.check_essence_extraction_victory();
 
     assert!(engine.is_game_over());
     match engine.state.result {
         Some(GameResult::Win { winner, reason }) => {
             assert_eq!(winner.index(), 0); // Player 1 wins
-            assert_eq!(reason, WinReason::VictoryPointsReached);
+            assert_eq!(reason, WinReason::EssenceExtractionReached);
         }
         _ => panic!("Expected VP victory for player 1"),
     }
 }
 
 #[test]
-fn test_essence_duel_vp_victory_above_threshold() {
+fn test_essence_war_vp_victory_above_threshold() {
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
-    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceDuel).unwrap();
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceWar).unwrap();
 
     // Simulate player 2 dealing more than 50 face damage
     engine.state.players[1].total_damage_dealt = 55;
-    engine.check_victory_points_victory();
+    engine.check_essence_extraction_victory();
 
     assert!(engine.is_game_over());
     match engine.state.result {
         Some(GameResult::Win { winner, reason }) => {
             assert_eq!(winner.index(), 1); // Player 2 wins
-            assert_eq!(reason, WinReason::VictoryPointsReached);
+            assert_eq!(reason, WinReason::EssenceExtractionReached);
         }
         _ => panic!("Expected VP victory for player 2"),
     }
 }
 
 #[test]
-fn test_essence_duel_no_victory_below_threshold() {
+fn test_essence_war_no_victory_below_threshold() {
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
-    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceDuel).unwrap();
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceWar).unwrap();
 
     // Set damage just below threshold
     engine.state.players[0].total_damage_dealt = 49;
     engine.state.players[1].total_damage_dealt = 49;
-    engine.check_victory_points_victory();
+    engine.check_essence_extraction_victory();
 
     assert!(!engine.is_game_over());
 }
 
 #[test]
-fn test_attrition_ignores_vp() {
+fn test_attrition_ignores_essence_extraction() {
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
-    // Use default Attrition mode
-    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::default()).unwrap();
+    // Use explicit Attrition mode (not default - default is EssenceWar)
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::Attrition).unwrap();
 
-    // Even with 100 damage dealt, game doesn't end via VP in Attrition mode
+    // Even with 100 damage dealt, game doesn't end via essence extraction in Attrition mode
     engine.state.players[0].total_damage_dealt = 100;
-    engine.check_victory_points_victory();
+    engine.check_essence_extraction_victory();
 
     assert!(!engine.is_game_over());
 }
 
 #[test]
-fn test_life_victory_takes_precedence_in_essence_duel() {
+fn test_life_victory_takes_precedence_in_essence_war() {
     let card_db = load_test_db();
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
-    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceDuel).unwrap();
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceWar).unwrap();
 
     // Reduce player 2's life to 0
     engine.state.players[1].life = 0;
@@ -169,7 +169,7 @@ fn test_vp_check_doesnt_override_existing_result() {
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
-    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceDuel).unwrap();
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceWar).unwrap();
 
     // Player 2 has life victory first
     engine.state.players[1].life = 0;
@@ -177,7 +177,7 @@ fn test_vp_check_doesnt_override_existing_result() {
 
     // Now player 2 also has VP (shouldn't override)
     engine.state.players[1].total_damage_dealt = 50;
-    engine.check_victory_points_victory();
+    engine.check_essence_extraction_victory();
 
     // Life victory should still be the reason
     match engine.state.result {
@@ -194,7 +194,7 @@ fn test_game_mode_preserved_across_turns() {
     let mut engine = GameEngine::new(&card_db);
     let deck = get_test_deck();
 
-    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceDuel).unwrap();
+    engine.start_game_raw(deck.clone(), deck.clone(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, 12345, GameMode::EssenceWar).unwrap();
 
     // End turn a few times
     for _ in 0..3 {
@@ -202,6 +202,6 @@ fn test_game_mode_preserved_across_turns() {
         let _ = engine.apply_action(cardgame::actions::Action::EndTurn);
     }
 
-    // Mode should still be Essence Duel
-    assert_eq!(engine.state.game_mode, GameMode::EssenceDuel);
+    // Mode should still be Essence War
+    assert_eq!(engine.state.game_mode, GameMode::EssenceWar);
 }

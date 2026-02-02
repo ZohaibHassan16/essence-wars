@@ -51,12 +51,12 @@ According to the source code in victory.rs, players can win in the following way
 - Checked immediately after damage is dealt
 - **Special case:** If both players reach 0 life simultaneously → **DRAW**
 
-### 2. **Victory Points** (Essence Duel Mode Only)
+### 2. **Essence Extraction** (Essence War Mode Only)
 - **Code:** victory.rs
 - First player to deal **50 cumulative damage** to the opponent's face wins
-- Only applies if game mode is `GameMode::EssenceDuel`
+- Only applies if game mode is `GameMode::EssenceWar`
 - Threshold: `VICTORY_POINTS_THRESHOLD = 50` (config.rs)
-- Prevents stalemate situations in Essence Duel mode
+- Prevents stalemate situations in Essence War mode
 
 ### 3. **Turn Limit Tiebreaker**
 - **Code:** victory.rs
@@ -70,16 +70,16 @@ state.rs:
 ```rust
 pub enum WinReason {
     LifeReachedZero,
-    TurnLimitHigherLife,
-    VictoryPointsReached,
+    TurnLimitTiebreaker,
+    EssenceExtractionReached,
     Concession,  // Not currently used in engine
 }
 ```
 
 ### Game Modes
 state.rs:
-- **Attrition** (default): Life + Turn Limit only
-- **Essence Duel**: Life + Turn Limit + Victory Points (50 damage threshold)
+- **Attrition**: Life + Turn Limit only
+- **Essence War** (default): Life + Turn Limit + Essence Extraction (50 damage threshold)
 
 The victory conditions are checked by `check_victory_conditions()` after each action, which calls both `check_life_victory()` and `check_victory_points_victory()` in sequence.
 

@@ -232,7 +232,7 @@ fn test_win_by_turn_limit_higher_life() {
     assert_eq!(engine.winner(), Some(PlayerId::PLAYER_ONE));
 
     if let Some(GameResult::Win { reason, .. }) = &engine.state.result {
-        assert_eq!(*reason, WinReason::TurnLimitHigherLife);
+        assert_eq!(*reason, WinReason::TurnLimitTiebreaker);
     }
 }
 

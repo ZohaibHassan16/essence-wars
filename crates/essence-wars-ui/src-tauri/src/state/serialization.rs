@@ -557,8 +557,8 @@ impl CreatureDto {
         // Art path matches files in static/cards/core_set/{id}.webp
         let art_path = Some(format!("cards/core_set/{}.webp", card.id));
 
-        // Convert token abilities to DTOs
-        let abilities = token_abilities_to_dtos(creature.token_abilities.as_deref());
+        // Convert token abilities to DTOs (using helper method)
+        let abilities = token_abilities_to_dtos(creature.token_abilities());
 
         Self {
             instance_id: creature.instance_id.0,
@@ -583,13 +583,13 @@ impl CreatureDto {
     pub fn from_token(creature: &Creature, current_turn: u16) -> Self {
         let keywords = keywords_to_strings(&creature.keywords);
 
-        // Convert token abilities to DTOs
-        let abilities = token_abilities_to_dtos(creature.token_abilities.as_deref());
+        // Convert token abilities to DTOs (using helper method)
+        let abilities = token_abilities_to_dtos(creature.token_abilities());
 
         // Get token name from the creature (stored during token creation)
         let name = creature
-            .token_name
-            .clone()
+            .token_name()
+            .map(|s| s.to_string())
             .unwrap_or_else(|| "Token".to_string());
 
         // Infer faction from keywords for styling

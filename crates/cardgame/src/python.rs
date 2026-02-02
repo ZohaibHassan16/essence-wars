@@ -101,10 +101,10 @@ impl PyGame {
         let deck2_def = deck_registry.get(deck2_name)
             .ok_or_else(|| PyValueError::new_err(format!("Unknown deck: {}", deck2_name)))?;
 
-        // Parse game mode
-        let mode = match game_mode.unwrap_or("attrition") {
+        // Parse game mode (essence_war is the new default, but accept legacy names for compatibility)
+        let mode = match game_mode.unwrap_or("essence_war") {
             "attrition" => GameMode::Attrition,
-            "essence_duel" | "essence-duel" => GameMode::EssenceDuel,
+            "essence_war" | "essence-war" | "essence_duel" | "essence-duel" => GameMode::EssenceWar,
             other => return Err(PyValueError::new_err(format!("Unknown game mode: {}", other))),
         };
 
@@ -335,10 +335,10 @@ impl PyParallelGames {
         let deck2_def = deck_registry.get(deck2_name)
             .ok_or_else(|| PyValueError::new_err(format!("Unknown deck: {}", deck2_name)))?;
 
-        // Parse game mode
-        let mode = match game_mode.unwrap_or("attrition") {
+        // Parse game mode (essence_war is the new default, but accept legacy names for compatibility)
+        let mode = match game_mode.unwrap_or("essence_war") {
             "attrition" => GameMode::Attrition,
-            "essence_duel" | "essence-duel" => GameMode::EssenceDuel,
+            "essence_war" | "essence-war" | "essence_duel" | "essence-duel" => GameMode::EssenceWar,
             other => return Err(PyValueError::new_err(format!("Unknown game mode: {}", other))),
         };
 
