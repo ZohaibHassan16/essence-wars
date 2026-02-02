@@ -88,6 +88,7 @@ pub fn render_hand(
                 health,
                 keywords,
                 abilities,
+                ..
             } => {
                 output.push_str(&format!("**{}/{}**", attack, health));
                 if !keywords.is_empty() {

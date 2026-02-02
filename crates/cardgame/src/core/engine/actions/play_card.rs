@@ -8,7 +8,7 @@ use crate::core::engine::effect_convert::{
     effect_def_to_effect_with_target, effect_def_to_triggered_effect, resolve_spell_target,
 };
 use crate::core::engine::passive::{
-    apply_all_support_passives_to_creature, apply_commander_passive_to_new_creature,
+    apply_all_support_passives_to_creature, apply_commander_passive_from_cache,
     apply_support_passives_to_all_creatures, collect_commander_creature_played_effects,
     support_effect_def_to_effect,
 };
@@ -122,11 +122,11 @@ fn play_creature(
         apply_all_support_passives_to_creature(new_creature, &supports, ctx.card_db);
     }
 
-    // Apply commander passive effects to the new creature
-    let commander_id = ctx.state.get_commander(current_player);
+    // Apply commander passive effects to the new creature (using cached passive)
+    let commander_passive = ctx.state.players[current_player.index()].commander_passive;
     if let Some(new_creature) = ctx.state.players[current_player.index()]
         .get_creature_mut(slot) {
-        apply_commander_passive_to_new_creature(new_creature, commander_id, ctx.card_db);
+        apply_commander_passive_from_cache(new_creature, &commander_passive);
     }
 
     // Queue OnPlay triggered effects

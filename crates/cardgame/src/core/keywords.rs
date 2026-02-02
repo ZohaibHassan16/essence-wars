@@ -107,31 +107,32 @@ impl Keywords {
     pub fn from_names(names: &[&str]) -> Self {
         let mut kw = Self::none();
         for name in names {
-            match name.to_lowercase().as_str() {
-                // Original keywords
-                "rush" => kw.add(Self::RUSH),
-                "ranged" => kw.add(Self::RANGED),
-                "piercing" => kw.add(Self::PIERCING),
-                "guard" => kw.add(Self::GUARD),
-                "lifesteal" => kw.add(Self::LIFESTEAL),
-                "lethal" => kw.add(Self::LETHAL),
-                "shield" => kw.add(Self::SHIELD),
-                "quick" => kw.add(Self::QUICK),
-                // New keywords
-                "ephemeral" => kw.add(Self::EPHEMERAL),
-                "regenerate" => kw.add(Self::REGENERATE),
-                "stealth" => kw.add(Self::STEALTH),
-                "charge" => kw.add(Self::CHARGE),
-                // Symbiote keywords
-                "frenzy" => kw.add(Self::FRENZY),
-                "volatile" => kw.add(Self::VOLATILE),
-                // Phase 5 keywords
-                "fortify" => kw.add(Self::FORTIFY),
-                "ward" => kw.add(Self::WARD),
-                _ => {} // Ignore unknown keywords
-            }
+            kw.add(Self::parse_keyword_name(name));
         }
         kw
+    }
+
+    /// Parse a single keyword name to its bit value (case-insensitive, no allocation).
+    #[inline]
+    pub fn parse_keyword_name(name: &str) -> u16 {
+        // Use eq_ignore_ascii_case to avoid allocation from to_lowercase()
+        if name.eq_ignore_ascii_case("rush") { Self::RUSH }
+        else if name.eq_ignore_ascii_case("ranged") { Self::RANGED }
+        else if name.eq_ignore_ascii_case("piercing") { Self::PIERCING }
+        else if name.eq_ignore_ascii_case("guard") { Self::GUARD }
+        else if name.eq_ignore_ascii_case("lifesteal") { Self::LIFESTEAL }
+        else if name.eq_ignore_ascii_case("lethal") { Self::LETHAL }
+        else if name.eq_ignore_ascii_case("shield") { Self::SHIELD }
+        else if name.eq_ignore_ascii_case("quick") { Self::QUICK }
+        else if name.eq_ignore_ascii_case("ephemeral") { Self::EPHEMERAL }
+        else if name.eq_ignore_ascii_case("regenerate") { Self::REGENERATE }
+        else if name.eq_ignore_ascii_case("stealth") { Self::STEALTH }
+        else if name.eq_ignore_ascii_case("charge") { Self::CHARGE }
+        else if name.eq_ignore_ascii_case("frenzy") { Self::FRENZY }
+        else if name.eq_ignore_ascii_case("volatile") { Self::VOLATILE }
+        else if name.eq_ignore_ascii_case("fortify") { Self::FORTIFY }
+        else if name.eq_ignore_ascii_case("ward") { Self::WARD }
+        else { 0 } // Unknown keyword returns 0 (no bits set)
     }
 
     /// Convert to a list of keyword names (for debugging/display)

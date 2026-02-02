@@ -17,6 +17,7 @@ fn create_test_creature() -> CardDefinition {
             health: 3,
             keywords: vec!["Rush".to_string(), "Guard".to_string()],
             abilities: vec![],
+            keywords_bits: cardgame::keywords::Keywords::from_names(&["Rush", "Guard"]),
         },
         rarity: Rarity::Common,
         tags: vec!["Soldier".to_string()],

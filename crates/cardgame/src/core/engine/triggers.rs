@@ -101,18 +101,16 @@ pub fn effect_def_to_effect(
             None
         }
         EffectDefinition::GrantKeyword { keyword, filter } => {
-            let kw = Keywords::from_names(&[keyword.as_str()]);
             Some(Effect::GrantKeyword {
                 target: EffectTarget::Creature { owner: source_owner, slot: source_slot },
-                keyword: kw.0,
+                keyword: Keywords::parse_keyword_name(keyword),
                 filter: filter.clone(),
             })
         }
         EffectDefinition::RemoveKeyword { keyword, filter } => {
-            let kw = Keywords::from_names(&[keyword.as_str()]);
             Some(Effect::RemoveKeyword {
                 target: EffectTarget::Creature { owner: source_owner, slot: source_slot },
-                keyword: kw.0,
+                keyword: Keywords::parse_keyword_name(keyword),
                 filter: filter.clone(),
             })
         }

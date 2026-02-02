@@ -35,6 +35,8 @@ pub use passive::{
     collect_commander_enemy_death_effects,
     collect_commander_any_death_effects,
     collect_commander_kill_effects,
+    resolve_commander_passive,
+    apply_commander_passive_from_cache,
 };
 pub use game_engine::GameEngine;
 pub use environment::GameEnvironment;

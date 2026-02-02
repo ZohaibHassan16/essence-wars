@@ -248,3 +248,22 @@ fn test_debug_validate_catches_duplicate_slot() {
 
     state.debug_validate(); // Should panic
 }
+
+/// Test to print struct sizes for performance analysis
+#[test]
+#[ignore] // Run with: cargo test -p cardgame struct_sizes -- --ignored --nocapture
+fn print_struct_sizes() {
+    use cardgame::state::ResolvedCommanderPassive;
+    use cardgame::effects::TokenAbility;
+
+    println!("\n=== Struct Sizes ===");
+    println!("Creature: {} bytes", std::mem::size_of::<Creature>());
+    println!("PlayerState: {} bytes", std::mem::size_of::<PlayerState>());
+    println!("GameState: {} bytes", std::mem::size_of::<GameState>());
+    println!("ResolvedCommanderPassive: {} bytes", std::mem::size_of::<ResolvedCommanderPassive>());
+    println!("TokenAbility: {} bytes", std::mem::size_of::<TokenAbility>());
+    println!("Option<Vec<TokenAbility>>: {} bytes", std::mem::size_of::<Option<Vec<TokenAbility>>>());
+    println!("Option<String>: {} bytes", std::mem::size_of::<Option<String>>());
+    println!("Vec<TokenAbility>: {} bytes", std::mem::size_of::<Vec<TokenAbility>>());
+    println!("===================\n");
+}

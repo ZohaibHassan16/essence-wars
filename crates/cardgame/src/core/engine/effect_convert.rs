@@ -146,18 +146,16 @@ pub fn effect_def_to_effect_with_target(
             Some(Effect::Destroy { target, filter: filter.clone() })
         }
         EffectDefinition::GrantKeyword { keyword, filter } => {
-            let kw = Keywords::from_names(&[keyword.as_str()]);
             Some(Effect::GrantKeyword {
                 target,
-                keyword: kw.0,
+                keyword: Keywords::parse_keyword_name(keyword),
                 filter: filter.clone(),
             })
         }
         EffectDefinition::RemoveKeyword { keyword, filter } => {
-            let kw = Keywords::from_names(&[keyword.as_str()]);
             Some(Effect::RemoveKeyword {
                 target,
-                keyword: kw.0,
+                keyword: Keywords::parse_keyword_name(keyword),
                 filter: filter.clone(),
             })
         }
@@ -280,18 +278,16 @@ pub fn effect_def_to_triggered_effect(
             None
         }
         EffectDefinition::GrantKeyword { keyword, filter } => {
-            let kw = Keywords::from_names(&[keyword.as_str()]);
             Some(Effect::GrantKeyword {
                 target: default_target,
-                keyword: kw.0,
+                keyword: Keywords::parse_keyword_name(keyword),
                 filter: filter.clone(),
             })
         }
         EffectDefinition::RemoveKeyword { keyword, filter } => {
-            let kw = Keywords::from_names(&[keyword.as_str()]);
             Some(Effect::RemoveKeyword {
                 target: default_target,
-                keyword: kw.0,
+                keyword: Keywords::parse_keyword_name(keyword),
                 filter: filter.clone(),
             })
         }

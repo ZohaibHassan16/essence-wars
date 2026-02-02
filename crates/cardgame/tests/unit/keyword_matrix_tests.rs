@@ -31,6 +31,7 @@ fn keyword_test_db() -> CardDatabase {
             health: 3,
             keywords: vec![],
             abilities: vec![],
+                keywords_bits: cardgame::keywords::Keywords::none(),
         },
         rarity: Rarity::Common,
         tags: vec![],

@@ -194,28 +194,34 @@ fn main() {
         total_games, args.games_per_matchup
     );
 
-    // Estimate time
+    // Estimate time (based on empirical measurements)
+    // Note: These estimates are conservative to avoid surprising users with longer runs
     let estimated_time = match bot_type {
         BotType::AlphaBeta => {
+            // Empirical: depth 6 with 4800 games took ~14000s on 8 threads
+            // That's ~23s/game effective (including parallelization overhead)
             let secs_per_game = match args.ab_depth {
-                d if d <= 4 => 0.5,
-                d if d <= 6 => 2.0,
-                d if d <= 8 => 10.0,
-                _ => 30.0,
+                d if d <= 4 => 5.0,
+                d if d <= 6 => 25.0,   // ~23s observed, round up
+                d if d <= 8 => 120.0,  // Much slower, exponential growth
+                _ => 600.0,            // Depth 10+ is very slow
             };
             total_games as f64 * secs_per_game / num_threads as f64
         }
         BotType::Mcts => {
-            let secs_per_game = args.mcts_sims as f64 * 0.01; // rough estimate
+            // MCTS scales roughly linearly with simulations
+            let secs_per_game = (args.mcts_sims as f64 * 0.05).max(5.0);
             total_games as f64 * secs_per_game / num_threads as f64
         }
         _ => 0.0,
     };
     if estimated_time > 60.0 {
-        println!(
-            "Estimated time: ~{:.0} minutes",
-            estimated_time / 60.0
-        );
+        let hours = estimated_time / 3600.0;
+        if hours >= 1.0 {
+            println!("Estimated time: ~{:.1} hours", hours);
+        } else {
+            println!("Estimated time: ~{:.0} minutes", estimated_time / 60.0);
+        }
     }
     println!();
 

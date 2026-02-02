@@ -14,7 +14,7 @@ use crate::core::cards::{
 };
 use crate::core::effects::{Effect, EffectSource, EffectTarget, TargetingRule};
 use crate::core::keywords::Keywords;
-use crate::core::state::{Creature, GameState, Support};
+use crate::core::state::{Creature, GameState, ResolvedCommanderPassive, Support};
 use crate::core::types::{CardId, PlayerId};
 
 /// Apply a single passive modifier to a creature.
@@ -28,8 +28,7 @@ pub(super) fn apply_passive_to_creature(creature: &mut Creature, modifier: &Pass
             creature.max_health = creature.max_health.saturating_add(*amount);
         }
         PassiveModifier::GrantKeyword(keyword_name) => {
-            let kw = Keywords::from_names(&[keyword_name.as_str()]);
-            creature.keywords.add(kw.0);
+            creature.keywords.add(Keywords::parse_keyword_name(keyword_name));
         }
     }
 }
@@ -53,8 +52,7 @@ pub(super) fn remove_passive_from_creature(creature: &mut Creature, modifier: &P
             }
         }
         PassiveModifier::GrantKeyword(keyword_name) => {
-            let kw = Keywords::from_names(&[keyword_name.as_str()]);
-            creature.keywords.remove(kw.0);
+            creature.keywords.remove(Keywords::parse_keyword_name(keyword_name));
         }
     }
 }
@@ -151,18 +149,18 @@ pub fn support_effect_def_to_effect(
         }
         EffectDefinition::Destroy { filter: _ } => None, // Needs specific targeting
         EffectDefinition::GrantKeyword { keyword, filter } => {
-            let kw = Keywords::from_names(&[keyword.as_str()]);
+            let kw_bits = Keywords::parse_keyword_name(keyword);
             Some(Effect::GrantKeyword {
                 target: EffectTarget::AllAllyCreatures(source_owner),
-                keyword: kw.0,
+                keyword: kw_bits,
                 filter: filter.clone(),
             })
         }
         EffectDefinition::RemoveKeyword { keyword, filter } => {
-            let kw = Keywords::from_names(&[keyword.as_str()]);
+            let kw_bits = Keywords::parse_keyword_name(keyword);
             Some(Effect::RemoveKeyword {
                 target: EffectTarget::AllEnemyCreatures(source_owner),
-                keyword: kw.0,
+                keyword: kw_bits,
                 filter: filter.clone(),
             })
         }
@@ -209,8 +207,8 @@ pub(super) fn apply_commander_passive_to_creature(
 ) {
     match effect {
         CommanderPassiveEffect::GrantKeyword { keyword } => {
-            let kw = Keywords::from_names(&[keyword.as_str()]);
-            creature.keywords.add(kw.0);
+            let kw_bits = Keywords::parse_keyword_name(keyword);
+            creature.keywords.add(kw_bits);
         }
         CommanderPassiveEffect::BuffStats { attack, health } => {
             creature.attack = creature.attack.saturating_add(*attack);
@@ -225,8 +223,8 @@ pub(super) fn apply_commander_passive_to_creature(
             health,
         } => {
             // Grant keyword
-            let kw = Keywords::from_names(&[keyword.as_str()]);
-            creature.keywords.add(kw.0);
+            let kw_bits = Keywords::parse_keyword_name(keyword);
+            creature.keywords.add(kw_bits);
             // Apply stat buff
             creature.attack = creature.attack.saturating_add(*attack);
             if *health != 0 {
@@ -240,8 +238,8 @@ pub(super) fn apply_commander_passive_to_creature(
             health,
         } => {
             // Only apply buff if creature has the required keyword
-            let required_kw = Keywords::from_names(&[required_keyword.as_str()]);
-            if creature.keywords.has(required_kw.0) {
+            let required_kw_bits = Keywords::parse_keyword_name(required_keyword);
+            if creature.keywords.has(required_kw_bits) {
                 creature.attack = creature.attack.saturating_add(*attack);
                 if *health != 0 {
                     creature.current_health = creature.current_health.saturating_add(*health);
@@ -254,28 +252,10 @@ pub(super) fn apply_commander_passive_to_creature(
             granted_keyword,
         } => {
             // Only grant keyword if creature has the required keyword
-            let required_kw = Keywords::from_names(&[required_keyword.as_str()]);
-            if creature.keywords.has(required_kw.0) {
-                let granted_kw = Keywords::from_names(&[granted_keyword.as_str()]);
-                creature.keywords.add(granted_kw.0);
-            }
-        }
-    }
-}
-
-/// Apply a player's commander passive to a newly placed creature.
-///
-/// Called when a creature enters play. Looks up the player's commander
-/// and applies its passive ability if it has one.
-pub(super) fn apply_commander_passive_to_new_creature(
-    creature: &mut Creature,
-    commander_id: Option<CardId>,
-    card_db: &CardDatabase,
-) {
-    if let Some(cmd_id) = commander_id {
-        if let Some(commander) = card_db.get_commander(cmd_id) {
-            if let CommanderAbility::Passive { passive_ability } = &commander.ability {
-                apply_commander_passive_to_creature(creature, &passive_ability.effect);
+            let required_kw_bits = Keywords::parse_keyword_name(required_keyword);
+            if creature.keywords.has(required_kw_bits) {
+                let granted_kw_bits = Keywords::parse_keyword_name(granted_keyword);
+                creature.keywords.add(granted_kw_bits);
             }
         }
     }
@@ -299,6 +279,86 @@ pub(super) fn apply_commander_passive_to_all_creatures(
                 }
             }
         }
+    }
+}
+
+/// Resolve a commander's passive ability into a cached struct.
+///
+/// This is called once at game setup to pre-compute the passive effect,
+/// avoiding CardDatabase lookups during gameplay.
+pub fn resolve_commander_passive(
+    commander_id: Option<CardId>,
+    card_db: &CardDatabase,
+) -> ResolvedCommanderPassive {
+    let mut resolved = ResolvedCommanderPassive::default();
+
+    if let Some(cmd_id) = commander_id {
+        if let Some(commander) = card_db.get_commander(cmd_id) {
+            if let CommanderAbility::Passive { passive_ability } = &commander.ability {
+                match &passive_ability.effect {
+                    CommanderPassiveEffect::GrantKeyword { keyword } => {
+                        resolved.grant_keyword = Keywords::parse_keyword_name(keyword);
+                    }
+                    CommanderPassiveEffect::BuffStats { attack, health } => {
+                        resolved.attack_bonus = *attack;
+                        resolved.health_bonus = *health;
+                    }
+                    CommanderPassiveEffect::GrantKeywordAndBuff { keyword, attack, health } => {
+                        resolved.grant_keyword = Keywords::parse_keyword_name(keyword);
+                        resolved.attack_bonus = *attack;
+                        resolved.health_bonus = *health;
+                    }
+                    CommanderPassiveEffect::BuffStatsIfKeyword { required_keyword, attack, health } => {
+                        resolved.required_keyword = Keywords::parse_keyword_name(required_keyword);
+                        resolved.attack_bonus = *attack;
+                        resolved.health_bonus = *health;
+                    }
+                    CommanderPassiveEffect::GrantKeywordIfKeyword { required_keyword, granted_keyword } => {
+                        resolved.required_keyword = Keywords::parse_keyword_name(required_keyword);
+                        resolved.conditional_grant_keyword = Keywords::parse_keyword_name(granted_keyword);
+                    }
+                }
+            }
+        }
+    }
+
+    resolved
+}
+
+/// Apply a cached commander passive to a creature.
+///
+/// This is the fast path used during gameplay - no CardDatabase lookup required.
+#[inline]
+pub fn apply_commander_passive_from_cache(
+    creature: &mut Creature,
+    passive: &ResolvedCommanderPassive,
+) {
+    if !passive.has_passive() {
+        return;
+    }
+
+    // Unconditional keyword grant
+    if passive.grant_keyword != 0 {
+        creature.keywords.add(passive.grant_keyword);
+    }
+
+    // Stat buffs (conditional or unconditional based on required_keyword)
+    let should_apply_stats = passive.required_keyword == 0
+        || creature.keywords.has(passive.required_keyword);
+
+    if should_apply_stats {
+        creature.attack = creature.attack.saturating_add(passive.attack_bonus);
+        if passive.health_bonus != 0 {
+            creature.current_health = creature.current_health.saturating_add(passive.health_bonus);
+            creature.max_health = creature.max_health.saturating_add(passive.health_bonus);
+        }
+    }
+
+    // Conditional keyword grant (only if required_keyword is present)
+    if passive.conditional_grant_keyword != 0
+        && creature.keywords.has(passive.required_keyword)
+    {
+        creature.keywords.add(passive.conditional_grant_keyword);
     }
 }
 
@@ -352,10 +412,10 @@ fn commander_effect_def_to_effect(
             })
         }
         EffectDefinition::GrantKeyword { keyword, filter } => {
-            let kw = Keywords::from_names(&[keyword.as_str()]);
+            let kw_bits = Keywords::parse_keyword_name(keyword);
             Some(Effect::GrantKeyword {
                 target: EffectTarget::AllAllyCreatures(source_owner),
-                keyword: kw.0,
+                keyword: kw_bits,
                 filter: filter.clone(),
             })
         }
@@ -379,8 +439,8 @@ fn check_commander_condition(
         None => true, // No condition means always trigger
         Some(cond) => {
             if let Some(keyword_name) = &cond.has_keyword {
-                let required_kw = Keywords::from_names(&[keyword_name.as_str()]);
-                creature_keywords.has(required_kw.0)
+                let required_kw_bits = Keywords::parse_keyword_name(keyword_name);
+                creature_keywords.has(required_kw_bits)
             } else {
                 true
             }

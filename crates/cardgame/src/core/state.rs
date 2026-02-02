@@ -10,6 +10,34 @@ use crate::core::types::*;
 use crate::core::keywords::Keywords;
 use crate::core::effects::TokenAbility;
 
+/// Pre-resolved commander passive for fast creature application.
+///
+/// Stored inline on PlayerState to avoid CardDatabase lookups during gameplay.
+/// This is computed once at game start and applied to each new creature without
+/// needing to look up the commander definition.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct ResolvedCommanderPassive {
+    /// Keyword bits to grant unconditionally (0 if none)
+    pub grant_keyword: u16,
+    /// Attack bonus (0 if none)
+    pub attack_bonus: i8,
+    /// Health bonus (0 if none)
+    pub health_bonus: i8,
+    /// Required keyword for conditional effects (0 if unconditional)
+    pub required_keyword: u16,
+    /// Granted keyword (only if required_keyword check passes)
+    pub conditional_grant_keyword: u16,
+}
+
+impl ResolvedCommanderPassive {
+    /// Check if this passive has any effect
+    #[inline]
+    pub fn has_passive(&self) -> bool {
+        self.grant_keyword != 0 || self.attack_bonus != 0 || self.health_bonus != 0
+            || self.conditional_grant_keyword != 0
+    }
+}
+
 /// Status flags for creatures (packed bitfield)
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CreatureStatus(pub u8);
@@ -51,7 +79,7 @@ pub struct Creature {
     pub status: CreatureStatus,
     pub turn_played: u16,
     pub frenzy_stacks: u8,    // Frenzy bonus: +1 attack per stack (resets at end of turn)
-    /// Activated abilities for tokens (None for regular creatures from card database)
+    /// Activated abilities for tokens (None for regular creatures from card database).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub token_abilities: Option<Vec<TokenAbility>>,
     /// Token name (only set for tokens created by SummonToken effects, None for regular creatures)
@@ -114,6 +142,9 @@ pub struct PlayerState {
     pub supports: ArrayVec<Support, {board::SUPPORT_SLOTS}>,
     pub total_damage_dealt: u16,               // For victory points tracking
     pub used_commander_insight: bool,          // Whether Commander's Insight was used this turn
+    /// Cached commander passive (computed at game start, not serialized)
+    #[serde(skip)]
+    pub commander_passive: ResolvedCommanderPassive,
 }
 
 impl PlayerState {
@@ -129,6 +160,7 @@ impl PlayerState {
             supports: ArrayVec::new(),
             total_damage_dealt: 0,
             used_commander_insight: false,
+            commander_passive: ResolvedCommanderPassive::default(),
         }
     }
 

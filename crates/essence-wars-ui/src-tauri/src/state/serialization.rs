@@ -422,9 +422,8 @@ fn describe_token_effects(effects: &[TokenEffect]) -> String {
 }
 
 /// Convert token abilities to AbilityDto list
-fn token_abilities_to_dtos(abilities: &Option<Vec<TokenAbility>>) -> Vec<AbilityDto> {
+fn token_abilities_to_dtos(abilities: Option<&[TokenAbility]>) -> Vec<AbilityDto> {
     abilities
-        .as_ref()
         .map(|abs| {
             abs.iter()
                 .enumerate()
@@ -559,7 +558,7 @@ impl CreatureDto {
         let art_path = Some(format!("cards/core_set/{}.webp", card.id));
 
         // Convert token abilities to DTOs
-        let abilities = token_abilities_to_dtos(&creature.token_abilities);
+        let abilities = token_abilities_to_dtos(creature.token_abilities.as_deref());
 
         Self {
             instance_id: creature.instance_id.0,
@@ -585,7 +584,7 @@ impl CreatureDto {
         let keywords = keywords_to_strings(&creature.keywords);
 
         // Convert token abilities to DTOs
-        let abilities = token_abilities_to_dtos(&creature.token_abilities);
+        let abilities = token_abilities_to_dtos(creature.token_abilities.as_deref());
 
         // Get token name from the creature (stored during token creation)
         let name = creature

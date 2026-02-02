@@ -10,6 +10,7 @@ use crate::core::state::{CardInstance, GameMode, GamePhase, GameState};
 use crate::core::types::{CardId, PlayerId};
 use crate::decks::DeckDefinition;
 
+use super::passive::resolve_commander_passive;
 use super::seeded_shuffle;
 
 /// Error type for game initialization failures.
@@ -95,6 +96,10 @@ pub fn initialize_game_raw(
     // Set commanders
     state.commander_p1 = Some(commander1);
     state.commander_p2 = Some(commander2);
+
+    // Pre-compute commander passives for fast creature application
+    state.players[0].commander_passive = resolve_commander_passive(Some(commander1), card_db);
+    state.players[1].commander_passive = resolve_commander_passive(Some(commander2), card_db);
 
     // Set up player 1's deck
     setup_player_deck(&mut state.players[0].deck, deck1, seed);

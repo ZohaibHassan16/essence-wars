@@ -7,6 +7,7 @@ use crate::core::state::Creature;
 use crate::core::types::{CardId, PlayerId, Slot};
 
 use super::super::effect_context::EffectContext;
+use super::super::passive::apply_commander_passive_from_cache;
 use super::super::triggers::check_creature_triggers;
 use super::EffectHandler;
 
@@ -65,6 +66,12 @@ impl EffectHandler for SummonHandler {
         };
 
         ctx.state.players[self.owner.index()].creatures.push(creature);
+
+        // Apply commander passive effects to the summoned creature
+        let commander_passive = ctx.state.players[self.owner.index()].commander_passive;
+        if let Some(creature) = ctx.state.players[self.owner.index()].get_creature_mut(target_slot) {
+            apply_commander_passive_from_cache(creature, &commander_passive);
+        }
 
         // Check if the summoned creature has <= 0 health (can happen with auras/debuffs)
         if let Some(creature) = ctx.state.players[self.owner.index()].get_creature(target_slot) {
@@ -137,6 +144,12 @@ impl EffectHandler for SummonTokenHandler {
 
         ctx.state.players[self.owner.index()].creatures.push(creature);
 
+        // Apply commander passive effects to the summoned token
+        let commander_passive = ctx.state.players[self.owner.index()].commander_passive;
+        if let Some(creature) = ctx.state.players[self.owner.index()].get_creature_mut(target_slot) {
+            apply_commander_passive_from_cache(creature, &commander_passive);
+        }
+
         // Check if the summoned token has <= 0 health (edge case for 0-health tokens)
         if let Some(creature) = ctx.state.players[self.owner.index()].get_creature(target_slot) {
             if creature.current_health <= 0 {
@@ -206,6 +219,12 @@ impl EffectHandler for TransformHandler {
 
         ctx.state.players[owner.index()].creatures.push(creature);
 
+        // Apply commander passive effects to the transformed creature
+        let commander_passive = ctx.state.players[owner.index()].commander_passive;
+        if let Some(creature) = ctx.state.players[owner.index()].get_creature_mut(slot) {
+            apply_commander_passive_from_cache(creature, &commander_passive);
+        }
+
         if is_dead {
             ctx.mark_for_death(owner, slot);
         }
@@ -269,6 +288,12 @@ impl EffectHandler for CopyHandler {
         };
 
         ctx.state.players[self.owner.index()].creatures.push(creature);
+
+        // Apply commander passive effects to the copied creature
+        let commander_passive = ctx.state.players[self.owner.index()].commander_passive;
+        if let Some(creature) = ctx.state.players[self.owner.index()].get_creature_mut(target_slot) {
+            apply_commander_passive_from_cache(creature, &commander_passive);
+        }
 
         // Check if the copied creature has <= 0 health (can happen if copying damaged creature)
         if let Some(creature) = ctx.state.players[self.owner.index()].get_creature(target_slot) {

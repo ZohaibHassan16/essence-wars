@@ -202,6 +202,9 @@ pub enum CardType {
         health: u8,
         #[serde(default)]
         keywords: Vec<String>,
+        /// Cached keyword bitmask (computed at load time, not serialized)
+        #[serde(skip)]
+        keywords_bits: Keywords,
         #[serde(default)]
         abilities: Vec<AbilityDefinition>,
     },
@@ -411,13 +414,12 @@ pub struct CardDefinition {
 }
 
 impl CardDefinition {
-    /// Get keywords for a creature card (parsed from string list)
+    /// Get keywords for a creature card (returns cached bitmask).
+    /// The bitmask is pre-computed at card load time for performance.
+    #[inline]
     pub fn keywords(&self) -> Keywords {
         match &self.card_type {
-            CardType::Creature { keywords, .. } => {
-                let refs: Vec<&str> = keywords.iter().map(|s| s.as_str()).collect();
-                Keywords::from_names(&refs)
-            }
+            CardType::Creature { keywords_bits, .. } => *keywords_bits,
             _ => Keywords::none(),
         }
     }
@@ -520,7 +522,15 @@ impl CardDatabase {
     }
 
     /// Create a new database from cards and commanders
-    pub fn new_with_commanders(cards: Vec<CardDefinition>, commanders: Vec<CommanderDefinition>) -> Self {
+    pub fn new_with_commanders(mut cards: Vec<CardDefinition>, commanders: Vec<CommanderDefinition>) -> Self {
+        // Pre-compute keyword bits for all creature cards
+        for card in &mut cards {
+            if let CardType::Creature { keywords, keywords_bits, .. } = &mut card.card_type {
+                let refs: Vec<&str> = keywords.iter().map(|s| s.as_str()).collect();
+                *keywords_bits = Keywords::from_names(&refs);
+            }
+        }
+
         // Find max card ID to size the lookup table
         let max_card_id = cards.iter().map(|c| c.id).max().unwrap_or(0) as usize;
 

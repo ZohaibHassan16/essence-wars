@@ -52,8 +52,8 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
         deck1_id: "broodmother_pack",
         deck2_id: "broodmother_pack",
         expected_winner: Some(0), // P1 wins
-        expected_turns: 11,       // Updated for CommanderInsight action priority
-        expected_action_count: 42,
+        expected_turns: 13,       // Updated: tokens now receive commander passives
+        expected_action_count: 47,
     },
     GoldenTestCase {
         name: "greedy_mirror_seed_200",
@@ -61,8 +61,8 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
         deck1_id: "broodmother_pack",
         deck2_id: "broodmother_pack",
         expected_winner: Some(0), // P1 wins
-        expected_turns: 13,       // Updated for activated abilities
-        expected_action_count: 51,
+        expected_turns: 11,       // Updated: tokens now receive commander passives
+        expected_action_count: 43,
     },
     GoldenTestCase {
         name: "greedy_mirror_seed_600",
@@ -70,8 +70,8 @@ const GOLDEN_TESTS: &[GoldenTestCase] = &[
         deck1_id: "broodmother_pack",
         deck2_id: "broodmother_pack",
         expected_winner: Some(0), // P1 wins
-        expected_turns: 19,       // Updated for activated abilities
-        expected_action_count: 87,
+        expected_turns: 11,       // Updated: tokens now receive commander passives
+        expected_action_count: 47,
     },
 ];
 
