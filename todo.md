@@ -41,6 +41,7 @@ Search and review all Asset related Scripts, Data, Prompts, Artwork, Documention
 - Update Human vs AI Tutorial
 - Create Spectator Mode Tutorial 
 - Create Deck Builder Tutorial
+- Use the Replay System to be sure each step is 100% the same each time
 
 ### (I) Discuss Expansion
 

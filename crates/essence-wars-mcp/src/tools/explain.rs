@@ -32,7 +32,7 @@ fn list_all_keywords() -> String {
     output.push_str("| **Quick** | Strikes first in combat; if it kills, takes no damage |\n");
     output.push_str("| **Charge** | +2 Attack on the turn it's played |\n");
     output.push_str("| **Frenzy** | Gains +1 Attack each time it attacks this turn |\n");
-    output.push_str("\n");
+    output.push('\n');
 
     output.push_str("## Defensive Keywords\n\n");
     output.push_str("| Keyword | Effect |\n");
@@ -41,7 +41,7 @@ fn list_all_keywords() -> String {
     output.push_str("| **Stealth** | Cannot be targeted by attacks or abilities until it attacks |\n");
     output.push_str("| **Fortify** | Cannot be reduced below 1 HP by damage |\n");
     output.push_str("| **Ward** | Immune to spells and abilities (can still be attacked) |\n");
-    output.push_str("\n");
+    output.push('\n');
 
     output.push_str("## Lifecycle Keywords\n\n");
     output.push_str("| Keyword | Effect |\n");
@@ -49,7 +49,7 @@ fn list_all_keywords() -> String {
     output.push_str("| **Ephemeral** | Dies at the end of your turn |\n");
     output.push_str("| **Regenerate** | Heals to full health at the start of your turn |\n");
     output.push_str("| **Volatile** | When it dies, deals 2 damage to adjacent creatures |\n");
-    output.push_str("\n");
+    output.push('\n');
 
     output.push_str("---\n");
     output.push_str("Use `explain_keywords <keyword>` for detailed information about a specific keyword.\n");
@@ -247,7 +247,7 @@ fn format_keyword_detail(
     for tip in tips {
         output.push_str(&format!("- {}\n", tip));
     }
-    output.push_str("\n");
+    output.push('\n');
 
     output.push_str(&format!("**Primary Faction**: {}\n", faction));
 

@@ -1,0 +1,289 @@
+# Weekly Balance Benchmark - Parallelized across GitHub Actions runners
+#
+# Runs thorough balance benchmarks using Alpha-Beta search.
+# Results are aggregated and published as artifacts.
+#
+# Parallelization strategy:
+#   - fast/overnight: 12 jobs (one per deck1, runs vs all opponents)
+#   - release: 144 jobs (one per deck1×deck2 pair for max parallelization)
+#
+# Estimated times on GitHub 4-core runners:
+#   - fast (depth 4): ~20min total
+#   - overnight (depth 6): ~6h total (may hit timeout on some jobs)
+#   - release (depth 8): ~3h total (144 parallel jobs)
+
+name: Balance Benchmark
+
+on:
+  # Run weekly on Sunday at midnight UTC
+  schedule:
+    - cron: '0 0 * * 0'
+
+  # Allow manual trigger with preset selection
+  workflow_dispatch:
+    inputs:
+      preset:
+        description: 'Benchmark preset'
+        required: true
+        default: 'fast'
+        type: choice
+        options:
+          - fast
+          - overnight
+          - release
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Get the list of decks and generate the job matrix
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate-matrix.outputs.matrix }}
+      preset: ${{ steps.config.outputs.preset }}
+      depth: ${{ steps.config.outputs.depth }}
+      games: ${{ steps.config.outputs.games }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+
+      - name: Build arena
+        run: cargo build --release --bin arena
+
+      - name: Set configuration
+        id: config
+        run: |
+          PRESET="${{ github.event.inputs.preset || 'fast' }}"
+          echo "preset=$PRESET" >> $GITHUB_OUTPUT
+
+          case $PRESET in
+            fast)
+              echo "depth=4" >> $GITHUB_OUTPUT
+              echo "games=50" >> $GITHUB_OUTPUT
+              ;;
+            overnight)
+              echo "depth=6" >> $GITHUB_OUTPUT
+              echo "games=200" >> $GITHUB_OUTPUT
+              ;;
+            release)
+              echo "depth=8" >> $GITHUB_OUTPUT
+              echo "games=500" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+      - name: Generate job matrix
+        id: generate-matrix
+        run: |
+          # Get deck list
+          DECKS=$(cargo run --release --bin arena -- --list-decks 2>/dev/null | grep "^  [a-z]" | awk '{print $1}')
+          DECK_ARRAY=($(echo "$DECKS"))
+
+          PRESET="${{ github.event.inputs.preset || 'fast' }}"
+
+          if [ "$PRESET" = "release" ]; then
+            # For release: create 144 deck1×deck2 pairs for max parallelization
+            echo "Generating full matrix (144 jobs)..."
+            MATRIX='{"include":['
+            FIRST=true
+            for d1 in "${DECK_ARRAY[@]}"; do
+              for d2 in "${DECK_ARRAY[@]}"; do
+                if [ "$FIRST" = true ]; then
+                  FIRST=false
+                else
+                  MATRIX+=','
+                fi
+                MATRIX+="{\"deck1\":\"$d1\",\"deck2\":\"$d2\"}"
+              done
+            done
+            MATRIX+=']}'
+          else
+            # For fast/overnight: 12 jobs, each deck1 vs all opponents
+            echo "Generating deck1 matrix (12 jobs)..."
+            MATRIX='{"include":['
+            FIRST=true
+            for d1 in "${DECK_ARRAY[@]}"; do
+              if [ "$FIRST" = true ]; then
+                FIRST=false
+              else
+                MATRIX+=','
+              fi
+              MATRIX+="{\"deck1\":\"$d1\",\"deck2\":\"\"}"
+            done
+            MATRIX+=']}'
+          fi
+
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+          echo "Generated matrix with $(echo $MATRIX | jq '.include | length') jobs"
+
+  # Run benchmarks in parallel
+  benchmark:
+    needs: setup
+    runs-on: ubuntu-latest
+    timeout-minutes: 360  # 6 hour max
+    strategy:
+      fail-fast: false
+      max-parallel: 20  # Limit concurrent jobs to avoid overwhelming runners
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-benchmark-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build benchmark
+        run: cargo build --release --bin benchmark
+
+      - name: Run benchmark
+        run: |
+          DEPTH="${{ needs.setup.outputs.depth }}"
+          GAMES="${{ needs.setup.outputs.games }}"
+          DECK1="${{ matrix.deck1 }}"
+          DECK2="${{ matrix.deck2 }}"
+
+          # Build command
+          CMD="cargo run --release --bin benchmark --"
+          CMD+=" --deck1 $DECK1"
+          CMD+=" --ab-depth $DEPTH"
+          CMD+=" -n $GAMES"
+          CMD+=" --progress"
+
+          # Add deck2 filter if specified (release preset)
+          if [ -n "$DECK2" ]; then
+            CMD+=" --deck2 $DECK2"
+            RUN_ID="benchmark-${DECK1}-vs-${DECK2}"
+          else
+            RUN_ID="benchmark-${DECK1}"
+          fi
+          CMD+=" --run-id $RUN_ID"
+
+          echo "Running: $CMD"
+          eval $CMD
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ matrix.deck1 }}-${{ matrix.deck2 || 'all' }}
+          path: experiments/benchmark/benchmark-*/
+          retention-days: 90
+
+  # Aggregate all results into a single report
+  aggregate:
+    needs: [setup, benchmark]
+    runs-on: ubuntu-latest
+    if: always() && needs.benchmark.result != 'cancelled'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all benchmark artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: benchmark-results/
+          pattern: results-*
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Aggregate results
+        run: |
+          echo "=== Aggregating Benchmark Results ==="
+          mkdir -p aggregated-results
+
+          # Find all results.json files and merge
+          python3 << 'EOF'
+          import json
+          import os
+          from pathlib import Path
+          from datetime import datetime
+
+          results_dir = Path("benchmark-results")
+          all_matchups = []
+          config = None
+          version = None
+
+          # Collect all matchups
+          for results_file in results_dir.rglob("results.json"):
+              print(f"Processing: {results_file}")
+              with open(results_file) as f:
+                  data = json.load(f)
+                  if "matchups" in data:
+                      all_matchups.extend(data["matchups"])
+                  if config is None and "config" in data:
+                      config = data["config"]
+                  if version is None and "version" in data:
+                      version = data["version"]
+
+          # Create aggregated results
+          aggregated = {
+              "version": version,
+              "config": config,
+              "matchups": all_matchups,
+              "aggregated_at": datetime.utcnow().isoformat(),
+              "total_matchups": len(all_matchups)
+          }
+
+          # Save
+          output_path = Path("aggregated-results/results.json")
+          with open(output_path, "w") as f:
+              json.dump(aggregated, f, indent=2)
+
+          print(f"Aggregated {len(all_matchups)} matchups")
+
+          # Generate summary
+          summary = f"""Balance Benchmark Results
+          ==========================
+          Preset: ${{ needs.setup.outputs.preset }}
+          Depth: ${{ needs.setup.outputs.depth }}
+          Games per matchup: ${{ needs.setup.outputs.games }}
+          Total matchups: {len(all_matchups)}
+          Date: {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}
+          """
+          with open("aggregated-results/summary.txt", "w") as f:
+              f.write(summary)
+          print(summary)
+          EOF
+
+      - name: Upload aggregated results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-report-${{ needs.setup.outputs.preset }}-${{ github.run_number }}
+          path: aggregated-results/
+          retention-days: 365
+
+      - name: Create job summary
+        run: |
+          cat << 'EOF' >> $GITHUB_STEP_SUMMARY
+          ## 🎮 Balance Benchmark Complete
+
+          | Setting | Value |
+          |---------|-------|
+          | Preset | ${{ needs.setup.outputs.preset }} |
+          | Alpha-Beta Depth | ${{ needs.setup.outputs.depth }} |
+          | Games per Matchup | ${{ needs.setup.outputs.games }} |
+
+          ### Results
+          Download the `benchmark-report-*` artifact for full results.
+
+          ### Next Steps
+          - Review deck win rates for balance issues
+          - Check for outlier matchups (>60% or <40%)
+          - Use results for game design decisions
+          EOF

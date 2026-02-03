@@ -3,8 +3,8 @@
 **/*.rs.bk
 *.pdb
 
-# Cargo lock file (uncomment if you want to ignore it for libraries)
-Cargo.lock
+# Cargo.lock should be committed for binary applications
+# (This is a workspace with binaries, not a library)
 
 # IDE / Editor files
 .vscode/
@@ -12,9 +12,8 @@ Cargo.lock
 *.swp
 *.swo
 *~
-.DS_Store
 
-# Rust analyzer
+# OS generated files
 .rust-analyzer/
 
 # Backup files
@@ -91,14 +90,21 @@ dmypy.json
 # Jupyter
 .ipynb_checkpoints/
 
+# Node.js / Frontend (essence-wars-ui)
+node_modules/
+.svelte-kit/
+dist/
+
 # maturin build
 python/cardgame/_cardgame*.so
 python/cardgame/_cardgame*.pyd
 
-# Experiments and Data
+# Experiments and Data (never commit training artifacts)
 experiments/
 models/
 data/datasets/
+
+# Research notes may contain sensitive info - review before committing
 research/
 assets/
 
