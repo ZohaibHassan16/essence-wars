@@ -6,4 +6,5 @@ export { default as BrowsableCardItem } from "./BrowsableCardItem.svelte";
 export { default as DeckPanel } from "./DeckPanel.svelte";
 export { default as DeckCardList } from "./DeckCardList.svelte";
 export { default as CommanderPickerModal } from "./CommanderPickerModal.svelte";
+export { default as SaveDeckModal } from "./SaveDeckModal.svelte";
 export { default as DeckListView } from "./DeckListView.svelte";

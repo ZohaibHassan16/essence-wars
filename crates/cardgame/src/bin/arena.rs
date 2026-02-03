@@ -117,6 +117,10 @@ struct Args {
     #[arg(long, default_value = "6")]
     ab_depth: u32,
 
+    /// Use legacy Alpha-Beta config (no TT, no LMR, no aspiration windows)
+    #[arg(long)]
+    ab_legacy: bool,
+
     /// Enable invariant checking after every action (forces sequential mode, slower)
     #[arg(long)]
     invariants: bool,
@@ -369,7 +373,11 @@ fn main() {
     };
 
     // Create Alpha-Beta config
-    let alphabeta_config = AlphaBetaConfig::with_depth(args.ab_depth);
+    let alphabeta_config = if args.ab_legacy {
+        AlphaBetaConfig::legacy(args.ab_depth)
+    } else {
+        AlphaBetaConfig::with_depth(args.ab_depth)
+    };
 
     // Print MCTS config if using MCTS
     if bot1_type.uses_mcts() || bot2_type.uses_mcts() {
@@ -381,7 +389,8 @@ fn main() {
 
     // Print Alpha-Beta config if using Alpha-Beta
     if bot1_type == BotType::AlphaBeta || bot2_type == BotType::AlphaBeta {
-        println!("Alpha-Beta: depth {}", alphabeta_config.max_depth);
+        let mode = if args.ab_legacy { "legacy" } else { "optimized (TT+LMR+Aspiration)" };
+        println!("Alpha-Beta: depth {}, mode: {}", alphabeta_config.max_depth, mode);
     }
 
     // Parse game mode (essence-war is default, accept legacy names for compatibility)

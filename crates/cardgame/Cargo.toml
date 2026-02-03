@@ -42,6 +42,7 @@ indicatif.workspace = true
 log = "0.4"
 env_logger.workspace = true
 ctrlc = "3.4"
+num_cpus = "1.16"
 
 # Optional Python bindings
 pyo3 = { version = "0.22", features = ["extension-module"], optional = true }

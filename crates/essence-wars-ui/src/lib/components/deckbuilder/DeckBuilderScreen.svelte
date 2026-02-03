@@ -5,9 +5,15 @@
   import CardBrowser from "./CardBrowser.svelte";
   import DeckPanel from "./DeckPanel.svelte";
   import CommanderPickerModal from "./CommanderPickerModal.svelte";
+  import SaveDeckModal from "./SaveDeckModal.svelte";
   import DeckListView from "./DeckListView.svelte";
 
   let showCommanderPicker = $state(false);
+  let showSaveModal = $state(false);
+  let saveButtonState = $state<"idle" | "saved">("idle");
+
+  // Whether this is a new deck (not yet saved)
+  const isNewDeck = $derived(!deckBuilderStore.currentDeckId);
 
   function handleBack() {
     if (deckBuilderStore.phase === "building") {
@@ -18,7 +24,38 @@
   }
 
   function handleSave() {
-    deckBuilderStore.saveDeck();
+    if (isNewDeck) {
+      // New deck: show save modal to get name/description
+      showSaveModal = true;
+      playSound("menuOpen");
+    } else {
+      // Existing deck: save directly with feedback
+      saveExistingDeck();
+    }
+  }
+
+  async function saveExistingDeck() {
+    await deckBuilderStore.saveDeck();
+    if (!deckBuilderStore.error) {
+      showSavedFeedback();
+    }
+  }
+
+  function showSavedFeedback() {
+    saveButtonState = "saved";
+    playSound("cardSelect");
+    setTimeout(() => {
+      saveButtonState = "idle";
+    }, 2000);
+  }
+
+  function closeSaveModal() {
+    showSaveModal = false;
+    playSound("menuClose");
+  }
+
+  function handleSaveModalSaved() {
+    showSavedFeedback();
   }
 
   function openCommanderPicker() {
@@ -33,7 +70,9 @@
 
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === "Escape") {
-      if (showCommanderPicker) {
+      if (showSaveModal) {
+        closeSaveModal();
+      } else if (showCommanderPicker) {
         closeCommanderPicker();
       } else {
         handleBack();
@@ -67,11 +106,14 @@
       {#if deckBuilderStore.phase === "building"}
         <button
           class="save-button"
+          class:saved={saveButtonState === "saved"}
           onclick={handleSave}
-          disabled={deckBuilderStore.isLoading || !deckBuilderStore.selectedCommander}
+          disabled={deckBuilderStore.isLoading || !deckBuilderStore.selectedCommander || saveButtonState === "saved"}
         >
           {#if deckBuilderStore.isLoading}
             Saving...
+          {:else if saveButtonState === "saved"}
+            ✓ Saved!
           {:else}
             Save Deck
           {/if}
@@ -117,6 +159,11 @@
   <!-- Commander Picker Modal -->
   {#if showCommanderPicker}
     <CommanderPickerModal onClose={closeCommanderPicker} />
+  {/if}
+
+  <!-- Save Deck Modal -->
+  {#if showSaveModal}
+    <SaveDeckModal onClose={closeSaveModal} onSaved={handleSaveModalSaved} />
   {/if}
 </div>
 
@@ -186,6 +233,11 @@
   .save-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  .save-button.saved {
+    background: #22c55e;
+    opacity: 1;
   }
 
   .error-banner {

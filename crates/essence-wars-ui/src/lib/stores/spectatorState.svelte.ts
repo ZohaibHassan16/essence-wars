@@ -8,8 +8,10 @@ import type {
   DeckInfo,
   BotInfo,
   GameEventDto,
+  CustomDeckInfo,
 } from "$lib/api/types";
 import * as api from "$lib/api/game";
+import * as deckBuilderApi from "$lib/api/deckBuilder";
 import {
   triggerDamage,
   triggerHeal,
@@ -139,11 +141,31 @@ class SpectatorStore {
   async loadDecksAndBots() {
     this.error = null;
     try {
-      const [decks, bots] = await Promise.all([
+      const [decks, bots, customDecks] = await Promise.all([
         api.listDecks(),
         api.listBots(),
+        deckBuilderApi.listCustomDecks().catch(() => [] as CustomDeckInfo[]), // Gracefully handle if custom decks fail
       ]);
-      this.decks = decks;
+
+      // Convert custom decks to DeckInfo format with "custom:" prefix
+      const customDeckInfos: DeckInfo[] = customDecks.map((cd) => ({
+        id: `custom:${cd.id}`,
+        name: `${cd.name} (Custom)`,
+        description: cd.description,
+        playstyle: cd.playstyle?.primary ?? "Custom",
+        faction: cd.faction,
+        cardCount: cd.cardCount,
+        commander: {
+          id: cd.commanderId,
+          name: cd.commanderName,
+          faction: cd.faction,
+          abilityDescription: "",
+          portraitPath: `portrait/${cd.commanderName.toLowerCase().replace(/\s+/g, "_")}.webp`,
+        },
+      }));
+
+      // Merge built-in decks with custom decks
+      this.decks = [...decks, ...customDeckInfos];
       this.bots = bots;
       this.phase = "setup";
     } catch (e) {

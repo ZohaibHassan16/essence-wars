@@ -2,7 +2,8 @@
 //!
 //! Commands for computing and managing AI vs AI spectator matches.
 
-use crate::state::{GameManager, SpectatorComputer, SpectatorConfig, SpectatorMatch};
+use std::sync::Arc;
+use crate::state::{CustomDeckManager, GameManager, SpectatorComputer, SpectatorConfig, SpectatorMatch};
 use tauri::State;
 
 /// Compute a complete spectator match between two AI players.
@@ -11,13 +12,19 @@ use tauri::State;
 /// with their associated game states and events for playback.
 ///
 /// The computation runs in a background thread to avoid blocking the UI.
+/// Supports custom decks with "custom:" prefix in deck IDs.
 #[tauri::command]
 pub async fn compute_spectator_match(
     config: SpectatorConfig,
     game_manager: State<'_, GameManager>,
+    custom_deck_manager: State<'_, CustomDeckManager>,
 ) -> Result<SpectatorMatch, String> {
-    // Create a clonable computer from the manager
-    let computer = SpectatorComputer::from_manager(game_manager.inner());
+    // Clone the custom deck manager so it can be moved into the blocking task
+    let custom_manager = Arc::new(custom_deck_manager.inner().clone());
+    let computer = SpectatorComputer::from_manager_with_custom_decks(
+        game_manager.inner(),
+        custom_manager,
+    );
 
     // Run the CPU-intensive game simulation in a blocking thread
     tokio::task::spawn_blocking(move || computer.compute_match(config))

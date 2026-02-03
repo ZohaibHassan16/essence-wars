@@ -3,14 +3,14 @@
   import DeckCardList from "./DeckCardList.svelte";
 
   function getPlaystyleIcon(playstyle: string): string {
-    switch (playstyle) {
-      case "Aggro":
+    switch (playstyle.toLowerCase()) {
+      case "aggro":
         return "🔥";
-      case "Control":
+      case "control":
         return "🛡️";
-      case "Tempo":
+      case "tempo":
         return "⚡";
-      case "Midrange":
+      case "midrange":
         return "⚖️";
       default:
         return "❓";
@@ -18,18 +18,23 @@
   }
 
   function getPlaystyleColor(playstyle: string): string {
-    switch (playstyle) {
-      case "Aggro":
+    switch (playstyle.toLowerCase()) {
+      case "aggro":
         return "#ef4444";
-      case "Control":
+      case "control":
         return "#3b82f6";
-      case "Tempo":
+      case "tempo":
         return "#f59e0b";
-      case "Midrange":
+      case "midrange":
         return "#22c55e";
       default:
         return "#9ca3af";
     }
+  }
+
+  /** Capitalize first letter for display */
+  function formatPlaystyle(playstyle: string): string {
+    return playstyle.charAt(0).toUpperCase() + playstyle.slice(1);
   }
 
   // Get max value for mana curve scaling
@@ -106,7 +111,7 @@
       style="--playstyle-color: {getPlaystyleColor(deckBuilderStore.playstyle.primary)}"
     >
       <span class="playstyle-icon">{getPlaystyleIcon(deckBuilderStore.playstyle.primary)}</span>
-      <span class="playstyle-name">{deckBuilderStore.playstyle.primary}</span>
+      <span class="playstyle-name">{formatPlaystyle(deckBuilderStore.playstyle.primary)}</span>
     </div>
   {/if}
 

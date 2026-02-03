@@ -331,6 +331,88 @@ impl<'a> GreedyBot<'a> {
     }
 }
 
+/// Standalone evaluation function for use by other bots (e.g., MCTS early termination).
+///
+/// Evaluates a game state from the perspective of the given player using the provided weights.
+/// Returns a score where higher is better for the specified player.
+///
+/// This is the same evaluation logic as `GreedyBot::evaluate_state()`, but can be called
+/// without constructing a GreedyBot instance.
+pub fn evaluate_position(state: &GameState, player: PlayerId, weights: &GreedyWeights) -> f32 {
+    let w = weights;
+    let player_idx = player.index();
+    let opponent_idx = player.opponent().index();
+
+    let player_state = &state.players[player_idx];
+    let opponent_state = &state.players[opponent_idx];
+
+    let mut score = 0.0;
+
+    // Check for terminal states first
+    if let Some(result) = &state.result {
+        match result {
+            crate::state::GameResult::Win { winner, .. } => {
+                if *winner == player {
+                    return w.win_bonus;
+                } else {
+                    return w.lose_penalty;
+                }
+            }
+            crate::state::GameResult::Draw => return 0.0,
+        }
+    }
+
+    // Life totals
+    score += player_state.life as f32 * w.own_life;
+    score += (player_config::STARTING_LIFE as i16 - opponent_state.life) as f32 * w.enemy_life_damage;
+
+    // Own creatures
+    for creature in &player_state.creatures {
+        score += creature.attack.max(0) as f32 * w.own_creature_attack;
+        score += creature.current_health.max(0) as f32 * w.own_creature_health;
+
+        // Keyword bonuses (original 8)
+        let kw = creature.keywords;
+        if kw.has_guard() { score += w.keyword_guard; }
+        if kw.has_lethal() { score += w.keyword_lethal; }
+        if kw.has_lifesteal() { score += w.keyword_lifesteal; }
+        if kw.has_rush() { score += w.keyword_rush; }
+        if kw.has_ranged() { score += w.keyword_ranged; }
+        if kw.has_piercing() { score += w.keyword_piercing; }
+        if kw.has_shield() { score += w.keyword_shield; }
+        if kw.has_quick() { score += w.keyword_quick; }
+        // Keyword bonuses (new 4)
+        if kw.has_ephemeral() { score += w.keyword_ephemeral; }
+        if kw.has_regenerate() { score += w.keyword_regenerate; }
+        if kw.has_stealth() { score += w.keyword_stealth; }
+        if kw.has_charge() { score += w.keyword_charge; }
+        // Keyword bonuses (Symbiote v0.5.0)
+        if kw.has_frenzy() { score += w.keyword_frenzy; }
+        if kw.has_volatile() { score += w.keyword_volatile; }
+        // Keyword bonuses (Phase 5 v0.5.0)
+        if kw.has_fortify() { score += w.keyword_fortify; }
+        if kw.has_ward() { score += w.keyword_ward; }
+    }
+
+    // Enemy creatures (these weights are typically negative)
+    for creature in &opponent_state.creatures {
+        score += creature.attack.max(0) as f32 * w.enemy_creature_attack;
+        score += creature.current_health.max(0) as f32 * w.enemy_creature_health;
+    }
+
+    // Board control
+    let my_creatures = player_state.creatures.len() as f32;
+    let enemy_creatures = opponent_state.creatures.len() as f32;
+    score += my_creatures * w.creature_count;
+    score += (my_creatures - enemy_creatures) * w.board_advantage;
+
+    // Resources
+    score += player_state.hand.len() as f32 * w.cards_in_hand;
+    score += player_state.action_points as f32 * w.action_points;
+
+    score
+}
+
 /// Simple priority heuristic for actions (used in fallback mode).
 fn action_priority(action: &Action) -> i32 {
     match action {

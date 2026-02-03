@@ -7,7 +7,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use cardgame::{CardDatabase, CardType};
+use cardgame::{CardDatabase, CardType, DeckDefinition};
 use cardgame::core::cards::Faction as CardFaction;
 use cardgame::core::types::Rarity;
 use cardgame::types::CardId;
@@ -20,6 +20,7 @@ use super::playstyle::calculate_playstyle;
 use super::serialization::{card_type_to_string, faction_from_card_id, CommanderDto};
 
 /// Manager for custom deck file operations.
+#[derive(Clone)]
 pub struct CustomDeckManager {
     decks_dir: PathBuf,
     card_db: Arc<CardDatabase>,
@@ -231,6 +232,23 @@ impl CustomDeckManager {
     /// Calculate playstyle for a deck.
     pub fn calculate_playstyle(&self, cards: &[u16], commander_id: u16) -> PlaystyleScore {
         calculate_playstyle(cards, commander_id, &self.card_db)
+    }
+
+    /// Convert a CustomDeck to a DeckDefinition for use in games.
+    pub fn to_deck_definition(&self, deck: &CustomDeck) -> Result<DeckDefinition, String> {
+        // Calculate playstyle for the playstyle field
+        let playstyle = self.calculate_playstyle(&deck.cards, deck.commander);
+        let playstyle_str = format!("{:?}", playstyle.primary);
+
+        Ok(DeckDefinition {
+            id: deck.id.clone(),
+            name: deck.name.clone(),
+            description: deck.description.clone(),
+            playstyle: playstyle_str,
+            commander: deck.commander,
+            cards: deck.cards.clone(),
+            tags: deck.tags.clone(),
+        })
     }
 
     /// Get all cards browsable by the deck builder (all factions + neutral).

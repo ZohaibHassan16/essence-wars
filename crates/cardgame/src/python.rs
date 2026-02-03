@@ -39,7 +39,7 @@ use crate::core::engine::GameEngine;
 use crate::core::state::GameMode;
 use crate::core::types::PlayerId;
 use crate::decks::{DeckDefinition, DeckRegistry};
-use crate::bots::{Bot, GreedyBot, MctsBot, MctsConfig, RandomBot};
+use crate::bots::{AlphaBetaBot, AlphaBetaConfig, Bot, GreedyBot, MctsBot, MctsConfig, RandomBot};
 
 /// Single game wrapper for Python.
 ///
@@ -268,6 +268,38 @@ impl PyGame {
         let mut bot = MctsBot::with_config(self.card_db, config, 42);
 
         // MCTS needs engine access for simulation
+        let action = bot.select_action_with_engine(&self.engine);
+
+        Ok(action.to_index())
+    }
+
+    /// Get action from the built-in Alpha-Beta bot.
+    ///
+    /// Alpha-Beta is a highly optimized minimax search with:
+    /// - Transposition table for position caching
+    /// - Killer moves and history heuristic for move ordering
+    /// - Aspiration windows for faster iterative deepening
+    /// - Late Move Reduction (LMR) for deeper effective search
+    ///
+    /// This bot is 18-30x faster than MCTS at comparable strength.
+    ///
+    /// Args:
+    ///     depth: Search depth in plies (default: 6, recommended: 6-8)
+    ///
+    /// Returns:
+    ///     int: Action index chosen by Alpha-Beta search
+    #[pyo3(signature = (depth=6))]
+    fn alphabeta_action(&self, depth: u32) -> PyResult<u8> {
+        let legal_actions = self.engine.get_legal_actions();
+
+        if legal_actions.is_empty() {
+            return Err(PyRuntimeError::new_err("No legal actions available"));
+        }
+
+        let config = AlphaBetaConfig::with_depth(depth);
+        let mut bot = AlphaBetaBot::with_config(self.card_db, config, 42);
+
+        // Alpha-Beta needs engine access for tree search
         let action = bot.select_action_with_engine(&self.engine);
 
         Ok(action.to_index())

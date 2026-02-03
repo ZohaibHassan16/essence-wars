@@ -1,8 +1,8 @@
 //! Game-related Tauri commands.
 
 use crate::state::{
-    ActionInfo, AiHintResponse, BotInfo, DeckInfo, GameConfig, GameManager, GameResultDto,
-    GameStateDto, GameStateUpdate,
+    ActionInfo, AiHintResponse, BotInfo, CustomDeckManager, DeckInfo, GameConfig, GameManager,
+    GameResultDto, GameStateDto, GameStateUpdate,
 };
 use tauri::State;
 
@@ -18,13 +18,14 @@ pub fn list_bots(game_manager: State<'_, GameManager>) -> Vec<BotInfo> {
     game_manager.list_bots()
 }
 
-/// Start a new game
+/// Start a new game with support for custom decks (custom: prefix)
 #[tauri::command]
 pub fn new_game(
     config: GameConfig,
     game_manager: State<'_, GameManager>,
+    custom_deck_manager: State<'_, CustomDeckManager>,
 ) -> Result<GameStateDto, String> {
-    game_manager.new_game(config)
+    game_manager.new_game_with_custom_decks(config, Some(custom_deck_manager.inner()))
 }
 
 /// Get current game state

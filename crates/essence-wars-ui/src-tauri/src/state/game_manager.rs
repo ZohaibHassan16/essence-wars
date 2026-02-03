@@ -3,7 +3,7 @@
 use cardgame::bots::{create_bot, AlphaBetaConfig, BotType, GreedyBot, MctsConfig};
 use cardgame::client_api::GameClient;
 use cardgame::execution::MAX_ACTIONS_PER_GAME;
-use cardgame::{CardDatabase, DeckRegistry, PlayerId};
+use cardgame::{CardDatabase, DeckDefinition, DeckRegistry, PlayerId};
 use std::time::Instant;
 use parking_lot::RwLock;
 use rand::Rng;
@@ -141,18 +141,49 @@ impl GameManager {
         ]
     }
 
-    /// Create a new game session
-    pub fn new_game(&self, config: GameConfig) -> Result<GameStateDto, String> {
-        // Get decks
-        let player_deck = self
-            .deck_registry
-            .get(&config.player_deck_id)
-            .ok_or_else(|| format!("Player deck not found: {}", config.player_deck_id))?;
+    /// Resolve a deck ID to a DeckDefinition, supporting both built-in and custom decks.
+    /// Custom deck IDs are prefixed with "custom:".
+    fn resolve_deck(
+        &self,
+        deck_id: &str,
+        custom_deck_manager: Option<&super::CustomDeckManager>,
+    ) -> Result<DeckDefinition, String> {
+        if let Some(custom_id) = deck_id.strip_prefix("custom:") {
+            // Load custom deck
+            let manager = custom_deck_manager
+                .ok_or_else(|| "Custom deck manager not available".to_string())?;
 
-        let opponent_deck = self
-            .deck_registry
-            .get(&config.opponent_deck_id)
-            .ok_or_else(|| format!("Opponent deck not found: {}", config.opponent_deck_id))?;
+            let custom_deck = manager
+                .load_deck(custom_id)
+                .map_err(|e| format!("Failed to load custom deck '{}': {}", custom_id, e))?;
+
+            // Convert CustomDeck to DeckDefinition
+            manager
+                .to_deck_definition(&custom_deck)
+                .map_err(|e| format!("Failed to convert custom deck '{}': {}", custom_id, e))
+        } else {
+            // Built-in deck
+            self.deck_registry
+                .get(deck_id)
+                .cloned()
+                .ok_or_else(|| format!("Deck not found: {}", deck_id))
+        }
+    }
+
+    /// Create a new game session (built-in decks only, for backwards compatibility)
+    pub fn new_game(&self, config: GameConfig) -> Result<GameStateDto, String> {
+        self.new_game_with_custom_decks(config, None)
+    }
+
+    /// Create a new game session with custom deck support
+    pub fn new_game_with_custom_decks(
+        &self,
+        config: GameConfig,
+        custom_deck_manager: Option<&super::CustomDeckManager>,
+    ) -> Result<GameStateDto, String> {
+        // Get decks (supports both built-in and custom: prefixed deck IDs)
+        let player_deck = self.resolve_deck(&config.player_deck_id, custom_deck_manager)?;
+        let opponent_deck = self.resolve_deck(&config.opponent_deck_id, custom_deck_manager)?;
 
         // Parse bot type
         let bot_type: BotType = config
@@ -173,9 +204,9 @@ impl GameManager {
 
         // Start game (deck definitions include commanders)
         if player_first {
-            client.start_game(player_deck, opponent_deck, game_seed);
+            client.start_game(&player_deck, &opponent_deck, game_seed);
         } else {
-            client.start_game(opponent_deck, player_deck, game_seed);
+            client.start_game(&opponent_deck, &player_deck, game_seed);
         }
 
         let game_id = Uuid::new_v4().to_string();
@@ -635,6 +666,7 @@ impl Default for GameManager {
 pub struct SpectatorComputer {
     card_db: Arc<CardDatabase>,
     deck_registry: Arc<DeckRegistry>,
+    custom_deck_manager: Option<Arc<super::CustomDeckManager>>,
 }
 
 impl SpectatorComputer {
@@ -643,21 +675,54 @@ impl SpectatorComputer {
         Self {
             card_db: manager.card_db(),
             deck_registry: manager.deck_registry(),
+            custom_deck_manager: None,
+        }
+    }
+
+    /// Create a new SpectatorComputer with custom deck support
+    pub fn from_manager_with_custom_decks(
+        manager: &GameManager,
+        custom_deck_manager: Arc<super::CustomDeckManager>,
+    ) -> Self {
+        Self {
+            card_db: manager.card_db(),
+            deck_registry: manager.deck_registry(),
+            custom_deck_manager: Some(custom_deck_manager),
+        }
+    }
+
+    /// Resolve a deck ID to a DeckDefinition, supporting both built-in and custom decks.
+    /// Custom deck IDs are prefixed with "custom:".
+    fn resolve_deck(&self, deck_id: &str) -> Result<DeckDefinition, String> {
+        if let Some(custom_id) = deck_id.strip_prefix("custom:") {
+            // Load custom deck
+            let manager = self
+                .custom_deck_manager
+                .as_ref()
+                .ok_or_else(|| "Custom deck manager not available".to_string())?;
+
+            let custom_deck = manager
+                .load_deck(custom_id)
+                .map_err(|e| format!("Failed to load custom deck '{}': {}", custom_id, e))?;
+
+            // Convert CustomDeck to DeckDefinition
+            manager
+                .to_deck_definition(&custom_deck)
+                .map_err(|e| format!("Failed to convert custom deck '{}': {}", custom_id, e))
+        } else {
+            // Built-in deck
+            self.deck_registry
+                .get(deck_id)
+                .cloned()
+                .ok_or_else(|| format!("Deck not found: {}", deck_id))
         }
     }
 
     /// Compute a complete spectator match between two AI players.
     pub fn compute_match(&self, config: SpectatorConfig) -> Result<SpectatorMatch, String> {
-        // Get decks
-        let deck1 = self
-            .deck_registry
-            .get(&config.player1_deck_id)
-            .ok_or_else(|| format!("Player 1 deck not found: {}", config.player1_deck_id))?;
-
-        let deck2 = self
-            .deck_registry
-            .get(&config.player2_deck_id)
-            .ok_or_else(|| format!("Player 2 deck not found: {}", config.player2_deck_id))?;
+        // Get decks (supports both built-in and custom: prefixed deck IDs)
+        let deck1 = self.resolve_deck(&config.player1_deck_id)?;
+        let deck2 = self.resolve_deck(&config.player2_deck_id)?;
 
         // Parse bot types
         let bot1_type: BotType = config
@@ -684,7 +749,7 @@ impl SpectatorComputer {
         let bot2_seed = rng.gen::<u64>();
 
         // Start game (deck definitions include commanders, player 1 always goes first in spectator mode)
-        client.start_game(deck1, deck2, game_seed);
+        client.start_game(&deck1, &deck2, game_seed);
 
         let match_id = Uuid::new_v4().to_string();
 

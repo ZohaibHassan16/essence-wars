@@ -14,7 +14,7 @@ pub mod factory;
 pub mod introspection;
 
 pub use random::RandomBot;
-pub use greedy::GreedyBot;
+pub use greedy::{evaluate_position, GreedyBot};
 pub use mcts::{MctsBot, MctsConfig, MctsNode};
 pub use alphabeta::{AlphaBetaBot, AlphaBetaConfig, SearchStats};
 pub use weights::{ArchetypeWeights, BotWeights, GreedyWeights, WeightSet};

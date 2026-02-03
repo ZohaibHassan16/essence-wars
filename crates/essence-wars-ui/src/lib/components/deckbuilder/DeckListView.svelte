@@ -31,18 +31,23 @@
   }
 
   function getPlaystyleIcon(playstyle: string): string {
-    switch (playstyle) {
-      case "Aggro":
+    switch (playstyle.toLowerCase()) {
+      case "aggro":
         return "🔥";
-      case "Control":
+      case "control":
         return "🛡️";
-      case "Tempo":
+      case "tempo":
         return "⚡";
-      case "Midrange":
+      case "midrange":
         return "⚖️";
       default:
         return "❓";
     }
+  }
+
+  /** Capitalize first letter for display */
+  function formatPlaystyle(playstyle: string): string {
+    return playstyle.charAt(0).toUpperCase() + playstyle.slice(1);
   }
 
   function getFactionColor(faction: string): string {
@@ -126,7 +131,7 @@
               {#if deck.playstyle}
                 <div class="deck-playstyle">
                   <span class="playstyle-icon">{getPlaystyleIcon(deck.playstyle.primary)}</span>
-                  <span class="playstyle-name">{deck.playstyle.primary}</span>
+                  <span class="playstyle-name">{formatPlaystyle(deck.playstyle.primary)}</span>
                 </div>
               {/if}
 

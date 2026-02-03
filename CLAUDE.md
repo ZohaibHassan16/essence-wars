@@ -21,6 +21,8 @@ uv run pytest python/tests
 ./scripts/run-clippy.sh                  # or cargo clippy
 uv run mypy python/essence_wars
 uv run ruff check python/essence_wars --fix
+pnpm run check # For Tauri/Svelte Modules
+pnpm run lint # In crates/essence-wars-ui crate
 
 # Stress tests by tier
 ./scripts/run-tests.sh quick|medium|long|overnight

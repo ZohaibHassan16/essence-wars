@@ -309,6 +309,163 @@ impl Default for TranspositionTable {
     }
 }
 
+// =============================================================================
+// MCTS Transposition Table
+// =============================================================================
+
+/// Entry in the MCTS transposition table.
+///
+/// Unlike Alpha-Beta's TT (which stores bounds), MCTS TT stores value estimates
+/// from previous rollouts. These can be used to:
+/// 1. Skip rollouts for positions we've seen many times
+/// 2. Initialize node values from cached estimates
+#[derive(Clone, Debug)]
+pub struct MctsTranspositionEntry {
+    /// Zobrist hash of the position (for collision detection)
+    pub hash: u64,
+    /// Number of visits to this position across the search
+    pub visits: u32,
+    /// Sum of rewards from rollouts starting from this position
+    pub total_reward: f32,
+    /// Age (generation) for replacement strategy
+    pub age: u8,
+}
+
+impl MctsTranspositionEntry {
+    /// Create a new entry.
+    pub fn new(hash: u64) -> Self {
+        Self {
+            hash,
+            visits: 0,
+            total_reward: 0.0,
+            age: 0,
+        }
+    }
+
+    /// Get the average value estimate for this position.
+    /// Returns 0.5 (neutral) if no visits.
+    pub fn average_value(&self) -> f32 {
+        if self.visits == 0 {
+            0.5
+        } else {
+            self.total_reward / self.visits as f32
+        }
+    }
+
+    /// Update with a new rollout result.
+    pub fn update(&mut self, win: bool) {
+        self.visits += 1;
+        self.total_reward += if win { 1.0 } else { 0.0 };
+    }
+}
+
+/// MCTS-specific transposition table.
+///
+/// Caches position evaluations across the search to avoid redundant rollouts.
+/// Uses a simple replacement strategy based on visit count and age.
+pub struct MctsTranspositionTable {
+    /// Table entries (power of 2 size for fast modulo)
+    entries: Vec<Option<MctsTranspositionEntry>>,
+    /// Mask for index calculation (size - 1)
+    mask: usize,
+    /// Current generation/age for replacement
+    generation: u8,
+    /// Statistics
+    pub hits: u64,
+    pub misses: u64,
+}
+
+impl MctsTranspositionTable {
+    /// Create a new MCTS transposition table with the given size (in entries).
+    /// Size will be rounded up to the next power of 2.
+    pub fn new(size_hint: usize) -> Self {
+        let size = size_hint.next_power_of_two().max(1024);
+        Self {
+            entries: vec![None; size],
+            mask: size - 1,
+            generation: 0,
+            hits: 0,
+            misses: 0,
+        }
+    }
+
+    /// Create a table with approximately the given memory budget (in MB).
+    pub fn with_memory_mb(mb: usize) -> Self {
+        let entry_size = std::mem::size_of::<Option<MctsTranspositionEntry>>();
+        let entries = (mb * 1024 * 1024) / entry_size;
+        Self::new(entries)
+    }
+
+    /// Increment the generation counter (call at start of each new search).
+    pub fn new_search(&mut self) {
+        self.generation = self.generation.wrapping_add(1);
+    }
+
+    /// Clear all entries.
+    pub fn clear(&mut self) {
+        for entry in &mut self.entries {
+            *entry = None;
+        }
+        self.hits = 0;
+        self.misses = 0;
+    }
+
+    /// Probe the table for an entry.
+    /// Returns the entry if found with matching hash.
+    pub fn probe(&mut self, hash: u64) -> Option<&MctsTranspositionEntry> {
+        let index = (hash as usize) & self.mask;
+
+        if let Some(ref entry) = self.entries[index] {
+            if entry.hash == hash {
+                self.hits += 1;
+                return Some(entry);
+            }
+        }
+
+        self.misses += 1;
+        None
+    }
+
+    /// Update the table with a rollout result.
+    /// Creates a new entry if none exists, or updates the existing one.
+    pub fn update(&mut self, hash: u64, win: bool) {
+        let index = (hash as usize) & self.mask;
+
+        match &mut self.entries[index] {
+            Some(entry) if entry.hash == hash => {
+                // Update existing entry
+                entry.update(win);
+                entry.age = self.generation;
+            }
+            slot => {
+                // Replace with new entry (either empty or collision)
+                let mut entry = MctsTranspositionEntry::new(hash);
+                entry.update(win);
+                entry.age = self.generation;
+                *slot = Some(entry);
+            }
+        }
+    }
+
+    /// Get hit rate (percentage of probes that found an entry).
+    #[allow(dead_code)]
+    pub fn hit_rate(&self) -> f64 {
+        let total = self.hits + self.misses;
+        if total == 0 {
+            0.0
+        } else {
+            (self.hits as f64 / total as f64) * 100.0
+        }
+    }
+}
+
+impl Default for MctsTranspositionTable {
+    fn default() -> Self {
+        // Default: 8MB table for MCTS (smaller than AB since entries are simpler)
+        Self::with_memory_mb(8)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
