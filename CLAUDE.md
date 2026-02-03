@@ -421,30 +421,8 @@ cargo run --release --bin benchmark -- --progress             # Alpha-Beta depth
 cargo run --release --bin benchmark -- --ab-depth 8           # Deeper search (slower)
 cargo run --release --bin benchmark -- --bot mcts --mcts-sims 200  # Use MCTS instead
 cargo run --release --bin benchmark -- -n 100 --progress      # More games
-cargo run --release --bin benchmark -- --deck1 broodmother_pack  # Single deck (for parallel jobs)
+cargo run --release --bin benchmark -- --deck1 broodmother_pack  # Single deck vs all others
 ```
-
-### GitHub Actions Benchmark
-
-The benchmark can run on GitHub Actions with parallelization across runners:
-
-```bash
-# Trigger via CLI
-gh workflow run benchmark.yml --field preset=fast      # ~20min, depth 4
-gh workflow run benchmark.yml --field preset=overnight # ~6h, depth 6
-gh workflow run benchmark.yml --field preset=release   # ~3h, depth 8 (144 parallel jobs)
-
-# Check status
-gh run list --workflow=benchmark.yml --limit 3
-```
-
-| Preset | Depth | Games | Jobs | Time |
-|--------|-------|-------|------|------|
-| fast | 4 | 50 | 12 | ~15min |
-| overnight | 6 | 200 | 12 | ~2h |
-| release | 6 | 200 | 132 | ~30min |
-
-Runs weekly (Sunday midnight UTC). Results saved as artifacts.
 
 **Output includes:**
 - Per-deck win rates with 95% confidence intervals
