@@ -442,7 +442,7 @@ gh run list --workflow=benchmark.yml --limit 3
 |--------|-------|-------|------|------|
 | fast | 4 | 50 | 12 | ~20min |
 | overnight | 6 | 200 | 12 | ~6h |
-| release | 8 | 500 | 144 | ~3h |
+| release | 8 | 500 | 132 | ~3h |
 
 Runs weekly (Sunday midnight UTC). Results saved as artifacts.
 

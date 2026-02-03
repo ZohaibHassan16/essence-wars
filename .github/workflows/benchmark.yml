@@ -87,12 +87,16 @@ jobs:
           PRESET="${{ github.event.inputs.preset || 'fast' }}"
 
           if [ "$PRESET" = "release" ]; then
-            # For release: create 144 deck1×deck2 pairs for max parallelization
-            echo "Generating full matrix (144 jobs)..."
+            # For release: create 132 deck1×deck2 pairs for max parallelization (excluding mirrors)
+            echo "Generating full matrix (132 jobs, excluding mirrors)..."
             MATRIX='{"include":['
             FIRST=true
             for d1 in "${DECK_ARRAY[@]}"; do
               for d2 in "${DECK_ARRAY[@]}"; do
+                # Skip mirror matchups (same deck vs itself)
+                if [ "$d1" = "$d2" ]; then
+                  continue
+                fi
                 if [ "$FIRST" = true ]; then
                   FIRST=false
                 else
