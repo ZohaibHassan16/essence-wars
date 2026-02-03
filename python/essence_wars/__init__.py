@@ -45,7 +45,7 @@ try:
     __version__ = version("essence-wars")
 except PackageNotFoundError:
     # Package not installed (development mode or editable install)
-    __version__ = "0.8.2"
+    __version__ = "0.8.3"
 
 # Import core Rust bindings
 try:
