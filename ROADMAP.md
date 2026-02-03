@@ -1,6 +1,6 @@
 # Essence Wars Roadmap
 
-**Last Updated:** 2026-02-02
+**Last Updated:** 2026-02-03
 **Version:** 0.8.0 (Commander Edition)
 
 ## Current State Summary
@@ -10,7 +10,7 @@
 | Core Engine | Stable | 759 tests passing, deterministic |
 | Performance | **Recovered** | 2.2-2.4x improvement after token data separation |
 | MCP Server | ✅ Complete | 13 tools including explain_*, hybrid ai_hint |
-| Python Gym | Code ready | Missing CI/CD for PyPI publishing |
+| Python Gym | ✅ Ready | CI/CD configured, awaiting first release |
 | Tutorial | ✅ Improved | 35% overlay, enhanced glow, 15 simplified steps |
 | UI (Tauri) | Functional | Deck selection wizard complete |
 
@@ -54,19 +54,31 @@
 
 **Goal:** Polished onboarding experience, enhanced MCP for LLM agents.
 
-### Sprint 3: Distribution
+### Sprint 3: Distribution ✅ COMPLETE
 
 | Task | Priority | Status | Notes |
 |------|----------|--------|-------|
-| Python Gym: `wheels.yml` | P0 | Not started | Multi-platform maturin builds |
-| Python Gym: `test.yml` | P1 | Not started | CI testing for Python |
-| Python Gym: `publish.yml` | P1 | Not started | PyPI trusted publishing |
-| Python Gym: Version sync | P1 | Not started | 0.7.0 → 0.8.0 |
+| Python Gym: Version sync | P1 | ✅ Done | 0.7.0 → 0.8.0, uses `importlib.metadata` |
+| Python Gym: `wheels.yml` | P0 | ✅ Done | Linux/macOS/Windows, x86_64 + ARM64 |
+| Python Gym: `publish.yml` | P1 | ✅ Done | OIDC trusted publishing on v* tags |
+| Python Gym: `test.yml` | P1 | ⏭ Deferred | Moved to Sprint 4 |
+| Test Suite: Performance regression CI | P2 | ⏭ Deferred | Moved to Sprint 4 |
+
+**Result:** PyPI publishing pipeline ready. Tag `v0.8.0` to trigger first release.
+
+**PyPI Setup Required:**
+1. Go to https://pypi.org/manage/project/essence-wars/settings/publishing/
+2. Add trusted publisher: Owner `christianWissmann85`, Repo `essence-wars`, Workflow `publish.yml`
+
+### Sprint 4: CI & Testing
+
+| Task | Priority | Status | Notes |
+|------|----------|--------|-------|
+| Python Gym: `test.yml` | P1 | Not started | CI testing for Python 3.10-3.12 |
 | Test Suite: Performance regression CI | P2 | Not started | Catch regressions early |
+| Rust CI: `rust.yml` | P2 | Not started | cargo test, clippy, fmt on PR |
 
-**Goal:** Enable community adoption via PyPI, prevent performance regressions.
-
-### Sprint 4+: Polish & Expansion
+### Sprint 5+: Polish & Expansion
 
 | Task | Priority | Status | Notes |
 |------|----------|--------|-------|

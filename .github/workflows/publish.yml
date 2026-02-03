@@ -1,0 +1,53 @@
+# Publish to PyPI on version tags using trusted publishing (OIDC)
+# Requires PyPI project to be configured with GitHub as trusted publisher
+#
+# Setup instructions:
+# 1. Go to https://pypi.org/manage/project/essence-wars/settings/publishing/
+# 2. Add a new publisher with:
+#    - Owner: christianWissmann85
+#    - Repository: essence-wars
+#    - Workflow name: publish.yml
+#    - Environment: pypi (optional but recommended)
+
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  # First, build all wheels
+  build:
+    uses: ./.github/workflows/wheels.yml
+
+  # Then publish to PyPI
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/essence-wars/
+    permissions:
+      id-token: write  # Required for trusted publishing
+
+    steps:
+      - name: Download all wheels
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          path: dist
+          merge-multiple: true
+
+      - name: List distribution files
+        run: ls -la dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # No password needed - uses trusted publishing (OIDC)
+          print-hash: true

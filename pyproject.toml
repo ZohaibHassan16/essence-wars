@@ -8,7 +8,7 @@ build-backend = "maturin"
 
 [project]
 name = "essence-wars"
-version = "0.7.0"
+version = "0.8.0"
 description = "High-performance card game environment"
 readme = "README.md"
 license = { text = "MIT" }

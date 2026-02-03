@@ -39,7 +39,13 @@ With Analysis Tools:
     from essence_wars.analysis import ExperimentAggregator
 """
 
-__version__ = "0.6.0"
+from importlib.metadata import PackageNotFoundError, version
+
+try:
+    __version__ = version("essence-wars")
+except PackageNotFoundError:
+    # Package not installed (development mode or editable install)
+    __version__ = "0.8.0"
 
 # Import core Rust bindings
 try:

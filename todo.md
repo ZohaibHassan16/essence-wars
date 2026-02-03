@@ -1,5 +1,9 @@
 # To Do
 
+## Win Condition
+
+Review Win Conditions implementation and Discussion in Code Base and `win-discussion.md`. Update Essence Wars Design Doc and other Documentation, including Game App `crates/essence-wars-ui`.
+
 ## (A) Deck Builder
 
 - Custom Deck Builder
@@ -21,7 +25,7 @@ Update and Enhance the Diagnosis/Analysis Screen in Spectator Mode, using the no
 ## (D) Review and Update MCP Server
 
 - Bring up to date
-- Discuss if a `explain_rules()` function should be added, that concisely explain all rules, so that LLM Agents can play with confidence
+- Review `explain_rules()` , so that LLM Agents can play with confidence
 - Review and Audit complete Package
 - Improve/Enhance AI Hint function
 
