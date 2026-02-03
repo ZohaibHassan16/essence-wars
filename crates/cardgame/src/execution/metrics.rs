@@ -460,9 +460,11 @@ mod tests {
 
     #[test]
     fn test_trade_ratio() {
-        let mut metrics = GameMetricsData::default();
-        metrics.p1_creatures_killed = 4;
-        metrics.p1_creatures_lost = 2;
+        let mut metrics = GameMetricsData {
+            p1_creatures_killed: 4,
+            p1_creatures_lost: 2,
+            ..Default::default()
+        };
 
         assert!((metrics.p1_trade_ratio().unwrap() - 2.0).abs() < 0.01);
 

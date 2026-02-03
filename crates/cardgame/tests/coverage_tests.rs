@@ -248,7 +248,7 @@ fn log_test_failure(seed: u64, deck1_id: &str, deck2_id: &str, bot1_type: &str, 
         let _ = writeln!(file, "Bot 1: {}", bot1_type);
         let _ = writeln!(file, "Bot 2: {}", bot2_type);
         let _ = writeln!(file, "Error: {}", error);
-        let _ = writeln!(file, "");
+        let _ = writeln!(file);
         let _ = writeln!(file, "To reproduce:");
         let _ = writeln!(file, "cargo test --test coverage_tests -- --exact --nocapture");
         let _ = writeln!(file, "# Or use this seed in a custom test");
@@ -291,8 +291,8 @@ fn run_coverage_games(
         let deck1_idx = i % num_decks;
         let deck2_idx = (i / num_decks) % num_decks;
 
-        let deck1 = deck_registry.get(&deck_ids[deck1_idx]).unwrap();
-        let deck2 = deck_registry.get(&deck_ids[deck2_idx]).unwrap();
+        let deck1 = deck_registry.get(deck_ids[deck1_idx]).unwrap();
+        let deck2 = deck_registry.get(deck_ids[deck2_idx]).unwrap();
 
         // Convert u16 to CardId
         let deck1_cards: Vec<CardId> = deck1.cards.iter().map(|&id| CardId(id)).collect();
@@ -365,8 +365,8 @@ fn run_coverage_games(
             
             log_test_failure(
                 seed,
-                &deck_ids[deck1_idx],
-                &deck_ids[deck2_idx],
+                deck_ids[deck1_idx],
+                deck_ids[deck2_idx],
                 bot1_name,
                 bot2_name,
                 "Game ended with 0 turns (possible panic/error)"
@@ -715,8 +715,8 @@ fn test_game_determinism_verification() {
         .expect("Failed to load decks");
 
     let deck_ids: Vec<_> = deck_registry.deck_ids().into_iter().collect();
-    let deck1 = deck_registry.get(&deck_ids[0]).unwrap();
-    let deck2 = deck_registry.get(&deck_ids[1 % deck_ids.len()]).unwrap();
+    let deck1 = deck_registry.get(deck_ids[0]).unwrap();
+    let deck2 = deck_registry.get(deck_ids[1 % deck_ids.len()]).unwrap();
 
     // Convert u16 to CardId
     let deck1_cards: Vec<CardId> = deck1.cards.iter().map(|&id| CardId(id)).collect();

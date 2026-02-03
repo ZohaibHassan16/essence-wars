@@ -78,7 +78,7 @@ fn run_game_with_seed(card_db: &CardDatabase, seed: u64) -> GameOutcome {
 
     let winner = engine.state.result.as_ref().map(|r| match r {
         cardgame::state::GameResult::Win { winner, .. } => *winner,
-        cardgame::state::GameResult::Draw { .. } => PlayerId::PLAYER_ONE, // Placeholder for draw
+        cardgame::state::GameResult::Draw => PlayerId::PLAYER_ONE, // Placeholder for draw
     });
 
     GameOutcome {
@@ -478,7 +478,7 @@ fn run_greedy_game(card_db: &CardDatabase, seed: u64) -> GameOutcome {
 
     let winner = engine.state.result.as_ref().map(|r| match r {
         cardgame::state::GameResult::Win { winner, .. } => *winner,
-        cardgame::state::GameResult::Draw { .. } => PlayerId::PLAYER_ONE,
+        cardgame::state::GameResult::Draw => PlayerId::PLAYER_ONE,
     });
 
     GameOutcome {

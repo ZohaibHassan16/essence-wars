@@ -366,9 +366,9 @@ fn test_all_deck_combinations() {
     for deck1_id in &deck_ids {
         for deck2_id in &deck_ids {
             let deck1 = registry.get(deck1_id)
-                .expect(&format!("Failed to get deck {}", deck1_id));
+                .unwrap_or_else(|| panic!("Failed to get deck {}", deck1_id));
             let deck2 = registry.get(deck2_id)
-                .expect(&format!("Failed to get deck {}", deck2_id));
+                .unwrap_or_else(|| panic!("Failed to get deck {}", deck2_id));
 
             let mut bot1 = GreedyBot::new(&card_db, 12345);
             let mut bot2 = GreedyBot::new(&card_db, 54321);
@@ -436,7 +436,7 @@ fn test_edge_case_quick_lethal_vs_shield() {
         for trace in &result.combat_traces {
             let att_has_quick = trace.attacker_keywords.has_quick();
             let att_has_lethal = trace.attacker_keywords.has_lethal();
-            let def_has_shield = trace.defender_keywords.map_or(false, |k| k.has_shield());
+            let def_has_shield = trace.defender_keywords.is_some_and(|k| k.has_shield());
 
             if att_has_quick && att_has_lethal && def_has_shield {
                 found_scenario = true;

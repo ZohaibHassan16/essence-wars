@@ -80,13 +80,13 @@ fn trace_single_game_detailed() {
         };
 
         // Log interesting moments
-        if current_player == PlayerId::PLAYER_ONE {
-            if lifesteal_in_hand || lifesteal_on_board {
-                println!("Turn {} (P1, {} essence): LS_hand={} LS_board={}",
-                    turn,
-                    engine.state.players[0].current_essence,
-                    lifesteal_in_hand,
-                    lifesteal_on_board);
+        if current_player == PlayerId::PLAYER_ONE
+            && (lifesteal_in_hand || lifesteal_on_board) {
+            println!("Turn {} (P1, {} essence): LS_hand={} LS_board={}",
+                turn,
+                engine.state.players[0].current_essence,
+                lifesteal_in_hand,
+                lifesteal_on_board);
 
                 // Log action
                 match action {
@@ -114,7 +114,6 @@ fn trace_single_game_detailed() {
                     _ => {}
                 }
             }
-        }
 
         engine.apply_action(action).expect("Action should succeed");
         action_count += 1;

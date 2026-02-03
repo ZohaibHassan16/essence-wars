@@ -105,8 +105,10 @@ fn test_weight_customization() {
     let card_db = load_test_db();
 
     // Create bot with custom aggressive weights
-    let mut weights = GreedyWeights::default();
-    weights.enemy_life_damage = 10.0; // Very aggressive
+    let weights = GreedyWeights {
+        enemy_life_damage: 10.0, // Very aggressive
+        ..Default::default()
+    };
 
     let bot = GreedyBot::with_weights(&card_db, weights, 42);
     assert!((bot.weights().enemy_life_damage - 10.0).abs() < 0.001);

@@ -451,7 +451,7 @@ fn test_commander_iterator() {
 
     // All IDs should be in the 5000 range
     for id in commander_ids {
-        assert!(id >= 5000 && id <= 5011, "Commander ID {} out of expected range 5000-5011", id);
+        assert!((5000..=5011).contains(&id), "Commander ID {} out of expected range 5000-5011", id);
     }
 }
 

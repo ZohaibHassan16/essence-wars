@@ -542,10 +542,7 @@ impl<'a> AlphaBetaBot<'a> {
         }
 
         // Don't store captures or end turn as killers (they're already well-ordered)
-        match action {
-            Action::EndTurn => return,
-            _ => {}
-        }
+        if action == Action::EndTurn { return }
 
         let killers = &mut self.killer_moves[depth];
 

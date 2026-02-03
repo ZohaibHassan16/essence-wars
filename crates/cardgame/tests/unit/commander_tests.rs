@@ -196,7 +196,7 @@ fn test_shadow_weaver_spawns_shades_with_stealth() {
 
     // After setup at turn 2, P1 should have 2 Shades (turn 1 + turn 2 start)
     let p1_creatures = &engine.state.players[0].creatures;
-    assert!(p1_creatures.len() >= 1, "P1 should have at least 1 Shade");
+    assert!(!p1_creatures.is_empty(), "P1 should have at least 1 Shade");
 
     // The Shade should have Stealth keyword
     let shade = &p1_creatures[0];
@@ -378,7 +378,7 @@ fn test_commander_passive_applies_to_multiple_creatures() {
     for slot_num in 0..3 {
         let creature = engine.state.players[0]
             .get_creature(Slot(slot_num))
-            .expect(&format!("Creature at slot {} should exist", slot_num));
+            .unwrap_or_else(|| panic!("Creature at slot {} should exist", slot_num));
 
         assert!(
             creature.keywords.has_lifesteal(),

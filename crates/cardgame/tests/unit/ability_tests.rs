@@ -3,6 +3,8 @@
 //! Tests verify that token abilities like Volatile Overload, Fungal Rot,
 //! and Soul Siphon work correctly.
 
+#![allow(clippy::clone_on_copy)]
+
 use cardgame::actions::{Action, Target};
 use cardgame::cards::CardDatabase;
 use cardgame::engine::GameEngine;

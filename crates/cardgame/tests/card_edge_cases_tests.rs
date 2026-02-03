@@ -145,7 +145,7 @@ fn test_transform_effects_create_valid_creatures() {
     
     // If we got here, validation passed - the database load checks for
     // Transform effects with health: 0 or extreme stats
-    assert!(card_db.len() > 0, "Card database should not be empty");
+    assert!(!card_db.is_empty(), "Card database should not be empty");
 }
 
 #[test]
@@ -156,7 +156,7 @@ fn test_summon_effects_create_valid_creatures() {
         .expect("Failed to load cards");
     
     // If we got here, validation passed
-    assert!(card_db.len() > 0, "Card database should not be empty");
+    assert!(!card_db.is_empty(), "Card database should not be empty");
 }
 
 #[test]
@@ -168,7 +168,7 @@ fn test_buff_effects_have_valid_ranges() {
     
     // If we got here, validation passed - the database load checks for
     // BuffStats with abs(attack) > 20 or abs(health) > 20
-    assert!(card_db.len() > 0, "Card database should not be empty");
+    assert!(!card_db.is_empty(), "Card database should not be empty");
 }
 
 #[test]

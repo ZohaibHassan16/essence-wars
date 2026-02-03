@@ -12,7 +12,7 @@
 //! - Damage defaults to AllEnemyCreatures (not the enemy player)
 //! - Heal/Buff defaults to self (source creature)
 //! - Draw defaults to source player
-//! This is by design for simplicity but limits what OnDeath effects can do.
+//!   This is by design for simplicity but limits what OnDeath effects can do.
 
 mod common;
 

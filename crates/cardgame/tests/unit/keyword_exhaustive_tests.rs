@@ -121,6 +121,7 @@ fn run_combat(
     (result, state)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn run_combat_with_life(
     attacker_attack: i8,
     attacker_health: i8,

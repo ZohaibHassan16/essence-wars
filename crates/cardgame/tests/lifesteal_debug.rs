@@ -89,7 +89,7 @@ fn debug_lifesteal_investigation() {
 
             let attacker_has_lifesteal = trace.attacker_keywords.has_lifesteal();
             let defender_has_lifesteal = trace.defender_keywords
-                .map_or(false, |k| k.has_lifesteal());
+                .is_some_and(|k| k.has_lifesteal());
 
             if attacker_has_lifesteal || defender_has_lifesteal {
                 lifesteal_combats += 1;
@@ -144,7 +144,7 @@ fn debug_game_length_and_mana() {
 
     println!("\n=== GAME LENGTH ANALYSIS ===");
 
-    let mut turn_histogram = vec![0u32; 35];
+    let mut turn_histogram = [0u32; 35];
     let mut p1_wins = 0;
     let num_games = 100;
 
@@ -204,7 +204,7 @@ fn debug_what_cards_are_played() {
 
     // Calculate mana curve
     println!("\n=== MANA CURVE ===");
-    let mut cost_counts = vec![0; 10];
+    let mut cost_counts = [0; 10];
     for &card_id in &obsidion_deck.cards {
         if let Some(card) = card_db.get(CardId(card_id)) {
             let cost = card.cost as usize;

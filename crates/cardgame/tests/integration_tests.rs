@@ -81,7 +81,7 @@ fn test_neural_network_interface() {
         // Most normalized values are 0-1, but card IDs are raw (1000-4999 range in Core Set)
         // and some values like winner can be -1
         assert!(
-            val >= -1.0 && val <= 5000.0,
+            (-1.0..=5000.0).contains(&val),
             "Tensor value at index {} out of expected range: {}",
             i, val
         );

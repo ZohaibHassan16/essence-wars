@@ -355,7 +355,6 @@ mod tests {
         let tempo = TempoMetrics {
             p1_first_creature_turn: Some(2),
             p2_first_creature_turn: Some(3),
-            ..Default::default()
         };
 
         assert_eq!(tempo.first_creature_player(), Some(true)); // P1 first
@@ -363,7 +362,6 @@ mod tests {
         let tempo2 = TempoMetrics {
             p1_first_creature_turn: Some(3),
             p2_first_creature_turn: Some(2),
-            ..Default::default()
         };
 
         assert_eq!(tempo2.first_creature_player(), Some(false)); // P2 first
@@ -411,7 +409,7 @@ mod tests {
 
     #[test]
     fn test_game_metrics_summarize() {
-        let snapshots = vec![
+        let snapshots = [
             create_test_snapshot(1, 30, 30),
             create_test_snapshot(2, 28, 30),
             create_test_snapshot(3, 26, 28),

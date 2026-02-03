@@ -854,6 +854,7 @@ fn test_fork_state_validity() {
 /// Use this for overnight or CI stress testing.
 #[test]
 #[ignore = "tier_overnight"] // ~15 min: 100k random games
+#[allow(clippy::manual_is_multiple_of)]
 fn stress_test_100k_random() {
     const NUM_GAMES: u64 = 100_000;
 
@@ -918,6 +919,7 @@ fn stress_test_100k_random() {
 /// This exercises smarter play patterns and catches bugs that random play misses.
 #[test]
 #[ignore = "tier_overnight"] // ~30 min: 100k greedy games
+#[allow(clippy::manual_is_multiple_of)]
 fn stress_test_100k_greedy() {
     const NUM_GAMES: u64 = 100_000;
 

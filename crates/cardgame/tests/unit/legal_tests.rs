@@ -386,8 +386,8 @@ fn test_legal_action_mask() {
 
     // PlayCard for hand_index=0, slots 0-4 should be legal
     // Index = hand_idx * 5 + slot
-    for slot in 0..5 {
-        assert!(mask[slot], "PlayCard(0, {}) should be legal", slot);
+    for (slot, item) in mask.iter().enumerate().take(5) {
+        assert!(*item, "PlayCard(0, {}) should be legal", slot);
     }
 
     // Other PlayCard indices should be false

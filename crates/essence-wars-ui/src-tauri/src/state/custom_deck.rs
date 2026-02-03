@@ -106,6 +106,7 @@ impl Playstyle {
     }
 
     /// Get the corresponding weight file name
+    #[allow(dead_code)]
     pub fn weight_file(&self) -> &'static str {
         match self {
             Playstyle::Aggro => "aggro",
@@ -180,6 +181,7 @@ impl DeckValidation {
         }
     }
 
+    #[allow(dead_code)]
     pub fn invalid(errors: Vec<String>) -> Self {
         Self {
             is_valid: false,
@@ -188,6 +190,7 @@ impl DeckValidation {
         }
     }
 
+    #[allow(dead_code)]
     pub fn with_warning(mut self, warning: String) -> Self {
         self.warnings.push(warning);
         self

@@ -133,13 +133,20 @@ pub fn calculate_playstyle(
                 CardType::Creature { .. } => {
                     creature_count += 1;
                     let keywords = card.keywords();
-                    count_keywords(
-                        &keywords,
-                        &mut rush_count, &mut guard_count, &mut lethal_count,
-                        &mut quick_count, &mut lifesteal_count, &mut ward_count,
-                        &mut shield_count, &mut regenerate_count, &mut stealth_count,
-                        &mut piercing_count, &mut frenzy_count, &mut volatile_count,
-                    );
+                    count_keywords(&keywords, &mut KeywordCounts {
+                        rush: &mut rush_count,
+                        guard: &mut guard_count,
+                        lethal: &mut lethal_count,
+                        quick: &mut quick_count,
+                        lifesteal: &mut lifesteal_count,
+                        ward: &mut ward_count,
+                        shield: &mut shield_count,
+                        regenerate: &mut regenerate_count,
+                        stealth: &mut stealth_count,
+                        piercing: &mut piercing_count,
+                        frenzy: &mut frenzy_count,
+                        volatile: &mut volatile_count,
+                    });
                 }
                 CardType::Spell { .. } => spell_count += 1,
                 CardType::Support { .. } => support_count += 1,
@@ -200,26 +207,36 @@ pub fn calculate_playstyle(
     PlaystyleScore { primary, scores }
 }
 
+/// Keyword counts struct to avoid too many arguments
+struct KeywordCounts<'a> {
+    rush: &'a mut i32,
+    guard: &'a mut i32,
+    lethal: &'a mut i32,
+    quick: &'a mut i32,
+    lifesteal: &'a mut i32,
+    ward: &'a mut i32,
+    shield: &'a mut i32,
+    regenerate: &'a mut i32,
+    stealth: &'a mut i32,
+    piercing: &'a mut i32,
+    frenzy: &'a mut i32,
+    volatile: &'a mut i32,
+}
+
 /// Count keywords from a Keywords bitmask
-fn count_keywords(
-    keywords: &Keywords,
-    rush: &mut i32, guard: &mut i32, lethal: &mut i32,
-    quick: &mut i32, lifesteal: &mut i32, ward: &mut i32,
-    shield: &mut i32, regenerate: &mut i32, stealth: &mut i32,
-    piercing: &mut i32, frenzy: &mut i32, volatile: &mut i32,
-) {
-    if keywords.has_rush() { *rush += 1; }
-    if keywords.has_guard() { *guard += 1; }
-    if keywords.has_lethal() { *lethal += 1; }
-    if keywords.has_quick() { *quick += 1; }
-    if keywords.has_lifesteal() { *lifesteal += 1; }
-    if keywords.has_ward() { *ward += 1; }
-    if keywords.has_shield() { *shield += 1; }
-    if keywords.has_regenerate() { *regenerate += 1; }
-    if keywords.has_stealth() { *stealth += 1; }
-    if keywords.has_piercing() { *piercing += 1; }
-    if keywords.has_frenzy() { *frenzy += 1; }
-    if keywords.has_volatile() { *volatile += 1; }
+fn count_keywords(keywords: &Keywords, counts: &mut KeywordCounts) {
+    if keywords.has_rush() { *counts.rush += 1; }
+    if keywords.has_guard() { *counts.guard += 1; }
+    if keywords.has_lethal() { *counts.lethal += 1; }
+    if keywords.has_quick() { *counts.quick += 1; }
+    if keywords.has_lifesteal() { *counts.lifesteal += 1; }
+    if keywords.has_ward() { *counts.ward += 1; }
+    if keywords.has_shield() { *counts.shield += 1; }
+    if keywords.has_regenerate() { *counts.regenerate += 1; }
+    if keywords.has_stealth() { *counts.stealth += 1; }
+    if keywords.has_piercing() { *counts.piercing += 1; }
+    if keywords.has_frenzy() { *counts.frenzy += 1; }
+    if keywords.has_volatile() { *counts.volatile += 1; }
 }
 
 /// Apply a factor tuple to scores

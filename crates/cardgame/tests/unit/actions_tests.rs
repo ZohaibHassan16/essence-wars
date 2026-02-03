@@ -64,7 +64,7 @@ fn test_attack_indices() {
             };
             let index = action.to_index();
             assert!(
-                index >= 50 && index <= 74,
+                (50..=74).contains(&index),
                 "Attack index {} out of range",
                 index
             );
@@ -101,7 +101,7 @@ fn test_use_ability_indices() {
                 };
                 let index = action.to_index();
                 assert!(
-                    index >= 75 && index <= 249,
+                    (75..=249).contains(&index),
                     "UseAbility index {} out of range for slot={}, ability={}, target={}",
                     index,
                     slot,
