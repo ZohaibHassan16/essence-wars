@@ -4,6 +4,8 @@
 //! game states. This implementation uses:
 //! - UCB1 for selection with tunable exploration constant
 //! - GreedyBot for rollout policy (smarter than random)
+//! - Optional early termination when positions are clearly won/lost
+//! - Optional transposition table to cache position evaluations
 
 use std::cell::RefCell;
 #[cfg(feature = "parallel")]
@@ -16,7 +18,8 @@ use rand::{Rng, SeedableRng};
 use rayon::prelude::*;
 
 use crate::actions::Action;
-use crate::bots::greedy::GreedyBot;
+use crate::bots::greedy::{evaluate_position, GreedyBot};
+use crate::bots::transposition::{zobrist_hash, MctsTranspositionTable};
 use crate::bots::weights::{BotWeights, GreedyWeights};
 use crate::bots::Bot;
 use crate::cards::CardDatabase;
@@ -37,6 +40,14 @@ pub struct MctsConfig {
     pub parallel_trees: u32,
     /// Number of parallel rollouts per leaf node (1 = sequential)
     pub leaf_rollouts: u32,
+    /// Evaluation threshold for early rollout termination.
+    /// If set, rollouts terminate early when position evaluation exceeds this threshold.
+    /// Higher values are more conservative (300.0 is a good starting point).
+    pub early_termination_threshold: Option<f32>,
+    /// Whether to use transposition table for caching position evaluations.
+    pub use_transposition_table: bool,
+    /// Minimum visits in TT entry before trusting its value estimate.
+    pub tt_min_visits: u32,
 }
 
 impl Default for MctsConfig {
@@ -47,6 +58,9 @@ impl Default for MctsConfig {
             max_rollout_depth: 100,
             parallel_trees: 1,
             leaf_rollouts: 1,
+            early_termination_threshold: Some(300.0), // Enable by default
+            use_transposition_table: true,
+            tt_min_visits: 3,
         }
     }
 }
@@ -60,6 +74,9 @@ impl MctsConfig {
             max_rollout_depth: 50,
             parallel_trees: 1,
             leaf_rollouts: 1,
+            early_termination_threshold: Some(300.0),
+            use_transposition_table: true,
+            tt_min_visits: 3,
         }
     }
 
@@ -71,6 +88,9 @@ impl MctsConfig {
             max_rollout_depth: 150,
             parallel_trees: 1,
             leaf_rollouts: 1,
+            early_termination_threshold: Some(300.0),
+            use_transposition_table: true,
+            tt_min_visits: 3,
         }
     }
 
@@ -82,6 +102,9 @@ impl MctsConfig {
             max_rollout_depth: 100,
             parallel_trees: trees,
             leaf_rollouts: 1,
+            early_termination_threshold: Some(300.0),
+            use_transposition_table: false, // Disabled for parallel (each tree has own state)
+            tt_min_visits: 3,
         }
     }
 
@@ -93,6 +116,59 @@ impl MctsConfig {
             max_rollout_depth: 100,
             parallel_trees: 1,
             leaf_rollouts: rollouts,
+            early_termination_threshold: Some(300.0),
+            use_transposition_table: false, // Disabled for parallel rollouts
+            tt_min_visits: 3,
+        }
+    }
+
+    /// Create an interactive config for single-game play (MCP, UI).
+    ///
+    /// Uses multiple parallel trees for faster response time, distributing
+    /// the simulation budget across available CPU cores.
+    pub fn interactive(simulations: u32) -> Self {
+        let cores = num_cpus::get() as u32;
+        let trees = cores.min(8); // Cap at 8 trees
+        Self {
+            simulations: simulations / trees, // Distribute across trees
+            exploration: 1.414,
+            max_rollout_depth: 100,
+            parallel_trees: trees,
+            leaf_rollouts: 1,
+            early_termination_threshold: Some(300.0),
+            use_transposition_table: false, // Disabled for parallel
+            tt_min_visits: 3,
+        }
+    }
+
+    /// Create a batch config for scenarios with outer parallelism (arena, benchmark, training).
+    ///
+    /// Uses sequential execution to avoid thread contention when the caller
+    /// is already running multiple games in parallel.
+    pub fn batch(simulations: u32) -> Self {
+        Self {
+            simulations,
+            exploration: 1.414,
+            max_rollout_depth: 100,
+            parallel_trees: 1,
+            leaf_rollouts: 1,
+            early_termination_threshold: Some(300.0),
+            use_transposition_table: true,
+            tt_min_visits: 3,
+        }
+    }
+
+    /// Disable all optimizations (for benchmarking baseline performance).
+    pub fn no_optimizations(simulations: u32) -> Self {
+        Self {
+            simulations,
+            exploration: 1.414,
+            max_rollout_depth: 100,
+            parallel_trees: 1,
+            leaf_rollouts: 1,
+            early_termination_threshold: None,
+            use_transposition_table: false,
+            tt_min_visits: 3,
         }
     }
 }
@@ -214,6 +290,8 @@ pub struct MctsBot<'a> {
     seed: u64,
     /// Optional custom weights for rollout evaluation
     rollout_weights: Option<GreedyWeights>,
+    /// Transposition table for caching position evaluations
+    transposition_table: MctsTranspositionTable,
 }
 
 impl<'a> MctsBot<'a> {
@@ -228,6 +306,7 @@ impl<'a> MctsBot<'a> {
             rng: SmallRng::seed_from_u64(seed),
             seed,
             rollout_weights,
+            transposition_table: MctsTranspositionTable::default(),
         }
     }
 
@@ -263,6 +342,7 @@ impl<'a> MctsBot<'a> {
             rng: SmallRng::seed_from_u64(seed),
             seed,
             rollout_weights: None,
+            transposition_table: MctsTranspositionTable::default(),
         }
     }
 
@@ -280,6 +360,7 @@ impl<'a> MctsBot<'a> {
             rng: SmallRng::seed_from_u64(seed),
             seed,
             rollout_weights: Some(weights.default.greedy.clone()),
+            transposition_table: MctsTranspositionTable::default(),
         }
     }
 
@@ -389,6 +470,11 @@ impl<'a> MctsBot<'a> {
         root.borrow_mut().expand(legal_actions);
 
         let player = engine.current_player();
+
+        // Start a new search generation for transposition table
+        if self.config.use_transposition_table {
+            self.transposition_table.new_search();
+        }
 
         // Run simulations
         for _ in 0..self.config.simulations {
@@ -545,13 +631,28 @@ impl<'a> MctsBot<'a> {
             }
 
             // Rollout: simulate to end using GreedyBot
+            // Get weights for early termination evaluation
+            let weights = rollout_weights.cloned().unwrap_or_default();
+
             let mut greedy = match rollout_weights {
                 Some(weights) => GreedyBot::with_weights(card_db, weights.clone(), rng.gen()),
                 None => GreedyBot::new(card_db, rng.gen()),
             };
             let mut depth = 0;
+            let mut early_result: Option<bool> = None;
 
             while !sim_engine.is_game_over() && depth < config.max_rollout_depth {
+                // Check for early termination every 5 moves
+                if let Some(threshold) = config.early_termination_threshold {
+                    if depth > 0 && depth % 5 == 0 {
+                        let eval = evaluate_position(&sim_engine.state, player, &weights);
+                        if eval.abs() > threshold {
+                            early_result = Some(eval > 0.0);
+                            break;
+                        }
+                    }
+                }
+
                 let action = greedy.select_action_with_engine(&sim_engine);
                 if sim_engine.apply_action(action).is_err() {
                     break;
@@ -559,11 +660,13 @@ impl<'a> MctsBot<'a> {
                 depth += 1;
             }
 
-            // Check who won
-            let win = match sim_engine.winner() {
-                Some(winner) => winner == player,
-                None => false,
-            };
+            // Check who won (use early result if available)
+            let win = early_result.unwrap_or_else(|| {
+                match sim_engine.winner() {
+                    Some(winner) => winner == player,
+                    None => false,
+                }
+            });
 
             // Backpropagation: update stats along the path
             for node in path.iter() {
@@ -584,7 +687,28 @@ impl<'a> MctsBot<'a> {
     }
 
     /// Perform a rollout from the current state using GreedyBot.
+    ///
+    /// Supports early termination when position evaluation exceeds threshold,
+    /// and transposition table for caching position evaluations.
     fn rollout(&mut self, engine: &mut GameEngine, perspective: PlayerId) -> bool {
+        // Get starting hash for transposition table
+        let start_hash = if self.config.use_transposition_table {
+            let hash = zobrist_hash(&engine.state);
+            // Check if we have a cached value with enough visits
+            if let Some(entry) = self.transposition_table.probe(hash) {
+                if entry.visits >= self.config.tt_min_visits {
+                    // Use cached value estimate
+                    return entry.average_value() > 0.5;
+                }
+            }
+            Some(hash)
+        } else {
+            None
+        };
+
+        // Get weights for early termination evaluation
+        let weights = self.rollout_weights.clone().unwrap_or_default();
+
         // Create GreedyBot with custom weights if provided
         let mut greedy = match &self.rollout_weights {
             Some(weights) => GreedyBot::with_weights(self.card_db, weights.clone(), self.rng.gen()),
@@ -593,6 +717,21 @@ impl<'a> MctsBot<'a> {
         let mut depth = 0;
 
         while !engine.is_game_over() && depth < self.config.max_rollout_depth {
+            // Check for early termination every 5 moves
+            if let Some(threshold) = self.config.early_termination_threshold {
+                if depth > 0 && depth % 5 == 0 {
+                    let eval = evaluate_position(&engine.state, perspective, &weights);
+                    if eval.abs() > threshold {
+                        let win = eval > 0.0;
+                        // Update transposition table with result
+                        if let Some(hash) = start_hash {
+                            self.transposition_table.update(hash, win);
+                        }
+                        return win;
+                    }
+                }
+            }
+
             let action = greedy.select_action_with_engine(engine);
             if engine.apply_action(action).is_err() {
                 break;
@@ -601,13 +740,23 @@ impl<'a> MctsBot<'a> {
         }
 
         // Check who won
-        match engine.winner() {
+        let win = match engine.winner() {
             Some(winner) => winner == perspective,
             None => false, // Draw counts as loss for simplicity
+        };
+
+        // Update transposition table with result
+        if let Some(hash) = start_hash {
+            self.transposition_table.update(hash, win);
         }
+
+        win
     }
 
     /// Static version of rollout for parallel execution.
+    ///
+    /// Supports early termination but not transposition table (each parallel
+    /// tree has its own state, so TT sharing would require synchronization).
     #[cfg(feature = "parallel")]
     fn rollout_static(
         engine: &mut GameEngine,
@@ -617,6 +766,9 @@ impl<'a> MctsBot<'a> {
         card_db: &CardDatabase,
         seed: u64,
     ) -> bool {
+        // Get weights for early termination evaluation
+        let weights = rollout_weights.cloned().unwrap_or_default();
+
         let mut greedy = match rollout_weights {
             Some(weights) => GreedyBot::with_weights(card_db, weights.clone(), seed),
             None => GreedyBot::new(card_db, seed),
@@ -624,6 +776,16 @@ impl<'a> MctsBot<'a> {
         let mut depth = 0;
 
         while !engine.is_game_over() && depth < config.max_rollout_depth {
+            // Check for early termination every 5 moves
+            if let Some(threshold) = config.early_termination_threshold {
+                if depth > 0 && depth % 5 == 0 {
+                    let eval = evaluate_position(&engine.state, perspective, &weights);
+                    if eval.abs() > threshold {
+                        return eval > 0.0;
+                    }
+                }
+            }
+
             let action = greedy.select_action_with_engine(engine);
             if engine.apply_action(action).is_err() {
                 break;

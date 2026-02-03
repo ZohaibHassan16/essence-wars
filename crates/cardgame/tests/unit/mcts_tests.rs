@@ -106,6 +106,7 @@ fn test_mcts_parallel_search() {
         max_rollout_depth: 50,
         parallel_trees: 4, // 4 parallel trees
         leaf_rollouts: 1,
+        ..MctsConfig::default()
     };
     let mut bot = MctsBot::with_config(&card_db, config, 42);
 
@@ -141,6 +142,7 @@ fn test_mcts_leaf_parallel_search() {
         max_rollout_depth: 50,
         parallel_trees: 1,
         leaf_rollouts: 4, // 4 parallel rollouts per leaf
+        ..MctsConfig::default()
     };
     let mut bot = MctsBot::with_config(&card_db, config, 42);
 

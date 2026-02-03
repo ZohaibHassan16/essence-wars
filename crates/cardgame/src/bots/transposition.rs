@@ -402,6 +402,7 @@ impl MctsTranspositionTable {
     }
 
     /// Clear all entries.
+    #[allow(dead_code)]
     pub fn clear(&mut self) {
         for entry in &mut self.entries {
             *entry = None;

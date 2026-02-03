@@ -227,6 +227,7 @@ fn main() {
         max_rollout_depth: 100,
         parallel_trees: 1,
         leaf_rollouts: 1,
+        ..MctsConfig::default()
     };
     let alphabeta_config = AlphaBetaConfig::with_depth(args.ab_depth);
 

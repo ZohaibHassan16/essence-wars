@@ -34,6 +34,7 @@ fn mcts_config(simulations: u32) -> MctsConfig {
         max_rollout_depth: 100, // Match arena default
         parallel_trees: 1,
         leaf_rollouts: 1,
+        ..MctsConfig::default()
     }
 }
 

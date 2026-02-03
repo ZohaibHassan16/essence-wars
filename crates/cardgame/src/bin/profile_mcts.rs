@@ -125,6 +125,7 @@ fn main() {
                 max_rollout_depth: 100,
                 parallel_trees: 1,
                 leaf_rollouts: 1,
+                ..MctsConfig::default()
             };
 
             let iterations = 10;
@@ -150,6 +151,7 @@ fn main() {
                 max_rollout_depth: 100,
                 parallel_trees: 1,
                 leaf_rollouts: 1,
+                ..MctsConfig::default()
             };
 
             let games = 5;

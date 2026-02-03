@@ -277,6 +277,7 @@ fn run_coverage_games(
         max_rollout_depth: 100,
         parallel_trees: 1,
         leaf_rollouts: 1,
+        ..MctsConfig::default()
     };
     
     // Load generalist weights for MCTS rollout policy

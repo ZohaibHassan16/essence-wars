@@ -226,6 +226,7 @@ fn bench_mcts_simulations(c: &mut Criterion) {
                 max_rollout_depth: 50,
                 parallel_trees: 1,
                 leaf_rollouts: 1,
+                ..MctsConfig::default()
             };
 
             b.iter(|| {
@@ -386,6 +387,7 @@ fn bench_mcts_parallel_scaling(c: &mut Criterion) {
                     max_rollout_depth: 50,
                     parallel_trees,
                     leaf_rollouts: 1,
+                    ..MctsConfig::default()
                 };
 
                 b.iter_batched(

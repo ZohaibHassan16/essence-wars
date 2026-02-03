@@ -319,6 +319,13 @@ class EssenceWarsBenchmark:
             action = game.mcts_action(sims)
             return int(action)
 
+        elif opponent.startswith("alphabeta"):
+            # Parse depth (e.g., "alphabeta6" or "alphabeta-d6")
+            depth_str = opponent.replace("alphabeta", "").replace("-d", "").replace("d", "")
+            depth = int(depth_str) if depth_str else 6
+            action = game.alphabeta_action(depth)
+            return int(action)
+
         else:
             raise ValueError(f"Unknown opponent: {opponent}")
 

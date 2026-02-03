@@ -157,6 +157,7 @@ impl<'a> MctsSearcher<'a> {
                 max_rollout_depth: 100,
                 parallel_trees: 1,
                 leaf_rollouts: 1,
+                ..MctsConfig::default()
             },
             rollout_weights: None,
         }

@@ -127,10 +127,10 @@ fn mcts_analysis(
     state: &cardgame::GameState,
     simulations: u32,
 ) -> String {
-    let mcts_config = MctsConfig {
-        simulations,
-        ..MctsConfig::default()
-    };
+    // Use interactive config for MCP single-game scenarios
+    // This uses parallel trees for faster response time
+    let mcts_config = MctsConfig::interactive(simulations);
+    let parallel_trees = mcts_config.parallel_trees;
 
     let mut mcts_bot = MctsBot::with_config(manager.card_db(), mcts_config, 42);
 
@@ -167,7 +167,10 @@ fn mcts_analysis(
     output.push_str(&format!("- **Legal Actions**: {}\n", legal_actions.len()));
 
     // MCTS provides implicit win rate through visit counts
-    output.push_str("\n**Note**: MCTS explores game trees via random rollouts.\n");
+    output.push_str(&format!(
+        "\n**Note**: MCTS explores game trees via random rollouts ({} parallel trees).\n",
+        parallel_trees
+    ));
     output.push_str("Higher simulation count = more accurate recommendations.\n\n");
 
     // Show all legal actions as alternatives

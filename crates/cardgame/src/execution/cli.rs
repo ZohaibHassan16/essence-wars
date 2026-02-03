@@ -181,6 +181,7 @@ impl MctsArgs {
             max_rollout_depth: 100,
             parallel_trees: self.mcts_trees,
             leaf_rollouts: self.mcts_rollouts,
+            ..MctsConfig::default()
         }
     }
 

@@ -184,6 +184,25 @@ cargo run --release --bin arena -- --bot1 alphabeta --bot2 mcts \
 - Depth 8: ~50s/game, 60-70% vs MCTS-1000
 - Depth 10+: Too slow for practical use
 
+### MCTS Bot
+
+The `mcts` bot uses Monte Carlo Tree Search with UCB1 selection and greedy rollouts.
+
+**Config methods:**
+```rust
+MctsConfig::default()           // 1000 sims, sequential, optimizations enabled
+MctsConfig::fast()              // 100 sims, for testing
+MctsConfig::strong()            // 5000 sims, for serious play
+MctsConfig::interactive(sims)   // Uses all CPU cores via parallel trees (MCP/UI)
+MctsConfig::batch(sims)         // Sequential, for arena/benchmark with outer parallelism
+MctsConfig::no_optimizations(sims)  // Baseline without early termination or TT
+```
+
+**Optimizations (enabled by default):**
+- `early_termination_threshold: Some(300.0)` - Stop rollouts when position clearly won/lost
+- `use_transposition_table: true` - Cache position evaluations across search
+- `tt_min_visits: 3` - Minimum visits before trusting cached value
+
 ### Bot Trait
 
 ```rust
@@ -496,10 +515,19 @@ Benchmarks use real 30-card decks with commanders (v0.8.0+).
 |-----------|--------|-------|
 | Random game | ~33k/sec | ~30 µs/game |
 | Greedy game | ~4.3k/sec | ~230 µs/game |
+| MCTS 100 sims | ~22 ms | Per move, with early termination + TT |
+| MCTS 200 sims | ~44 ms | Per move, with early termination + TT |
 | Engine fork | ~245 ns | State cloning |
 | State tensor | ~158 ns | 328-float encoding |
 | Legal actions | ~55 ns | Action enumeration |
 | Throughput | ~18k games/sec | 10-game batches |
+
+### MCTS Optimizations (v0.8.4+)
+
+MCTS now includes three optimizations enabled by default:
+- **Early Rollout Termination**: Stops rollouts when position evaluation exceeds ±300
+- **Transposition Table**: Caches position evaluations to skip redundant rollouts
+- **Interactive Config**: `MctsConfig::interactive(sims)` uses parallel trees for MCP/UI
 
 ## Versioning
 

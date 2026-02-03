@@ -747,6 +747,7 @@ impl<'a> Evaluator<'a> {
             max_rollout_depth: 50,
             parallel_trees: 1,
             leaf_rollouts: 1,
+            ..MctsConfig::default()
         };
         let mut mcts_bot = MctsBot::with_config(card_db, mcts_config, seed.wrapping_add(1000));
 
@@ -860,6 +861,7 @@ impl<'a> Evaluator<'a> {
             max_rollout_depth: 50,
             parallel_trees: 1,
             leaf_rollouts: 1,
+            ..MctsConfig::default()
         };
         let mut mcts_bot = MctsBot::with_config(self.card_db, mcts_config, seed.wrapping_add(1000));
 
@@ -999,6 +1001,7 @@ impl<'a> Evaluator<'a> {
             max_rollout_depth: 50,
             parallel_trees: 1,
             leaf_rollouts: 1,
+            ..MctsConfig::default()
         };
         let mut mcts_bot = MctsBot::with_config(card_db, mcts_config, seed.wrapping_add(1000));
 
@@ -1129,6 +1132,7 @@ impl<'a> Evaluator<'a> {
             max_rollout_depth: 50,
             parallel_trees: 1,
             leaf_rollouts: 1,
+            ..MctsConfig::default()
         };
         let mut mcts_bot = MctsBot::with_config(card_db, mcts_config, seed.wrapping_add(1000));
 

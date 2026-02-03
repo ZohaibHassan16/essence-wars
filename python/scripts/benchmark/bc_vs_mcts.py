@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """
-Phase 1: Benchmark BC models against MCTS-100 to measure the gap.
+Benchmark BC models against various opponents to measure performance.
 
 This script evaluates how well behavioral cloning models perform
-compared to MCTS-100, helping determine if we need faster MCTS
-or if distillation is sufficient.
+compared to different opponents:
+- random: Random legal moves (weakest)
+- greedy: Heuristic evaluation (fast, moderate strength)
+- alphabetaN: Alpha-Beta search depth N (fast, strong) - RECOMMENDED
+- mctsN: MCTS with N simulations (slower, strong)
+
+Alpha-Beta is 18-30x faster than MCTS at comparable strength,
+making it the recommended opponent for fast evaluation.
 """
 
 import argparse
@@ -193,6 +199,11 @@ def evaluate_agent_vs_opponent(
                 elif opponent.startswith("mcts"):
                     sims = int(opponent.replace("mcts", ""))
                     action = game.mcts_action(sims)
+                elif opponent.startswith("alphabeta"):
+                    # Parse depth (e.g., "alphabeta6" or "alphabeta-d6")
+                    depth_str = opponent.replace("alphabeta", "").replace("-d", "").replace("d", "")
+                    depth = int(depth_str) if depth_str else 6
+                    action = game.alphabeta_action(depth)
                 else:
                     raise ValueError(f"Unknown opponent: {opponent}")
 
@@ -252,8 +263,8 @@ def main():
     parser.add_argument(
         "--opponents",
         nargs="+",
-        default=["random", "greedy", "mcts50", "mcts100"],
-        help="Opponents to test against",
+        default=["random", "greedy", "alphabeta6", "mcts100"],
+        help="Opponents to test against (alphabetaN for depth N, mctsN for N sims)",
     )
     parser.add_argument(
         "--device",
@@ -276,7 +287,7 @@ def main():
         print("CUDA not available, using CPU")
 
     print("=" * 70)
-    print("Phase 1: BC vs MCTS Benchmark")
+    print("BC Model Benchmark")
     print("=" * 70)
     print(f"  Models:    {args.models}")
     print(f"  Opponents: {args.opponents}")

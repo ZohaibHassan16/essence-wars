@@ -370,6 +370,7 @@ fn main() {
         max_rollout_depth: 100,
         parallel_trees: args.mcts_trees,
         leaf_rollouts: args.mcts_rollouts,
+        ..MctsConfig::default()
     };
 
     // Create Alpha-Beta config
