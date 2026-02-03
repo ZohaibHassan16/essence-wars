@@ -7,7 +7,7 @@ def test_import():
     """Test that the package imports correctly."""
     from essence_wars import ACTION_SPACE_SIZE, STATE_TENSOR_SIZE
 
-    assert STATE_TENSOR_SIZE == 326
+    assert STATE_TENSOR_SIZE == 328
     assert ACTION_SPACE_SIZE == 256
 
 

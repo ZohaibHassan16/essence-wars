@@ -25,7 +25,7 @@ def test_alphazero_network_creation():
     network = AlphaZeroNetwork()
 
     assert network is not None
-    assert network.obs_dim == 326
+    assert network.obs_dim == 328
     assert network.action_dim == 256
     assert network.hidden_dim == 256
     assert network.num_blocks == 4
@@ -39,7 +39,7 @@ def test_alphazero_network_forward():
     network.eval()
 
     batch_size = 8
-    obs = torch.randn(batch_size, 326)
+    obs = torch.randn(batch_size, 328)
     mask = torch.ones(batch_size, 256, dtype=torch.bool)
 
     logits, value = network(obs, mask)
@@ -57,7 +57,7 @@ def test_alphazero_network_action_masking():
     network = AlphaZeroNetwork()
     network.eval()
 
-    obs = torch.randn(1, 326)
+    obs = torch.randn(1, 328)
 
     # Mask all but one action
     mask = torch.zeros(1, 256, dtype=torch.bool)
@@ -78,7 +78,7 @@ def test_alphazero_network_get_policy():
     network = AlphaZeroNetwork()
     network.eval()
 
-    obs = torch.randn(8, 326)
+    obs = torch.randn(8, 328)
     mask = torch.ones(8, 256, dtype=torch.bool)
 
     with torch.no_grad():
@@ -97,7 +97,7 @@ def test_alphazero_network_evaluate():
     network = AlphaZeroNetwork()
     network.eval()
 
-    obs = torch.randn(4, 326)
+    obs = torch.randn(4, 328)
     mask = torch.ones(4, 256, dtype=torch.bool)
 
     with torch.no_grad():
@@ -195,7 +195,7 @@ def test_replay_buffer():
 
     # Add samples
     for i in range(50):
-        obs = np.random.randn(326).astype(np.float32)
+        obs = np.random.randn(328).astype(np.float32)
         mask = np.ones(256, dtype=np.float32)
         policy = np.random.dirichlet(np.ones(256)).astype(np.float32)
         value = np.random.uniform(-1, 1)
@@ -206,7 +206,7 @@ def test_replay_buffer():
     # Sample batch
     obs, masks, policies, values = buffer.sample(16)
 
-    assert obs.shape == (16, 326)
+    assert obs.shape == (16, 328)
     assert masks.shape == (16, 256)
     assert policies.shape == (16, 256)
     assert values.shape == (16,)
@@ -219,7 +219,7 @@ def test_replay_buffer_add_game():
     buffer = ReplayBuffer(capacity=1000)
 
     # Simulate a 10-move game
-    observations = [np.random.randn(326).astype(np.float32) for _ in range(10)]
+    observations = [np.random.randn(328).astype(np.float32) for _ in range(10)]
     masks = [np.ones(256, dtype=np.float32) for _ in range(10)]
     policies = [np.random.dirichlet(np.ones(256)).astype(np.float32) for _ in range(10)]
     outcome = 1.0  # Player 0 won
@@ -309,7 +309,7 @@ def test_alphazero_self_play_game():
     assert outcome in [-1.0, 1.0]
 
     # Check shapes
-    assert observations[0].shape == (326,)
+    assert observations[0].shape == (328,)
     assert masks[0].shape == (256,)
     assert policies[0].shape == (256,)
 

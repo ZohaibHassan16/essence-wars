@@ -9,7 +9,7 @@ def test_env_creation():
 
     env = EssenceWarsEnv()
     assert env is not None
-    assert env.observation_space.shape == (326,)
+    assert env.observation_space.shape == (328,)
     assert env.action_space.n == 256
 
 
@@ -22,7 +22,7 @@ def test_env_reset():
 
     # Check observation
     assert isinstance(obs, np.ndarray)
-    assert obs.shape == (326,)
+    assert obs.shape == (328,)
     assert obs.dtype == np.float32
 
     # Check info dict
@@ -65,7 +65,7 @@ def test_env_step_returns_5_tuple():
     obs, reward, terminated, truncated, info = result
 
     assert isinstance(obs, np.ndarray)
-    assert obs.shape == (326,)
+    assert obs.shape == (328,)
     assert isinstance(reward, (int, float))
     assert isinstance(terminated, bool)
     assert isinstance(truncated, bool)
@@ -178,7 +178,7 @@ def test_env_deck_selection():
     )
     obs, info = env.reset(seed=42)
 
-    assert obs.shape == (326,)
+    assert obs.shape == (328,)
     assert not info["is_done"]
 
 
@@ -259,7 +259,7 @@ def test_env_make_function():
     )
     obs, info = env.reset(seed=42)
 
-    assert obs.shape == (326,)
+    assert obs.shape == (328,)
     assert "action_mask" in info
 
 
@@ -274,8 +274,8 @@ def test_env_gymnasium_registry():
     obs1, _ = env1.reset(seed=42)
     obs2, _ = env2.reset(seed=42)
 
-    assert obs1.shape == (326,)
-    assert obs2.shape == (326,)
+    assert obs1.shape == (328,)
+    assert obs2.shape == (328,)
 
     env1.close()
     env2.close()
@@ -356,7 +356,7 @@ def test_vectorized_env_creation():
     vec_env = VectorizedEssenceWars(num_envs=4)
     assert vec_env is not None
     assert vec_env.num_envs == 4
-    assert vec_env.observation_shape == (326,)
+    assert vec_env.observation_shape == (328,)
     assert vec_env.action_size == 256
 
 
@@ -369,7 +369,7 @@ def test_vectorized_env_reset():
 
     # Check observation shape
     assert isinstance(obs, np.ndarray)
-    assert obs.shape == (8, 326)
+    assert obs.shape == (8, 328)
     assert obs.dtype == np.float32
 
     # Check mask shape
@@ -409,7 +409,7 @@ def test_vectorized_env_step():
     obs, rewards, dones, masks = vec_env.step(actions)
 
     # Check shapes
-    assert obs.shape == (4, 326)
+    assert obs.shape == (4, 328)
     assert rewards.shape == (4,)
     assert dones.shape == (4,)
     assert masks.shape == (4, 256)
@@ -534,7 +534,7 @@ def test_vectorized_env_deck_selection():
     )
     obs, masks = vec_env.reset(seed=42)
 
-    assert obs.shape == (2, 326)
+    assert obs.shape == (2, 328)
     assert masks.shape == (2, 256)
 
 
@@ -545,4 +545,4 @@ def test_vectorized_env_game_modes():
     for mode in ["attrition", "essence_duel"]:
         vec_env = VectorizedEssenceWars(num_envs=2, game_mode=mode)
         obs, masks = vec_env.reset(seed=42)
-        assert obs.shape == (2, 326)
+        assert obs.shape == (2, 328)

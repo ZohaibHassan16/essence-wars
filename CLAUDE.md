@@ -15,15 +15,17 @@ cargo build --release -p cardgame        # Core engine only
 
 # Test
 cargo nextest run --status-level=fail    # ~668 tests (recommended)
+uv run pytest python/tests
 
-# Lint
-./scripts/run-clippy.sh                  # Recommended: lib + binaries
+# Lint and Type Checking
+./scripts/run-clippy.sh                  # or cargo clippy
+uv run mypy python/essence_wars
+uv run ruff check python/essence_wars --fix
 
 # Stress tests by tier
 ./scripts/run-tests.sh quick|medium|long|overnight
 
 # Arena matches
-cargo run --release --bin arena -- --bot1 mcts --bot2 greedy --games 100 --progress
 cargo run --release --bin arena -- --list-decks
 
 # Weight tuning
@@ -720,12 +722,3 @@ Sound effects and music are managed in `src/lib/audio/`:
 | `music.ts` | Background music and victory/defeat stings |
 
 Key sounds: `buttonClick`, `buttonHover`, `cardSelect`, `cardHover`, `menuOpen`, `menuClose`
-
-### Documentation
-
-| Document | Purpose |
-|----------|---------|
-| `docs/design-commanders.md` | Commander system design |
-| `docs/cards-new-horizons.md` | Card effect system |
-| `docs/tuning-pipeline.md` | Bot weight tuning guide |
-| `docs/analysis-suite-audit.md` | Python analysis suite architecture |

@@ -144,14 +144,14 @@ class EssenceWarsParallelEnv(ParallelEnvBase):  # type: ignore[misc]
     def reset(
         self,
         seed: int | None = None,
-        _options: dict[str, Any] | None = None,
+        options: dict[str, Any] | None = None,  # noqa: ARG002
     ) -> tuple[dict[str, np.ndarray], dict[str, dict[str, Any]]]:
         """
         Reset the environment to start a new episode.
 
         Args:
             seed: Random seed for reproducibility
-            _options: Additional options (unused)
+            options: Additional options (unused)
 
         Returns:
             observations: Dict mapping agent names to observations

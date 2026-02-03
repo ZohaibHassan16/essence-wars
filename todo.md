@@ -1,9 +1,5 @@
 # To Do
 
-## Win Condition
-
-Review Win Conditions implementation and Discussion in Code Base and `win-discussion.md`. Update Essence Wars Design Doc and other Documentation, including Game App `crates/essence-wars-ui`.
-
 ## (A) Deck Builder
 
 - Custom Deck Builder
@@ -14,9 +10,11 @@ Review Win Conditions implementation and Discussion in Code Base and `win-discus
 - Be able to play with custom decks
 - Cannot edit or overwrite the prebuilt 12 Starter Decks, only custom decks
 
-## (B) Update Lore
+## (B) Update Lore and Other Documentation
 
 Update `lore.md` with the new direction for Argentum, Symbiote and the Free Walkers in our Art Direction `docs/art-direction.md` and the prompts(Artwork). Free Walkers not using guns, Symbiote not being bio punk engineers but naturalists and druids etc. Make sure the whole Document is in sync, including `docs/essence-wars-design.md` Faction Descriptions.
+
+Review all other existing Documentation and look for out of date statements/Info.
 
 ## (C) Update and Enhance Diagnosis and Analysis Capabilities of Spectator Mode
 
@@ -27,7 +25,7 @@ Update and Enhance the Diagnosis/Analysis Screen in Spectator Mode, using the no
 - Bring up to date
 - Review `explain_rules()` , so that LLM Agents can play with confidence
 - Review and Audit complete Package
-- Improve/Enhance AI Hint function
+- Discuss if AI Hint function needs to be Improved/Enhanced (Test it in a life game first) 
 
 ## (F) Review and Update Python Gym
 
@@ -69,7 +67,9 @@ Improve Test Coverage for vital Systems (Crates and Python)
 | Bot/Agent compatibility | Accept retuning; keep observation/action space stable |
 | Expansion structure | 1 commander + deck per faction per expansion |
 
-## (N) Win Conditions: Option B (Hybrid) ✅ IMPLEMENTED
+## (N) Win Conditions
+
+Review Win Conditions implementation and Discussion in Code Base and `win-discussion.md`. Update Essence Wars Design Doc and other Documentation, including Game App `crates/essence-wars-ui`.
 
 **Decision:** Keep life as "Tactical Stability" (zero = forced retreat), add Essence Extraction as parallel win condition.
 

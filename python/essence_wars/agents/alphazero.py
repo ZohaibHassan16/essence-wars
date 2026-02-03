@@ -27,7 +27,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from essence_wars._core import PyGame
+from essence_wars._core import STATE_TENSOR_SIZE, PyGame
 from essence_wars.agents.networks import AlphaZeroNetwork
 from essence_wars.env import EssenceWarsEnv
 
@@ -368,7 +368,7 @@ class NeuralMCTS:
         Evaluate position with neural network.
 
         Args:
-            obs: Observation array (326,)
+            obs: Observation array (STATE_TENSOR_SIZE,)
             mask: Action mask (256,)
 
         Returns:
@@ -415,7 +415,7 @@ class NeuralMCTS:
         Evaluate a batch of positions with neural network.
 
         Args:
-            obs_batch: Observations array (batch_size, 326)
+            obs_batch: Observations array (batch_size, STATE_TENSOR_SIZE)
             mask_batch: Action masks (batch_size, 256)
 
         Returns:
@@ -838,7 +838,7 @@ class AlphaZeroTrainer:
         self.dual_buffer: DualReplayBuffer | None = None
 
         # Observation normalizer
-        self.obs_normalizer = RunningMeanStd((326,)) if self.config.normalize_obs else None
+        self.obs_normalizer = RunningMeanStd((STATE_TENSOR_SIZE,)) if self.config.normalize_obs else None
 
         # MCTS
         self.mcts = NeuralMCTS(

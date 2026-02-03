@@ -25,8 +25,8 @@ def test_parallel_env_reset():
     assert isinstance(observations, dict)
     assert "player_0" in observations
     assert "player_1" in observations
-    assert observations["player_0"].shape == (326,)
-    assert observations["player_1"].shape == (326,)
+    assert observations["player_0"].shape == (328,)
+    assert observations["player_1"].shape == (328,)
 
     # Check infos
     assert isinstance(infos, dict)
@@ -64,7 +64,7 @@ def test_parallel_env_spaces():
         obs_space = env.observation_space(agent)
         act_space = env.action_space(agent)
 
-        assert obs_space.shape == (326,)
+        assert obs_space.shape == (328,)
         assert act_space.n == 256
 
 
@@ -181,7 +181,7 @@ def test_parallel_env_deck_selection():
     )
     observations, infos = env.reset(seed=42)
 
-    assert observations["player_0"].shape == (326,)
+    assert observations["player_0"].shape == (328,)
 
 
 def test_parallel_env_game_modes():
@@ -191,7 +191,7 @@ def test_parallel_env_game_modes():
     for mode in ["attrition", "essence_duel"]:
         env = EssenceWarsParallelEnv(game_mode=mode)
         observations, infos = env.reset(seed=42)
-        assert observations["player_0"].shape == (326,)
+        assert observations["player_0"].shape == (328,)
 
 
 def test_parallel_env_reset_reproducibility():
@@ -217,7 +217,7 @@ def test_parallel_env_state():
 
     state = env.state()
     assert isinstance(state, np.ndarray)
-    assert state.shape == (326,)
+    assert state.shape == (328,)
 
 
 def test_parallel_env_factory_functions():

@@ -35,9 +35,8 @@ from torch.distributions import Categorical
 # =============================================================================
 # Tensor Structure Constants
 # =============================================================================
-
-# State tensor size (from Rust config)
-STATE_TENSOR_SIZE = 326
+# Import STATE_TENSOR_SIZE from Rust bindings for consistency
+from essence_wars._core import STATE_TENSOR_SIZE
 
 # Global state section
 GLOBAL_START = 0
@@ -64,7 +63,7 @@ P2_SUPPORTS_START = 146
 
 # Card embedding section (trailing)
 EMBED_SECTION_START = 156
-EMBED_SECTION_SIZE = 170  # 326 - 156
+EMBED_SECTION_SIZE = STATE_TENSOR_SIZE - EMBED_SECTION_START  # Commander IDs at 326-327
 
 # Slot sizes
 CREATURE_SLOT_SIZE = 10

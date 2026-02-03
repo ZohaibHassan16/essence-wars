@@ -22,6 +22,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+from essence_wars._core import STATE_TENSOR_SIZE
 from essence_wars.agents.embeddings import create_network
 from essence_wars.env import (
     EssenceWarsEnv,
@@ -348,7 +349,7 @@ class PPOTrainer:
         self.buffer = RolloutBuffer(
             num_steps=self.config.num_steps,
             num_envs=self.config.num_envs,
-            obs_dim=326,
+            obs_dim=STATE_TENSOR_SIZE,
             action_dim=256,
             device=device_str,
         )
@@ -357,7 +358,7 @@ class PPOTrainer:
         self.writer = writer
 
         # Observation normalizer
-        self.obs_normalizer = RunningMeanStd((326,)) if self.config.normalize_obs else None
+        self.obs_normalizer = RunningMeanStd((STATE_TENSOR_SIZE,)) if self.config.normalize_obs else None
 
         # Training state
         self.global_step = 0

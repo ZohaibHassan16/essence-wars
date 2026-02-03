@@ -13,6 +13,11 @@ import torch
 import torch.nn as nn
 from torch.distributions import Categorical
 
+from essence_wars._core import STATE_TENSOR_SIZE
+
+# Default observation dimension from Rust bindings
+_DEFAULT_OBS_DIM = STATE_TENSOR_SIZE  # 328 (326 + 2 commander IDs)
+
 
 class EssenceWarsNetwork(nn.Module):
     """
@@ -27,13 +32,13 @@ class EssenceWarsNetwork(nn.Module):
     to a large negative value before softmax.
 
     Args:
-        obs_dim: Observation dimension (default: 326)
+        obs_dim: Observation dimension (default: STATE_TENSOR_SIZE)
         action_dim: Number of actions (default: 256)
         hidden_dim: Hidden layer size (default: 256)
 
     Example:
         network = EssenceWarsNetwork()
-        obs = torch.randn(32, 326)  # batch of 32
+        obs = torch.randn(32, 328)  # batch of 32
         mask = torch.ones(32, 256)  # all actions legal
 
         logits, value = network(obs, mask)
@@ -42,7 +47,7 @@ class EssenceWarsNetwork(nn.Module):
 
     def __init__(
         self,
-        obs_dim: int = 326,
+        obs_dim: int = _DEFAULT_OBS_DIM,
         action_dim: int = 256,
         hidden_dim: int = 256,
     ) -> None:
@@ -235,14 +240,14 @@ class AlphaZeroNetwork(nn.Module):
     - Value head: Linear -> ReLU -> Linear -> Tanh (scalar in [-1, 1])
 
     Args:
-        obs_dim: Observation dimension (default: 326)
+        obs_dim: Observation dimension (default: STATE_TENSOR_SIZE)
         action_dim: Number of actions (default: 256)
         hidden_dim: Hidden layer size (default: 256)
         num_blocks: Number of residual blocks (default: 4)
 
     Example:
         network = AlphaZeroNetwork()
-        obs = torch.randn(32, 326)  # batch of 32
+        obs = torch.randn(32, 328)  # batch of 32
         mask = torch.ones(32, 256, dtype=torch.bool)
 
         logits, value = network(obs, mask)
@@ -251,7 +256,7 @@ class AlphaZeroNetwork(nn.Module):
 
     def __init__(
         self,
-        obs_dim: int = 326,
+        obs_dim: int = _DEFAULT_OBS_DIM,
         action_dim: int = 256,
         hidden_dim: int = 256,
         num_blocks: int = 4,
@@ -423,7 +428,7 @@ class CardEmbeddingNetwork(nn.Module):
     - Same residual tower and heads as AlphaZeroNetwork
 
     Args:
-        obs_dim: Observation dimension (default: 326)
+        obs_dim: Observation dimension (default: STATE_TENSOR_SIZE)
         action_dim: Number of actions (default: 256)
         hidden_dim: Hidden layer size (default: 256)
         num_blocks: Number of residual blocks (default: 4)
@@ -437,7 +442,7 @@ class CardEmbeddingNetwork(nn.Module):
 
     def __init__(
         self,
-        obs_dim: int = 326,
+        obs_dim: int = _DEFAULT_OBS_DIM,
         action_dim: int = 256,
         hidden_dim: int = 256,
         num_blocks: int = 4,

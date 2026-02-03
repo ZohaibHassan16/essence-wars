@@ -10,7 +10,7 @@ def test_network_creation():
 
     network = EssenceWarsNetwork()
     assert network is not None
-    assert network.obs_dim == 326
+    assert network.obs_dim == 328
     assert network.action_dim == 256
     assert network.hidden_dim == 256
 
@@ -23,7 +23,7 @@ def test_network_forward():
     network.eval()
 
     batch_size = 8
-    obs = torch.randn(batch_size, 326)
+    obs = torch.randn(batch_size, 328)
     mask = torch.ones(batch_size, 256, dtype=torch.bool)
 
     logits, value = network(obs, mask)
@@ -39,7 +39,7 @@ def test_network_action_masking():
     network = EssenceWarsNetwork()
     network.eval()
 
-    obs = torch.randn(1, 326)
+    obs = torch.randn(1, 328)
 
     # Mask all but one action
     mask = torch.zeros(1, 256, dtype=torch.bool)
@@ -61,7 +61,7 @@ def test_network_get_action():
     network.eval()
 
     batch_size = 4
-    obs = torch.randn(batch_size, 326)
+    obs = torch.randn(batch_size, 328)
     mask = torch.ones(batch_size, 256, dtype=torch.bool)
 
     with torch.no_grad():
@@ -80,7 +80,7 @@ def test_network_get_action_deterministic():
     network = EssenceWarsNetwork()
     network.eval()
 
-    obs = torch.randn(1, 326)
+    obs = torch.randn(1, 328)
     mask = torch.ones(1, 256, dtype=torch.bool)
 
     with torch.no_grad():
@@ -98,7 +98,7 @@ def test_network_get_value():
     network = EssenceWarsNetwork()
     network.eval()
 
-    obs = torch.randn(8, 326)
+    obs = torch.randn(8, 328)
 
     with torch.no_grad():
         value = network.get_value(obs)
@@ -114,7 +114,7 @@ def test_network_evaluate_actions():
     network.eval()
 
     batch_size = 8
-    obs = torch.randn(batch_size, 326)
+    obs = torch.randn(batch_size, 328)
     mask = torch.ones(batch_size, 256, dtype=torch.bool)
     actions = torch.randint(0, 256, (batch_size,))
 
@@ -143,7 +143,7 @@ def test_rollout_buffer():
     buffer = RolloutBuffer(
         num_steps=8,
         num_envs=4,
-        obs_dim=326,
+        obs_dim=328,
         action_dim=256,
         device="cpu",
     )
@@ -151,7 +151,7 @@ def test_rollout_buffer():
     # Add some data
     for _ in range(8):
         buffer.add(
-            obs=torch.randn(4, 326),
+            obs=torch.randn(4, 328),
             action=torch.randint(0, 256, (4,)),
             action_mask=torch.ones(4, 256, dtype=torch.bool),
             log_prob=torch.randn(4),

@@ -780,17 +780,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] Audio settings store with persistence
 - [x] Wire sounds to game events
 
-### Phase 9 Tutorial and Onboarding
-- [ ] Update Ingame Tutorial (Human vs AI Mode)
-    - Explaining the Rules, how the game works, turns, Commanders,create curated tutorial that plays the same steps everytime
-    - Use Seed and check it via Claude Code MCP Game and replay binary (several times to ensure it is the same)
-    - Investigate why current tutorial script is not following the steps as it should
-    - Instruct Chris on which screenshots he needs to make to document it for claude and/or descriptions on each Step
-    - Improve the UI/UX, glowing highlight instead of darkening?
-- [ ] Players can play a game without having to read any rulebook
-- [ ] Create Tutorial for Deck Builder (short)
-
-### Phase 10: Art Pass
+### Phase 9: Art Pass
 
 **Artwork**:
 - Generate artwork for the missing cards:
@@ -814,15 +804,15 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 **Audio**:
 - Audit SFX Library, current creature sounds are placeholders. Web Search for a consistent art asset pack that fits our theme and replace the existing ones.
 
-### Phase 11: Release Prep & Distribution
+### Phase 10: Release Prep & Distribution
 
-#### 11.1 Repository Size Analysis
+#### 10.1 Repository Size Analysis
 - **Total Git repo**: ~227 MB
 - **Static assets**: ~130 MB (59 MB cards, 58 MB music, 6 MB sounds, 4 MB backgrounds, 2.2 MB portraits, 1.8 MB tokens)
 - **Source code**: <10 MB
 - **Status**: Size is acceptable for GitHub Releases (2 GB limit per file)
 
-#### 11.2 Distribution Strategy (Open Source Project)
+#### 10.2 Distribution Strategy (Open Source Project)
 
 **Current Approach (✅ Recommended)**
 - Use **GitHub Releases** for binary distribution
@@ -835,7 +825,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - Good for community visibility and easier download experience
 - Optional revenue/donation support built-in
 
-#### 11.3 Contributor DX Concerns
+#### 10.3 Contributor DX Concerns
 
 **Problem**: Monorepo with heavy assets (~130 MB) impacts contributors who only want to work on:
 - Rust engine (`crates/cardgame/`)
@@ -882,7 +872,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - Consider **Git LFS** only if assets grow >500 MB
 - Focus on CI automation for releases instead
 
-#### 11.4 Build & Release Workflow
+#### 10.4 Build & Release Workflow
 
 **Tasks:**
 - [ ] Fix Linux build configuration in `tauri.conf.json`
@@ -902,7 +892,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - GitHub Releases handles bandwidth for open source
 - No need for external storage (Google Drive, Cloudflare R2, etc.)
 
-#### 11.5 Build Variants
+#### 10.5 Build Variants
 
 **Single Build Strategy (Recommended)**:
 - All-in-one executable with embedded assets (current approach)
