@@ -1,5 +1,5 @@
 # Build Python wheels for multiple platforms using maturin
-# Triggered on pushes to master and version tags
+# Can be triggered directly or called by publish.yml
 
 name: Build Wheels
 
@@ -11,6 +11,7 @@ on:
   pull_request:
     branches: [master]
   workflow_dispatch:
+  workflow_call:  # Allow this workflow to be called by other workflows
 
 permissions:
   contents: read
@@ -20,6 +21,7 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         target: [x86_64, aarch64]
     steps:
@@ -33,7 +35,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist
+          args: --release --out dist --find-interpreter
           sccache: 'true'
           manylinux: auto
 
@@ -47,6 +49,7 @@ jobs:
   macos:
     runs-on: macos-latest
     strategy:
+      fail-fast: false
       matrix:
         target: [x86_64, aarch64]
     steps:
@@ -60,7 +63,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}-apple-darwin
-          args: --release --out dist
+          args: --release --out dist --find-interpreter
           sccache: 'true'
 
       - name: Upload wheels
@@ -83,7 +86,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: x86_64-pc-windows-msvc
-          args: --release --out dist
+          args: --release --out dist --find-interpreter
           sccache: 'true'
 
       - name: Upload wheels
