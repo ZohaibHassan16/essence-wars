@@ -53,10 +53,18 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="modal-backdrop" onclick={handleBackdropClick}>
+<div
+  class="modal-backdrop"
+  onclick={handleBackdropClick}
+  onkeydown={handleKeydown}
+  role="dialog"
+  tabindex="-1"
+  aria-modal="true"
+  aria-labelledby="save-deck-title"
+>
   <div class="modal-content">
     <header class="modal-header">
-      <h2>{isNewDeck ? "Save New Deck" : "Save Deck"}</h2>
+      <h2 id="save-deck-title">{isNewDeck ? "Save New Deck" : "Save Deck"}</h2>
       <button class="close-button" onclick={onClose} aria-label="Close">×</button>
     </header>
 
@@ -75,7 +83,6 @@
           bind:value={deckName}
           placeholder="Enter deck name..."
           maxlength="50"
-          autofocus
         />
       </div>
 

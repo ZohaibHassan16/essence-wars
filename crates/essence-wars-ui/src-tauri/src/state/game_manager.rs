@@ -170,11 +170,6 @@ impl GameManager {
         }
     }
 
-    /// Create a new game session (built-in decks only, for backwards compatibility)
-    pub fn new_game(&self, config: GameConfig) -> Result<GameStateDto, String> {
-        self.new_game_with_custom_decks(config, None)
-    }
-
     /// Create a new game session with custom deck support
     pub fn new_game_with_custom_decks(
         &self,
@@ -670,15 +665,6 @@ pub struct SpectatorComputer {
 }
 
 impl SpectatorComputer {
-    /// Create a new SpectatorComputer from a GameManager
-    pub fn from_manager(manager: &GameManager) -> Self {
-        Self {
-            card_db: manager.card_db(),
-            deck_registry: manager.deck_registry(),
-            custom_deck_manager: None,
-        }
-    }
-
     /// Create a new SpectatorComputer with custom deck support
     pub fn from_manager_with_custom_decks(
         manager: &GameManager,
