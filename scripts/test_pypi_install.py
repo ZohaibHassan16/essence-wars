@@ -104,23 +104,23 @@ def test_parallel_games():
     print(f"✓ Created {num_envs} parallel games")
 
     # Get batch observations
-    obs_batch = games.observe_all()
+    obs_batch = games.observe_batch()
     assert obs_batch.shape == (num_envs, 328), f"Expected ({num_envs}, 328), got {obs_batch.shape}"
     print(f"✓ Batch observation shape: {obs_batch.shape}")
 
     # Get batch masks
-    mask_batch = games.action_masks_all()
+    mask_batch = games.action_mask_batch()
     assert mask_batch.shape == (num_envs, 256), f"Expected ({num_envs}, 256), got {mask_batch.shape}"
     print(f"✓ Batch action mask shape: {mask_batch.shape}")
 
-    # Step all with random actions
-    actions = []
+    # Step all with random actions (note: must be uint8)
+    actions = np.zeros(num_envs, dtype=np.uint8)
     for i in range(num_envs):
         legal = np.where(mask_batch[i] > 0)[0]
-        actions.append(int(np.random.choice(legal)))
+        actions[i] = np.random.choice(legal)
 
-    rewards, dones = games.step_all(actions)
-    print(f"✓ Stepped all games, rewards: {rewards}, dones: {dones}")
+    rewards, dones = games.step_batch(actions)
+    print(f"✓ Stepped all games, rewards: {list(rewards)}, dones: {list(dones)}")
 
     return True
 
@@ -138,7 +138,7 @@ def test_gymnasium_env():
         print(f"⚠ Skipped (gymnasium not installed): {e}")
         return True  # Not a failure, just optional
 
-    env = EssenceWarsEnv(deck="architect_fortify")
+    env = EssenceWarsEnv(deck1="architect_fortify", deck2="broodmother_pack")
     print("✓ Created EssenceWarsEnv")
 
     obs, info = env.reset(seed=42)
@@ -149,10 +149,14 @@ def test_gymnasium_env():
     done = False
     steps = 0
     while not done and steps < 50:
-        action = env.action_space.sample()
-        # Ensure action is legal
-        mask = info.get("action_mask", env.unwrapped.game.action_mask())
-        if mask[action] == 0:
+        # Get action mask from info (it should be there after reset/step)
+        mask = info.get("action_mask")
+        if mask is None:
+            # Fallback if not in info
+            print("⚠ action_mask not in info, using random legal action")
+            action = env.action_space.sample()
+        else:
+            # Pick a random legal action
             legal = np.where(mask > 0)[0]
             action = int(np.random.choice(legal))
 
