@@ -41,7 +41,7 @@ pub enum TuningMode {
     VsRandom,
     /// Optimize weights to perform well against default Greedy baseline
     VsGreedy,
-    /// Optimize weights against multiple opponents (Random, Greedy, MCTS)
+    /// Optimize weights against multiple opponents (Random, Greedy, AlphaBeta)
     MultiOpponent,
     /// Optimize weights across multiple deck matchups (generalist)
     Generalist {
@@ -80,8 +80,10 @@ pub struct EvaluatorConfig {
     pub max_actions: usize,
     /// Run games in parallel
     pub parallel: bool,
-    /// MCTS simulations for multi-opponent mode
+    /// MCTS simulations for AlphaBetaVsMcts mode
     pub mcts_sims: u32,
+    /// AlphaBeta search depth for multi-opponent mode (default 6)
+    pub ab_depth: u32,
 }
 
 impl Default for EvaluatorConfig {
@@ -93,7 +95,8 @@ impl Default for EvaluatorConfig {
             seed: 42,
             max_actions: 500,
             parallel: true,
-            mcts_sims: 100, // Fast MCTS for tuning
+            mcts_sims: 100, // MCTS sims for AlphaBetaVsMcts mode
+            ab_depth: 6,    // AlphaBeta depth for multi-opponent mode
         }
     }
 }
@@ -318,18 +321,18 @@ impl<'a> Evaluator<'a> {
         (fitness, win_rate, games, avg_turns)
     }
 
-    /// Evaluate against multiple opponents (Random, Greedy, MCTS).
+    /// Evaluate against multiple opponents (Random, Greedy, AlphaBeta).
     fn evaluate_multi_opponent(&self, weights: &GreedyWeights) -> (f64, f64, usize, f64) {
         let games_per_opponent = self.config.games_per_eval / 3;
         let base_seed = self.config.seed.wrapping_add(self.eval_count * 10000);
         let max_actions = self.config.max_actions;
         let default_deck = &self.default_deck;
         let card_db = self.card_db;
-        let mcts_sims = self.config.mcts_sims;
+        let ab_depth = self.config.ab_depth;
 
         // Create parallel iterators for each opponent type
-        // 0 = Random, 1 = Greedy, 2 = MCTS
-        
+        // 0 = Random, 1 = Greedy, 2 = AlphaBeta
+
         let random_iter = (0..games_per_opponent).into_par_iter().map(|i| {
             let seed = base_seed.wrapping_add(i as u64);
             let (won, turns) = Self::run_game_vs_random_static(card_db, weights, default_deck, seed, max_actions);
@@ -342,22 +345,22 @@ impl<'a> Evaluator<'a> {
             (1, won, turns)
         });
 
-        let mcts_iter = (0..games_per_opponent).into_par_iter().map(|i| {
+        let ab_iter = (0..games_per_opponent).into_par_iter().map(|i| {
             let seed = base_seed.wrapping_add(20000 + i as u64);
-            let (won, turns) = Self::run_game_vs_mcts_static(card_db, weights, default_deck, seed, max_actions, mcts_sims);
+            let (won, turns) = Self::run_game_vs_alphabeta_static(card_db, weights, default_deck, seed, max_actions, ab_depth);
             (2, won, turns)
         });
 
         // Run all games in a single parallel batch
         let results: Vec<(u8, bool, u32)> = random_iter
             .chain(greedy_iter)
-            .chain(mcts_iter)
+            .chain(ab_iter)
             .collect();
 
         // Compute stats
         let mut random_wins = 0;
         let mut greedy_wins = 0;
-        let mut mcts_wins = 0;
+        let mut ab_wins = 0;
         let mut total_turns = 0;
 
         for (opponent_type, won, turns) in results {
@@ -365,26 +368,26 @@ impl<'a> Evaluator<'a> {
                 match opponent_type {
                     0 => random_wins += 1,
                     1 => greedy_wins += 1,
-                    2 => mcts_wins += 1,
+                    2 => ab_wins += 1,
                     _ => unreachable!(),
                 }
             }
             total_turns += turns;
         }
 
-        let total_wins = random_wins + greedy_wins + mcts_wins;
+        let total_wins = random_wins + greedy_wins + ab_wins;
         let total_games = games_per_opponent * 3;
 
         let win_rate = total_wins as f64 / total_games as f64;
         let avg_turns = total_turns as f64 / total_games as f64;
 
-        // Weighted fitness: MCTS wins count more (harder opponent)
+        // Weighted fitness: AlphaBeta wins count more (harder opponent)
         let random_wr = random_wins as f64 / games_per_opponent as f64;
         let greedy_wr = greedy_wins as f64 / games_per_opponent as f64;
-        let mcts_wr = mcts_wins as f64 / games_per_opponent as f64;
+        let ab_wr = ab_wins as f64 / games_per_opponent as f64;
 
-        // Fitness = weighted average: Random 10%, Greedy 40%, MCTS 50%
-        let fitness = random_wr * 10.0 + greedy_wr * 40.0 + mcts_wr * 50.0;
+        // Fitness = weighted average: Random 10%, Greedy 40%, AlphaBeta 50%
+        let fitness = random_wr * 10.0 + greedy_wr * 40.0 + ab_wr * 50.0;
 
         (fitness, win_rate, total_games, avg_turns)
     }
@@ -393,7 +396,7 @@ impl<'a> Evaluator<'a> {
     /// Uses commanders from deck definitions.
     fn evaluate_generalist(&self, weights: &GreedyWeights, matchups: &[(DeckDefinition, DeckDefinition)]) -> (f64, f64, usize, f64) {
         // Enhanced generalist: test each deck matchup against all 3 opponent types
-        // Distributes games: 1/3 each for Random, Greedy, MCTS per matchup
+        // Distributes games: 1/3 each for Random, Greedy, AlphaBeta per matchup
         let games_per_matchup = (self.config.games_per_eval / matchups.len()).max(3);
         let games_per_opponent = games_per_matchup / 3;
 
@@ -410,7 +413,7 @@ impl<'a> Evaluator<'a> {
 
         let mut random_wins = 0;
         let mut greedy_wins = 0;
-        let mut mcts_wins = 0;
+        let mut ab_wins = 0;
         let mut total_games = 0;
         let mut total_turns = 0u32;
 
@@ -419,7 +422,7 @@ impl<'a> Evaluator<'a> {
             let card_db = self.card_db;
             let max_actions = self.config.max_actions;
             let base_seed = self.config.seed.wrapping_add(self.eval_count * 100000);
-            let mcts_sims = self.config.mcts_sims;
+            let ab_depth = self.config.ab_depth;
 
             // Process all matchups in parallel
             let results: Vec<_> = matchups.par_iter().enumerate().map(|(matchup_idx, (deck1, deck2))| {
@@ -437,29 +440,33 @@ impl<'a> Evaluator<'a> {
                     Self::run_game_vs_greedy_with_decks_static(card_db, weights, deck1, deck2, seed, max_actions)
                 }).collect();
 
-                // vs MCTS
-                let mcts_results: Vec<(bool, u32)> = (0..games_per_opponent).into_par_iter().map(|i| {
+                // vs AlphaBeta
+                let ab_results: Vec<(bool, u32)> = (0..games_per_opponent).into_par_iter().map(|i| {
                     let seed = matchup_seed.wrapping_add(2000 + i as u64);
-                    Self::run_game_vs_mcts_with_decks_static(card_db, weights, deck1, deck2, seed, max_actions, mcts_sims)
+                    Self::run_game_vs_alphabeta_with_decks_static(card_db, weights, deck1, deck2, seed, max_actions, ab_depth)
                 }).collect();
 
-                (random_results, greedy_results, mcts_results)
+                (random_results, greedy_results, ab_results)
             }).collect();
 
             // Aggregate results
-            for (random_results, greedy_results, mcts_results) in results {
+            for (random_results, greedy_results, ab_results) in results {
                 random_wins += random_results.iter().filter(|(won, _)| *won).count();
                 greedy_wins += greedy_results.iter().filter(|(won, _)| *won).count();
-                mcts_wins += mcts_results.iter().filter(|(won, _)| *won).count();
+                ab_wins += ab_results.iter().filter(|(won, _)| *won).count();
 
                 total_turns += random_results.iter().map(|(_, t)| t).sum::<u32>();
                 total_turns += greedy_results.iter().map(|(_, t)| t).sum::<u32>();
-                total_turns += mcts_results.iter().map(|(_, t)| t).sum::<u32>();
+                total_turns += ab_results.iter().map(|(_, t)| t).sum::<u32>();
 
-                total_games += random_results.len() + greedy_results.len() + mcts_results.len();
+                total_games += random_results.len() + greedy_results.len() + ab_results.len();
             }
         } else {
-            // Sequential evaluation (fallback)
+            // Sequential evaluation (fallback) - use static functions
+            let card_db = self.card_db;
+            let max_actions = self.config.max_actions;
+            let ab_depth = self.config.ab_depth;
+
             for (matchup_idx, (deck1, deck2)) in matchups.iter().enumerate() {
                 let matchup_seed = self.config.seed
                     .wrapping_add(self.eval_count * 100000)
@@ -468,8 +475,8 @@ impl<'a> Evaluator<'a> {
                 // vs Random
                 for i in 0..games_per_opponent {
                     let seed = matchup_seed.wrapping_add(i as u64);
-                    let (winner, turns) = self.run_game_vs_random_with_decks(weights, deck1, deck2, seed);
-                    if winner == Some(PlayerId::PLAYER_ONE) { random_wins += 1; }
+                    let (won, turns) = Self::run_game_vs_random_with_decks_static(card_db, weights, deck1, deck2, seed, max_actions);
+                    if won { random_wins += 1; }
                     total_turns += turns;
                     total_games += 1;
                 }
@@ -477,17 +484,17 @@ impl<'a> Evaluator<'a> {
                 // vs Greedy
                 for i in 0..games_per_opponent {
                     let seed = matchup_seed.wrapping_add(1000 + i as u64);
-                    let (winner, turns) = self.run_game_vs_greedy_with_decks(weights, deck1, deck2, seed);
-                    if winner == Some(PlayerId::PLAYER_ONE) { greedy_wins += 1; }
+                    let (won, turns) = Self::run_game_vs_greedy_with_decks_static(card_db, weights, deck1, deck2, seed, max_actions);
+                    if won { greedy_wins += 1; }
                     total_turns += turns;
                     total_games += 1;
                 }
 
-                // vs MCTS
+                // vs AlphaBeta
                 for i in 0..games_per_opponent {
                     let seed = matchup_seed.wrapping_add(2000 + i as u64);
-                    let (winner, turns) = self.run_game_vs_mcts_with_decks(weights, deck1, deck2, seed);
-                    if winner == Some(PlayerId::PLAYER_ONE) { mcts_wins += 1; }
+                    let (won, turns) = Self::run_game_vs_alphabeta_with_decks_static(card_db, weights, deck1, deck2, seed, max_actions, ab_depth);
+                    if won { ab_wins += 1; }
                     total_turns += turns;
                     total_games += 1;
                 }
@@ -497,12 +504,12 @@ impl<'a> Evaluator<'a> {
         let games_per_opponent_type = (total_games / 3).max(1);
         let random_wr = random_wins as f64 / games_per_opponent_type as f64;
         let greedy_wr = greedy_wins as f64 / games_per_opponent_type as f64;
-        let mcts_wr = mcts_wins as f64 / games_per_opponent_type as f64;
+        let ab_wr = ab_wins as f64 / games_per_opponent_type as f64;
 
-        // Weighted fitness like multi-opponent: Random 10%, Greedy 40%, MCTS 50%
-        let fitness = random_wr * 10.0 + greedy_wr * 40.0 + mcts_wr * 50.0;
+        // Weighted fitness like multi-opponent: Random 10%, Greedy 40%, AlphaBeta 50%
+        let fitness = random_wr * 10.0 + greedy_wr * 40.0 + ab_wr * 50.0;
 
-        let total_wins = random_wins + greedy_wins + mcts_wins;
+        let total_wins = random_wins + greedy_wins + ab_wins;
         let win_rate = total_wins as f64 / total_games as f64;
         let avg_turns = total_turns as f64 / total_games as f64;
 
@@ -512,20 +519,20 @@ impl<'a> Evaluator<'a> {
     /// Evaluate for a specific matchup (specialist).
     /// Uses commanders from deck definitions.
     fn evaluate_specialist(&self, weights: &GreedyWeights, deck: &DeckDefinition, opponent_deck: &DeckDefinition) -> (f64, f64, usize, f64) {
-        // Enhanced specialist: test against Random, Greedy, AND MCTS (like generalist)
-        // Distributes games: 1/3 each for Random, Greedy, MCTS
+        // Enhanced specialist: test against Random, Greedy, AND AlphaBeta (like generalist)
+        // Distributes games: 1/3 each for Random, Greedy, AlphaBeta
         let games_per_opponent = self.config.games_per_eval / 3;
 
         let mut random_wins = 0;
         let mut greedy_wins = 0;
-        let mut mcts_wins = 0;
+        let mut ab_wins = 0;
         let mut total_turns = 0u32;
 
         if self.config.parallel {
             let card_db = self.card_db;
             let max_actions = self.config.max_actions;
             let base_seed = self.config.seed.wrapping_add(self.eval_count * 10000);
-            let mcts_sims = self.config.mcts_sims;
+            let ab_depth = self.config.ab_depth;
 
             // vs Random
             let random_results: Vec<(bool, u32)> = (0..games_per_opponent).into_par_iter().map(|i| {
@@ -539,50 +546,53 @@ impl<'a> Evaluator<'a> {
                 Self::run_game_vs_greedy_with_decks_static(card_db, weights, deck, opponent_deck, seed, max_actions)
             }).collect();
 
-            // vs MCTS
-            let mcts_results: Vec<(bool, u32)> = (0..games_per_opponent).into_par_iter().map(|i| {
+            // vs AlphaBeta
+            let ab_results: Vec<(bool, u32)> = (0..games_per_opponent).into_par_iter().map(|i| {
                 let seed = base_seed.wrapping_add(2000 + i as u64);
-                Self::run_game_vs_mcts_with_decks_static(card_db, weights, deck, opponent_deck, seed, max_actions, mcts_sims)
+                Self::run_game_vs_alphabeta_with_decks_static(card_db, weights, deck, opponent_deck, seed, max_actions, ab_depth)
             }).collect();
 
             // Aggregate results
             random_wins = random_results.iter().filter(|(won, _)| *won).count();
             greedy_wins = greedy_results.iter().filter(|(won, _)| *won).count();
-            mcts_wins = mcts_results.iter().filter(|(won, _)| *won).count();
-            
+            ab_wins = ab_results.iter().filter(|(won, _)| *won).count();
+
             total_turns += random_results.iter().map(|(_, t)| t).sum::<u32>();
             total_turns += greedy_results.iter().map(|(_, t)| t).sum::<u32>();
-            total_turns += mcts_results.iter().map(|(_, t)| t).sum::<u32>();
+            total_turns += ab_results.iter().map(|(_, t)| t).sum::<u32>();
         } else {
-            // Sequential fallback
+            // Sequential fallback - use static functions
+            let card_db = self.card_db;
+            let max_actions = self.config.max_actions;
             let base_seed = self.config.seed.wrapping_add(self.eval_count * 10000);
-            
+            let ab_depth = self.config.ab_depth;
+
             // vs Random
             for i in 0..games_per_opponent {
                 let seed = base_seed.wrapping_add(i as u64);
-                let (winner, turns) = self.run_game_vs_random_with_decks(weights, deck, opponent_deck, seed);
-                if winner == Some(PlayerId::PLAYER_ONE) { random_wins += 1; }
+                let (won, turns) = Self::run_game_vs_random_with_decks_static(card_db, weights, deck, opponent_deck, seed, max_actions);
+                if won { random_wins += 1; }
                 total_turns += turns;
             }
 
             // vs Greedy
             for i in 0..games_per_opponent {
                 let seed = base_seed.wrapping_add(1000 + i as u64);
-                let (winner, turns) = self.run_game_vs_greedy_with_decks(weights, deck, opponent_deck, seed);
-                if winner == Some(PlayerId::PLAYER_ONE) { greedy_wins += 1; }
+                let (won, turns) = Self::run_game_vs_greedy_with_decks_static(card_db, weights, deck, opponent_deck, seed, max_actions);
+                if won { greedy_wins += 1; }
                 total_turns += turns;
             }
 
-            // vs MCTS
+            // vs AlphaBeta
             for i in 0..games_per_opponent {
                 let seed = base_seed.wrapping_add(2000 + i as u64);
-                let (winner, turns) = self.run_game_vs_mcts_with_decks(weights, deck, opponent_deck, seed);
-                if winner == Some(PlayerId::PLAYER_ONE) { mcts_wins += 1; }
+                let (won, turns) = Self::run_game_vs_alphabeta_with_decks_static(card_db, weights, deck, opponent_deck, seed, max_actions, ab_depth);
+                if won { ab_wins += 1; }
                 total_turns += turns;
             }
         }
 
-        let total_wins = random_wins + greedy_wins + mcts_wins;
+        let total_wins = random_wins + greedy_wins + ab_wins;
         let total_games = games_per_opponent * 3;
         let win_rate = total_wins as f64 / total_games as f64;
         let avg_turns = total_turns as f64 / total_games as f64;
@@ -732,6 +742,7 @@ impl<'a> Evaluator<'a> {
     }
 
     /// Run a single game vs MCTS (static version for parallel).
+    #[allow(dead_code)] // Kept for potential future MCTS testing
     fn run_game_vs_mcts_static(
         card_db: &CardDatabase,
         weights: &GreedyWeights,
@@ -774,12 +785,56 @@ impl<'a> Evaluator<'a> {
         (won, engine.turn_number() as u32)
     }
 
+    /// Run a game with Greedy candidate vs AlphaBeta opponent (default deck, static version).
+    fn run_game_vs_alphabeta_static(
+        card_db: &CardDatabase,
+        weights: &GreedyWeights,
+        deck: &[CardId],
+        seed: u64,
+        max_actions: usize,
+        ab_depth: u32,
+    ) -> (bool, u32) {
+        let mut candidate_bot = GreedyBot::with_weights(card_db, weights.clone(), seed);
+
+        // Create AlphaBeta bot as opponent with default weights
+        let bot_weights = crate::bots::BotWeights::default();
+        let mut ab_bot = AlphaBetaBot::with_config_and_weights(
+            card_db,
+            AlphaBetaConfig::with_depth(ab_depth),
+            &bot_weights,
+            seed.wrapping_add(1000),
+        );
+
+        let mut engine = GameEngine::new(card_db);
+        engine.start_game_raw(deck.to_vec(), deck.to_vec(), DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).expect("Failed to start game");
+
+        let mut action_count = 0;
+        while !engine.is_game_over() && action_count < max_actions {
+            let current_player = engine.current_player();
+
+            let action = if current_player == PlayerId::PLAYER_ONE {
+                candidate_bot.select_action_with_engine(&engine)
+            } else {
+                ab_bot.select_action_with_engine(&engine)
+            };
+
+            if engine.apply_action(action).is_err() {
+                break;
+            }
+            action_count += 1;
+        }
+
+        let won = engine.winner() == Some(PlayerId::PLAYER_ONE);
+        (won, engine.turn_number() as u32)
+    }
+
     // ============================================================================
     // Helper methods for generalist mode with custom decks
     // ============================================================================
 
     /// Run game vs Random with custom decks (non-static version).
     /// Uses commanders from the deck definitions.
+    #[allow(dead_code)] // Kept for potential sequential evaluation
     fn run_game_vs_random_with_decks(&self, weights: &GreedyWeights, deck1: &DeckDefinition, deck2: &DeckDefinition, seed: u64) -> (Option<PlayerId>, u32) {
         let mut greedy_bot = GreedyBot::with_weights(self.card_db, weights.clone(), seed);
         let mut random_bot = RandomBot::new(seed.wrapping_add(1000));
@@ -818,6 +873,7 @@ impl<'a> Evaluator<'a> {
 
     /// Run game vs Greedy with custom decks (non-static version).
     /// Uses commanders from the deck definitions.
+    #[allow(dead_code)] // Kept for potential sequential evaluation
     fn run_game_vs_greedy_with_decks(&self, weights: &GreedyWeights, deck1: &DeckDefinition, deck2: &DeckDefinition, seed: u64) -> (Option<PlayerId>, u32) {
         let mut candidate_bot = GreedyBot::with_weights(self.card_db, weights.clone(), seed);
         let mut baseline_bot = GreedyBot::new(self.card_db, seed.wrapping_add(1000));
@@ -853,6 +909,7 @@ impl<'a> Evaluator<'a> {
 
     /// Run game vs MCTS with custom decks (non-static version).
     /// Uses commanders from the deck definitions.
+    #[allow(dead_code)] // Kept for potential future MCTS testing
     fn run_game_vs_mcts_with_decks(&self, weights: &GreedyWeights, deck1: &DeckDefinition, deck2: &DeckDefinition, seed: u64) -> (Option<PlayerId>, u32) {
         let mut candidate_bot = GreedyBot::with_weights(self.card_db, weights.clone(), seed);
         let mcts_config = MctsConfig {
@@ -985,6 +1042,7 @@ impl<'a> Evaluator<'a> {
 
     /// Run game vs MCTS with custom decks (static version for parallel).
     /// Uses commanders from the deck definitions.
+    #[allow(dead_code)] // Kept for potential future MCTS testing
     fn run_game_vs_mcts_with_decks_static(
         card_db: &CardDatabase,
         weights: &GreedyWeights,
@@ -1023,6 +1081,57 @@ impl<'a> Evaluator<'a> {
                 candidate_bot.select_action_with_engine(&engine)
             } else {
                 mcts_bot.select_action_with_engine(&engine)
+            };
+
+            if engine.apply_action(action).is_err() {
+                break;
+            }
+            action_count += 1;
+        }
+
+        let won = engine.winner() == Some(PlayerId::PLAYER_ONE);
+        (won, engine.turn_number() as u32)
+    }
+
+    /// Run game with Greedy candidate vs AlphaBeta opponent (custom decks, static version).
+    fn run_game_vs_alphabeta_with_decks_static(
+        card_db: &CardDatabase,
+        weights: &GreedyWeights,
+        deck1: &DeckDefinition,
+        deck2: &DeckDefinition,
+        seed: u64,
+        max_actions: usize,
+        ab_depth: u32,
+    ) -> (bool, u32) {
+        let mut candidate_bot = GreedyBot::with_weights(card_db, weights.clone(), seed);
+
+        // Create AlphaBeta bot as opponent with default weights
+        let bot_weights = crate::bots::BotWeights::default();
+        let mut ab_bot = AlphaBetaBot::with_config_and_weights(
+            card_db,
+            AlphaBetaConfig::with_depth(ab_depth),
+            &bot_weights,
+            seed.wrapping_add(1000),
+        );
+
+        let mut engine = GameEngine::new(card_db);
+        engine.start_game_raw(
+            deck1.to_card_ids(),
+            deck2.to_card_ids(),
+            CardId(deck1.commander),
+            CardId(deck2.commander),
+            seed,
+            GameMode::default(),
+        ).expect("Failed to start game");
+
+        let mut action_count = 0;
+        while !engine.is_game_over() && action_count < max_actions {
+            let current_player = engine.current_player();
+
+            let action = if current_player == PlayerId::PLAYER_ONE {
+                candidate_bot.select_action_with_engine(&engine)
+            } else {
+                ab_bot.select_action_with_engine(&engine)
             };
 
             if engine.apply_action(action).is_err() {

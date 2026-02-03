@@ -20,6 +20,7 @@ fn test_evaluate_vs_random() {
         max_actions: 500,
         parallel: false, // Sequential for test stability
         mcts_sims: 100,
+        ab_depth: 6,
     };
 
     let mut evaluator = Evaluator::new(&card_db, config);
@@ -49,6 +50,7 @@ fn test_evaluate_vs_greedy() {
         max_actions: 500,
         parallel: false,
         mcts_sims: 100,
+        ab_depth: 6,
     };
 
     let mut evaluator = Evaluator::new(&card_db, config);
@@ -79,6 +81,7 @@ fn test_bad_weights_lose() {
         max_actions: 500,
         parallel: false,
         mcts_sims: 100,
+        ab_depth: 6,
     };
 
     let mut evaluator = Evaluator::new(&card_db, config);

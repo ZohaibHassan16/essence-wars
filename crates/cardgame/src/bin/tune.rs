@@ -37,11 +37,11 @@ struct Args {
     /// Tuning mode for weight optimization
     ///
     /// Available modes:
-    /// - generalist: Train across all deck matchups (vs Random/Greedy/MCTS)
+    /// - generalist: Train across all deck matchups (vs Random/Greedy/AlphaBeta)
     /// - specialist: Train for specific deck matchup (requires --deck and --opponent)
     /// - faction-specialist: Train for a faction (requires --faction) [DEPRECATED]
     /// - archetype: Train for an archetype (requires --archetype: aggro/control/tempo/midrange)
-    /// - alphabeta: Train Alpha-Beta weights across all decks (uses --ab-depth)
+    /// - alphabeta: Train Alpha-Beta weights against MCTS (uses --ab-depth)
     /// - alphabeta-specialist: Train Alpha-Beta weights for a faction (requires --faction and --ab-depth)
     #[arg(long, default_value = "generalist")]
     mode: String,
@@ -79,7 +79,7 @@ struct Args {
     #[arg(long, short = 'p')]
     population: Option<usize>,
 
-    /// MCTS simulations per move (for MCTS opponents)
+    /// MCTS simulations per move (only for `alphabeta` mode vs MCTS opponent)
     #[arg(long, default_value = "50")]
     mcts_sims: u32,
 
@@ -232,7 +232,7 @@ fn main() {
             }
             println!("Generalist mode:");
             println!("  {} deck matchups", matchups.len());
-            println!("  Testing vs Random, Greedy, AND MCTS per matchup");
+            println!("  Testing vs Random, Greedy, AND AlphaBeta-{} per matchup", args.ab_depth);
             println!("  Total games per evaluation: {}", args.games);
             TuningMode::Generalist { matchups }
         }
@@ -257,7 +257,7 @@ fn main() {
             };
 
             println!("Specialist mode: {} vs {}", deck_id, opponent_id);
-            println!("  Testing vs Random, Greedy, AND MCTS");
+            println!("  Testing vs Random, Greedy, AND AlphaBeta-{}", args.ab_depth);
             println!("  Total games per evaluation: {}", args.games);
             TuningMode::Specialist { deck: Box::new(deck), opponent_deck: Box::new(opponent_deck) }
         }
@@ -295,7 +295,7 @@ fn main() {
             println!("  {} faction decks", faction_decks.len());
             println!("  {} opponent decks (from other factions)", opponent_decks.len());
             println!("  {} total matchups", matchups.len());
-            println!("  Testing vs Random, Greedy, AND MCTS per matchup");
+            println!("  Testing vs Random, Greedy, AND AlphaBeta-{} per matchup", args.ab_depth);
             println!("  Total games per evaluation: {}", args.games);
             TuningMode::Generalist { matchups }
         }
@@ -342,7 +342,7 @@ fn main() {
             println!("  {} {} decks", archetype_decks.len(), archetype_str);
             println!("  {} opponent decks (other archetypes)", opponent_decks.len());
             println!("  {} total matchups", matchups.len());
-            println!("  Testing vs Random, Greedy, AND MCTS per matchup");
+            println!("  Testing vs Random, Greedy, AND AlphaBeta-{} per matchup", args.ab_depth);
             println!("  Total games per evaluation: {}", args.games);
             TuningMode::Generalist { matchups }
         }
@@ -415,6 +415,7 @@ fn main() {
         max_actions: 500,
         parallel: args.parallel,
         mcts_sims: args.mcts_sims,
+        ab_depth: args.ab_depth,
     };
 
     // Create CMA-ES config

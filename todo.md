@@ -30,7 +30,7 @@ Update and Enhance the Diagnosis/Analysis Screen in Spectator Mode, using the no
 ## (F) Review and Update Python Gym
 
 - Look into the changes, update and integrate everything
-- Create new, updated Github Action workflows - Fresh workflows with current best practices for Maturin/PyPI for Publishing to Github Packages / PyPI
+- review Github Action workflows for Maturin/PyPI for Publishing to Github Packages / PyPI
 
 ## (G) Review if Asset Pipeline is still in sync
 
@@ -39,8 +39,7 @@ Search and review all Asset related Scripts, Data, Prompts, Artwork, Documention
 ## (H) Tutorials
 
 - Update Human vs AI Tutorial
-- Create Spectator Mode Tutorial 
-- Create Deck Builder Tutorial
+- Create Spectator Mode Tutorial
 - Use the Replay System to be sure each step is 100% the same each time
 
 ## (I) Expansion Planning
@@ -60,7 +59,7 @@ Work through `essential-audit-checklist.md`.
 
 Improve Test Coverage for vital Systems (Crates and Python)
 
-## (L) Win Conditions
+## (L) ✅ Win Conditions [DONE]
 
 Review Win Conditions implementation and Discussion in Code Base and `win-discussion.md`. Update Essence Wars Design Doc and other Documentation, including Game App `crates/essence-wars-ui`.
 
@@ -76,19 +75,6 @@ Review Win Conditions implementation and Discussion in Code Base and `win-discus
 
 **Thresholds:** 50 essence extracted to win (unchanged from VictoryPoints).
 
-## (M) Performance Optimization Plan
-
-See `docs/design-performance-optimizations.md` for full details.
-
-**Phase 1 (Sprint 1) - COMPLETED:**
-1. ✅ Token data separation - Changed `token_abilities` + `token_name` to `Option<Box<TokenData>>` (2.2-2.4x speedup)
-2. ⏭ Slot-indexed creature storage - Skipped (diminishing returns after token fix)
-3. ⏭ Remove redundant fields - Skipped (complexity not justified)
-
-**Phase 2 (Future - if needed):**
-- Batch keyword evaluation (lookup table)
-- Greedy delta scoring (skip forks for Attack/EndTurn)
-- Legal action caching
 
 ## (N) Deck Library Visualization
 

@@ -799,10 +799,11 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - Generate better backgrounds that fit the art direction of the game, replace existing ones (Collages of Commanders, Scenes, Key Locations? Worldmap?)
 - Discuss and overhaul all Menus and Boards to be polished and fitting our art direction
 - Create more Banners, Flags, Symbols, Frames etc to give it all more flair and style
-- Audit for all token images `crates/essence-wars-ui/static/tokens/`, following our art direction outlined in `docs/art-direction.md`, and create a prompt file for using flux dev. See other prompt files for reference in `data/art/prompts/core_set`. Create a generate token python script in `scripts/`, see `scripts/generate-card-art.py` for reference.
+- Audit all token images `crates/essence-wars-ui/static/tokens/`, following our art direction outlined in `docs/art-direction.md`, and create a prompt file for using flux dev. See other prompt files for reference in `data/art/prompts/core_set`. Create a generate token python script in `scripts/`, see `scripts/generate-card-art.py` for reference.
 
 **Audio**:
 - Audit SFX Library, current creature sounds are placeholders. Web Search for a consistent art asset pack that fits our theme and replace the existing ones.
+- Use new downloaded background music, review existing bgm (which to keep, which to replace or remove)
 
 ### Phase 10: Release Prep & Distribution
 
