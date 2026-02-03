@@ -34,16 +34,14 @@ from __future__ import annotations
 import gzip
 import json
 import random
-from collections import defaultdict
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterator
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 # Card ID ranges
 ARGENTUM_RANGE = (1000, 1074)

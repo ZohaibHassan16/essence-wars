@@ -1,9 +1,9 @@
 """Tab generators for HTML reports."""
 
-from .overview import OverviewTab
-from .validation import ValidationTab
-from .tuning import TuningTab
 from .elo import EloTab
+from .overview import OverviewTab
 from .research import ResearchTab
+from .tuning import TuningTab
+from .validation import ValidationTab
 
-__all__ = ["OverviewTab", "ValidationTab", "TuningTab", "EloTab", "ResearchTab"]
+__all__ = ["EloTab", "OverviewTab", "ResearchTab", "TuningTab", "ValidationTab"]

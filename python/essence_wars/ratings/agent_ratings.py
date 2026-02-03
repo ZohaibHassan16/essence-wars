@@ -15,8 +15,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from .base import BaseRating, RatingCategory, expected_score, calculate_rating_change
-
+from .base import BaseRating, RatingCategory, expected_score
 
 # Default path for agent ratings
 DEFAULT_AGENT_RATINGS_PATH = Path("data/ratings/agent_elo.json")

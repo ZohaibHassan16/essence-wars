@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -74,7 +73,7 @@ class CausalSelfAttention(nn.Module):
         )
 
     def forward(
-        self, x: torch.Tensor, attention_mask: Optional[torch.Tensor] = None
+        self, x: torch.Tensor, attention_mask: torch.Tensor | None = None
     ) -> torch.Tensor:
         B, T, C = x.shape
 
@@ -129,7 +128,7 @@ class TransformerBlock(nn.Module):
         )
 
     def forward(
-        self, x: torch.Tensor, attention_mask: Optional[torch.Tensor] = None
+        self, x: torch.Tensor, attention_mask: torch.Tensor | None = None
     ) -> torch.Tensor:
         x = x + self.attn(self.ln1(x), attention_mask)
         x = x + self.mlp(self.ln2(x))
@@ -208,7 +207,7 @@ class DecisionTransformer(nn.Module):
         states: torch.Tensor,  # (B, T, state_dim)
         actions: torch.Tensor,  # (B, T)
         timesteps: torch.Tensor,  # (B, T)
-        attention_mask: Optional[torch.Tensor] = None,  # (B, T)
+        attention_mask: torch.Tensor | None = None,  # (B, T)
     ) -> torch.Tensor:
         """Forward pass.
 
@@ -283,7 +282,7 @@ class DecisionTransformer(nn.Module):
         actions: torch.Tensor,  # (T,) or (1, T)
         returns_to_go: torch.Tensor,  # (T,) or (1, T)
         timesteps: torch.Tensor,  # (T,) or (1, T)
-        action_mask: Optional[torch.Tensor] = None,  # (action_dim,)
+        action_mask: torch.Tensor | None = None,  # (action_dim,)
     ) -> int:
         """Get action for inference.
 

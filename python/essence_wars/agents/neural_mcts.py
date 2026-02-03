@@ -51,11 +51,11 @@ class NetworkProtocol(Protocol):
         """Forward pass returning (logits, value)."""
         ...
 
-    def to(self, device: torch.device) -> "NetworkProtocol":
+    def to(self, device: torch.device) -> NetworkProtocol:
         """Move to device."""
         ...
 
-    def eval(self) -> "NetworkProtocol":
+    def eval(self) -> NetworkProtocol:
         """Set to evaluation mode."""
         ...
 
@@ -86,7 +86,7 @@ class MCTSNode:
     All values are stored from player 0's perspective for consistency.
     """
 
-    __slots__ = ['prior', 'visit_count', 'value_sum', 'children', 'is_expanded']
+    __slots__ = ['children', 'is_expanded', 'prior', 'value_sum', 'visit_count']
 
     def __init__(self, prior: float = 0.0) -> None:
         self.prior = prior
@@ -113,7 +113,7 @@ class MCTSNode:
         for i, action in enumerate(legal_actions):
             self.children[action] = MCTSNode(prior=legal_priors[i])
 
-    def select_child(self, c_puct: float, current_player: int) -> tuple[int, "MCTSNode"]:
+    def select_child(self, c_puct: float, current_player: int) -> tuple[int, MCTSNode]:
         """Select child with highest UCB score.
 
         Values are stored from player 0's perspective.
@@ -806,8 +806,8 @@ def load_ppo_network(
     Returns:
         Tuple of (network, obs_normalizer) where obs_normalizer may be None
     """
-    from essence_wars.agents.networks import EssenceWarsNetwork
     from essence_wars.agents.embeddings import EmbeddedPPONetwork
+    from essence_wars.agents.networks import EssenceWarsNetwork
 
     if device == "auto":
         device = "cuda" if torch.cuda.is_available() else "cpu"

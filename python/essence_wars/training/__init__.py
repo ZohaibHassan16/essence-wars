@@ -35,16 +35,16 @@ Example:
 """
 
 from .callbacks import (
+    AutoEvaluateCallback,
+    AutoReportCallback,
     # Core types
     CallbackContext,
-    TrainingCallback,
     CallbackList,
     # Built-in callbacks
     CheckpointCallback,
     EvaluationCallback,
-    AutoEvaluateCallback,
-    AutoReportCallback,
     LoggingCallback,
+    TrainingCallback,
     # Convenience function
     make_callback,
 )

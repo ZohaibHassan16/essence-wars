@@ -21,8 +21,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from essence_wars.agents.networks import EssenceWarsNetwork
 from essence_wars.agents.embeddings import create_network
+from essence_wars.agents.networks import EssenceWarsNetwork
 from essence_wars.env import (
     EssenceWarsEnv,
     VectorizedEssenceWars,
@@ -709,7 +709,7 @@ class PPOTrainer:
                     self.evals_without_improvement = 0
                     if self.best_checkpoint_path:
                         self.save(self.best_checkpoint_path)
-                        print(f" [NEW BEST]", end="")
+                        print(" [NEW BEST]", end="")
                 else:
                     self.evals_without_improvement += 1
 

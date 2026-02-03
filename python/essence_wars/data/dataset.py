@@ -24,12 +24,11 @@ from __future__ import annotations
 
 import gzip
 import json
+import random
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 from typing import IO, Any
-
-import random
 
 import numpy as np
 import torch

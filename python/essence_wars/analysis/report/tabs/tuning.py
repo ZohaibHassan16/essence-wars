@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 class TuningTab:
     """Generator for the Tuning tab."""
 
-    def __init__(self, experiments: list["TuningData"]):
+    def __init__(self, experiments: list[TuningData]):
         """Initialize with a list of tuning experiments.
 
         Args:

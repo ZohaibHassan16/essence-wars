@@ -17,7 +17,6 @@ from typing import Any
 
 from .base import BaseRating, RatingCategory, expected_score
 
-
 # Default path for deck ratings
 DEFAULT_DECK_RATINGS_PATH = Path("data/ratings/deck_elo.json")
 DEFAULT_DECKS_DIR = Path("data/decks")

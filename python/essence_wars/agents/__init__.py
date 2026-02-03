@@ -26,14 +26,14 @@ Example:
     trainer.train(num_iterations=100)
 """
 
-from essence_wars.agents.networks import AlphaZeroNetwork, EssenceWarsNetwork, ResidualBlock
 from essence_wars.agents.embeddings import (
-    EmbeddedPPONetwork,
     EmbeddedAlphaZeroNetwork,
+    EmbeddedPPONetwork,
     ObservationTransformer,
     create_network,
     get_embedding_info,
 )
+from essence_wars.agents.networks import AlphaZeroNetwork, EssenceWarsNetwork, ResidualBlock
 
 __all__ = [
     # Original networks

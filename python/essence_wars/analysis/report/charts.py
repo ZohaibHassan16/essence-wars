@@ -12,9 +12,9 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 if TYPE_CHECKING:
-    from .loaders.validation import DeckStats, ValidationData
+    from .loaders.elo import EloData
     from .loaders.tuning import TuningData
-    from .loaders.elo import EloData, DeckRating
+    from .loaders.validation import DeckStats, ValidationData
 
 # Faction colors matching the game's aesthetic
 FACTION_COLORS = {
@@ -98,7 +98,7 @@ def create_health_gauge(score: float) -> str:
     return fig.to_html(full_html=False, include_plotlyjs=False)
 
 
-def create_deck_winrate_bar(deck_stats: list["DeckStats"]) -> str:
+def create_deck_winrate_bar(deck_stats: list[DeckStats]) -> str:
     """Create a horizontal bar chart of deck win rates.
 
     Args:
@@ -163,7 +163,7 @@ def create_deck_winrate_bar(deck_stats: list["DeckStats"]) -> str:
     return fig.to_html(full_html=False, include_plotlyjs=False)
 
 
-def create_matchup_heatmap(data: "ValidationData") -> str:
+def create_matchup_heatmap(data: ValidationData) -> str:
     """Create an interactive matchup heatmap.
 
     Args:
@@ -249,7 +249,7 @@ def create_matchup_heatmap(data: "ValidationData") -> str:
     return fig.to_html(full_html=False, include_plotlyjs=False)
 
 
-def create_p1_p2_chart(data: "ValidationData") -> str:
+def create_p1_p2_chart(data: ValidationData) -> str:
     """Create a P1/P2 win rate visualization.
 
     Args:
@@ -312,7 +312,7 @@ def create_p1_p2_chart(data: "ValidationData") -> str:
     return fig.to_html(full_html=False, include_plotlyjs=False)
 
 
-def create_faction_distribution(deck_stats: list["DeckStats"]) -> str:
+def create_faction_distribution(deck_stats: list[DeckStats]) -> str:
     """Create a faction distribution donut chart.
 
     Args:
@@ -371,7 +371,7 @@ def create_faction_distribution(deck_stats: list["DeckStats"]) -> str:
     return fig.to_html(full_html=False, include_plotlyjs=False)
 
 
-def create_tuning_curves(tuning_data: "TuningData") -> str:
+def create_tuning_curves(tuning_data: TuningData) -> str:
     """Create a multi-axis chart showing fitness, win rate, and sigma over generations.
 
     Args:
@@ -483,7 +483,7 @@ def create_tuning_curves(tuning_data: "TuningData") -> str:
     return fig.to_html(full_html=False, include_plotlyjs=False)
 
 
-def create_tuning_comparison(tuning_experiments: list["TuningData"]) -> str:
+def create_tuning_comparison(tuning_experiments: list[TuningData]) -> str:
     """Create a comparison chart of multiple tuning experiments.
 
     Args:
@@ -550,7 +550,7 @@ def create_tuning_comparison(tuning_experiments: list["TuningData"]) -> str:
     return fig.to_html(full_html=False, include_plotlyjs=False)
 
 
-def create_convergence_status(tuning_experiments: list["TuningData"]) -> str:
+def create_convergence_status(tuning_experiments: list[TuningData]) -> str:
     """Create a status summary chart for experiment convergence.
 
     Args:
@@ -608,7 +608,7 @@ def create_convergence_status(tuning_experiments: list["TuningData"]) -> str:
     return fig.to_html(full_html=False, include_plotlyjs=False)
 
 
-def create_elo_rankings_bar(elo_data: "EloData") -> str:
+def create_elo_rankings_bar(elo_data: EloData) -> str:
     """Create a horizontal bar chart of ELO ratings.
 
     Args:
@@ -659,7 +659,7 @@ def create_elo_rankings_bar(elo_data: "EloData") -> str:
     return fig.to_html(full_html=False, include_plotlyjs=False)
 
 
-def create_elo_timeline(elo_data: "EloData", max_decks: int = 6) -> str:
+def create_elo_timeline(elo_data: EloData, max_decks: int = 6) -> str:
     """Create a line chart showing ELO rating changes over time.
 
     Args:
@@ -731,7 +731,7 @@ def create_elo_timeline(elo_data: "EloData", max_decks: int = 6) -> str:
     return fig.to_html(full_html=False, include_plotlyjs=False)
 
 
-def create_elo_prediction_heatmap(elo_data: "EloData") -> str:
+def create_elo_prediction_heatmap(elo_data: EloData) -> str:
     """Create a heatmap of predicted win rates based on ELO.
 
     Args:
@@ -812,7 +812,7 @@ def create_elo_prediction_heatmap(elo_data: "EloData") -> str:
     return fig.to_html(full_html=False, include_plotlyjs=False)
 
 
-def create_faction_elo_comparison(elo_data: "EloData") -> str:
+def create_faction_elo_comparison(elo_data: EloData) -> str:
     """Create a grouped bar chart comparing faction performance.
 
     Args:

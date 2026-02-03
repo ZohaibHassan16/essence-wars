@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 class ValidationTab:
     """Generator for the Validation tab."""
 
-    def __init__(self, data: "ValidationData"):
+    def __init__(self, data: ValidationData):
         self.data = data
 
     def render(self) -> str:

@@ -9,7 +9,6 @@ import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 import pandas as pd
 
@@ -31,7 +30,7 @@ class DeckStats:
     worst_matchup: tuple[str, float]
 
     @classmethod
-    def from_dict(cls, data: dict) -> "DeckStats":
+    def from_dict(cls, data: dict) -> DeckStats:
         return cls(
             deck_id=data["deck_id"],
             commander_id=data["commander_id"],
@@ -66,7 +65,7 @@ class MatchupResult:
     diagnostics: dict = field(default_factory=dict)
 
     @classmethod
-    def from_dict(cls, data: dict) -> "MatchupResult":
+    def from_dict(cls, data: dict) -> MatchupResult:
         diag = data.get("diagnostics", {})
         return cls(
             deck1_id=data["deck1_id"],
@@ -100,7 +99,7 @@ class ValidationData:
     raw_matchups: list[dict] = field(default_factory=list)
 
     @classmethod
-    def from_json(cls, path: Path) -> "ValidationData":
+    def from_json(cls, path: Path) -> ValidationData:
         """Load validation data from a results.json file."""
         with open(path) as f:
             data = json.load(f)

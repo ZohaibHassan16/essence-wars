@@ -8,9 +8,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ..charts import (
+    create_elo_prediction_heatmap,
     create_elo_rankings_bar,
     create_elo_timeline,
-    create_elo_prediction_heatmap,
     create_faction_elo_comparison,
 )
 
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 class EloTab:
     """Generator for the ELO Ratings tab."""
 
-    def __init__(self, elo_data: "EloData"):
+    def __init__(self, elo_data: EloData):
         """Initialize with ELO data.
 
         Args:
@@ -137,7 +137,7 @@ class EloTab:
 
             html_parts.append("<tr>")
             html_parts.append(f"<td>{i}</td>")
-            html_parts.append(f'<td class="deck-cell">')
+            html_parts.append('<td class="deck-cell">')
             html_parts.append(f'<span class="commander-name">{deck.commander_name}</span>')
             html_parts.append(f'<span class="deck-id">{deck.deck_id}</span>')
             html_parts.append("</td>")
@@ -170,7 +170,7 @@ class EloTab:
                 continue
 
             html_parts.append('<div class="history-card">')
-            html_parts.append(f'<div class="history-header">')
+            html_parts.append('<div class="history-header">')
             html_parts.append(f'<span class="deck-name">{deck.commander_name}</span>')
             html_parts.append(f'<span class="current-rating">{deck.rating:.0f}</span>')
             html_parts.append("</div>")
@@ -217,7 +217,7 @@ class EloTab:
         </div>
         """
 
-    def _get_trend(self, deck: "DeckRating") -> str:
+    def _get_trend(self, deck: DeckRating) -> str:
         """Determine rating trend from recent history."""
         if not deck.history:
             return "stable"
@@ -232,7 +232,7 @@ class EloTab:
             return "down"
         return "stable"
 
-    def _get_recent_form(self, deck: "DeckRating", n: int = 5) -> str:
+    def _get_recent_form(self, deck: DeckRating, n: int = 5) -> str:
         """Get recent form as W/L/D symbols."""
         if not deck.history:
             return "-"

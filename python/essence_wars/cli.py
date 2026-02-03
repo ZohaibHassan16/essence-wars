@@ -31,11 +31,8 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 # Lazy imports to keep CLI startup fast
-if TYPE_CHECKING:
-    pass
 
 
 def _setup_path() -> None:
@@ -631,7 +628,7 @@ def _run_report_generate_all(kwargs: dict) -> None:
         try:
             since = datetime.strptime(kwargs["since"], "%Y-%m-%d")
         except ValueError:
-            print(f"Error: Invalid date format. Use YYYY-MM-DD.")
+            print("Error: Invalid date format. Use YYYY-MM-DD.")
             sys.exit(1)
 
     generator = ReportGenerator(theme=kwargs["theme"])

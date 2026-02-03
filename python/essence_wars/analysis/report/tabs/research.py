@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 class ResearchTab:
     """Generator for the Research tab with faction-level analysis."""
 
-    def __init__(self, data: "ValidationData"):
+    def __init__(self, data: ValidationData):
         self.data = data
 
     def render(self) -> str:

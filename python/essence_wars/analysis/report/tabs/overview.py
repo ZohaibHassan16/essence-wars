@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 class OverviewTab:
     """Generator for the Overview tab."""
 
-    def __init__(self, data: "ValidationData"):
+    def __init__(self, data: ValidationData):
         self.data = data
 
     def render(self) -> str:

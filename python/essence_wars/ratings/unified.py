@@ -17,9 +17,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Literal
 
+from .agent_ratings import AgentRating, AgentRatings, agent_ratings_exist
 from .base import BaseRating, RatingCategory
-from .deck_ratings import DeckRatings, DeckRating, deck_ratings_exist
-from .agent_ratings import AgentRatings, AgentRating, agent_ratings_exist
+from .deck_ratings import DeckRating, DeckRatings, deck_ratings_exist
 
 
 @dataclass
