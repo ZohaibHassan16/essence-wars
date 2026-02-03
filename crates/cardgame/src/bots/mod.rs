@@ -8,6 +8,7 @@ mod random;
 mod greedy;
 mod mcts;
 mod alphabeta;
+mod transposition;
 pub mod weights;
 pub mod factory;
 pub mod introspection;
