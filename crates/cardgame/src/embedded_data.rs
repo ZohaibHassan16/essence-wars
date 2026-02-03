@@ -291,4 +291,49 @@ mod tests {
             assert!(registry.get(deck_id).is_some(), "Deck {} not found", deck_id);
         }
     }
+
+    #[test]
+    fn test_load_embedded_cards_with_commanders() {
+        use crate::cards::Faction;
+
+        // This is the function Python bindings use - must test it!
+        let card_db = load_embedded_cards_with_commanders()
+            .expect("Failed to load embedded cards with commanders");
+
+        // Verify cards loaded
+        assert!(card_db.len() >= 300, "Expected at least 300 cards, got {}", card_db.len());
+
+        // Verify commanders loaded (12 total: 4 per faction × 3 factions)
+        let commander_count = card_db.commander_count();
+        assert_eq!(commander_count, 12, "Expected 12 commanders, got {}", commander_count);
+
+        // Verify commanders from each faction
+        let argentum_count = card_db.iter_commanders()
+            .filter(|c| c.faction == Faction::Argentum).count();
+        let symbiote_count = card_db.iter_commanders()
+            .filter(|c| c.faction == Faction::Symbiote).count();
+        let obsidion_count = card_db.iter_commanders()
+            .filter(|c| c.faction == Faction::Obsidion).count();
+
+        assert_eq!(argentum_count, 4, "Expected 4 Argentum commanders");
+        assert_eq!(symbiote_count, 4, "Expected 4 Symbiote commanders");
+        assert_eq!(obsidion_count, 4, "Expected 4 Obsidion commanders");
+    }
+
+    #[test]
+    fn test_embedded_commanders_have_abilities() {
+        // Ensure commander data is complete (not just parsed but valid)
+        let card_db = load_embedded_cards_with_commanders()
+            .expect("Failed to load cards with commanders");
+
+        for commander in card_db.iter_commanders() {
+            // Every commander should have either a passive or triggered ability
+            let has_passive = commander.has_passive();
+            let has_triggered = commander.has_triggered();
+            assert!(
+                has_passive || has_triggered,
+                "Commander {} has no abilities", commander.name
+            );
+        }
+    }
 }

@@ -144,3 +144,62 @@ jobs:
         with:
           name: wheels-sdist
           path: dist
+
+  # Test the built wheel in a clean environment (no data/ directory)
+  # This catches issues where code uses filesystem paths instead of embedded data
+  test-wheel:
+    needs: linux-x86_64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            scripts/test_pypi_install.py
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Download wheel
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-linux-x86_64
+          path: dist
+
+      - name: Install wheel in clean environment
+        run: |
+          # Create a clean directory without the data/ folder
+          mkdir -p /tmp/clean-test
+          cd /tmp/clean-test
+          python -m venv venv
+          source venv/bin/activate
+          # Install the wheel (should work without data/ directory)
+          pip install $GITHUB_WORKSPACE/dist/*cp311*manylinux*.whl
+
+      - name: Run smoke test
+        run: |
+          cd /tmp/clean-test
+          source venv/bin/activate
+          # Basic smoke test - if embedded data isn't working, this fails
+          python -c "
+          import essence_wars
+          print(f'Version: {essence_wars.__version__}')
+          decks = essence_wars.list_decks()
+          print(f'Decks: {len(decks)}')
+          assert len(decks) == 12, f'Expected 12 decks, got {len(decks)}'
+
+          # Create and play a game
+          game = essence_wars.PyGame()
+          game.reset(seed=42)
+          obs = game.observe()
+          assert obs.shape == (328,), f'Bad obs shape: {obs.shape}'
+          mask = game.action_mask()
+          assert mask.shape == (256,), f'Bad mask shape: {mask.shape}'
+          print('Smoke test PASSED!')
+          "
+
+      - name: Run full test script
+        run: |
+          cd /tmp/clean-test
+          source venv/bin/activate
+          python $GITHUB_WORKSPACE/scripts/test_pypi_install.py
