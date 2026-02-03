@@ -103,6 +103,13 @@ pub fn load_embedded_cards() -> Result<CardDatabase, String> {
     Ok(CardDatabase::new(all_cards))
 }
 
+/// Wrapper struct for the commander file format.
+/// The YAML files have a structure like: { commanders: [...] }
+#[derive(serde::Deserialize)]
+struct CommanderFile {
+    commanders: Vec<CommanderDefinition>,
+}
+
 /// Load embedded commanders from YAML data.
 fn load_embedded_commanders() -> Result<Vec<CommanderDefinition>, String> {
     let commander_yamls = [
@@ -113,9 +120,9 @@ fn load_embedded_commanders() -> Result<Vec<CommanderDefinition>, String> {
 
     let mut all_commanders = Vec::with_capacity(12);
     for (name, yaml_str) in commander_yamls {
-        let commanders: Vec<CommanderDefinition> = serde_yaml::from_str(yaml_str)
+        let file: CommanderFile = serde_yaml::from_str(yaml_str)
             .map_err(|e| format!("Failed to parse {} commanders: {}", name, e))?;
-        all_commanders.extend(commanders);
+        all_commanders.extend(file.commanders);
     }
 
     Ok(all_commanders)

@@ -44,31 +44,23 @@ Search and review all Asset related Scripts, Data, Prompts, Artwork, Documention
 - Create Spectator Mode Tutorial 
 - Create Deck Builder Tutorial
 
- Hello Claude.
+### (I) Discuss Expansion
 
-  I want to tackle Phase 9, Updating the Tutorial/Onboarding Experience from @docs/web-client-design.md . Let us please discuss this.
+See `expansion.md`.
 
-  There already exists a Tutorial but it needs to be reworked, the ai enemy commander is not following the steps (e.g. not playing a creature etc), and the highlight / shading is too dark, I can not see much outside of the highlighted area, which is not really helpful, as I can not see where I need to click. I think it should be following a different style, maybe a light glow on the area where we want to focus the player on, not darkening the rest of the board? E.g. first glow the card that needs to be clicked, than the glow the goal that needs to be clicked. Also, Glow on the resources and the commanders as they are presented, and so on. It can be blocking so that the new player not accidently clicks wrong, only the actual glowing/highlighted intended next action, so that the tutorial does not break.
+### (J) Essential Audit Checklist
 
-  It must not be a complete full game, that would enduce fatigue and frustrate new players, it can remain open ended, ending with the AI Hint system for players that might need more help (which basically auto plays for you if you want, you can just click it).
+Work through `essential-audit-checklist.md`.
 
-  ### (I) Discuss Expansion
+### (K) Python Linting
 
-  See `expansion.md`.
+Work through all ruff and mypy issues for the python modules.
 
-  ### (J) Essential Audit Checklist
+### (L) Test Suite
 
-  Work through `essential-audit-checklist.md`.
+Improve Test Coverage for vital Systems (Crates and Python)
 
-  ### (K) Python Linting
-
-  Work through all ruff and mypy issues for the python modules.
-
-  ### (L) Test Suite
-
-  Improve Test Coverage for vital Systems (Crates and Python)
-
-## Expansion Planning
+## (M) Expansion Planning
 
 | Question | Decision |
 |----------|----------|
@@ -77,7 +69,7 @@ Search and review all Asset related Scripts, Data, Prompts, Artwork, Documention
 | Bot/Agent compatibility | Accept retuning; keep observation/action space stable |
 | Expansion structure | 1 commander + deck per faction per expansion |
 
-## Win Conditions: Option B (Hybrid) ✅ IMPLEMENTED
+## (N) Win Conditions: Option B (Hybrid) ✅ IMPLEMENTED
 
 **Decision:** Keep life as "Tactical Stability" (zero = forced retreat), add Essence Extraction as parallel win condition.
 
@@ -90,3 +82,17 @@ Search and review all Asset related Scripts, Data, Prompts, Artwork, Documention
 - All 759 tests passing
 
 **Thresholds:** 50 essence extracted to win (unchanged from VictoryPoints).
+
+## (O) Performance Optimization Plan
+
+See `docs/design-performance-optimizations.md` for full details.
+
+**Phase 1 (Sprint 1) - COMPLETED:**
+1. ✅ Token data separation - Changed `token_abilities` + `token_name` to `Option<Box<TokenData>>` (2.2-2.4x speedup)
+2. ⏭ Slot-indexed creature storage - Skipped (diminishing returns after token fix)
+3. ⏭ Remove redundant fields - Skipped (complexity not justified)
+
+**Phase 2 (Future - if needed):**
+- Batch keyword evaluation (lookup table)
+- Greedy delta scoring (skip forks for Attack/EndTurn)
+- Legal action caching
