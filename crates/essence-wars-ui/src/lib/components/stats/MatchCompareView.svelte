@@ -187,7 +187,7 @@
               </div>
             {:else}
               <div class="space-y-2 max-h-96 overflow-y-auto">
-                {#each comparisonStore.replays as replay}
+                {#each comparisonStore.replays as replay (replay.path)}
                   <button
                     class="w-full flex items-center gap-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700
                            hover:border-ui-action hover:bg-gray-800 transition-colors text-left"

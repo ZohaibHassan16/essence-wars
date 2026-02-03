@@ -61,7 +61,7 @@
   }
 
   // Close export menu when clicking outside
-  function handleClickOutside(e: MouseEvent) {
+  function handleClickOutside(_e: MouseEvent) {
     if (showExportMenu) {
       showExportMenu = false;
     }
@@ -162,7 +162,7 @@
     <div class="flex-1 flex overflow-hidden">
       <!-- Vertical tab sidebar -->
       <div class="w-40 border-r border-gray-700 bg-gray-900/50 flex flex-col py-2">
-        {#each tabs as tab}
+        {#each tabs as tab (tab.id)}
           <button
             class="px-4 py-3 text-left text-sm font-medium transition-colors
                    {activeTab === tab.id

@@ -56,7 +56,7 @@
 </script>
 
 <div class="flex justify-center gap-2">
-  {#each factions as faction}
+  {#each factions as faction (faction.id)}
     {@const isSelected = selectedFaction === faction.id}
     <button
       class="faction-tab relative flex flex-col items-center px-6 py-3 rounded-lg border-2 transition-all duration-200

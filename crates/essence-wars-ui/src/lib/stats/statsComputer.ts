@@ -9,8 +9,8 @@ import type {
   SpectatorMatch,
   SpectatorAction,
   GameStateDto,
-  SpectatorResult,
-  GameEventDto,
+  SpectatorResult as _SpectatorResult,
+  GameEventDto as _GameEventDto,
 } from "$lib/api/types";
 
 import type {
@@ -36,7 +36,7 @@ import type {
  * Compute comprehensive statistics from a completed match.
  */
 export function computeMatchStatistics(match: SpectatorMatch): MatchStatistics {
-  const { initialState, actions, result } = match;
+  const { initialState, actions, result: _result } = match;
 
   // Compute all statistics
   const actionEconomy = {
@@ -87,7 +87,7 @@ export function computeMatchStatistics(match: SpectatorMatch): MatchStatistics {
 function computeOverviewStats(
   match: SpectatorMatch,
   cardPerformance: { player1: CardPerformanceStats; player2: CardPerformanceStats },
-  timeline: TimelineData
+  _timeline: TimelineData
 ): OverviewStats {
   const { actions, result } = match;
 
@@ -141,7 +141,7 @@ function computeActionStats(actions: SpectatorAction[], player: 1 | 2): ActionSt
     const actionType = action.action.actionType;
 
     switch (actionType) {
-      case "play_card":
+      case "play_card": {
         // Check events to determine card type
         const hasCreatureSpawn = action.events.some(e => e.eventType === "creature_spawned");
         const hasSupportPlaced = action.events.some(e => e.eventType === "support_placed");
@@ -155,8 +155,9 @@ function computeActionStats(actions: SpectatorAction[], player: 1 | 2): ActionSt
         }
         apSpent++; // Playing a card costs 1 AP
         break;
+      }
 
-      case "attack":
+      case "attack": {
         attacksMade++;
         // Check if it was a face attack or creature attack
         const targetSlot = action.action.targetSlot;
@@ -168,11 +169,13 @@ function computeActionStats(actions: SpectatorAction[], player: 1 | 2): ActionSt
         }
         apSpent++; // Attacks cost 1 AP
         break;
+      }
 
-      case "ability":
+      case "ability": {
         abilitiesUsed++;
         apSpent++;
         break;
+      }
 
       case "end_turn":
         // End turn - calculate AP that was available this turn

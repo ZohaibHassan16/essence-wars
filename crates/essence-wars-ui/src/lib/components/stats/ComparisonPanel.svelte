@@ -112,7 +112,7 @@
 <div class="space-y-6">
   <!-- Tab navigation -->
   <div class="flex gap-2 border-b border-gray-700 pb-2">
-    {#each tabs as tab}
+    {#each tabs as tab (tab.id)}
       <button
         class="px-4 py-2 rounded-t-lg text-sm font-medium transition-colors
                {activeTab === tab.id

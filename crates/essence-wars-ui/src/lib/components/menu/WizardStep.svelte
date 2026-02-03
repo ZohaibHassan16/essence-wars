@@ -23,7 +23,7 @@
   <div class="text-center py-6 border-b border-gray-700/50">
     <!-- Step indicator -->
     <div class="flex items-center justify-center gap-2 mb-3">
-      {#each Array(totalSteps) as _, i}
+      {#each Array(totalSteps) as _, i (i)}
         {@const stepNum = i + 1}
         {@const isActive = stepNum === stepNumber}
         {@const isComplete = stepNum < stepNumber}

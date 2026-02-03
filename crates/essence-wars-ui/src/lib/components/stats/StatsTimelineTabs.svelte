@@ -27,7 +27,7 @@
 
   <!-- Graph tab buttons -->
   <div class="flex gap-2 border-b border-gray-700 pb-2">
-    {#each graphTabs as tab}
+    {#each graphTabs as tab (tab.id)}
       <button
         class="px-4 py-2 rounded-t-lg text-sm font-medium transition-colors
                {activeGraph === tab.id

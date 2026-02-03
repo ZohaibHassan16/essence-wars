@@ -15,7 +15,7 @@ export function generateCommentaryForAction(
   action: SpectatorAction,
   prevState: GameStateDto | null
 ): CommentaryEntry {
-  const { turn, player, action: act, stateAfter, thinking, events } = action;
+  const { turn, player, action: act, stateAfter, thinking, events: _events } = action;
 
   // Calculate board advantage
   const advantage = calculateBoardAdvantage(stateAfter);
@@ -119,7 +119,7 @@ function generateCommentaryText(
 ): string {
   const { player, action: act, thinking, stateAfter } = action;
   const playerName = `P${player}`;
-  const opponentName = `P${player === 1 ? 2 : 1}`;
+  const _opponentName = `P${player === 1 ? 2 : 1}`;
 
   // Key moment commentary (more detailed)
   if (keyMoment === 'game_start') {

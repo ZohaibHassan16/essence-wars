@@ -108,6 +108,14 @@
 
   // Life percentage for color coding
   const lifePercent = $derived(maxLife > 0 ? (life / maxLife) * 100 : 0);
+
+  // Handle face click for keyboard accessibility
+  function handleFaceClick() {
+    if (isValidFaceTarget && onFaceTargetClick) {
+      playSound('abilityActivate');
+      onFaceTargetClick();
+    }
+  }
   const lifeColor = $derived(() => {
     if (lifePercent > 66) return "text-health";
     if (lifePercent > 33) return "text-yellow-400";
@@ -154,9 +162,6 @@
   });
 </script>
 
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div
   class="commander-card relative flex flex-col rounded-xl border-2 bg-gradient-to-b transition-all duration-300
          {factionColors().gradient} {factionColors().border} {factionColors().glow}
@@ -164,6 +169,11 @@
   class:opacity-60={!commander}
   class:active-pulse={isActive && !isValidFaceTarget}
   style="width: var(--commander-card-width, 250px); overflow: visible;"
+  role="button"
+  tabindex="0"
+  aria-label={commander ? `${commander.name} - ${life} HP` : "No commander"}
+  data-tutorial-id={tutorialId}
+  onkeydown={(e) => { if (isValidFaceTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); handleFaceClick(); } }}
   onmouseenter={() => showPopup = true}
   onmouseleave={() => showPopup = false}
   onclick={() => {
@@ -172,9 +182,6 @@
       onFaceTargetClick();
     }
   }}
-  role="region"
-  aria-label={commander ? `${commander.name} - ${life} HP` : "No commander"}
-  data-tutorial-id={tutorialId}
 >
   {#if commander}
     <!-- Portrait Section -->
@@ -220,7 +227,7 @@
       <!-- Essence Display (compact) -->
       {#if maxEssence > 0}
         <div class="flex items-center justify-center gap-1 mb-2">
-          {#each Array(maxEssence) as _, i}
+          {#each Array(maxEssence) as _, i (i)}
             <div
               class="w-3 h-3 rounded-full border transition-all duration-200"
               class:bg-mana={i < essence}
@@ -321,7 +328,7 @@
         <div class="border-t border-gray-700 pt-3">
           <div class="text-xs font-semibold text-ui-text-dim uppercase tracking-wide mb-2">Keywords</div>
           <div class="space-y-1.5">
-            {#each highlightedKeywords() as keyword}
+            {#each highlightedKeywords() as keyword (keyword)}
               <div class="text-xs">
                 <span class="font-semibold {factionColors().text}">{keyword}:</span>
                 <span class="text-ui-text-dim">{keywordDefinitions[keyword]}</span>

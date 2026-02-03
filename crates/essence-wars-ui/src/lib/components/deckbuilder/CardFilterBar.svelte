@@ -75,7 +75,7 @@
       onchange={handleCostChange}
       class="filter-select"
     >
-      {#each costOptions as option}
+      {#each costOptions as option (option.value ?? option.label)}
         <option value={option.value ?? ""}>{option.label}</option>
       {/each}
     </select>
@@ -85,7 +85,7 @@
       onchange={handleTypeChange}
       class="filter-select"
     >
-      {#each typeOptions as option}
+      {#each typeOptions as option (option.value ?? option.label)}
         <option value={option.value ?? ""}>{option.label}</option>
       {/each}
     </select>
@@ -96,7 +96,7 @@
       class="filter-select"
     >
       <option value="">All Keywords</option>
-      {#each deckBuilderStore.availableKeywords as keyword}
+      {#each deckBuilderStore.availableKeywords as keyword (keyword)}
         <option value={keyword}>{keyword}</option>
       {/each}
     </select>
@@ -106,7 +106,7 @@
       onchange={handleRarityChange}
       class="filter-select"
     >
-      {#each rarityOptions as option}
+      {#each rarityOptions as option (option.value ?? option.label)}
         <option value={option.value ?? ""}>{option.label}</option>
       {/each}
     </select>

@@ -25,7 +25,7 @@
   class:flex-col-reverse={!isPlayer}
   title="{current} / {max} Essence"
 >
-  {#each Array(totalSlots) as _, i}
+  {#each Array(totalSlots) as _, i (i)}
     {@const state = getGemState(isPlayer ? i : totalSlots - 1 - i)}
     <div
       class="w-4 h-4 rounded-sm transition-all duration-200 relative"

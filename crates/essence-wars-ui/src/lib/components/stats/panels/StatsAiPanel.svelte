@@ -122,7 +122,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-700/50">
-              {#each ai.criticalMoments as moment}
+              {#each ai.criticalMoments as moment (moment.turn)}
                 <tr class="hover:bg-gray-700/30">
                   <td class="px-4 py-2 text-sm font-medium text-ui-text">{moment.turn}</td>
                   <td class="px-4 py-2">

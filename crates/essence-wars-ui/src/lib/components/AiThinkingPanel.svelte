@@ -65,7 +65,7 @@
           <!-- Top moves -->
           <div class="space-y-1">
             <div class="text-xs text-ui-text-dim">Top Moves:</div>
-            {#each thinking.topMoves.slice(0, 3) as move, i}
+            {#each thinking.topMoves.slice(0, 3) as move, i (i)}
               {@const isSelected = i === 0}
               <div class="p-1.5 rounded {isSelected ? 'bg-ui-action/10 border border-ui-action/30' : 'bg-ui-bg/50'}">
                 <div class="flex items-center justify-between mb-0.5">

@@ -1,6 +1,5 @@
 <script lang="ts">
   import { deckBuilderStore } from "$lib/stores/deckBuilderState.svelte";
-  import { playSound } from "$lib/audio";
   import DeckCardList from "./DeckCardList.svelte";
 
   function getPlaystyleIcon(playstyle: string): string {
@@ -57,7 +56,7 @@
   <div class="mana-curve-section">
     <h3 class="section-title">Mana Curve</h3>
     <div class="mana-curve">
-      {#each Object.entries(deckBuilderStore.manaCurve) as [cost, count]}
+      {#each Object.entries(deckBuilderStore.manaCurve) as [cost, count] (cost)}
         <div class="curve-bar-container">
           <div class="curve-count">{count}</div>
           <div
@@ -125,14 +124,14 @@
           <span>Deck has issues</span>
         </div>
         <ul class="validation-errors">
-          {#each deckBuilderStore.validation.errors as error}
+          {#each deckBuilderStore.validation.errors as error (error)}
             <li class="error">{error}</li>
           {/each}
         </ul>
       {/if}
       {#if deckBuilderStore.validation.warnings.length > 0}
         <ul class="validation-warnings">
-          {#each deckBuilderStore.validation.warnings as warning}
+          {#each deckBuilderStore.validation.warnings as warning (warning)}
             <li class="warning">{warning}</li>
           {/each}
         </ul>

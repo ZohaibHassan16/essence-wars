@@ -3,7 +3,7 @@
 
   let {
     commander,
-    isPlayer = false,
+    isPlayer: _isPlayer = false,
     isActive = false,
     tutorialId = undefined,
   }: {

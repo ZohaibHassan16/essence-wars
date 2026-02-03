@@ -18,7 +18,7 @@
     gameSettings.animationSpeed = speed;
   }
 
-  function setAiTurnDelay(delay: number) {
+  function _setAiTurnDelay(delay: number) {
     handleButtonClick();
     gameSettings.aiTurnDelay = delay;
   }
@@ -36,7 +36,7 @@
       <fieldset class="mb-6 border-0 p-0 m-0">
         <legend class="block text-sm text-ui-text-dim mb-2">Animation Speed</legend>
         <div class="flex gap-2">
-          {#each [0.5, 0.75, 1.0, 1.5, 2.0] as speed}
+          {#each [0.5, 0.75, 1.0, 1.5, 2.0] as speed (speed)}
             <button
               class="flex-1 px-4 py-2 rounded-lg font-semibold transition-all
                      {gameSettings.animationSpeed === speed

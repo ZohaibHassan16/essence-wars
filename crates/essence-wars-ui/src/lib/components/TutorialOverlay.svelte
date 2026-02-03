@@ -220,7 +220,7 @@
       <div class="flex items-center justify-between px-4 py-3 border-t border-gray-700 bg-ui-bg/30 rounded-b-xl">
         <!-- Progress dots -->
         <div class="flex gap-1.5">
-          {#each tutorialStore.steps.slice(0, Math.min(12, tutorialStore.steps.length)) as _, i}
+          {#each tutorialStore.steps.slice(0, Math.min(12, tutorialStore.steps.length)) as __, i (i)}
             <div
               class="w-2 h-2 rounded-full transition-colors {i < tutorialStore.currentStepIndex
                 ? 'bg-ui-action'

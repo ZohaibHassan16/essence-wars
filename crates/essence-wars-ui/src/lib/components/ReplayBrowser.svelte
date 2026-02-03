@@ -95,7 +95,7 @@
             { value: "date", label: "Date" },
             { value: "turns", label: "Turns" },
             { value: "deck", label: "Deck" },
-          ] as option}
+          ] as option (option.value)}
             <button
               class="px-3 py-1.5 rounded text-sm transition-colors
                      {sortBy === option.value
@@ -111,7 +111,7 @@
 
       <!-- Replay List -->
       <div class="space-y-2 max-h-96 overflow-y-auto pr-2">
-        {#each sortedReplays() as replay}
+        {#each sortedReplays() as replay (replay.filename)}
           <div
             class="flex items-center gap-4 p-4 bg-ui-bg rounded-lg border border-gray-700 hover:border-gray-600 transition-colors"
           >

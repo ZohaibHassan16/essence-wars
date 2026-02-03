@@ -173,7 +173,7 @@
     {#if card.keywords && card.keywords.length > 0}
       <div class="px-4 py-3 border-b border-gray-700">
         <div class="space-y-1.5">
-          {#each card.keywords as keyword}
+          {#each card.keywords as keyword (keyword)}
             <div class="flex items-start gap-2">
               <KeywordIcon {keyword} size={14} showLabel={false} />
               <div class="flex-1 min-w-0">

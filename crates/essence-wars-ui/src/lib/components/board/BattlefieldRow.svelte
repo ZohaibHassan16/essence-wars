@@ -21,8 +21,8 @@
     selectedCreatureSlot?: number | null;
     highlightedSlots?: number[];
     validAttackTargets?: number[];
-    onCreatureClick?: (slot: number, event?: MouseEvent) => void;
-    onSupportClick?: (slot: number) => void;
+    onCreatureClick?: (_slot: number, _event?: MouseEvent) => void;
+    onSupportClick?: (_slot: number) => void;
     showKeyHints?: boolean;
   } = $props();
 
@@ -45,7 +45,7 @@
 
   <!-- Creatures row (C1-C5) -->
   <div class="creature-row">
-    {#each paddedCreatures as creature, i}
+    {#each paddedCreatures as creature, i (i)}
       <CreatureSlot
         {creature}
         slot={i}

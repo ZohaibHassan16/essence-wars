@@ -82,7 +82,7 @@ export function playMusic(track: MusicTrack, fadeInMs: number = 1000): void {
       currentAudio = new Audio(currentFilePath);
       currentAudio.loop = false;
       currentAudio.volume = audioSettings.effectiveMusicVolume;
-      currentAudio.onended = currentAudio.onended; // Maintain the handler
+      // onended handler is already set
       currentAudio.play().catch((e) => {
         console.warn(`Failed to play next track:`, e);
       });

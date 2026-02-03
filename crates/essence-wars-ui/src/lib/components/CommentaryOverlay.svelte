@@ -1,7 +1,6 @@
 <script lang="ts">
   import { spectatorStore } from '$lib/stores/spectatorState.svelte';
   import { gsap } from 'gsap';
-  import { onMount } from 'svelte';
 
   let containerEl: HTMLDivElement | undefined = $state();
 

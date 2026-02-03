@@ -1,7 +1,6 @@
 <script lang="ts">
   import { deckBuilderStore } from "$lib/stores/deckBuilderState.svelte";
   import { playSound } from "$lib/audio";
-  import type { CustomDeckInfo } from "$lib/api/types";
 
   let deleteConfirmId = $state<string | null>(null);
 
@@ -332,6 +331,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
+    line-clamp: 2;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
   }

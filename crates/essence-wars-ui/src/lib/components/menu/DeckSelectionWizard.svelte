@@ -420,7 +420,7 @@
               <div class="mb-4">
                 <div class="text-sm text-ui-text-dim mb-2">Player 1 Bot</div>
                 <div class="grid grid-cols-2 gap-2">
-                  {#each bots as bot}
+                  {#each bots as bot (bot.id)}
                     <button
                       class="p-3 rounded-lg border-2 text-left transition-all
                              focus:outline-none focus:ring-2 focus:ring-health focus:ring-offset-1 focus:ring-offset-ui-bg
@@ -441,7 +441,7 @@
               <div>
                 <div class="text-sm text-ui-text-dim mb-2">Player 2 Bot</div>
                 <div class="grid grid-cols-2 gap-2">
-                  {#each bots as bot}
+                  {#each bots as bot (bot.id)}
                     <button
                       class="p-3 rounded-lg border-2 text-left transition-all
                              focus:outline-none focus:ring-2 focus:ring-damage focus:ring-offset-1 focus:ring-offset-ui-bg
@@ -460,7 +460,7 @@
             {:else}
               <!-- Single bot selection for human-vs-ai -->
               <div class="grid grid-cols-2 gap-3">
-                {#each bots as bot}
+                {#each bots as bot (bot.id)}
                   <button
                     class="p-4 rounded-lg border-2 text-left transition-all
                            focus:outline-none focus:ring-2 focus:ring-ui-action focus:ring-offset-1 focus:ring-offset-ui-bg
@@ -555,7 +555,7 @@
                       <div>
                         <span class="text-sm text-ui-text-dim block mb-2">MCTS Simulations</span>
                         <div class="flex flex-wrap gap-1">
-                          {#each mctsPresets as preset}
+                          {#each mctsPresets as preset (preset.value)}
                             <button
                               class="px-3 py-1.5 rounded text-sm transition-colors
                                      {mctsSimulations === preset.value
@@ -575,7 +575,7 @@
                       <div>
                         <span class="text-sm text-ui-text-dim block mb-2">Alpha-Beta Depth</span>
                         <div class="flex flex-wrap gap-1">
-                          {#each alphabetaPresets as preset}
+                          {#each alphabetaPresets as preset (preset.value)}
                             <button
                               class="px-3 py-1.5 rounded text-sm transition-colors
                                      {alphabetaDepth === preset.value

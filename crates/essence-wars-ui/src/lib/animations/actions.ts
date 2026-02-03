@@ -14,7 +14,7 @@ interface AnimatableParams {
  * Svelte action that makes an element animatable
  * Returns methods to trigger various animations
  */
-export const animatable: Action<HTMLElement, AnimatableParams | undefined> = (node, params) => {
+export const animatable: Action<HTMLElement, AnimatableParams | undefined> = (node, _params) => {
   // Store the element reference in a global registry for cross-component animations
   const id = node.dataset.animateId;
   if (id) {

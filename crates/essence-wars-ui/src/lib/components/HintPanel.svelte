@@ -10,7 +10,7 @@
     hint: AiHintResponse | null;
     isLoading: boolean;
     onRequestHint: () => void;
-    onApplyHint: (action: ActionInfo) => void;
+    onApplyHint: (_action: ActionInfo) => void;
   } = $props();
 
   function formatActionDescription(action: ActionInfo): string {
@@ -85,7 +85,7 @@
       {#if hint.alternatives.length > 0}
         <div class="alternatives">
           <div class="action-label">Alternatives:</div>
-          {#each hint.alternatives.slice(0, 3) as alt}
+          {#each hint.alternatives.slice(0, 3) as alt, i (i)}
             <button
               class="action-item alternative"
               onclick={() => onApplyHint(alt.action)}

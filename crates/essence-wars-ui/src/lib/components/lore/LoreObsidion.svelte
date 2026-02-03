@@ -27,7 +27,7 @@
       Masters of Dark Arts
     </h3>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {#each featuredCards as card}
+      {#each featuredCards as card (card.id)}
         <div class="group relative">
           <div class="rounded-lg overflow-hidden border-2 border-red-500/30 hover:border-red-500 transition-all shadow-lg">
             <img

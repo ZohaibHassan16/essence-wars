@@ -41,7 +41,7 @@
   // For spectator/replay: winner=1 means P1 wins, winner=2 means P2 wins
   const isPlayerMode = $derived(mode === "player");
   const didWin = $derived(isPlayerMode && winner === 1);
-  const didLose = $derived(isPlayerMode && winner === 2);
+  const _didLose = $derived(isPlayerMode && winner === 2);
   const isDraw = $derived(winner === null);
 
   // Play victory/defeat sting on mount (only for player mode)
@@ -53,13 +53,8 @@
 
   // Save state (internal to component)
   let isSaving = $state(false);
-  let saveSuccess = $state(false);
+  let saveSuccess = $derived(replaySaved);
   let saveError = $state<string | null>(null);
-
-  // Sync external replaySaved state when it changes
-  $effect(() => {
-    saveSuccess = replaySaved;
-  });
 
   async function handleSaveReplay() {
     if (!onSaveReplay) return;

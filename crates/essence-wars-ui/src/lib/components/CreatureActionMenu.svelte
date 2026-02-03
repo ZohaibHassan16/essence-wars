@@ -130,7 +130,7 @@
       {/if}
 
       <!-- Ability options -->
-      {#each usableAbilities as ability}
+      {#each usableAbilities as ability (ability.index)}
         <button
           class="w-full text-left px-3 py-2 rounded-md hover:bg-purple-900/30 flex items-center gap-3
                  transition-colors group"

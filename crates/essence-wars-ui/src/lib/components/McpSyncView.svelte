@@ -87,7 +87,7 @@
 
       <!-- Player 2 hand -->
       <div class="h-32 flex items-center justify-center gap-1.5 bg-gray-900/30 px-4 py-2">
-        {#each gameState.opponent.hand as card, i}
+        {#each gameState.opponent.hand as card, i (i)}
           <HandCard {card} index={i} isPlayable={false} />
         {/each}
         {#if gameState.opponent.hand.length === 0}
@@ -101,14 +101,14 @@
         <div class="flex items-center justify-center gap-4">
           <!-- Player 2 supports -->
           <div class="flex flex-col gap-2">
-            {#each opponentSupports as support, i}
+            {#each opponentSupports as support, i (i)}
               <SupportSlot {support} slot={i} />
             {/each}
           </div>
 
           <!-- Player 2 creatures -->
           <div class="flex gap-2">
-            {#each opponentCreatures as creature, i}
+            {#each opponentCreatures as creature, i (i)}
               <div id="creature-opponent-{i}">
                 <CreatureSlot
                   {creature}
@@ -150,14 +150,14 @@
         <div class="flex items-center justify-center gap-4">
           <!-- Player 1 supports -->
           <div class="flex flex-col gap-2">
-            {#each playerSupports as support, i}
+            {#each playerSupports as support, i (i)}
               <SupportSlot {support} slot={i} />
             {/each}
           </div>
 
           <!-- Player 1 creatures -->
           <div class="flex gap-2">
-            {#each playerCreatures as creature, i}
+            {#each playerCreatures as creature, i (i)}
               <div id="creature-player-{i}">
                 <CreatureSlot
                   {creature}
@@ -172,7 +172,7 @@
 
       <!-- Player 1 hand -->
       <div class="h-32 flex items-center justify-center gap-1.5 bg-gray-900/30 px-4 py-2">
-        {#each gameState.player.hand as card, i}
+        {#each gameState.player.hand as card, i (i)}
           <HandCard {card} index={i} isPlayable={false} />
         {/each}
         {#if gameState.player.hand.length === 0}

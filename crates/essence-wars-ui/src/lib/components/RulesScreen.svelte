@@ -55,7 +55,7 @@
 
   <!-- Tab navigation -->
   <div class="flex-shrink-0 flex flex-wrap gap-2 mb-6 border-b border-gray-700 pb-4">
-    {#each tabs as tab}
+    {#each tabs as tab (tab.id)}
       <button
         class="px-4 py-2 rounded-lg font-semibold transition-all
                {activeTab === tab.id

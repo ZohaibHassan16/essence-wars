@@ -64,7 +64,9 @@
 <div
   class="modal-backdrop"
   onclick={handleBackdropClick}
+  onkeydown={handleKeydown}
   role="dialog"
+  tabindex="-1"
   aria-modal="true"
   aria-labelledby="commander-picker-title"
 >
@@ -78,7 +80,7 @@
 
     <!-- Faction Tabs -->
     <nav class="faction-tabs">
-      {#each factions as faction}
+      {#each factions as faction (faction)}
         <button
           class="faction-tab"
           class:active={selectedFaction === faction}

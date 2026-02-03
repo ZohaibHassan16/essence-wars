@@ -92,7 +92,7 @@
   // Group by rough category
   const offensiveKeywords = ["Rush", "Ranged", "Piercing", "Lethal", "Quick", "Charge", "Frenzy"];
   const defensiveKeywords = ["Guard", "Shield", "Regenerate", "Stealth"];
-  const specialKeywords = ["Lifesteal", "Ephemeral", "Volatile"];
+  const utilityKeywords = ["Lifesteal", "Ephemeral", "Volatile"];
 </script>
 
 <div class="space-y-8">
@@ -108,7 +108,7 @@
   <section>
     <h3 class="text-xl font-semibold text-ui-text mb-4 text-damage">Offensive Keywords</h3>
     <div class="space-y-3">
-      {#each keywords.filter(k => offensiveKeywords.includes(k.name)) as keyword}
+      {#each keywords.filter(k => offensiveKeywords.includes(k.name)) as keyword (keyword.name)}
         <div class="bg-ui-bg rounded-lg p-4 flex items-start gap-4">
           <div class="flex-shrink-0 mt-1">
             <KeywordIcon keyword={keyword.name} size={20} showLabel={false} />
@@ -130,7 +130,7 @@
   <section>
     <h3 class="text-xl font-semibold text-ui-text mb-4 text-mana">Defensive Keywords</h3>
     <div class="space-y-3">
-      {#each keywords.filter(k => defensiveKeywords.includes(k.name)) as keyword}
+      {#each keywords.filter(k => defensiveKeywords.includes(k.name)) as keyword (keyword.name)}
         <div class="bg-ui-bg rounded-lg p-4 flex items-start gap-4">
           <div class="flex-shrink-0 mt-1">
             <KeywordIcon keyword={keyword.name} size={20} showLabel={false} />
@@ -152,7 +152,7 @@
   <section>
     <h3 class="text-xl font-semibold text-ui-text mb-4 text-gold">Special Keywords</h3>
     <div class="space-y-3">
-      {#each keywords.filter(k => specialKeywords.includes(k.name)) as keyword}
+      {#each keywords.filter(k => utilityKeywords.includes(k.name)) as keyword (keyword.name)}
         <div class="bg-ui-bg rounded-lg p-4 flex items-start gap-4">
           <div class="flex-shrink-0 mt-1">
             <KeywordIcon keyword={keyword.name} size={20} showLabel={false} />
@@ -174,7 +174,7 @@
   <section class="bg-ui-bg/50 rounded-lg p-4 border border-gray-700">
     <h4 class="text-ui-text font-semibold mb-3">Quick Reference</h4>
     <div class="flex flex-wrap gap-2">
-      {#each keywords as keyword}
+      {#each keywords as keyword (keyword.name)}
         <KeywordIcon keyword={keyword.name} size={14} />
       {/each}
     </div>

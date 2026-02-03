@@ -74,7 +74,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-700/50">
-          {#each activeKeywords as kw}
+          {#each activeKeywords as kw (kw.key)}
             {@const v1 = p1[kw.key]}
             {@const v2 = p2[kw.key]}
             {@const adv = getAdvantage(v1, v2)}
@@ -98,7 +98,7 @@
     <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
       <h4 class="text-sm font-semibold text-ui-text-dim mb-4">Keyword Impact Comparison</h4>
       <div class="space-y-3">
-        {#each activeKeywords as kw}
+        {#each activeKeywords as kw (kw.key)}
           {@const v1 = p1[kw.key]}
           {@const v2 = p2[kw.key]}
           {@const total = v1 + v2}
@@ -140,7 +140,7 @@
         Unused Keywords ({inactiveKeywords.length})
       </summary>
       <div class="px-4 pb-3 flex flex-wrap gap-2">
-        {#each inactiveKeywords as kw}
+        {#each inactiveKeywords as kw (kw.key)}
           <span class="px-2 py-1 rounded text-xs bg-gray-800 text-ui-text-dim">{kw.name}</span>
         {/each}
       </div>

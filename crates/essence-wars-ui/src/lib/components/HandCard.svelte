@@ -189,7 +189,7 @@
         <!-- Keywords preview (icons only, first 3) -->
         {#if card.keywords && card.keywords.length > 0}
           <div class="flex flex-wrap justify-center gap-0.5 mt-1">
-            {#each card.keywords.slice(0, 3) as keyword}
+            {#each card.keywords.slice(0, 3) as keyword (keyword)}
               <KeywordIcon {keyword} size={14} showLabel={false} />
             {/each}
             {#if card.keywords.length > 3}

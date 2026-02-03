@@ -1,10 +1,11 @@
 <script lang="ts">
+  import { SvelteMap } from 'svelte/reactivity';
   import { deckBuilderStore } from "$lib/stores/deckBuilderState.svelte";
   import { playSound } from "$lib/audio";
 
   // Group cards by ID and get card info
   const groupedCards = $derived(() => {
-    const groups = new Map<number, { card: typeof deckBuilderStore.allCards[0]; count: number }>();
+    const groups = new SvelteMap<number, { card: typeof deckBuilderStore.allCards[0]; count: number }>();
 
     for (const cardId of deckBuilderStore.deckCards) {
       const card = deckBuilderStore.allCards.find(c => c.cardId === cardId);

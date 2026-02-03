@@ -100,7 +100,7 @@
       <!-- Speed buttons -->
       <div class="flex items-center gap-1">
         <span class="text-xs text-ui-text-dim mr-1">Speed:</span>
-        {#each speeds as speed}
+        {#each speeds as speed (speed)}
           <button
             class="px-2 py-0.5 rounded text-xs font-semibold transition-colors
                    {replayStore.playbackSpeed === speed

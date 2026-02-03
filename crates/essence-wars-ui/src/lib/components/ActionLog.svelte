@@ -3,7 +3,7 @@
 
   let {
     actions = [],
-    events = [],
+    events: _events = [],
     maxItems = 10,
   }: {
     actions?: ActionInfo[];
@@ -22,7 +22,7 @@
     }
   }
 
-  function getEventIcon(eventType: string): string {
+  function _getEventIcon(eventType: string): string {
     switch (eventType) {
       case "creature_spawned": return "🐣";
       case "creature_died": return "💀";
@@ -34,7 +34,7 @@
     }
   }
 
-  function formatEvent(event: GameEventDto): string {
+  function _formatEvent(event: GameEventDto): string {
     const data = event.data;
     switch (event.eventType) {
       case "creature_spawned":
@@ -67,7 +67,7 @@
       </div>
     {:else}
       <div class="divide-y divide-gray-700/50">
-        {#each recentActions as action, i}
+        {#each recentActions as action, _i (_i + '-' + action.actionType)}
           <div class="px-2 py-1 hover:bg-gray-700/30 transition-colors">
             <div class="flex items-start gap-1.5">
               <span class="text-sm">{getActionIcon(action.actionType)}</span>

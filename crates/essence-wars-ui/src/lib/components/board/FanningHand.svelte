@@ -47,7 +47,7 @@
   {#if cards.length === 0}
     <span class="text-ui-text-dim text-sm">Empty hand</span>
   {:else}
-    {#each cards as card, i}
+    {#each cards as card, i (i)}
       {@const rotation = getCardRotation(i, cards.length)}
       {@const yOffset = getCardOffset(i, cards.length)}
       {@const isPlayable = isPlayableCallback ? isPlayableCallback(i) : false}

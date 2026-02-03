@@ -196,7 +196,7 @@
         <!-- Keywords (left side) -->
         {#if creature.keywords.length > 0}
           <div class="flex flex-col gap-0.5">
-            {#each creature.keywords.slice(0, 2) as keyword}
+            {#each creature.keywords.slice(0, 2) as keyword (keyword)}
               <span class="text-xs px-1 py-0.5 rounded bg-gray-900/80 text-ui-text-dim border border-gray-700 leading-tight"
                     style="text-shadow: 0 1px 2px rgba(0,0,0,0.8);">
                 {keyword}
