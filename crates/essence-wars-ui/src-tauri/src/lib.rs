@@ -10,7 +10,7 @@ pub mod ai;
 
 use commands::*;
 use screenshot_server::ScreenshotState;
-use state::{GameManager, ReplayManager};
+use state::{CustomDeckManager, GameManager, ReplayManager};
 use std::sync::Arc;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -39,6 +39,10 @@ pub fn run() {
     )
     .expect("Failed to initialize replay manager");
 
+    // Initialize custom deck manager (uses same card_db)
+    let custom_deck_manager = CustomDeckManager::new(game_manager.card_db())
+        .expect("Failed to initialize custom deck manager");
+
     // Initialize screenshot state for HTTP server
     let screenshot_state = Arc::new(ScreenshotState::new());
     let screenshot_state_for_server = screenshot_state.clone();
@@ -59,6 +63,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .manage(game_manager)
         .manage(replay_manager)
+        .manage(custom_deck_manager)
         .manage(screenshot_state)
         .invoke_handler(tauri::generate_handler![
             list_decks,
@@ -84,6 +89,15 @@ pub fn run() {
             get_mcp_synced_state,
             has_mcp_synced_state,
             clear_mcp_synced_state,
+            // Deck builder
+            list_all_cards,
+            list_commanders,
+            list_custom_decks,
+            load_custom_deck,
+            save_custom_deck,
+            delete_custom_deck,
+            validate_custom_deck,
+            calculate_deck_playstyle,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

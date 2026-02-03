@@ -18,7 +18,7 @@ Review all other existing Documentation and look for out of date statements/Info
 
 ## (C) Update and Enhance Diagnosis and Analysis Capabilities of Spectator Mode
 
-Update and Enhance the Diagnosis/Analysis Screen in Spectator Mode, using the now fully enhanced binary libraries we have at our hand, with plots, graphs, tables, statistics, probabilities etc.
+Update and Enhance the Diagnosis/Analysis Screen in Spectator Mode, using the now fully enhanced Rust binary Diagnose/Analysis we have at our hand, with plots, graphs, tables, statistics, probabilities etc.
 
 ## (D) Review and Update MCP Server
 
@@ -36,30 +36,14 @@ Update and Enhance the Diagnosis/Analysis Screen in Spectator Mode, using the no
 
 Search and review all Asset related Scripts, Data, Prompts, Artwork, Documention etc, and bring them up to date and in sync.
 
-### (H) Tutorials
+## (H) Tutorials
 
 - Update Human vs AI Tutorial
 - Create Spectator Mode Tutorial 
 - Create Deck Builder Tutorial
 - Use the Replay System to be sure each step is 100% the same each time
 
-### (I) Discuss Expansion
-
-See `expansion.md`.
-
-### (J) Essential Audit Checklist
-
-Work through `essential-audit-checklist.md`.
-
-### (K) Python Linting
-
-Work through all ruff and mypy issues for the python modules.
-
-### (L) Test Suite
-
-Improve Test Coverage for vital Systems (Crates and Python)
-
-## (M) Expansion Planning
+## (I) Expansion Planning
 
 | Question | Decision |
 |----------|----------|
@@ -68,7 +52,15 @@ Improve Test Coverage for vital Systems (Crates and Python)
 | Bot/Agent compatibility | Accept retuning; keep observation/action space stable |
 | Expansion structure | 1 commander + deck per faction per expansion |
 
-## (N) Win Conditions
+## (J) Essential Audit Checklist
+
+Work through `essential-audit-checklist.md`.
+
+### (K) Test Suite
+
+Improve Test Coverage for vital Systems (Crates and Python)
+
+## (L) Win Conditions
 
 Review Win Conditions implementation and Discussion in Code Base and `win-discussion.md`. Update Essence Wars Design Doc and other Documentation, including Game App `crates/essence-wars-ui`.
 
@@ -84,7 +76,7 @@ Review Win Conditions implementation and Discussion in Code Base and `win-discus
 
 **Thresholds:** 50 essence extracted to win (unchanged from VictoryPoints).
 
-## (O) Performance Optimization Plan
+## (M) Performance Optimization Plan
 
 See `docs/design-performance-optimizations.md` for full details.
 
@@ -97,3 +89,17 @@ See `docs/design-performance-optimizations.md` for full details.
 - Batch keyword evaluation (lookup table)
 - Greedy delta scoring (skip forks for Attack/EndTurn)
 - Legal action caching
+
+## (N) Deck Library Visualization
+
+Add Player 1 and Player 2 Libraries to Spectator Mode. THe Spectator should be able to scroll through all available cards in the library at any time.
+
+For Human vs AI Mode, let's discuss if we should keep it hidden as it is currently, or make it the same (More of a Game Design Discussion).
+
+## (Z) Create new Documentation Suite
+
+- Each Crate/Python gets its onw Readme.
+- Organize `docs/` better
+- Target Audience mostly human contributors (AI Developers read the source code)
+- Sorted by Game Design, Art Asset Pipeline, ML/AI Infrastructure, ML/AI Research/Experiments, etc.
+- One good Main README.md that is top notch and polished (with gifs and pictures etc)

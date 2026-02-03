@@ -4,6 +4,7 @@
   import { spectatorStore } from "$lib/stores/spectatorState.svelte";
   import { replayStore } from "$lib/stores/replayState.svelte";
   import { mcpSyncStore } from "$lib/stores/mcpSyncState.svelte";
+  import { deckBuilderStore } from "$lib/stores/deckBuilderState.svelte";
   import * as api from "$lib/api/game";
   import { preloadSounds } from "$lib/audio";
   import MainMenu from "$lib/components/MainMenu.svelte";
@@ -21,6 +22,7 @@
   import LoreScreen from "$lib/components/LoreScreen.svelte";
   import MatchStatsSummary from "$lib/components/stats/MatchStatsSummary.svelte";
   import MatchCompareView from "$lib/components/stats/MatchCompareView.svelte";
+  import { DeckBuilderScreen } from "$lib/components/deckbuilder";
   import { comparisonStore } from "$lib/stores/comparisonState.svelte";
   import { audioSettings } from "$lib/stores/audioSettings.svelte";
 
@@ -215,6 +217,9 @@
 <!-- Comparison mode -->
 {:else if comparisonStore.phase !== "idle"}
   <MatchCompareView />
+<!-- Deck Builder mode -->
+{:else if deckBuilderStore.phase !== "closed"}
+  <DeckBuilderScreen />
 <!-- MCP Sync mode takes top precedence when active -->
 {:else if mcpSyncStore.phase === "watching" || mcpSyncStore.phase === "disconnected"}
   <McpSyncView />

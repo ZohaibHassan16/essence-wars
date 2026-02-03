@@ -267,3 +267,88 @@ export interface ReplayInfo {
   /** Total number of actions */
   totalActions: number;
 }
+
+// ============================================================================
+// Deck Builder Types
+// ============================================================================
+
+/** Playstyle classification */
+export type Playstyle = "aggro" | "control" | "tempo" | "midrange";
+
+/** Playstyle scores for all archetypes */
+export interface PlaystyleBreakdown {
+  aggro: number;
+  control: number;
+  tempo: number;
+  midrange: number;
+}
+
+/** Result of playstyle calculation */
+export interface PlaystyleScore {
+  /** The dominant playstyle */
+  primary: Playstyle;
+  /** Scores for all playstyles */
+  scores: PlaystyleBreakdown;
+}
+
+/** Deck validation result */
+export interface DeckValidation {
+  /** Whether the deck is valid and playable */
+  isValid: boolean;
+  /** Critical errors that prevent playing */
+  errors: string[];
+  /** Non-critical warnings */
+  warnings: string[];
+}
+
+/** Card information for the deck builder browser */
+export interface BrowsableCard {
+  cardId: number;
+  name: string;
+  cost: number;
+  cardType: string;
+  faction: string;
+  rarity: string;
+  /** For creatures */
+  attack?: number;
+  health?: number;
+  keywords: string[];
+  /** For supports */
+  durability?: number;
+  /** Art path (relative to static folder) */
+  artPath: string;
+  /** Copy limit based on rarity */
+  copyLimit: number;
+  /** Effect description for spells/supports */
+  effectDescription?: string;
+}
+
+/** A custom deck definition */
+export interface CustomDeck {
+  /** Unique identifier (e.g., "user_my_rush_deck") */
+  id: string;
+  /** Display name */
+  name: string;
+  /** Commander card ID */
+  commander: number;
+  /** Card IDs in the deck (29-100 cards, can have duplicates) */
+  cards: number[];
+  /** User-provided description */
+  description: string;
+  /** Tags for categorization */
+  tags: string[];
+}
+
+/** Summary info for a custom deck (used in deck lists) */
+export interface CustomDeckInfo {
+  id: string;
+  name: string;
+  description: string;
+  commanderId: number;
+  commanderName: string;
+  faction: string;
+  cardCount: number;
+  playstyle?: PlaystyleScore;
+  createdAt?: string;
+  modifiedAt?: string;
+}

@@ -4,6 +4,7 @@
   import { replayStore } from "$lib/stores/replayState.svelte";
   import { mcpSyncStore } from "$lib/stores/mcpSyncState.svelte";
   import { tutorialStore } from "$lib/stores/tutorialState.svelte";
+  import { deckBuilderStore } from "$lib/stores/deckBuilderState.svelte";
   import { startTutorialGame } from "$lib/tutorial/tutorialGame";
   import { playSound, playMusic } from "$lib/audio";
 
@@ -12,6 +13,7 @@
   let isLoadingSpectator = $state(false);
   let isLoadingReplays = $state(false);
   let isLoadingTutorial = $state(false);
+  let isLoadingDeckBuilder = $state(false);
 
   // Background images for random rotation
   const menuBackgrounds = [
@@ -88,6 +90,16 @@
       isLoadingTutorial = false;
     }
   }
+
+  async function openDeckBuilder() {
+    handleButtonClick();
+    isLoadingDeckBuilder = true;
+    try {
+      await deckBuilderStore.open();
+    } finally {
+      isLoadingDeckBuilder = false;
+    }
+  }
 </script>
 
 <div
@@ -162,6 +174,20 @@
           Loading...
         {:else}
           Watch Replays
+        {/if}
+      </button>
+
+      <button
+        class="w-64 px-8 py-4 bg-ui-panel text-ui-text rounded-lg font-bold text-lg
+               border border-gray-600 hover:border-amber-500 hover:text-amber-500 transition-all hover:scale-105"
+        onclick={openDeckBuilder}
+        onmouseenter={handleButtonHover}
+        disabled={gameStore.isLoading || isLoadingSpectator || isLoadingDeckBuilder}
+      >
+        {#if isLoadingDeckBuilder}
+          Loading...
+        {:else}
+          Deck Builder
         {/if}
       </button>
 

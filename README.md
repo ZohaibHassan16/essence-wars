@@ -1,3 +1,3 @@
 # Essence Wars
 
-A deterministic, perfect-information card game engine.
+A deterministic, perfect-information strategy game engine.
