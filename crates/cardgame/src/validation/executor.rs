@@ -83,10 +83,11 @@ impl<'a> ValidationExecutor<'a> {
         self.validate_matchup_commanders(matchups)?;
 
         // Set up progress reporting for matchups
+        // Use Rich style to show rate and ETA for long-running benchmarks
         let progress = if self.show_progress {
             Some(
                 ProgressReporter::new(matchups.len())
-                    .with_style(ProgressStyle::Simple)
+                    .with_style(ProgressStyle::Rich)
                     .start(),
             )
         } else {
