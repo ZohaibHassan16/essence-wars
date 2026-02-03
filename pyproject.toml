@@ -8,7 +8,7 @@ build-backend = "maturin"
 
 [project]
 name = "essence-wars"
-version = "0.8.4"
+dynamic = ["version"]  # Version read from Cargo.toml by maturin
 description = "High-performance card game environment"
 readme = "README.md"
 license = { text = "MIT" }
