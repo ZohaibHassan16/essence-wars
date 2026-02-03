@@ -4,30 +4,30 @@ import { audioSettings } from '$lib/stores/audioSettings.svelte';
 export type MusicTrack = 'menu' | 'battle' | 'spectator';
 export type MusicSting = 'victory' | 'defeat';
 
-// Track file paths - arrays for variety
+// Track file paths - arrays for variety (OGG Vorbis for optimal size)
 const MUSIC_TRACKS: Record<MusicTrack, string[]> = {
   menu: [
-    '/music/menu_1.mp3',  // Town Theme RPG
-    '/music/menu_2.mp3',  // Field of Dreams
-    '/music/menu_3.mp3',  // Forest Ambience
-    '/music/menu_4.mp3',  // Invention in B Minor
+    '/music/menu_1.ogg',  // Town Theme RPG
+    '/music/menu_2.ogg',  // Field of Dreams
+    '/music/menu_3.ogg',  // Forest Ambience
+    '/music/menu_4.ogg',  // Invention in B Minor
   ],
   battle: [
-    '/music/battle_1.mp3',  // Battle Theme A
-    '/music/battle_2.mp3',  // Boss Battle
-    '/music/battle_3.wav',  // Determined Pursuit
+    '/music/battle_1.ogg',  // Battle Theme A
+    '/music/battle_2.ogg',  // Boss Battle
+    '/music/battle_3.ogg',  // Determined Pursuit
   ],
   spectator: [
-    '/music/spectator_1.mp3',  // The Bard's Tale
-    '/music/spectator_2.mp3',  // The Old Tower Inn
-    '/music/spectator_3.mp3',  // Minstrel Dance
-    '/music/spectator_4.mp3',  // King's Feast
+    '/music/spectator_1.ogg',  // The Bard's Tale
+    '/music/spectator_2.ogg',  // The Old Tower Inn
+    '/music/spectator_3.ogg',  // Minstrel Dance
+    '/music/spectator_4.ogg',  // King's Feast
   ],
 };
 
 const MUSIC_STINGS: Record<MusicSting, string> = {
-  victory: '/music/victory.wav',
-  defeat: '/music/defeat.mp3',
+  victory: '/music/victory.ogg',
+  defeat: '/music/defeat.ogg',
 };
 
 // Current state
