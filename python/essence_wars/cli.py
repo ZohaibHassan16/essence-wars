@@ -507,10 +507,32 @@ def _run_training_script(script_name: str, kwargs: dict[str, Any]) -> None:
     # Build command line arguments
     args = _build_args(kwargs)
 
+    # Map script names to their actual paths under python/scripts/
+    script_paths: dict[str, str] = {
+        # Training scripts
+        "train_ppo": "training/ppo.py",
+        "train_alphazero": "training/alphazero.py",
+        "train_behavioral_cloning": "training/behavioral_cloning.py",
+        "train_card2vec": "training/card2vec.py",
+        "train_decision_transformer": "training/decision_transformer.py",
+        # Evaluation scripts
+        "evaluate_neural_mcts": "evaluation/neural_mcts.py",
+        # Data generation scripts
+        "generate_distillation_data": "data/generate_distillation.py",
+        "generate_exit_data": "data/generate_exits.py",
+    }
+
     # Find script path
-    script_path = Path(__file__).parent.parent.parent / "scripts" / f"{script_name}.py"
+    scripts_dir = Path(__file__).parent.parent / "scripts"
+    if script_name in script_paths:
+        script_path = scripts_dir / script_paths[script_name]
+    else:
+        # Fallback: try to find in any subdirectory
+        script_path = scripts_dir / f"{script_name}.py"
+
     if not script_path.exists():
         print(f"Error: Script not found: {script_path}")
+        print(f"Available scripts: {', '.join(script_paths.keys())}")
         sys.exit(1)
 
     # Run the script
