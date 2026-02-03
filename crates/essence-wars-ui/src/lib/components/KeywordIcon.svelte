@@ -49,7 +49,7 @@
     Lifesteal: {
       icon: Droplet,
       color: "text-red-400",
-      description: "Heals your hero equal to damage dealt"
+      description: "Heals your commander equal to damage dealt"
     },
     Lethal: {
       icon: Skull,

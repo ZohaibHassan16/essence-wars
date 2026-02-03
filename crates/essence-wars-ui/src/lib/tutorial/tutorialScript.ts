@@ -31,7 +31,7 @@ export const tutorialSteps: TutorialStep[] = [
   {
     id: 'welcome',
     title: 'Welcome to Essence Wars!',
-    message: `You command the Blood Sovereign in battle! Your goal: reduce your opponent's life to zero before they do the same to you. Let's learn the basics!`,
+    message: `You command the Blood Sovereign in battle! Your goal: extract 50 essence from your opponent (by dealing face damage) or reduce their life to zero. Let's learn the basics!`,
     advanceCondition: { type: 'click_next' },
   },
   {

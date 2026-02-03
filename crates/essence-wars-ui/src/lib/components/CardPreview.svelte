@@ -47,7 +47,7 @@
     Ranged: "Can attack any enemy creature",
     Piercing: "Excess damage hits the enemy player",
     Guard: "Must be attacked before other creatures",
-    Lifesteal: "Heals your hero equal to damage dealt",
+    Lifesteal: "Heals your commander equal to damage dealt",
     Lethal: "Destroys any creature it damages",
     Shield: "Blocks the first damage taken",
     Quick: "Can attack twice per turn",

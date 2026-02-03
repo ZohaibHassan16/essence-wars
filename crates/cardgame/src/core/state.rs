@@ -159,7 +159,7 @@ pub struct PlayerState {
     pub deck: ArrayVec<CardInstance, {game::MAX_DECK_SIZE}>,
     pub creatures: ArrayVec<Creature, {board::CREATURE_SLOTS}>,
     pub supports: ArrayVec<Support, {board::SUPPORT_SLOTS}>,
-    pub total_damage_dealt: u16,               // For victory points tracking
+    pub total_damage_dealt: u16,               // For essence extraction tracking
     pub used_commander_insight: bool,          // Whether Commander's Insight was used this turn
     /// Cached commander passive (computed at game start, not serialized)
     #[serde(skip)]
@@ -249,9 +249,9 @@ pub enum GamePhase {
 pub enum WinReason {
     /// Commander's Tactical Stability reached zero (forced retreat)
     LifeReachedZero,
-    /// Turn limit reached, winner determined by tiebreaker (VP or life depending on mode)
+    /// Turn limit reached, winner determined by tiebreaker (essence or life depending on mode)
     TurnLimitTiebreaker,
-    /// Extracted enough essence to achieve victory (50+ VP in EssenceWar mode)
+    /// Extracted enough essence to achieve victory (50+ in EssenceWar mode)
     EssenceExtractionReached,
     /// Player conceded the match
     Concession,

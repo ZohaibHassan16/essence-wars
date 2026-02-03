@@ -8,7 +8,7 @@
     <p class="text-ui-text-dim leading-relaxed">
       Essence Wars is a strategic card game set in the world of <span class="text-gold">Omyra</span>,
       where factions battle for control of precious Essence - the crystallized memory of the planet itself.
-      Command creatures, cast spells, and deploy supports to reduce your opponent's life to zero.
+      Command creatures, cast spells, and deploy supports to drain your opponent's essence or destabilize their forces.
     </p>
   </section>
 
@@ -21,22 +21,22 @@
       <div class="flex items-start gap-3">
         <span class="text-health font-bold">1.</span>
         <p class="text-ui-text-dim">
-          <span class="text-ui-text font-semibold">Reduce opponent to 0 life</span> -
-          The primary way to win. Deal damage through creature attacks and spell effects.
+          <span class="text-ui-text font-semibold">Extract 50 Essence</span> -
+          Deal 50 total face damage to your opponent. Every attack that hits face extracts essence.
         </p>
       </div>
       <div class="flex items-start gap-3">
         <span class="text-health font-bold">2.</span>
         <p class="text-ui-text-dim">
-          <span class="text-ui-text font-semibold">Opponent runs out of cards</span> -
-          If a player must draw but has no cards remaining, they lose.
+          <span class="text-ui-text font-semibold">Reduce opponent to 0 life</span> -
+          Force your opponent to retreat. When their life reaches 0, they lose immediately.
         </p>
       </div>
       <div class="flex items-start gap-3">
         <span class="text-health font-bold">3.</span>
         <p class="text-ui-text-dim">
           <span class="text-ui-text font-semibold">Turn limit (30 turns)</span> -
-          If neither player wins by turn 30, the player with more life wins.
+          If neither player wins by turn 30, the player with more essence extracted wins.
         </p>
       </div>
     </div>

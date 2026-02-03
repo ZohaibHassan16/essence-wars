@@ -1,6 +1,9 @@
 <script lang="ts">
   import type { CommanderDto } from "$lib/api/types";
   import { playSound } from "$lib/audio";
+  import { Flame } from "lucide-svelte";
+
+  const ESSENCE_EXTRACTION_THRESHOLD = 50;
 
   let {
     commander,
@@ -8,6 +11,7 @@
     maxLife,
     essence = 0,
     maxEssence = 0,
+    essenceExtracted = 0,
     isActive = false,
     isPlayer = true,
     insightAvailable = false,
@@ -24,6 +28,7 @@
     maxLife: number;
     essence?: number;
     maxEssence?: number;
+    essenceExtracted?: number;
     isActive?: boolean;
     isPlayer?: boolean;
     insightAvailable?: boolean;
@@ -33,6 +38,16 @@
     isValidFaceTarget?: boolean;
     onFaceTargetClick?: () => void;
   } = $props();
+
+  // Calculate extraction progress percentage (capped at 100%)
+  let extractionProgress = $derived(Math.min(100, (essenceExtracted / ESSENCE_EXTRACTION_THRESHOLD) * 100));
+
+  // Color based on progress: green when close to winning, yellow at midpoint
+  let extractionColor = $derived(
+    extractionProgress >= 80 ? 'text-health' :
+    extractionProgress >= 50 ? 'text-gold' :
+    'text-orange-400'
+  );
 
   // Track life changes for animation
   let previousLife = $state<number | null>(null);
@@ -224,6 +239,20 @@
         </div>
       </div>
 
+      <!-- Essence Extracted (VP Progress) -->
+      <div class="flex items-center justify-center mb-2"
+           title="Essence Extracted: {essenceExtracted}/{ESSENCE_EXTRACTION_THRESHOLD} - Extract 50 to win!">
+        <div class="relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/40 border border-orange-500/40 overflow-hidden w-full max-w-[140px]">
+          <!-- Progress bar background -->
+          <div class="absolute inset-0 bg-orange-500/20 transition-all duration-500"
+               style="width: {extractionProgress}%"></div>
+          <!-- Content -->
+          <Flame size={14} class="text-orange-400 relative z-10 flex-shrink-0" />
+          <span class="{extractionColor} font-bold text-base relative z-10">{essenceExtracted}</span>
+          <span class="text-orange-400/60 text-xs font-medium relative z-10">/ {ESSENCE_EXTRACTION_THRESHOLD}</span>
+        </div>
+      </div>
+
       <!-- Essence Display (compact) -->
       {#if maxEssence > 0}
         <div class="flex items-center justify-center gap-1 mb-2">
@@ -343,6 +372,13 @@
         <div class="flex justify-between text-sm">
           <span class="text-ui-text-dim">Current HP:</span>
           <span class="{lifeColor()} font-bold">{life} / {maxLife}</span>
+        </div>
+        <div class="flex justify-between text-sm mt-1">
+          <span class="text-ui-text-dim flex items-center gap-1">
+            <Flame size={12} class="text-orange-400" />
+            Extracted:
+          </span>
+          <span class="{extractionColor} font-bold">{essenceExtracted} / {ESSENCE_EXTRACTION_THRESHOLD}</span>
         </div>
         {#if maxEssence > 0}
           <div class="flex justify-between text-sm mt-1">

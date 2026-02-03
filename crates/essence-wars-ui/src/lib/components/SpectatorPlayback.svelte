@@ -99,6 +99,7 @@
           maxLife={gameState?.opponent.maxLife ?? 30}
           essence={gameState?.opponent.essence ?? 0}
           maxEssence={gameState?.opponent.maxEssence ?? 0}
+          essenceExtracted={gameState?.opponent.essenceExtracted ?? 0}
           isActive={!isP1Turn}
           isPlayer={false}
         />
@@ -158,6 +159,7 @@
           maxLife={gameState?.player.maxLife ?? 30}
           essence={gameState?.player.essence ?? 0}
           maxEssence={gameState?.player.maxEssence ?? 0}
+          essenceExtracted={gameState?.player.essenceExtracted ?? 0}
           isActive={isP1Turn}
           isPlayer={true}
         />

@@ -74,6 +74,9 @@ pub struct PlayerStateDto {
     pub max_essence: u8,
     pub action_points: u8,
     pub deck_count: usize,
+    /// Essence extracted from opponent (total face damage dealt).
+    /// In EssenceWar mode, reaching 50 wins the game.
+    pub essence_extracted: u16,
 
     pub hand: Vec<CardDto>,
     pub creatures: Vec<Option<CreatureDto>>,

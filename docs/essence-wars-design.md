@@ -1,8 +1,8 @@
 # ESSENCE WARS
 ## A Strategic Card Game Design Document
 
-**Version:** 1.6 (New Horizons Edition)
-**Last Updated:** January 2026
+**Version:** 1.7 (Essence War Edition)
+**Last Updated:** February 2026
 
 ---
 
@@ -46,7 +46,9 @@
 
 ## 1.3 Objective
 
-Reduce your opponent's life total from 30 to 0, or achieve an alternate victory condition before the game's turn limit.
+In **Essence War mode** (default): Extract 50 essence from your opponent (cumulative face damage) or reduce their Tactical Stability (life) to 0. The first to accomplish either wins.
+
+In **Attrition mode**: Reduce your opponent's life from 30 to 0. If the turn limit is reached, the player with higher life wins.
 
 ## 1.4 Key Features
 
@@ -845,40 +847,67 @@ When Quick creature attacks Shield creature: Quick deals damage → Shield absor
 
 # 14. WIN CONDITIONS
 
-## 14.1 Primary Win Condition: Life Reduction
+## 14.1 Game Modes
 
-**Reduce your opponent's life total to 0 or less.**
+Essence Wars supports two game modes with different victory conditions:
 
-This is the most common way to win. Deal 30 damage to your opponent (or enough to reduce them from their current life to 0).
+| Mode | Default | Description |
+|------|---------|-------------|
+| **Essence War** | ✓ | Race to extract 50 essence OR reduce opponent's stability to 0 |
+| **Attrition** | | Classic life-based combat (legacy mode) |
 
-## 14.2 Alternate Win Condition: Victory Points
+## 14.2 Tactical Stability (Life)
 
-**Be the first player to deal 50 total damage.**
+**When your Tactical Stability reaches 0, you are forced to retreat and lose the game.**
 
-All damage you deal to the enemy player is tracked as "Victory Points." If you reach 50 Victory Points, you win immediately.
+"Life" in Essence Wars represents your Commander's Tactical Stability on the battlefield. Each player begins with 30 stability. Face damage erodes stability — when it reaches 0, your position collapses and you must retreat.
 
-This prevents stalemates where both players are at low life but unable to finish the game.
+This win condition applies in both game modes and is checked immediately after any damage is dealt.
 
-## 14.3 Turn Limit Tiebreaker
+## 14.3 Essence Extraction (Essence War Mode)
 
-**After Turn 30 (15 full rounds), the player with more life wins.**
+**Be the first player to extract 50 essence from your opponent.**
 
-If the game reaches Turn 30 (meaning each player has taken 15 turns), the game ends immediately:
-- The player with higher life wins
-- **If life totals are equal, Player 1 wins** (slight first-player advantage as tiebreaker)
+In Essence War mode (the default), all face damage you deal is tracked as "Essence Extracted." This represents magical energy harvested from your opponent's forces. When you extract 50 or more essence, you achieve an immediate victory.
 
-## 14.4 Simultaneous Events
+| Terminology | Description |
+|-------------|-------------|
+| Essence Extracted | Total face damage dealt (tracked per player) |
+| Extraction Threshold | 50 essence required for victory |
+
+This provides a second path to victory beyond reducing your opponent to 0 stability, preventing stalemates where both players hover at low life but cannot finish.
+
+*Note: This condition only applies in Essence War mode. In Attrition mode, only life reduction matters.*
+
+## 14.4 Turn Limit Tiebreaker
+
+**After Turn 30 (15 full rounds), the game ends immediately.**
+
+The tiebreaker depends on the game mode:
+
+| Mode | Tiebreaker | Ties |
+|------|------------|------|
+| **Essence War** | Player with more essence extracted wins | Player 1 wins |
+| **Attrition** | Player with higher life wins | Player 1 wins |
+
+## 14.5 Simultaneous Events
 
 If both players would reach 0 life in the same combat, the game is a **draw**.
 
-## 14.5 Win Condition Summary
+## 14.6 Win Condition Summary
 
-| Condition | Description | Priority |
-|-----------|-------------|----------|
-| Life to Zero | Reduce opponent to 0 life | Checked immediately |
-| Victory Points | Deal 50 total damage | Checked immediately |
-| Turn Limit | Higher life after Turn 30; P1 wins ties | End of Turn 30 |
-| Draw | Both reach 0 life simultaneously | Only on mutual death |
+| Condition | Description | Priority | Mode |
+|-----------|-------------|----------|------|
+| Stability to Zero | Opponent's life reaches 0 (forced retreat) | Checked immediately | Both |
+| Essence Extraction | Extract 50+ essence from opponent | Checked immediately | Essence War only |
+| Turn Limit | Tiebreaker after Turn 30 (see 14.4) | End of Turn 30 | Both |
+| Draw | Both reach 0 life simultaneously | Mutual death | Both |
+
+## 14.7 Lore Context
+
+In the world of Essence Wars, commanders channel raw essence to fuel their forces. Face attacks don't just wound — they siphon magical energy from your opponent's reserves. A commander who loses too much essence becomes tactically unstable and must retreat from the battlefield.
+
+The Essence War mode captures this fantasy: victory comes either from draining your opponent's essence reserves (50 extracted) or from destabilizing their position entirely (0 life).
 
 ---
 
@@ -1309,7 +1338,7 @@ Essence Wars features a **faction-based card system** that provides thematic ide
 | **Keyword** | A special ability word that modifies how a creature behaves. |
 | **Lane** | The vertical attack path between opposing creature slots. |
 | **Lethal** | Keyword: Any damage dealt destroys the target creature. |
-| **Life** | A player's health total. Starting value is 30. |
+| **Life** | A player's Tactical Stability. Starting value is 30. Reaching 0 forces retreat. |
 | **Lifesteal** | Keyword: Combat damage dealt heals your hero. |
 | **Maximum Essence** | The cap on how much Essence you can have (increases each turn to 10). |
 | **OnPlay** | Trigger: Activates when the card is played from hand. |
@@ -1327,7 +1356,10 @@ Essence Wars features a **faction-based card system** that provides thematic ide
 | **Target** | The selection of what a spell or ability affects. |
 | **Turn** | One player's complete cycle of phases (Start, Main, End). |
 | **Vanilla** | A creature with no keywords or abilities, just stats. |
-| **Victory Points** | Total damage dealt to the enemy player (tracked for alternate win condition). |
+| **Essence Extracted** | Total face damage dealt to opponent. In Essence War mode, 50 triggers victory. |
+| **Essence War** | Default game mode: win by extracting 50 essence OR reducing opponent to 0 life. |
+| **Attrition** | Legacy game mode: win by reducing opponent to 0 life. Turn 30 tiebreaker uses life. |
+| **Tactical Stability** | Lore term for Life. Represents a commander's battlefield control. Zero = retreat. |
 | **Commander's Insight** | A catch-up mechanic allowing struggling players to draw a card for 4 essence (requires Turn 10+, ≤1 hand, behind on creatures OR life). |
 | **Frenzy** | Keyword: +1 attack after each attack this turn. |
 | **Volatile** | Keyword: Deal 2 damage to all enemy creatures when this creature dies. |
@@ -1403,11 +1435,11 @@ Essence Wars features a **faction-based card system** that provides thematic ide
 | Fortify | Take 1 less damage (min 1) | Argentum |
 | Ward | Block first targeted spell/ability | Obsidion |
 
-## 20.5 Win Conditions
+## 20.5 Win Conditions (Essence War Mode)
 
-1. **Enemy life ≤ 0** → You win
-2. **50 Victory Points** → You win
-3. **Turn 30** → Higher life wins (P1 wins ties)
+1. **Enemy stability ≤ 0** → You win (forced retreat)
+2. **50 Essence Extracted** → You win
+3. **Turn 30** → More essence extracted wins (P1 wins ties)
 
 ---
 

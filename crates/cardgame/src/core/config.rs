@@ -68,7 +68,7 @@ pub mod game {
     /// Turn limit (game ends at this turn)
     pub const TURN_LIMIT: u8 = 30;
 
-    /// Victory Points threshold for Essence Duel mode
+    /// Essence extraction threshold for EssenceWar mode (deal 50 face damage to win)
     pub const VICTORY_POINTS_THRESHOLD: u16 = 50;
 }
 

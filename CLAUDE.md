@@ -222,13 +222,16 @@ Life, creature stats, board state, resources, keywords (guard/lethal/lifesteal/r
 ## Game Rules
 
 - **Commander System**: Each player has a Commander in the Command Zone (not on battlefield)
-  - Commander Life = Player Life (30)
+  - Commander Life = Player Life (30) = Tactical Stability
   - Commanders provide persistent Passive or Triggered abilities
   - Commanders cannot be targeted by attacks or spells
   - When Commander Life reaches 0, they "retreat" (you lose)
 - 5 creature slots, 2 support slots per player
 - 3 Action Points per turn
-- 30 turn limit with life-based tiebreaker
+- **Win Conditions (EssenceWar mode, default)**:
+  - Extract 50 essence (cumulative face damage dealt) → immediate victory
+  - Reduce opponent's life to 0 (forced retreat) → immediate victory
+  - Turn 30 tiebreaker: player with more essence extracted wins (P1 wins ties)
 - 16 keywords: Rush, Ranged, Piercing, Guard, Lifesteal, Lethal, Shield, Quick, Ephemeral, Regenerate, Stealth, Charge, Frenzy, Volatile, Fortify, Ward
 
 ## Faction System

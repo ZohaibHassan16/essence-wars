@@ -100,6 +100,8 @@ export interface PlayerStateDto {
   maxEssence: number;
   actionPoints: number;
   deckCount: number;
+  /** Essence extracted from opponent (total face damage dealt). At 50, wins the game in EssenceWar mode. */
+  essenceExtracted: number;
   hand: CardDto[];
   creatures: (CreatureDto | null)[];
   supports: (SupportDto | null)[];

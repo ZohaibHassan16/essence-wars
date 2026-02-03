@@ -2,8 +2,8 @@
 //!
 //! Handles all win/loss/draw conditions including:
 //! - Life (Tactical Stability) reaching zero → forced retreat
-//! - Essence extraction threshold (50 VP in EssenceWar mode)
-//! - Turn limit tiebreaker (VP in EssenceWar, life in Attrition)
+//! - Essence extraction threshold (50 in EssenceWar mode)
+//! - Turn limit tiebreaker (essence extracted in EssenceWar, life in Attrition)
 
 use crate::core::config::game;
 use crate::core::state::{GameMode, GamePhase, GameResult, GameState, WinReason};
@@ -25,7 +25,7 @@ pub fn check_victory_conditions(state: &mut GameState) {
 pub fn check_turn_limit_victory(state: &mut GameState) {
     let winner = match state.game_mode {
         GameMode::EssenceWar => {
-            // In EssenceWar, winner is determined by essence extracted (VP)
+            // In EssenceWar, winner is determined by essence extracted
             let p1_vp = state.players[0].total_damage_dealt;
             let p2_vp = state.players[1].total_damage_dealt;
             if p1_vp >= p2_vp {

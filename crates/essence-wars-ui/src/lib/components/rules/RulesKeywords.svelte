@@ -29,7 +29,7 @@
     },
     {
       name: "Lifesteal",
-      effect: "Heals your hero equal to damage dealt",
+      effect: "Heals your commander equal to damage dealt",
       detail: "Sustain through combat. Particularly powerful on high-attack creatures.",
       faction: "Obsidion Syndicate"
     },

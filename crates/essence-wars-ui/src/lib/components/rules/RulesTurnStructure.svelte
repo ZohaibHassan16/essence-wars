@@ -32,7 +32,7 @@
         <div>
           <p class="text-ui-text font-semibold">Draw a Card</p>
           <p class="text-ui-text-dim text-sm">
-            Draw one card from your deck. If you cannot draw, you lose the game.
+            Draw one card from your deck. If your deck is empty, you simply don't draw.
           </p>
         </div>
       </div>

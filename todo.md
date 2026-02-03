@@ -1,6 +1,6 @@
 # To Do
 
-## (A) Deck Builder
+## ✅ (A) Deck Builder [DONE]
 
 - Custom Deck Builder
 - Choose Faction -> Choose Commander
