@@ -200,10 +200,32 @@ fn main() {
 
     // Build matchups using MatchupBuilder (preserves commander info)
     let builder = MatchupBuilder::new(&game_data.deck_registry);
-    let mut matchups = builder.build_inter_faction_matchups();
+
+    // Use appropriate matchup generation based on filters
+    let mut matchups = if let Some(ref deck1_filter) = args.deck1 {
+        // Use dedicated method for deck1 filtering (generates deck1 vs all others)
+        let m = builder.build_matchups_for_deck1(deck1_filter);
+        if m.is_empty() {
+            let available: Vec<_> = game_data
+                .deck_registry
+                .decks()
+                .map(|d| d.id.as_str())
+                .collect();
+            eprintln!(
+                "Error: Deck '{}' not found. Available decks: {}",
+                deck1_filter,
+                available.join(", ")
+            );
+            process::exit(1);
+        }
+        m
+    } else {
+        // Default: all unique matchups (66 pairs for 12 decks)
+        builder.build_all_matchups()
+    };
 
     if matchups.is_empty() {
-        eprintln!("Error: No valid faction matchups found. Need decks for at least 2 factions.");
+        eprintln!("Error: No valid matchups found. Need at least 2 decks.");
         process::exit(1);
     }
 
@@ -219,25 +241,15 @@ fn main() {
         }
     }
 
-    // Filter to specific deck1 if requested (for parallelization)
-    if let Some(ref deck1_filter) = args.deck1 {
-        matchups.retain(|m| m.deck1.id == *deck1_filter);
-        if matchups.is_empty() {
-            let available: Vec<_> = game_data.deck_registry.decks().map(|d| d.id.as_str()).collect();
-            eprintln!(
-                "Error: No matchups found with deck1='{}'. Available decks: {}",
-                deck1_filter,
-                available.join(", ")
-            );
-            process::exit(1);
-        }
-    }
-
     // Filter to specific deck2 if requested (for parallelization)
     if let Some(ref deck2_filter) = args.deck2 {
         matchups.retain(|m| m.deck2.id == *deck2_filter);
         if matchups.is_empty() {
-            let available: Vec<_> = game_data.deck_registry.decks().map(|d| d.id.as_str()).collect();
+            let available: Vec<_> = game_data
+                .deck_registry
+                .decks()
+                .map(|d| d.id.as_str())
+                .collect();
             eprintln!(
                 "Error: No matchups found with deck2='{}'. Available decks: {}",
                 deck2_filter,

@@ -119,6 +119,29 @@ impl<'a> MatchupBuilder<'a> {
         matchups
     }
 
+    /// Build all matchups where a specific deck is player 1.
+    ///
+    /// With 12 decks, this produces 11 matchups (the deck vs all others).
+    /// Used for parallelizing benchmark jobs across decks.
+    pub fn build_matchups_for_deck1(&self, deck_id: &str) -> Vec<UnifiedMatchup> {
+        let all_decks: Vec<&DeckDefinition> = self.registry.decks().collect();
+        let mut matchups = Vec::new();
+
+        // Find the deck1
+        let Some(deck1) = all_decks.iter().find(|d| d.id == deck_id) else {
+            return matchups;
+        };
+
+        // Create matchups against all other decks
+        for deck2 in &all_decks {
+            if deck2.id != deck1.id {
+                matchups.push(UnifiedMatchup::new((*deck1).clone(), (*deck2).clone()));
+            }
+        }
+
+        matchups
+    }
+
     /// Filter matchups by pattern.
     ///
     /// Supports matching by:
