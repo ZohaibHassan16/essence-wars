@@ -61,20 +61,20 @@ mod tests {
     #[test]
     fn test_version_available() {
         assert!(!VERSION.is_empty());
-        assert_eq!(VERSION, "0.8.0");
+        assert_eq!(VERSION, "0.8.1");
     }
 
     #[test]
     fn test_version_string() {
         let vs = version_string();
         assert!(vs.contains("cardgame"));
-        assert!(vs.contains("0.8.0"));
+        assert!(vs.contains("0.8.1"));
     }
 
     #[test]
     fn test_version_info_serializable() {
         let info = VersionInfo::current();
         let json = serde_json::to_string(&info).unwrap();
-        assert!(json.contains("0.8.0"));
+        assert!(json.contains("0.8.1"));
     }
 }

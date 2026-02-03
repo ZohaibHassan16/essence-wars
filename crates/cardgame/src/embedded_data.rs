@@ -5,7 +5,7 @@
 //!
 //! Only compiled when the `web` feature is enabled.
 
-use crate::cards::{CardDatabase, CardDefinition};
+use crate::cards::{CardDatabase, CardDefinition, CommanderDefinition};
 use crate::decks::{DeckDefinition, DeckRegistry};
 
 // Embed card YAML files at compile time (organized by faction and card type)
@@ -25,6 +25,11 @@ const OBSIDION_SUPPORTS_YAML: &str = include_str!("../../../data/cards/core_set/
 const NEUTRAL_CREATURES_YAML: &str = include_str!("../../../data/cards/core_set/neutral/creatures.yaml");
 const NEUTRAL_SPELLS_YAML: &str = include_str!("../../../data/cards/core_set/neutral/spells.yaml");
 const NEUTRAL_SUPPORTS_YAML: &str = include_str!("../../../data/cards/core_set/neutral/supports.yaml");
+
+// Embed commander YAML files at compile time
+const ARGENTUM_COMMANDERS_YAML: &str = include_str!("../../../data/commanders/argentum.yaml");
+const SYMBIOTE_COMMANDERS_YAML: &str = include_str!("../../../data/commanders/symbiote.yaml");
+const OBSIDION_COMMANDERS_YAML: &str = include_str!("../../../data/commanders/obsidion.yaml");
 
 // Embed deck TOML files at compile time
 // Argentum decks
@@ -96,6 +101,55 @@ pub fn load_embedded_cards() -> Result<CardDatabase, String> {
     }
 
     Ok(CardDatabase::new(all_cards))
+}
+
+/// Load embedded commanders from YAML data.
+fn load_embedded_commanders() -> Result<Vec<CommanderDefinition>, String> {
+    let commander_yamls = [
+        ("Argentum", ARGENTUM_COMMANDERS_YAML),
+        ("Symbiote", SYMBIOTE_COMMANDERS_YAML),
+        ("Obsidion", OBSIDION_COMMANDERS_YAML),
+    ];
+
+    let mut all_commanders = Vec::with_capacity(12);
+    for (name, yaml_str) in commander_yamls {
+        let commanders: Vec<CommanderDefinition> = serde_yaml::from_str(yaml_str)
+            .map_err(|e| format!("Failed to parse {} commanders: {}", name, e))?;
+        all_commanders.extend(commanders);
+    }
+
+    Ok(all_commanders)
+}
+
+/// Load the complete card database with commanders from embedded data.
+///
+/// This is the main function for Python/WASM builds that need embedded data.
+pub fn load_embedded_cards_with_commanders() -> Result<CardDatabase, String> {
+    let mut all_cards: Vec<CardDefinition> = Vec::with_capacity(320);
+
+    let card_yamls: &[(&str, &str)] = &[
+        ("Argentum creatures", ARGENTUM_CREATURES_YAML),
+        ("Argentum spells", ARGENTUM_SPELLS_YAML),
+        ("Argentum supports", ARGENTUM_SUPPORTS_YAML),
+        ("Symbiote creatures", SYMBIOTE_CREATURES_YAML),
+        ("Symbiote spells", SYMBIOTE_SPELLS_YAML),
+        ("Symbiote supports", SYMBIOTE_SUPPORTS_YAML),
+        ("Obsidion creatures", OBSIDION_CREATURES_YAML),
+        ("Obsidion spells", OBSIDION_SPELLS_YAML),
+        ("Obsidion supports", OBSIDION_SUPPORTS_YAML),
+        ("Neutral creatures", NEUTRAL_CREATURES_YAML),
+        ("Neutral spells", NEUTRAL_SPELLS_YAML),
+        ("Neutral supports", NEUTRAL_SUPPORTS_YAML),
+    ];
+
+    for (name, yaml_str) in card_yamls {
+        let faction_cards: FactionCards = serde_yaml::from_str(yaml_str)
+            .map_err(|e| format!("Failed to parse {}: {}", name, e))?;
+        all_cards.extend(faction_cards.cards);
+    }
+
+    let commanders = load_embedded_commanders()?;
+    Ok(CardDatabase::new_with_commanders(all_cards, commanders))
 }
 
 /// Load all embedded decks into a DeckRegistry.

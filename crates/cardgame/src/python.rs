@@ -58,19 +58,15 @@ pub struct PyGame {
 }
 
 // Static storage for card database and deck registry
-// These are loaded once and shared across all PyGame instances
+// These are loaded once from embedded data and shared across all PyGame instances
 lazy_static::lazy_static! {
     static ref CARD_DB: CardDatabase = {
-        let data_dir = crate::data_dir();
-        let cards_path = data_dir.join("cards/core_set");
-        let commanders_path = data_dir.join("commanders");
-        CardDatabase::load_with_commanders(cards_path, commanders_path)
-            .expect("Failed to load card database with commanders")
+        crate::embedded_data::load_embedded_cards_with_commanders()
+            .expect("Failed to load embedded card database with commanders")
     };
     static ref DECK_REGISTRY: DeckRegistry = {
-        let decks_path = crate::data_dir().join("decks");
-        DeckRegistry::load_from_directory(decks_path)
-            .expect("Failed to load deck registry")
+        crate::embedded_data::load_embedded_decks()
+            .expect("Failed to load embedded deck registry")
     };
 }
 

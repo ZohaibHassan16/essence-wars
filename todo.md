@@ -67,3 +67,26 @@ Search and review all Asset related Scripts, Data, Prompts, Artwork, Documention
   ### (L) Test Suite
 
   Improve Test Coverage for vital Systems (Crates and Python)
+
+## Expansion Planning
+
+| Question | Decision |
+|----------|----------|
+| Scripting vs Pure Rust | Pure Rust for performance |
+| Custom YAML cards | Yes, sandboxed for casual play |
+| Bot/Agent compatibility | Accept retuning; keep observation/action space stable |
+| Expansion structure | 1 commander + deck per faction per expansion |
+
+## Win Conditions: Option B (Hybrid) ✅ IMPLEMENTED
+
+**Decision:** Keep life as "Tactical Stability" (zero = forced retreat), add Essence Extraction as parallel win condition.
+
+**Implementation Details:**
+- Renamed `GameMode::EssenceDuel` → `GameMode::EssenceWar` (now default)
+- Renamed `WinReason::VictoryPointsReached` → `WinReason::EssenceExtractionReached`
+- Renamed `WinReason::TurnLimitHigherLife` → `WinReason::TurnLimitTiebreaker`
+- Turn limit tiebreaker uses VP for EssenceWar mode, life for Attrition mode
+- Backwards compatibility maintained (CLI accepts "essence-duel", "essenceduel" etc.)
+- All 759 tests passing
+
+**Thresholds:** 50 essence extracted to win (unchanged from VictoryPoints).
