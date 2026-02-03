@@ -17,13 +17,9 @@ permissions:
   contents: read
 
 jobs:
-  # Build wheels for Linux (x86_64 and aarch64)
-  linux:
+  # Build wheels for Linux x86_64 (native build)
+  linux-x86_64:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [x86_64, aarch64]
     steps:
       - uses: actions/checkout@v4
 
@@ -38,7 +34,7 @@ jobs:
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
-          target: ${{ matrix.target }}
+          target: x86_64
           args: --release --out dist
           sccache: 'true'
           manylinux: auto
@@ -46,7 +42,31 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-linux-${{ matrix.target }}
+          name: wheels-linux-x86_64
+          path: dist
+
+  # Build wheels for Linux aarch64 (cross-compile)
+  linux-aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: aarch64
+          args: --release --out dist -i 3.10 -i 3.11 -i 3.12 -i 3.13
+          sccache: 'true'
+          manylinux: auto
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-linux-aarch64
           path: dist
 
   # Build wheels for macOS (x86_64 and ARM64)
