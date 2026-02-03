@@ -8,9 +8,10 @@ import json
 from datetime import datetime
 from pathlib import Path
 from string import Template
+from typing import Any
 
 
-def load_criterion_benchmarks(criterion_dir: Path) -> dict:
+def load_criterion_benchmarks(criterion_dir: Path) -> dict[str, Any]:
     """Load benchmark results from Criterion JSON files."""
     benchmarks = {}
 
@@ -25,7 +26,7 @@ def load_criterion_benchmarks(criterion_dir: Path) -> dict:
     for dir_name, display_name, unit in benchmark_dirs:
         estimates_path = criterion_dir / dir_name / "new" / "estimates.json"
         if estimates_path.exists():
-            with open(estimates_path) as f:
+            with estimates_path.open() as f:
                 data = json.load(f)
                 # Convert to appropriate unit
                 value = data["mean"]["point_estimate"]
@@ -47,7 +48,7 @@ def load_criterion_benchmarks(criterion_dir: Path) -> dict:
     # Check for MCTS simulations
     mcts_path = criterion_dir / "mcts_simulations" / "50" / "new" / "estimates.json"
     if mcts_path.exists():
-        with open(mcts_path) as f:
+        with mcts_path.open() as f:
             data = json.load(f)
             benchmarks["mcts_50"] = {
                 "name": "MCTS 50 sims",
@@ -60,7 +61,7 @@ def load_criterion_benchmarks(criterion_dir: Path) -> dict:
     return benchmarks
 
 
-def compute_throughput(benchmarks: dict) -> dict:
+def compute_throughput(benchmarks: dict[str, Any]) -> dict[str, int]:
     """Compute throughput metrics from latency benchmarks."""
     throughput = {}
 
@@ -85,7 +86,7 @@ def compute_throughput(benchmarks: dict) -> dict:
     return throughput
 
 
-def generate_html(benchmarks: dict, throughput: dict, output_path: Path):
+def generate_html(benchmarks: dict[str, Any], throughput: dict[str, int], output_path: Path):
     """Generate performance dashboard HTML."""
 
     template = Template('''<!DOCTYPE html>
@@ -354,7 +355,7 @@ def generate_html(benchmarks: dict, throughput: dict, output_path: Path):
     latency_errors_lower = []
     latency_errors_upper = []
 
-    for key, bench in benchmarks.items():
+    for _key, bench in benchmarks.items():
         latency_names.append(bench["name"])
         latency_values.append(bench["value"])
         latency_errors_lower.append(bench["value"] - bench["ci_lower"])

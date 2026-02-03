@@ -4,9 +4,11 @@
 import csv
 import re
 import sys
+from pathlib import Path
+from typing import Any
 
 
-def parse_tuning_log(log_path: str) -> list[dict]:
+def parse_tuning_log(log_path: str) -> list[dict[str, Any]]:
     """Parse tuning log and extract generation data."""
     data = []
     cumulative_time = 0.0
@@ -15,7 +17,7 @@ def parse_tuning_log(log_path: str) -> list[dict]:
         r'Gen\s+(\d+):\s+best_fit=\s*([\d.]+),\s+best_wr=\s*([\d.]+)%,\s+sigma=([\d.]+),\s+time=([\d.]+)s'
     )
 
-    with open(log_path) as f:
+    with Path(log_path).open() as f:
         for line in f:
             match = pattern.search(line)
             if match:
@@ -38,7 +40,7 @@ def parse_tuning_log(log_path: str) -> list[dict]:
 
     return data
 
-def print_summary(data: list[dict]):
+def print_summary(data: list[dict[str, Any]]):
     """Print summary statistics."""
     if not data:
         print("No data found in log.")
@@ -78,12 +80,12 @@ def print_summary(data: list[dict]):
             rate = improvement / time_spent if time_spent > 0 else 0
             print(f"Gen {start:>3}-{end:>3}: +{improvement:>6.2f} fitness in {time_spent:>5.1f} min ({rate:>5.2f}/min)")
 
-def export_csv(data: list[dict], output_path: str):
+def export_csv(data: list[dict[str, Any]], output_path: str):
     """Export data to CSV for graphing."""
     if not data:
         return
 
-    with open(output_path, 'w', newline='') as f:
+    with Path(output_path).open('w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=data[0].keys())
         writer.writeheader()
         writer.writerows(data)

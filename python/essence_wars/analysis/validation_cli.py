@@ -12,6 +12,7 @@ import json
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 
 @dataclass
@@ -23,15 +24,15 @@ class FactionStats:
     total_draws: int = 0
 
     # Aggregated diagnostics
-    face_damage_dealt: list = field(default_factory=list)
-    face_damage_taken: list = field(default_factory=list)
-    trade_ratios: list = field(default_factory=list)
-    board_advantages: list = field(default_factory=list)
-    essence_avgs: list = field(default_factory=list)
-    game_lengths: list = field(default_factory=list)
+    face_damage_dealt: list[float] = field(default_factory=list)
+    face_damage_taken: list[float] = field(default_factory=list)
+    trade_ratios: list[float] = field(default_factory=list)
+    board_advantages: list[float] = field(default_factory=list)
+    essence_avgs: list[float] = field(default_factory=list)
+    game_lengths: list[float] = field(default_factory=list)
 
     # Per-matchup data
-    matchup_results: dict = field(default_factory=dict)
+    matchup_results: dict[str, Any] = field(default_factory=dict)
 
     @property
     def win_rate(self) -> float:
@@ -39,7 +40,7 @@ class FactionStats:
             return 0.0
         return self.total_wins / (self.total_games - self.total_draws)
 
-    def avg(self, values: list) -> float:
+    def avg(self, values: list[float]) -> float:
         return sum(values) / len(values) if values else 0.0
 
 
@@ -60,13 +61,13 @@ class DeckStats:
         return self.wins / effective_games
 
 
-def load_results(path: Path) -> dict:
+def load_results(path: Path) -> dict[str, Any]:
     """Load results.json file."""
-    with open(path) as f:
+    with path.open() as f:
         return json.load(f)
 
 
-def analyze_factions(data: dict) -> dict[str, FactionStats]:
+def analyze_factions(data: dict[str, Any]) -> dict[str, FactionStats]:
     """Aggregate stats by faction."""
     factions = {}
 
@@ -134,7 +135,7 @@ def analyze_factions(data: dict) -> dict[str, FactionStats]:
     return factions
 
 
-def analyze_decks(data: dict) -> dict[str, DeckStats]:
+def analyze_decks(data: dict[str, Any]) -> dict[str, DeckStats]:
     """Aggregate stats by deck."""
     decks = {}
 
@@ -161,7 +162,7 @@ def analyze_decks(data: dict) -> dict[str, DeckStats]:
     return decks
 
 
-def find_worst_matchups(data: dict, n: int = 10) -> list:
+def find_worst_matchups(data: dict[str, Any], n: int = 10) -> list[dict[str, Any]]:
     """Find the n most lopsided matchups."""
     matchups = []
     for m in data["matchups"]:
@@ -252,7 +253,7 @@ def print_deck_rankings(decks: dict[str, DeckStats]):
         print(f"{i:<6}{d.deck_id:<25}{d.faction:<12}{d.win_rate*100:>9.1f}%{d.games:>8}")
 
 
-def print_worst_matchups(matchups: list):
+def print_worst_matchups(matchups: list[dict[str, Any]]):
     """Print the most imbalanced matchups."""
     print("\n" + "=" * 70)
     print("MOST IMBALANCED MATCHUPS")
@@ -272,7 +273,7 @@ def print_worst_matchups(matchups: list):
         print(f"   Face Damage: {m['diag']['p1_face_damage_avg']:.1f} vs {m['diag']['p2_face_damage_avg']:.1f}")
 
 
-def print_deck_matchup_details(data: dict, faction: str):
+def print_deck_matchup_details(data: dict[str, Any], faction: str):
     """Print detailed matchup info for a specific faction's decks."""
     print("\n" + "=" * 70)
     print(f"DETAILED MATCHUPS FOR {faction.upper()}")

@@ -97,7 +97,7 @@ class ExperimentAggregator:
     def __init__(self, experiments_root: Path, cache_dir: Path | None = None):
         """
         Initialize aggregator with experiments directory path.
-        
+
         Args:
             experiments_root: Root directory containing experiments
             cache_dir: Directory for caching parsed experiments (default: experiments_root/.cache)
@@ -111,8 +111,8 @@ class ExperimentAggregator:
 
     def scan_experiments(
         self,
-        min_generations: int = 0,
-        mode_filter: str | None = None,
+        _min_generations: int = 0,
+        _mode_filter: str | None = None,
         tag_filter: str | None = None,
     ) -> list[Path]:
         """
@@ -175,7 +175,7 @@ class ExperimentAggregator:
         cache_file = self.cache_dir / f"{cache_key}.pkl"
         if cache_file.exists():
             try:
-                with open(cache_file, 'rb') as f:
+                with cache_file.open('rb') as f:
                     return pickle.load(f)
             except Exception as e:
                 logger.debug(f"Cache load failed: {e}")
@@ -186,7 +186,7 @@ class ExperimentAggregator:
         """Save experiment to cache."""
         cache_file = self.cache_dir / f"{cache_key}.pkl"
         try:
-            with open(cache_file, 'wb') as f:
+            with cache_file.open('wb') as f:
                 pickle.dump(run, f)
         except Exception as e:
             logger.debug(f"Cache save failed: {e}")
@@ -223,7 +223,7 @@ class ExperimentAggregator:
             log_file = log_files[0]
 
             # Parse log file
-            with open(log_file) as f:
+            with log_file.open() as f:
                 content = f.read()
 
             # Extract experiment ID and metadata

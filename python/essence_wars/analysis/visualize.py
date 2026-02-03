@@ -43,8 +43,8 @@ def create_overview_plot(df: pd.DataFrame, output_dir: Path):
     ax1.annotate(f"Best: {df.loc[max_idx, 'fitness']:.2f}",
                 xy=(df.loc[max_idx, 'generation'], df.loc[max_idx, 'fitness']),
                 xytext=(10, 10), textcoords='offset points',
-                bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.7),
-                arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
+                bbox={'boxstyle': 'round,pad=0.5', 'fc': 'yellow', 'alpha': 0.7},
+                arrowprops={'arrowstyle': '->', 'connectionstyle': 'arc3,rad=0'})
 
     # Plot 2: Win Rate over time
     ax2 = axes[0, 1]
@@ -76,7 +76,7 @@ def create_overview_plot(df: pd.DataFrame, output_dir: Path):
     ax3.text(0.05, 0.95, f'Reduction: {reduction:.1f}%\nConvergence: {"High" if reduction > 30 else "Moderate"}',
             transform=ax3.transAxes, fontsize=10,
             verticalalignment='top',
-            bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+            bbox={'boxstyle': 'round', 'facecolor': 'wheat', 'alpha': 0.5})
 
     # Plot 4: Training efficiency
     ax4 = axes[1, 1]
@@ -127,7 +127,7 @@ def create_efficiency_plot(df: pd.DataFrame, output_dir: Path):
             f'Efficiency: {total_improvement/total_time:.3f} pts/min',
             transform=ax1.transAxes, fontsize=10,
             verticalalignment='top',
-            bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.7))
+            bbox={'boxstyle': 'round', 'facecolor': 'lightblue', 'alpha': 0.7})
 
     # Plot 2: Generation time distribution
     ax2 = axes[1]
@@ -322,7 +322,7 @@ def create_summary_report(df: pd.DataFrame, output_dir: Path):
     # Save report
     report_text = "\n".join(report)
     output_path = output_dir / 'summary_report.txt'
-    with open(output_path, 'w') as f:
+    with output_path.open('w') as f:
         f.write(report_text)
 
     print("\n" + report_text)
@@ -330,7 +330,7 @@ def create_summary_report(df: pd.DataFrame, output_dir: Path):
 
 def create_comparison_plot(df: pd.DataFrame, output_dir: Path):
     """Create generation-by-generation comparison plot."""
-    fig, ax = plt.subplots(figsize=(14, 8))
+    _fig, ax = plt.subplots(figsize=(14, 8))
 
     # Create dual y-axis plot
     ax1 = ax
@@ -359,7 +359,7 @@ def create_comparison_plot(df: pd.DataFrame, output_dir: Path):
 
     # Combined legend
     lines = line1 + line2
-    labels = [l.get_label() for l in lines]
+    labels: list[str] = [str(line.get_label()) for line in lines]
     ax1.legend(lines, labels, loc='lower right', fontsize=12)
 
     plt.tight_layout()
@@ -372,7 +372,7 @@ def create_markdown_report(
     df: pd.DataFrame,
     output_dir: Path,
     exp_name: str = "MCTS Tuning",
-    version_info: dict = None,
+    version_info: dict[str, str] | None = None,
 ) -> None:
     """
     Create comprehensive markdown report with embedded plots and insights.
@@ -405,11 +405,11 @@ def create_markdown_report(
 
     initial_fitness = df['fitness'].iloc[0]
     final_fitness = df['fitness'].iloc[-1]
-    best_fitness = df['fitness'].max()
+    df['fitness'].max()
     improvement = final_fitness - initial_fitness
     improvement_pct = (improvement / initial_fitness) * 100 if initial_fitness != 0 else 0
 
-    initial_wr = df['win_rate'].iloc[0]
+    df['win_rate'].iloc[0]
     final_wr = df['win_rate'].iloc[-1]
 
     sigma_reduction = ((df['sigma'].iloc[0] - df['sigma'].iloc[-1]) / df['sigma'].iloc[0]) * 100
@@ -713,7 +713,7 @@ def create_markdown_report(
 
     # Save report
     report_path = output_dir / 'REPORT.md'
-    with open(report_path, 'w') as f:
+    with report_path.open('w') as f:
         f.write('\n'.join(report))
 
     print(f"✓ Saved markdown report: {report_path}")
@@ -757,7 +757,7 @@ def main():
     create_summary_report(df, output_dir)
 
     # Generate markdown report with insights
-    exp_name = csv_path.parent.name if csv_path.parent.name else "MCTS Tuning"
+    exp_name = Path(csv_path).parent.name if Path(csv_path).parent.name else "MCTS Tuning"
     create_markdown_report(df, output_dir, exp_name)
 
     print("\n" + "="*80)

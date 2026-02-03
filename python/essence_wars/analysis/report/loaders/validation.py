@@ -9,6 +9,7 @@ import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
@@ -30,7 +31,7 @@ class DeckStats:
     worst_matchup: tuple[str, float]
 
     @classmethod
-    def from_dict(cls, data: dict) -> DeckStats:
+    def from_dict(cls, data: dict[str, Any]) -> DeckStats:
         return cls(
             deck_id=data["deck_id"],
             commander_id=data["commander_id"],
@@ -62,10 +63,10 @@ class MatchupResult:
     avg_turns: float
     p1_win_rate: float
     p1_significance: str
-    diagnostics: dict = field(default_factory=dict)
+    diagnostics: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_dict(cls, data: dict) -> MatchupResult:
+    def from_dict(cls, data: dict[str, Any]) -> MatchupResult:
         diag = data.get("diagnostics", {})
         return cls(
             deck1_id=data["deck1_id"],
@@ -92,16 +93,16 @@ class ValidationData:
     timestamp: datetime
     version: str
     git_hash: str
-    config: dict
+    config: dict[str, Any]
     matchups: list[MatchupResult]
     deck_stats: list[DeckStats]
-    summary: dict
-    raw_matchups: list[dict] = field(default_factory=list)
+    summary: dict[str, Any]
+    raw_matchups: list[dict[str, Any]] = field(default_factory=list)
 
     @classmethod
     def from_json(cls, path: Path) -> ValidationData:
         """Load validation data from a results.json file."""
-        with open(path) as f:
+        with path.open() as f:
             data = json.load(f)
 
         # Extract run_id from directory name
@@ -184,7 +185,7 @@ class ValidationData:
 
         return min(100, max(0, score))
 
-    def get_outlier_decks(self, threshold: float = 0.1) -> list[DeckStats]:
+    def get_outlier_decks(self, _threshold: float = 0.1) -> list[DeckStats]:
         """Get decks with win rates outside balanced range."""
         return [d for d in self.deck_stats if d.win_rate < 0.4 or d.win_rate > 0.6]
 

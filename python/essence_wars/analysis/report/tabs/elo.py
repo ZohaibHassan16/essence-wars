@@ -15,7 +15,7 @@ from ..charts import (
 )
 
 if TYPE_CHECKING:
-    from ..loaders.elo import EloData
+    from ..loaders.elo import DeckRating, EloData
 
 
 class EloTab:

@@ -20,7 +20,7 @@ from ..charts import (
 )
 
 if TYPE_CHECKING:
-    from ..loaders.validation import ValidationData
+    from ..loaders.validation import MatchupResult, ValidationData
 
 
 class ResearchTab:
@@ -228,7 +228,7 @@ class ResearchTab:
         factions = ["argentum", "symbiote", "obsidion"]
 
         # Group matchups by faction
-        faction_matchups: dict[str, list] = {f: [] for f in factions}
+        faction_matchups: dict[str, list[MatchupResult]] = {f: [] for f in factions}
         for matchup in self.data.matchups:
             f1 = matchup.faction1.lower() if matchup.faction1 else ""
             if f1 in faction_matchups:

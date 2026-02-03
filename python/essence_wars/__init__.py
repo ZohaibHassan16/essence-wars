@@ -69,14 +69,14 @@ def list_decks() -> list[str]:
     return result
 
 __all__ = [
-    # Version
-    "__version__",
+    "ACTION_SPACE_SIZE",
+    # Constants
+    "STATE_TENSOR_SIZE",
     # Core classes
     "PyGame",
     "PyParallelGames",
-    # Constants
-    "STATE_TENSOR_SIZE",
-    "ACTION_SPACE_SIZE",
+    # Version
+    "__version__",
     # Functions
     "list_decks",
 ]

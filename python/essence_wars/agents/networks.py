@@ -7,6 +7,8 @@ All networks support action masking for handling illegal actions.
 
 from __future__ import annotations
 
+from typing import ClassVar, cast
+
 import torch
 import torch.nn as nn
 from torch.distributions import Categorical
@@ -86,10 +88,12 @@ class EssenceWarsNetwork(nn.Module):
                 nn.init.zeros_(module.bias)
 
         # Smaller initialization for policy output (more uniform initial policy)
-        nn.init.orthogonal_(self.policy_head[-1].weight, gain=0.01)
+        policy_last = cast("nn.Linear", self.policy_head[-1])
+        nn.init.orthogonal_(policy_last.weight, gain=0.01)
 
         # Smaller initialization for value output
-        nn.init.orthogonal_(self.value_head[-1].weight, gain=1.0)
+        value_last = cast("nn.Linear", self.value_head[-1])
+        nn.init.orthogonal_(value_last.weight, gain=1.0)
 
     def forward(
         self,
@@ -145,10 +149,7 @@ class EssenceWarsNetwork(nn.Module):
         logits, _ = self.forward(obs, action_mask)
         dist = Categorical(logits=logits)
 
-        if deterministic:
-            action = logits.argmax(dim=-1)
-        else:
-            action = dist.sample()
+        action = logits.argmax(dim=-1) if deterministic else dist.sample()
 
         log_prob = dist.log_prob(action)
         entropy = dist.entropy()
@@ -302,7 +303,8 @@ class AlphaZeroNetwork(nn.Module):
                 nn.init.zeros_(module.bias)
 
         # Smaller initialization for policy output
-        nn.init.orthogonal_(self.policy_head[-1].weight, gain=0.01)
+        policy_last = cast("nn.Linear", self.policy_head[-1])
+        nn.init.orthogonal_(policy_last.weight, gain=0.01)
 
     def forward(
         self,
@@ -430,8 +432,8 @@ class CardEmbeddingNetwork(nn.Module):
     """
 
     # Indices of card IDs within each player's section (relative to player start)
-    HAND_CARD_INDICES = list(range(5, 15))  # 10 hand cards
-    SUPPORT_CARD_INDICES = [67, 72]  # 2 support card IDs (slot offset + 2)
+    HAND_CARD_INDICES: ClassVar[list[int]] = list(range(5, 15))  # 10 hand cards
+    SUPPORT_CARD_INDICES: ClassVar[list[int]] = [67, 72]  # 2 support card IDs (slot offset + 2)
 
     def __init__(
         self,
@@ -503,7 +505,8 @@ class CardEmbeddingNetwork(nn.Module):
                 nn.init.zeros_(module.bias)
 
         # Smaller initialization for policy output
-        nn.init.orthogonal_(self.policy_head[-1].weight, gain=0.01)
+        policy_last = cast("nn.Linear", self.policy_head[-1])
+        nn.init.orthogonal_(policy_last.weight, gain=0.01)
 
         # Small initialization for card embeddings
         nn.init.normal_(self.card_embedding.weight, mean=0.0, std=0.02)
@@ -519,7 +522,7 @@ class CardEmbeddingNetwork(nn.Module):
         Returns:
             card_ids: Integer card IDs of shape (batch_size, total_cards)
         """
-        batch_size = obs.shape[0]
+        obs.shape[0]
         card_ids = []
 
         # Player 1 starts at index 6
@@ -595,7 +598,7 @@ class CardEmbeddingNetwork(nn.Module):
 
     def get_value(self, obs: torch.Tensor) -> torch.Tensor:
         """Get value estimate for observations."""
-        logits, value = self.forward(obs, None)
+        _logits, value = self.forward(obs, None)
         return value
 
     def evaluate(

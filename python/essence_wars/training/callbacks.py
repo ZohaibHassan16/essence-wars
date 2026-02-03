@@ -19,11 +19,13 @@ Example:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any, TextIO
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 @dataclass
@@ -35,7 +37,7 @@ class CallbackContext:
 
     trainer: Any  # PPOTrainer or AlphaZeroTrainer
     experiment_dir: Path | None = None
-    config: dict = field(default_factory=dict)
+    config: dict[str, Any] = field(default_factory=dict)
     start_time: datetime = field(default_factory=datetime.now)
 
     @property
@@ -55,7 +57,7 @@ class TrainingCallback(ABC):
     The on_step method can return True to stop training early.
     """
 
-    def on_train_start(self, context: CallbackContext) -> None:
+    def on_train_start(self, context: CallbackContext) -> None:  # noqa: B027
         """Called when training starts.
 
         Override to perform initialization or logging.
@@ -63,7 +65,7 @@ class TrainingCallback(ABC):
         pass
 
     @abstractmethod
-    def on_step(self, step: int, info: dict, context: CallbackContext) -> bool:
+    def on_step(self, step: int, info: dict[str, Any], context: CallbackContext) -> bool:
         """Called after each training step.
 
         Args:
@@ -76,10 +78,10 @@ class TrainingCallback(ABC):
         """
         pass
 
-    def on_train_complete(
+    def on_train_complete(  # noqa: B027
         self,
         context: CallbackContext,
-        results: dict
+        results: dict[str, Any]
     ) -> None:
         """Called when training completes.
 
@@ -120,7 +122,7 @@ class CallbackList:
         for callback in self.callbacks:
             callback.on_train_start(context)
 
-    def on_step(self, step: int, info: dict) -> bool:
+    def on_step(self, step: int, info: dict[str, Any]) -> bool:
         """Call on_step for all callbacks.
 
         Returns True if any callback requests stop.
@@ -128,12 +130,9 @@ class CallbackList:
         if self.context is None:
             raise RuntimeError("on_train_start must be called before on_step")
 
-        for callback in self.callbacks:
-            if callback.on_step(step, info, self.context):
-                return True
-        return False
+        return any(callback.on_step(step, info, self.context) for callback in self.callbacks)
 
-    def on_train_complete(self, results: dict) -> None:
+    def on_train_complete(self, results: dict[str, Any]) -> None:
         """Call on_train_complete for all callbacks."""
         if self.context is None:
             raise RuntimeError("on_train_start must be called before on_train_complete")
@@ -141,7 +140,7 @@ class CallbackList:
         for callback in self.callbacks:
             callback.on_train_complete(self.context, results)
 
-    def as_functional(self) -> Callable[[int, dict], bool]:
+    def as_functional(self) -> Callable[[int, dict[str, Any]], bool]:
         """Convert to functional callback for trainer.train().
 
         Note: You must call on_train_start() before training and
@@ -186,11 +185,11 @@ class CheckpointCallback(TrainingCallback):
         self.best_metric_value = float("-inf")
         self.last_save_step = 0
 
-    def on_train_start(self, context: CallbackContext) -> None:
+    def on_train_start(self, _context: CallbackContext) -> None:
         """Ensure save directory exists."""
         self.save_path.mkdir(parents=True, exist_ok=True)
 
-    def on_step(self, step: int, info: dict, context: CallbackContext) -> bool:
+    def on_step(self, step: int, info: dict[str, Any], context: CallbackContext) -> bool:
         """Save checkpoint if save_freq steps have passed."""
         trainer = context.trainer
 
@@ -242,9 +241,9 @@ class EvaluationCallback(TrainingCallback):
         self.eval_games = eval_games
         self.verbose = verbose
         self.last_eval_step = 0
-        self.eval_history: list[dict] = []
+        self.eval_history: list[dict[str, Any]] = []
 
-    def on_step(self, step: int, info: dict, context: CallbackContext) -> bool:
+    def on_step(self, step: int, _info: dict[str, Any], context: CallbackContext) -> bool:
         """Run evaluation if eval_freq steps have passed."""
         if step - self.last_eval_step < self.eval_freq:
             return False
@@ -306,16 +305,16 @@ class AutoEvaluateCallback(TrainingCallback):
         self.update_elo = update_elo
         self.elo_file = Path(elo_file) if elo_file else None
         self.verbose = verbose
-        self.results: dict = {}
+        self.results: dict[str, Any] = {}
 
-    def on_step(self, step: int, info: dict, context: CallbackContext) -> bool:
+    def on_step(self, _step: int, _info: dict[str, Any], _context: CallbackContext) -> bool:
         """No-op during training."""
         return False
 
     def on_train_complete(
         self,
         context: CallbackContext,
-        results: dict
+        _results: dict[str, Any]
     ) -> None:
         """Run final evaluation."""
         trainer = context.trainer
@@ -417,14 +416,14 @@ class AutoReportCallback(TrainingCallback):
         self.verbose = verbose
         self.report_path: Path | None = None
 
-    def on_step(self, step: int, info: dict, context: CallbackContext) -> bool:
+    def on_step(self, _step: int, _info: dict[str, Any], _context: CallbackContext) -> bool:
         """No-op during training."""
         return False
 
     def on_train_complete(
         self,
         context: CallbackContext,
-        results: dict
+        results: dict[str, Any]
     ) -> None:
         """Generate training report."""
         output_dir = self.output_dir or context.experiment_dir
@@ -450,7 +449,7 @@ class AutoReportCallback(TrainingCallback):
     def _generate_report(
         self,
         context: CallbackContext,
-        results: dict,
+        results: dict[str, Any],
         output_dir: Path
     ) -> None:
         """Generate the HTML report."""
@@ -480,7 +479,7 @@ class AutoReportCallback(TrainingCallback):
             import webbrowser
             webbrowser.open(f"file://{self.report_path.absolute()}")
 
-    def _build_report_html(self, info: dict, results: dict) -> str:
+    def _build_report_html(self, info: dict[str, Any], _results: dict[str, Any]) -> str:
         """Build HTML report content."""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -596,16 +595,16 @@ class LoggingCallback(TrainingCallback):
         self.log_file = Path(log_file) if log_file else None
         self.metrics = metrics
         self.last_log_step = 0
-        self._file_handle = None
+        self._file_handle: TextIO | None = None
 
-    def on_train_start(self, context: CallbackContext) -> None:
+    def on_train_start(self, _context: CallbackContext) -> None:
         """Open log file if specified."""
         if self.log_file:
             self.log_file.parent.mkdir(parents=True, exist_ok=True)
-            self._file_handle = open(self.log_file, "w")
+            self._file_handle = self.log_file.open("w")
             self._file_handle.write("step,timestamp," + ",".join(self.metrics or []) + "\n")
 
-    def on_step(self, step: int, info: dict, context: CallbackContext) -> bool:
+    def on_step(self, step: int, info: dict[str, Any], _context: CallbackContext) -> bool:
         """Log metrics if log_freq steps have passed."""
         if step - self.last_log_step < self.log_freq:
             return False
@@ -613,10 +612,7 @@ class LoggingCallback(TrainingCallback):
         self.last_log_step = step
 
         # Filter metrics
-        if self.metrics:
-            logged = {k: v for k, v in info.items() if k in self.metrics}
-        else:
-            logged = info
+        logged = {k: v for k, v in info.items() if k in self.metrics} if self.metrics else info
 
         # Format log line
         timestamp = datetime.now().isoformat()
@@ -630,8 +626,8 @@ class LoggingCallback(TrainingCallback):
 
     def on_train_complete(
         self,
-        context: CallbackContext,
-        results: dict
+        _context: CallbackContext,
+        _results: dict[str, Any]
     ) -> None:
         """Close log file."""
         if self._file_handle:

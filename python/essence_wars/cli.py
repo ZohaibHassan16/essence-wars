@@ -31,6 +31,12 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    import click
+
+    from essence_wars.ratings import LeaderboardEntry
 
 # Lazy imports to keep CLI startup fast
 
@@ -61,7 +67,7 @@ def main() -> int:
 
     @click.group(context_settings={"help_option_names": ["-h", "--help"]})
     @click.version_option(version=_get_version(), prog_name="essence-wars")
-    def cli():
+    def cli() -> None:
         """Essence Wars - ML Research Toolkit for AI Card Game Development.
 
         A unified command-line interface for training ML agents, running
@@ -97,12 +103,12 @@ def _get_version() -> str:
 # Train Command Group
 # =============================================================================
 
-def _register_train_commands(cli) -> None:
+def _register_train_commands(cli: click.Group) -> None:
     """Register training commands."""
     import click
 
     @cli.group()
-    def train():
+    def train() -> None:
         """Train ML agents for Essence Wars.
 
         \b
@@ -134,7 +140,7 @@ def _register_train_commands(cli) -> None:
     @click.option("--seed", default=42, help="Random seed")
     @click.option("--device", default="auto", help="Device (cpu, cuda, auto)")
     @click.option("--no-tensorboard", is_flag=True, help="Disable TensorBoard logging")
-    def train_ppo(**kwargs):
+    def train_ppo(**kwargs: Any) -> None:
         """Train a PPO (Proximal Policy Optimization) agent.
 
         \b
@@ -161,7 +167,7 @@ def _register_train_commands(cli) -> None:
     @click.option("--bc-ratio", default=0.7, help="Ratio of BC data in training batches")
     @click.option("--seed", default=42, help="Random seed")
     @click.option("--device", default="auto", help="Device (cpu, cuda, auto)")
-    def train_alphazero(**kwargs):
+    def train_alphazero(**kwargs: Any) -> None:
         """Train an AlphaZero agent using MCTS self-play.
 
         AlphaZero combines Monte Carlo Tree Search with a neural network
@@ -185,7 +191,7 @@ def _register_train_commands(cli) -> None:
     @click.option("--save-path", type=click.Path(), default=None, help="Save directory")
     @click.option("--seed", default=42, help="Random seed")
     @click.option("--device", default="auto", help="Device (cpu, cuda, auto)")
-    def train_bc(**kwargs):
+    def train_bc(**kwargs: Any) -> None:
         """Train a Behavioral Cloning agent from MCTS demonstration data.
 
         Supervised learning approach that imitates MCTS policy decisions.
@@ -208,7 +214,7 @@ def _register_train_commands(cli) -> None:
     @click.option("--save-path", type=click.Path(), default=None, help="Save directory")
     @click.option("--seed", default=42, help="Random seed")
     @click.option("--device", default="auto", help="Device (cpu, cuda, auto)")
-    def train_card2vec(**kwargs):
+    def train_card2vec(**kwargs: Any) -> None:
         """Train card embeddings using Card2Vec approach.
 
         Learns dense vector representations for cards based on co-occurrence
@@ -233,7 +239,7 @@ def _register_train_commands(cli) -> None:
     @click.option("--save-path", type=click.Path(), default=None, help="Save directory")
     @click.option("--seed", default=42, help="Random seed")
     @click.option("--device", default="auto", help="Device (cpu, cuda, auto)")
-    def train_dt(**kwargs):
+    def train_dt(**kwargs: Any) -> None:
         """Train a Decision Transformer agent.
 
         Sequence modeling approach that learns to predict actions conditioned
@@ -251,7 +257,7 @@ def _register_train_commands(cli) -> None:
 # Evaluate Command Group
 # =============================================================================
 
-def _register_evaluate_commands(cli) -> None:
+def _register_evaluate_commands(cli: click.Group) -> None:
     """Register evaluation commands."""
     import click
 
@@ -266,7 +272,7 @@ def _register_evaluate_commands(cli) -> None:
                   help="Override games per opponent")
     @click.option("--baselines", multiple=True, default=None,
                   help="Baselines to evaluate against (random, greedy, mcts50, mcts100)")
-    def benchmark(**kwargs):
+    def benchmark(**kwargs: Any) -> None:
         """Benchmark an agent against baseline opponents.
 
         Evaluates the agent against RandomBot, GreedyBot, and optionally
@@ -290,7 +296,7 @@ def _register_evaluate_commands(cli) -> None:
                   help="Opponent type")
     @click.option("--output", "-o", type=click.Path(), default=None,
                   help="Output JSON file")
-    def evaluate_mcts(**kwargs):
+    def evaluate_mcts(**kwargs: Any) -> None:
         """Evaluate a neural MCTS agent.
 
         Uses the neural network as policy prior and value estimate within MCTS.
@@ -307,12 +313,12 @@ def _register_evaluate_commands(cli) -> None:
 # Report Command Group
 # =============================================================================
 
-def _register_report_commands(cli) -> None:
+def _register_report_commands(cli: click.Group) -> None:
     """Register report generation commands."""
     import click
 
     @cli.group()
-    def report():
+    def report() -> None:
         """Generate HTML reports and dashboards.
 
         \b
@@ -343,7 +349,7 @@ def _register_report_commands(cli) -> None:
     @click.option("--open", "open_browser", is_flag=True,
                   help="Open report in browser after generation")
     @click.option("--verbose", "-v", is_flag=True, help="Verbose output")
-    def report_generate(**kwargs):
+    def report_generate(**kwargs: Any) -> None:
         """Generate an HTML report for a validation run.
 
         Creates a multi-tab report with overview metrics, validation results,
@@ -371,7 +377,7 @@ def _register_report_commands(cli) -> None:
     @click.option("--theme", type=click.Choice(["dark", "light"]), default="dark",
                   help="Color theme")
     @click.option("--verbose", "-v", is_flag=True, help="Verbose output")
-    def report_generate_all(**kwargs):
+    def report_generate_all(**kwargs: Any) -> None:
         """Generate reports for all validation runs.
 
         Skips runs that already have reports unless --force is specified.
@@ -398,7 +404,7 @@ def _register_report_commands(cli) -> None:
                   help="Color theme")
     @click.option("--open", "open_browser", is_flag=True,
                   help="Open dashboard in browser")
-    def report_aggregate(**kwargs):
+    def report_aggregate(**kwargs: Any) -> None:
         """Generate an aggregated dashboard across all runs.
 
         Shows health score timeline, persistent outliers, and
@@ -418,7 +424,7 @@ def _register_report_commands(cli) -> None:
                   help="Output HTML file")
     @click.option("--format", "output_format", type=click.Choice(["html", "json", "table"]),
                   default="table", help="Output format")
-    def report_leaderboard(**kwargs):
+    def report_leaderboard(**kwargs: Any) -> None:
         """Display deck/agent leaderboard from ELO ratings.
 
         \b
@@ -434,12 +440,12 @@ def _register_report_commands(cli) -> None:
 # Data Command Group
 # =============================================================================
 
-def _register_data_commands(cli) -> None:
+def _register_data_commands(cli: click.Group) -> None:
     """Register data generation commands."""
     import click
 
     @cli.group()
-    def data():
+    def data() -> None:
         """Generate training data for ML agents.
 
         \b
@@ -458,7 +464,7 @@ def _register_data_commands(cli) -> None:
                   help="Number of worker processes (default: CPU count)")
     @click.option("--seed", default=None, type=int, help="Random seed")
     @click.option("--progress", is_flag=True, help="Show progress bar")
-    def data_distillation(**kwargs):
+    def data_distillation(**kwargs: Any) -> None:
         """Generate MCTS demonstration data for training.
 
         Creates a dataset of (state, MCTS policy, value) tuples that can be
@@ -477,7 +483,7 @@ def _register_data_commands(cli) -> None:
                   help="Output file path")
     @click.option("--bot", default="greedy", help="Bot type for game generation")
     @click.option("--seed", default=None, type=int, help="Random seed")
-    def data_exits(**kwargs):
+    def data_exits(**kwargs: Any) -> None:
         """Generate game exit/outcome data.
 
         Records final game states and outcomes for analysis.
@@ -493,7 +499,7 @@ def _register_data_commands(cli) -> None:
 # Helper Functions
 # =============================================================================
 
-def _run_training_script(script_name: str, kwargs: dict) -> None:
+def _run_training_script(script_name: str, kwargs: dict[str, Any]) -> None:
     """Run a training script with the given arguments."""
     import subprocess
     import sys
@@ -508,18 +514,18 @@ def _run_training_script(script_name: str, kwargs: dict) -> None:
         sys.exit(1)
 
     # Run the script
-    cmd = [sys.executable, str(script_path)] + args
+    cmd = [sys.executable, str(script_path), *args]
     print(f"Running: {' '.join(cmd[:3])}...")
     result = subprocess.run(cmd)
     sys.exit(result.returncode)
 
 
-def _run_script(script_name: str, kwargs: dict) -> None:
+def _run_script(script_name: str, kwargs: dict[str, Any]) -> None:
     """Run a generic script with the given arguments."""
     _run_training_script(script_name, kwargs)
 
 
-def _run_benchmark(kwargs: dict) -> None:
+def _run_benchmark(kwargs: dict[str, Any]) -> None:
     """Run benchmark evaluation."""
     try:
         from essence_wars.benchmark.agents import NeuralAgent
@@ -568,14 +574,14 @@ def _run_benchmark(kwargs: dict) -> None:
     if "mcts100" in baselines:
         output_data["win_rate_vs_mcts100"] = results.win_rate_vs_mcts100
 
-    with open(output, "w") as f:
+    with Path(output).open("w") as f:
         json.dump(output_data, f, indent=2)
 
     print(f"\nResults saved to: {output}")
     print(f"Estimated Elo: {output_data['elo_rating']}")
 
 
-def _run_report_generate(kwargs: dict) -> None:
+def _run_report_generate(kwargs: dict[str, Any]) -> None:
     """Run report generation."""
     try:
         from essence_wars.analysis.report import ReportGenerator
@@ -611,7 +617,7 @@ def _run_report_generate(kwargs: dict) -> None:
         webbrowser.open(output_path.absolute().as_uri())
 
 
-def _run_report_generate_all(kwargs: dict) -> None:
+def _run_report_generate_all(kwargs: dict[str, Any]) -> None:
     """Run batch report generation."""
     try:
         from essence_wars.analysis.report import ReportGenerator
@@ -664,7 +670,7 @@ def _run_report_generate_all(kwargs: dict) -> None:
     print(f"Dashboard: {dashboard_path}")
 
 
-def _run_report_aggregate(kwargs: dict) -> None:
+def _run_report_aggregate(kwargs: dict[str, Any]) -> None:
     """Run aggregated dashboard generation."""
     try:
         from essence_wars.analysis.report import ReportGenerator
@@ -692,7 +698,7 @@ def _run_report_aggregate(kwargs: dict) -> None:
         webbrowser.open(output_path.absolute().as_uri())
 
 
-def _run_leaderboard(kwargs: dict) -> None:
+def _run_leaderboard(kwargs: dict[str, Any]) -> None:
     """Display leaderboard from ELO ratings using unified ratings system."""
     import json
     from pathlib import Path
@@ -758,7 +764,7 @@ def _run_leaderboard(kwargs: dict) -> None:
         print(f"Leaderboard saved to: {output}")
 
 
-def _generate_leaderboard_html(sorted_ratings: list) -> str:
+def _generate_leaderboard_html(sorted_ratings: list[tuple[str, dict[str, Any]]]) -> str:
     """Generate a simple HTML leaderboard."""
     rows = []
     for i, (deck_id, stats) in enumerate(sorted_ratings, 1):
@@ -800,7 +806,7 @@ def _generate_leaderboard_html(sorted_ratings: list) -> str:
 </html>"""
 
 
-def _generate_leaderboard_html_unified(entries: list) -> str:
+def _generate_leaderboard_html_unified(entries: list[LeaderboardEntry]) -> str:
     """Generate HTML leaderboard from unified rating entries."""
     rows = []
     for e in entries:
@@ -842,7 +848,7 @@ def _generate_leaderboard_html_unified(entries: list) -> str:
 </html>"""
 
 
-def _build_args(kwargs: dict) -> list[str]:
+def _build_args(kwargs: dict[str, Any]) -> list[str]:
     """Convert kwargs dict to command-line arguments."""
     args = []
     for key, value in kwargs.items():

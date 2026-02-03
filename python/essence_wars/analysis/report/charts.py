@@ -325,7 +325,7 @@ def create_faction_distribution(deck_stats: list[DeckStats]) -> str:
     faction_data = {}
     for d in deck_stats:
         if d.faction not in faction_data:
-            faction_data[d.faction] = {"count": 0, "total_wr": 0}
+            faction_data[d.faction] = {"count": 0, "total_wr": 0.0}
         faction_data[d.faction]["count"] += 1
         faction_data[d.faction]["total_wr"] += d.win_rate
 
@@ -741,7 +741,7 @@ def create_elo_prediction_heatmap(elo_data: EloData) -> str:
         HTML string with embedded Plotly chart
     """
     predictions = elo_data.get_matchup_predictions()
-    deck_ids = list(predictions.keys())
+    list(predictions.keys())
 
     # Sort by rating
     ranked_decks = elo_data.get_ranked_decks()
@@ -923,8 +923,8 @@ def create_faction_matchup_heatmap(faction_matrix: dict[str, dict[str, float]]) 
 
     # Create annotations for cell values
     annotations = []
-    for i, f1 in enumerate(factions):
-        for j, f2 in enumerate(factions):
+    for i, _f1 in enumerate(factions):
+        for j, _f2 in enumerate(factions):
             val = z_values[i][j]
             # Use dark text for values near 50%, white for extreme values
             text_color = "#fff" if abs(val - 0.5) > 0.05 else "#333"

@@ -38,12 +38,12 @@ from essence_wars.agents.networks import AlphaZeroNetwork, EssenceWarsNetwork, R
 __all__ = [
     # Original networks
     "AlphaZeroNetwork",
-    "EssenceWarsNetwork",
-    "ResidualBlock",
+    "EmbeddedAlphaZeroNetwork",
     # Embedded networks
     "EmbeddedPPONetwork",
-    "EmbeddedAlphaZeroNetwork",
+    "EssenceWarsNetwork",
     "ObservationTransformer",
+    "ResidualBlock",
     "create_network",
     "get_embedding_info",
 ]

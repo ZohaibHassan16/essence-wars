@@ -93,7 +93,7 @@ class EloData:
     def get_matchup_predictions(self) -> dict[str, dict[str, float]]:
         """Build a matrix of expected win rates for all matchups."""
         deck_ids = list(self.ratings.keys())
-        matrix = {}
+        matrix: dict[str, dict[str, float]] = {}
 
         for d1 in deck_ids:
             matrix[d1] = {}
@@ -127,7 +127,7 @@ class EloData:
             faction_data[faction]["total_games"] += deck.games
 
         # Calculate averages
-        for faction, data in faction_data.items():
+        for _faction, data in faction_data.items():
             if data["count"] > 0:
                 data["avg_rating"] = data["total_rating"] / data["count"]
             else:
@@ -158,20 +158,14 @@ def load_elo_data(
     Raises:
         FileNotFoundError: If ELO file not found.
     """
-    if elo_file is None:
-        elo_file = Path("data/ratings/deck_elo.json")
-    else:
-        elo_file = Path(elo_file)
+    elo_file = Path("data/ratings/deck_elo.json") if elo_file is None else Path(elo_file)
 
-    if decks_dir is None:
-        decks_dir = Path("data/decks")
-    else:
-        decks_dir = Path(decks_dir)
+    decks_dir = Path("data/decks") if decks_dir is None else Path(decks_dir)
 
     if not elo_file.exists():
         raise FileNotFoundError(f"ELO ratings file not found: {elo_file}")
 
-    with open(elo_file) as f:
+    with elo_file.open() as f:
         data = json.load(f)
 
     # Build deck-to-faction mapping from directory structure
@@ -223,7 +217,7 @@ def load_elo_data(
 
 def _build_deck_faction_map(decks_dir: Path) -> dict[str, str]:
     """Build a mapping of deck_id to faction from directory structure."""
-    mapping = {}
+    mapping: dict[str, str] = {}
 
     if not decks_dir.exists():
         return mapping
@@ -253,8 +247,5 @@ def _deck_id_to_commander_name(deck_id: str) -> str:
 
 def elo_file_exists(elo_file: Path | str | None = None) -> bool:
     """Check if ELO ratings file exists."""
-    if elo_file is None:
-        elo_file = Path("data/ratings/deck_elo.json")
-    else:
-        elo_file = Path(elo_file)
+    elo_file = Path("data/ratings/deck_elo.json") if elo_file is None else Path(elo_file)
     return elo_file.exists()

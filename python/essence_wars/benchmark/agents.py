@@ -82,7 +82,7 @@ class BaseAgent(ABC):
     ) -> int:
         pass
 
-    def reset(self) -> None:
+    def reset(self) -> None:  # noqa: B027
         """Default reset does nothing."""
         pass
 
@@ -100,7 +100,7 @@ class RandomAgent(BaseAgent):
 
     def select_action(
         self,
-        observation: np.ndarray,
+        _observation: np.ndarray,
         action_mask: np.ndarray,
     ) -> int:
         valid_actions = np.where(action_mask > 0.5)[0]
@@ -285,6 +285,7 @@ class NeuralAgent(BaseAgent):
         embed_dim = config_dict.get("embed_dim", 64)
 
         # Determine network type from observation mode
+        network: torch.nn.Module
         if observation_mode in ("embedded", "embedded_pretrained"):
             # PPO with embeddings
             from essence_wars.agents.embeddings import EmbeddedPPONetwork
@@ -305,9 +306,9 @@ class NeuralAgent(BaseAgent):
             )
         else:
             # Simple PPO network (flat observation)
-            from essence_wars.agents.ppo import PPONetwork
+            from essence_wars.agents.networks import EssenceWarsNetwork
 
-            network = PPONetwork(
+            network = EssenceWarsNetwork(
                 obs_dim=326,
                 action_dim=256,
                 hidden_dim=hidden_dim,

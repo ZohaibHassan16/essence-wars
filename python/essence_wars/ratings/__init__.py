@@ -22,16 +22,16 @@ from .deck_ratings import DeckRating, DeckRatings
 from .unified import LeaderboardEntry, UnifiedRatings
 
 __all__ = [
-    # Base
-    "BaseRating",
-    "RatingCategory",
-    # Deck ratings
-    "DeckRatings",
-    "DeckRating",
+    "AgentRating",
     # Agent ratings
     "AgentRatings",
-    "AgentRating",
+    # Base
+    "BaseRating",
+    "DeckRating",
+    # Deck ratings
+    "DeckRatings",
+    "LeaderboardEntry",
+    "RatingCategory",
     # Unified
     "UnifiedRatings",
-    "LeaderboardEntry",
 ]

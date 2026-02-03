@@ -13,21 +13,29 @@ Based on CleanRL's PPO implementation with modifications for card games.
 from __future__ import annotations
 
 import time
-from collections.abc import Callable
 from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
+import numpy.typing as npt
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
 from essence_wars.agents.embeddings import create_network
-from essence_wars.agents.networks import EssenceWarsNetwork
 from essence_wars.env import (
     EssenceWarsEnv,
     VectorizedEssenceWars,
     VectorizedEssenceWarsWithShaping,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from essence_wars.agents.networks import EssenceWarsNetwork
+
+# Type alias for numpy arrays
+NDArrayFloat = npt.NDArray[np.floating[Any]]
 
 
 class RunningMeanStd:
@@ -37,7 +45,7 @@ class RunningMeanStd:
     Uses Welford's online algorithm for numerical stability.
     """
 
-    def __init__(self, shape: tuple, epsilon: float = 1e-8):
+    def __init__(self, shape: tuple[int, ...], epsilon: float = 1e-8):
         self.mean = np.zeros(shape, dtype=np.float64)
         self.var = np.ones(shape, dtype=np.float64)
         self.count = epsilon
@@ -223,7 +231,7 @@ class RolloutBuffer:
         gae_lambda: float,
     ) -> None:
         """Compute GAE advantages and returns."""
-        last_gae = 0
+        last_gae: torch.Tensor | float = 0.0
         for t in reversed(range(self.num_steps)):
             if t == self.num_steps - 1:
                 next_non_terminal = 1.0 - self.dones[t]
@@ -304,17 +312,23 @@ class PPOTrainer:
 
         # Create network
         if network is not None:
-            self.network = network.to(self.device)
+            self.network: EssenceWarsNetwork = network.to(self.device)
         else:
-            self.network = create_network(
-                observation_mode=self.config.observation_mode,
+            observation_mode = self.config.observation_mode
+            # Cast to Literal type for create_network
+            assert observation_mode in ("flat", "embedded", "embedded_pretrained")
+            obs_mode: Literal["flat", "embedded", "embedded_pretrained"] = observation_mode  # type: ignore[assignment]
+            # create_network returns EssenceWarsNetwork (PPONetwork/EmbeddedPPONetwork)
+            created_network: EssenceWarsNetwork = create_network(  # type: ignore[assignment]
+                observation_mode=obs_mode,
                 network_type="ppo",
                 embed_dim=self.config.embed_dim,
                 hidden_dim=self.config.hidden_dim,
                 pretrained_path=self.config.pretrained_embeds_path,
                 freeze_embeds=self.config.freeze_embeds,
                 include_embed_section=self.config.include_embed_section,
-            ).to(self.device)
+            )
+            self.network = created_network.to(self.device)
 
         # Optimizer
         self.optimizer = optim.Adam(
@@ -330,12 +344,13 @@ class PPOTrainer:
         self.envs = self._create_envs()
 
         # Rollout buffer
+        device_str = str(self.device)
         self.buffer = RolloutBuffer(
             num_steps=self.config.num_steps,
             num_envs=self.config.num_envs,
             obs_dim=326,
             action_dim=256,
-            device=self.device,
+            device=device_str,
         )
 
         # TensorBoard writer
@@ -346,13 +361,13 @@ class PPOTrainer:
 
         # Training state
         self.global_step = 0
-        self.start_time = None
-        self._last_obs = None
-        self._last_masks = None
+        self.start_time: float | None = None
+        self._last_obs: NDArrayFloat | None = None
+        self._last_masks: NDArrayFloat | None = None
 
         # Episode tracking
-        self.episode_rewards = []
-        self.episode_lengths = []
+        self.episode_rewards: list[float] = []
+        self.episode_lengths: list[int] = []
 
         # Best checkpoint tracking
         self.best_win_rate = 0.0
@@ -439,7 +454,7 @@ class PPOTrainer:
             self._last_deck_cycle_step = self.global_step
 
             # Recreate environments with new decks
-            old_deck1, _ = self._get_current_decks()
+            _old_deck1, _ = self._get_current_decks()
             deck1, deck2 = self._get_current_decks()
             print(f"  [Deck cycle] Now training with: {deck1} vs {deck2}")
             self.envs = self._create_envs()
@@ -448,20 +463,20 @@ class PPOTrainer:
             self._last_obs = None
             self._last_masks = None
 
-    def collect_rollout(self) -> dict:
+    def collect_rollout(self) -> dict[str, Any]:
         """Collect rollout experience from vectorized environments."""
         self.network.eval()
         self.buffer.reset()
 
         # Reset if first step or after deck cycle (when _last_obs is None)
-        if self.global_step == 0 or self._last_obs is None:
+        if self.global_step == 0 or self._last_obs is None or self._last_masks is None:
             obs, masks = self.envs.reset()
         else:
             obs, masks = self._last_obs, self._last_masks
 
         episode_infos = []
 
-        for step in range(self.config.num_steps):
+        for _step in range(self.config.num_steps):
             # Normalize observations if enabled
             if self.obs_normalizer is not None:
                 self.obs_normalizer.update(obs)
@@ -527,7 +542,7 @@ class PPOTrainer:
             "episode_infos": episode_infos,
         }
 
-    def update(self) -> dict:
+    def update(self) -> dict[str, float]:
         """Perform PPO update on collected rollout."""
         self.network.train()
 
@@ -543,7 +558,7 @@ class PPOTrainer:
         approx_kls = []
         clipfracs = []
 
-        for epoch in range(self.config.num_epochs):
+        for _epoch in range(self.config.num_epochs):
             for batch in self.buffer.get_batches(self.config.minibatch_size):
                 (
                     obs_batch,
@@ -621,9 +636,9 @@ class PPOTrainer:
     def train(
         self,
         total_timesteps: int | None = None,
-        callback: Callable[[int, dict], bool] | None = None,
+        callback: Callable[[int, dict[str, Any]], bool] | None = None,
         save_path: str | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Train the agent.
 
@@ -640,8 +655,8 @@ class PPOTrainer:
 
         # Setup best checkpoint path
         if save_path and self.config.save_best:
-            import os
-            self.best_checkpoint_path = os.path.join(save_path, "best_model.pt")
+            from pathlib import Path
+            self.best_checkpoint_path = str(Path(save_path) / "best_model.pt")
 
         # Initialize first observation
         self._last_obs, self._last_masks = self.envs.reset(seed=42)
@@ -676,6 +691,7 @@ class PPOTrainer:
 
             # Logging
             if update % (self.config.log_interval // self.config.batch_size + 1) == 0:
+                assert self.start_time is not None  # Set at start of train()
                 elapsed = time.time() - self.start_time
                 sps = self.global_step / elapsed
 
@@ -773,10 +789,10 @@ class PPOTrainer:
                 with torch.no_grad():
                     action, _, _ = self.network.get_action(obs_t, mask_t, deterministic=True)
 
-                obs, reward, terminated, truncated, info = env.step(action.item())
+                obs, reward, terminated, truncated, info = env.step(int(action.item()))
                 done = terminated or truncated
 
-                if done and reward > 0:
+                if done and float(reward) > 0:
                     wins += 1
 
         return wins / num_games
@@ -804,10 +820,10 @@ class PPOTrainer:
                 with torch.no_grad():
                     action, _, _ = self.network.get_action(obs_t, mask_t, deterministic=True)
 
-                obs, reward, terminated, truncated, info = env.step(action.item())
+                obs, reward, terminated, truncated, info = env.step(int(action.item()))
                 done = terminated or truncated
 
-                if done and reward > 0:
+                if done and float(reward) > 0:
                     wins += 1
 
         return wins / num_games

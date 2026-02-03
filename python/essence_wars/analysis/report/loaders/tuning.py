@@ -221,7 +221,7 @@ def _load_from_directory(exp_dir: Path) -> TuningData:
     summary_path = exp_dir / "summary.txt"
     mode = parsed["mode"]
     if summary_path.exists():
-        with open(summary_path) as f:
+        with summary_path.open() as f:
             for line in f:
                 if line.startswith("Mode:"):
                     mode = line.split(":", 1)[1].strip()
@@ -232,7 +232,7 @@ def _load_from_directory(exp_dir: Path) -> TuningData:
     git_hash = None
     version_path = exp_dir / "version.toml"
     if version_path.exists():
-        with open(version_path) as f:
+        with version_path.open() as f:
             for line in f:
                 if line.startswith("version"):
                     version = line.split("=", 1)[1].strip().strip('"')

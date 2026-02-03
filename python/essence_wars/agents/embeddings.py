@@ -25,10 +25,11 @@ See docs/embedding-design.md for full design documentation.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, cast
 
 import torch
 import torch.nn as nn
+from torch import Tensor
 from torch.distributions import Categorical
 
 # =============================================================================
@@ -51,9 +52,9 @@ P1_BASE_STATS_SIZE = 5
 P1_HAND_START = 11  # P1_START + P1_BASE_STATS_SIZE
 P1_HAND_SIZE = 10
 P1_CREATURES_START = 21  # P1_HAND_START + P1_HAND_SIZE
-P1_CREATURES_SIZE = 50  # 5 slots × 10 floats
+P1_CREATURES_SIZE = 50  # 5 slots x 10 floats
 P1_SUPPORTS_START = 71  # P1_CREATURES_START + P1_CREATURES_SIZE
-P1_SUPPORTS_SIZE = 10  # 2 slots × 5 floats
+P1_SUPPORTS_SIZE = 10  # 2 slots x 5 floats
 
 # Player 2 section
 P2_START = 81  # P1_START + PLAYER_STATE_SIZE
@@ -220,10 +221,12 @@ class ObservationTransformer(nn.Module):
         batch_size = obs.shape[0]
 
         # Extract non-card features
-        non_card_features = obs[:, self.non_card_indices]  # (batch, num_non_card)
+        non_card_idx = cast('Tensor', self.non_card_indices)
+        non_card_features = obs[:, non_card_idx]  # (batch, num_non_card)
 
         # Extract card IDs and convert to long indices
-        card_ids = obs[:, self.card_id_indices].long()  # (batch, num_cards)
+        card_id_idx = cast('Tensor', self.card_id_indices)
+        card_ids = obs[:, card_id_idx].long()  # (batch, num_cards)
 
         # Clamp card IDs to valid range (0 = padding, 1000-4074 = valid cards)
         card_ids = card_ids.clamp(0, MAX_CARD_ID - 1)
@@ -360,7 +363,8 @@ class EmbeddedPPONetwork(nn.Module):
                 nn.init.zeros_(module.bias)
 
         # Smaller initialization for policy output
-        nn.init.orthogonal_(self.policy_head[-1].weight, gain=0.01)
+        policy_last = cast('nn.Linear', self.policy_head[-1])
+        nn.init.orthogonal_(policy_last.weight, gain=0.01)
 
         # Initialize embeddings with small values (only if not using pretrained)
         if not self._using_pretrained_embeds:
@@ -422,10 +426,7 @@ class EmbeddedPPONetwork(nn.Module):
         logits, _ = self.forward(obs, action_mask)
         dist = Categorical(logits=logits)
 
-        if deterministic:
-            action = logits.argmax(dim=-1)
-        else:
-            action = dist.sample()
+        action = logits.argmax(dim=-1) if deterministic else dist.sample()
 
         log_prob = dist.log_prob(action)
         entropy = dist.entropy()
@@ -551,7 +552,8 @@ class EmbeddedAlphaZeroNetwork(nn.Module):
                 nn.init.orthogonal_(module.weight, gain=1.0)
                 nn.init.zeros_(module.bias)
 
-        nn.init.orthogonal_(self.policy_head[-1].weight, gain=0.01)
+        policy_last = cast('nn.Linear', self.policy_head[-1])
+        nn.init.orthogonal_(policy_last.weight, gain=0.01)
 
         # Initialize embeddings with small values (only if not using pretrained)
         if not self._using_pretrained_embeds:
@@ -688,7 +690,7 @@ def create_network(
         )
 
 
-def get_embedding_info() -> dict:
+def get_embedding_info() -> dict[str, int | dict[str, list[int] | int]]:
     """Get information about the embedding configuration."""
     positions = CardIdPositions.default()
     non_card = get_non_card_positions(positions)

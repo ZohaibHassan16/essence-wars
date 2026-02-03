@@ -30,7 +30,7 @@ Example:
 
 from __future__ import annotations
 
-from typing import Any, SupportsFloat
+from typing import Any, ClassVar, SupportsFloat
 
 import gymnasium as gym
 import numpy as np
@@ -72,7 +72,7 @@ class EssenceWarsEnv(gym.Env[np.ndarray, int]):
         render_mode: Optional render mode. Currently only None is supported.
     """
 
-    metadata = {
+    metadata: ClassVar[dict[str, Any]] = {  # type: ignore[misc]
         "render_modes": [],
         "render_fps": 1,
     }
@@ -120,7 +120,7 @@ class EssenceWarsEnv(gym.Env[np.ndarray, int]):
         self,
         *,
         seed: int | None = None,
-        options: dict[str, Any] | None = None,
+        options: dict[str, Any] | None = None,  # noqa: ARG002
     ) -> tuple[np.ndarray, dict[str, Any]]:
         """
         Reset the environment to start a new episode.
@@ -589,10 +589,7 @@ class VectorizedEssenceWarsWithShaping(VectorizedEssenceWars):
 
     def _count_creatures(self, obs: np.ndarray, player: int) -> np.ndarray:
         """Count number of creatures on board for given player across all envs."""
-        if player == 0:
-            start = self.P0_CREATURE_START
-        else:
-            start = self.P1_CREATURE_START
+        start = self.P0_CREATURE_START if player == 0 else self.P1_CREATURE_START
 
         # Sum the "occupied" flag (first float in each creature slot)
         counts = np.zeros(self.num_envs, dtype=np.float32)
@@ -628,7 +625,8 @@ class VectorizedEssenceWarsWithShaping(VectorizedEssenceWars):
         )
         board_reward = (curr_board_diff - prev_board_diff) * self.board_weight
 
-        return life_reward + board_reward
+        result: np.ndarray = life_reward + board_reward
+        return result
 
     def reset(
         self,
@@ -686,7 +684,7 @@ def make_env(
     deck2: str = "broodmother_pack",
     opponent: str | None = "greedy",
     game_mode: str = "attrition",
-    seed: int | None = None,
+    _seed: int | None = None,
 ) -> EssenceWarsEnv:
     """
     Factory function to create an Essence Wars environment.

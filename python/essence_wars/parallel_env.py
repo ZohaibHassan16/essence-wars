@@ -24,14 +24,13 @@ Example:
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, ClassVar
 
 import numpy as np
 from gymnasium import spaces
 
 try:
     from pettingzoo import ParallelEnv as ParallelEnvBase
-    from pettingzoo.utils import wrappers
     PETTINGZOO_AVAILABLE = True
 except ImportError:
     PETTINGZOO_AVAILABLE = False
@@ -75,7 +74,7 @@ class EssenceWarsParallelEnv(ParallelEnvBase):  # type: ignore[misc]
         render_mode: Optional render mode (currently unused)
     """
 
-    metadata = {
+    metadata: ClassVar[dict[str, Any]] = {
         "render_modes": ["human", "ansi"],
         "name": "essence_wars_v1",
         "is_parallelizable": True,
@@ -145,14 +144,14 @@ class EssenceWarsParallelEnv(ParallelEnvBase):  # type: ignore[misc]
     def reset(
         self,
         seed: int | None = None,
-        options: dict[str, Any] | None = None,
+        _options: dict[str, Any] | None = None,
     ) -> tuple[dict[str, np.ndarray], dict[str, dict[str, Any]]]:
         """
         Reset the environment to start a new episode.
 
         Args:
             seed: Random seed for reproducibility
-            options: Additional options (unused)
+            _options: Additional options (unused)
 
         Returns:
             observations: Dict mapping agent names to observations

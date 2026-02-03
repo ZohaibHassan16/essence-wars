@@ -153,13 +153,13 @@ class BenchmarkResults:
 
     def save(self, path: str | Path) -> None:
         """Save results to JSON file."""
-        with open(path, "w") as f:
+        with Path(path).open("w") as f:
             json.dump(self.to_dict(), f, indent=2)
 
     @classmethod
     def load(cls, path: str | Path) -> BenchmarkResults:
         """Load results from JSON file."""
-        with open(path) as f:
+        with Path(path).open() as f:
             data = json.load(f)
 
         results = cls(

@@ -110,7 +110,7 @@ class AgentRatings:
         if not path.exists():
             raise FileNotFoundError(f"Agent ratings file not found: {path}")
 
-        with open(path) as f:
+        with path.open() as f:
             data = json.load(f)
 
         ratings = {}
@@ -282,7 +282,7 @@ class AgentRatings:
             },
         }
 
-        with open(path, "w") as f:
+        with path.open("w") as f:
             json.dump(data, f, indent=2)
 
     def leaderboard(self) -> list[tuple[str, float, int]]:

@@ -23,14 +23,15 @@ Example:
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 import numpy as np
 
 if TYPE_CHECKING:
     from essence_wars._core import PyGame
 
-from .agents import BenchmarkAgent
+    from .agents import BenchmarkAgent
+
 from .elo import EloTracker
 from .metrics import (
     BenchmarkResults,
@@ -69,10 +70,10 @@ class EssenceWarsBenchmark:
     """
 
     # Standard baselines for evaluation
-    BASELINES = ["random", "greedy", "mcts50", "mcts100"]
+    BASELINES: ClassVar[list[str]] = ["random", "greedy", "mcts50", "mcts100"]
 
     # Available decks (loaded dynamically)
-    DECKS: list[str] = []
+    DECKS: ClassVar[list[str]] = []
 
     def __init__(
         self,
@@ -117,10 +118,10 @@ class EssenceWarsBenchmark:
         """Load available deck IDs from the game."""
         try:
             from essence_wars._core import PyGame
-            self.DECKS = PyGame.list_decks()
+            EssenceWarsBenchmark.DECKS = PyGame.list_decks()
         except (ImportError, AttributeError):
             # Fallback to known decks
-            self.DECKS = [
+            EssenceWarsBenchmark.DECKS = [
                 "architect_fortify", "artificer_tokens", "vex_piercing", "sanctum_healer",
                 "broodmother_pack", "grove_regenerate", "plague_volatile", "alpha_frenzy",
                 "archon_burst", "sovereign_lifesteal", "deathmaster_assassin", "shadow_weaver",
@@ -299,7 +300,7 @@ class EssenceWarsBenchmark:
         self,
         game: PyGame,
         opponent: str,
-        obs: np.ndarray,
+        _obs: np.ndarray,
         mask: np.ndarray,
     ) -> int:
         """Get action from opponent bot."""

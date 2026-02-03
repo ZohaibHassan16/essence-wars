@@ -35,6 +35,7 @@ Example - Upload a model (requires authentication):
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 from pathlib import Path
@@ -241,10 +242,8 @@ def upload_model(
     api = HfApi(token=token)
 
     # Create repo if it doesn't exist
-    try:
+    with contextlib.suppress(Exception):
         create_repo(repo_id, private=private, token=token, exist_ok=True)
-    except Exception:
-        pass  # Repo might already exist
 
     # Upload checkpoint
     api.upload_file(
@@ -315,7 +314,7 @@ def upload_dataset(
     api = HfApi(token=token)
 
     # Create dataset repo
-    try:
+    with contextlib.suppress(Exception):
         create_repo(
             repo_id,
             private=private,
@@ -323,8 +322,6 @@ def upload_dataset(
             exist_ok=True,
             repo_type="dataset",
         )
-    except Exception:
-        pass
 
     # Upload dataset file
     api.upload_file(

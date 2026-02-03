@@ -12,14 +12,18 @@ Example:
 
 from __future__ import annotations
 
+import contextlib
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from .agent_ratings import AgentRating, AgentRatings, agent_ratings_exist
-from .base import BaseRating, RatingCategory
 from .deck_ratings import DeckRating, DeckRatings, deck_ratings_exist
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from .base import BaseRating, RatingCategory
 
 
 @dataclass
@@ -128,18 +132,14 @@ class UnifiedRatings:
         # Load deck ratings if available
         deck_ratings = None
         if deck_ratings_exist(deck_file):
-            try:
+            with contextlib.suppress(Exception):
                 deck_ratings = DeckRatings.load(deck_file, decks_dir)
-            except Exception:
-                pass
 
         # Load agent ratings if available
         agent_ratings = None
         if agent_ratings_exist(agent_file):
-            try:
+            with contextlib.suppress(Exception):
                 agent_ratings = AgentRatings.load(agent_file)
-            except Exception:
-                pass
 
         return cls(deck_ratings=deck_ratings, agent_ratings=agent_ratings)
 
@@ -161,13 +161,13 @@ class UnifiedRatings:
 
         # Collect deck ratings
         if category in ("all", "deck"):
-            for rating in self.deck_ratings.get_ranked():
-                entries.append(LeaderboardEntry.from_rating(rating))
+            for deck_rating in self.deck_ratings.get_ranked():
+                entries.append(LeaderboardEntry.from_rating(deck_rating))
 
         # Collect agent ratings
         if category in ("all", "agent"):
-            for rating in self.agent_ratings.get_ranked():
-                entries.append(LeaderboardEntry.from_rating(rating))
+            for agent_rating in self.agent_ratings.get_ranked():
+                entries.append(LeaderboardEntry.from_rating(agent_rating))
 
         # Sort by rating
         entries.sort(key=lambda e: e.rating, reverse=True)
@@ -199,7 +199,7 @@ class UnifiedRatings:
         entries = self.get_leaderboard()
         return [e for e in entries if min_rating <= e.rating <= max_rating]
 
-    def get_summary(self) -> dict:
+    def get_summary(self) -> dict[str, str | int | float | None]:
         """Get summary statistics for all ratings.
 
         Returns:
@@ -210,7 +210,7 @@ class UnifiedRatings:
 
         all_ratings = [d.rating for d in deck_ranked] + [a.rating for a in agent_ranked]
 
-        summary = {
+        summary: dict[str, str | int | float | None] = {
             "total_decks": len(deck_ranked),
             "total_agents": len(agent_ranked),
             "total_entries": len(all_ratings),

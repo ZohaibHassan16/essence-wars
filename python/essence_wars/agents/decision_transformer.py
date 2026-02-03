@@ -14,10 +14,12 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from typing import cast
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch import Tensor
 
 
 @dataclass
@@ -91,7 +93,8 @@ class CausalSelfAttention(nn.Module):
         attn = (q @ k.transpose(-2, -1)) * scale
 
         # Apply causal mask
-        attn = attn.masked_fill(self.causal_mask[:, :, :T, :T] == 0, float("-inf"))
+        causal_mask = cast("Tensor", self.causal_mask)
+        attn = attn.masked_fill(causal_mask[:, :, :T, :T] == 0, float("-inf"))
 
         # Apply padding mask if provided
         if attention_mask is not None:
@@ -313,7 +316,7 @@ class DecisionTransformer(nn.Module):
             logits[~action_mask] = float("-inf")
 
         # Greedy selection
-        action = logits.argmax().item()
+        action = int(logits.argmax().item())
 
         return action
 
@@ -367,7 +370,7 @@ class DecisionTransformerAgent:
         # For actions, we need T-1 past actions + dummy for current
         if self.actions:
             actions = torch.tensor(
-                self.actions + [0], dtype=torch.long, device=self.device
+                [*self.actions, 0], dtype=torch.long, device=self.device
             ).unsqueeze(0)
         else:
             actions = torch.zeros(1, 1, dtype=torch.long, device=self.device)

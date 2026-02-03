@@ -28,16 +28,16 @@ from __future__ import annotations
 import math
 import time
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Any, Protocol
 
 import numpy as np
 import torch
 import torch.nn as nn
 
-from essence_wars._core import PyGame
-
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+
+    from essence_wars._core import PyGame
 
 
 class NetworkProtocol(Protocol):
@@ -249,7 +249,7 @@ class NeuralMctsBot:
         self,
         state_tensor: NDArray[np.float32],
         legal_mask: NDArray[np.float32],
-        legal_actions: list,
+        legal_actions: list[Any],
     ) -> int:
         """
         Select action using MCTS with neural network prior.
@@ -633,7 +633,7 @@ class NeuralMctsBot:
             batch_indices = []  # Which leaves need NN evaluation
             terminal_values = {}  # leaf_idx -> value for terminal states
 
-            for i, (leaf_game, leaf_player, _) in enumerate(leaves):
+            for i, (leaf_game, _leaf_player, _) in enumerate(leaves):
                 if leaf_game.is_done():
                     # Terminal state - use actual reward
                     terminal_values[i] = leaf_game.get_reward(0)
@@ -663,7 +663,7 @@ class NeuralMctsBot:
                         nn_values[leaf_idx] = values[j]
 
             # ===== PHASE C: EXPANSION + BACKPROPAGATION =====
-            for i, (leaf_game, leaf_player, search_path) in enumerate(leaves):
+            for i, (_leaf_game, _leaf_player, search_path) in enumerate(leaves):
                 # Determine value for this leaf
                 if i in terminal_values:
                     value = terminal_values[i]
@@ -716,7 +716,7 @@ def evaluate_neural_mcts(
     device: str | None = None,
     verbose: bool = True,
     obs_normalizer: ObsNormalizer | None = None,
-) -> dict:
+) -> dict[str, float | int]:
     """
     Evaluate a neural network with MCTS augmentation.
 
@@ -818,6 +818,7 @@ def load_ppo_network(
     state_dict = checkpoint.get("network_state_dict", checkpoint.get("model_state_dict", checkpoint))
 
     # Check if it's an embedded network
+    network: nn.Module
     if "obs_transformer.card_embedding.weight" in state_dict:
         # Embedded network
         network = EmbeddedPPONetwork()

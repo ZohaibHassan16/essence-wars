@@ -34,14 +34,17 @@ from __future__ import annotations
 import gzip
 import json
 import random
-from collections.abc import Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 # Card ID ranges
 ARGENTUM_RANGE = (1000, 1074)
@@ -98,7 +101,7 @@ class CardDatabase:
     def _load_cards(self) -> None:
         """Load all card definitions from YAML files."""
         try:
-            import yaml
+            import yaml  # type: ignore[import-untyped]
         except ImportError:
             print("Warning: PyYAML not installed, using fallback card loading")
             self._load_cards_fallback()
@@ -116,7 +119,7 @@ class CardDatabase:
             if not filepath.exists():
                 continue
 
-            with open(filepath) as f:
+            with filepath.open() as f:
                 data = yaml.safe_load(f)
 
             for card_data in data.get("cards", []):
@@ -218,11 +221,11 @@ def load_deck_cards(decks_dir: str | Path = "data/decks") -> list[list[int]]:
     try:
         import tomllib
     except ImportError:
-        import tomli as tomllib
+        import tomli as tomllib  # type: ignore[import-not-found,no-redef]
 
     for deck_file in decks_dir.glob("**/*.toml"):
         try:
-            with open(deck_file, "rb") as f:
+            with deck_file.open("rb") as f:
                 deck_data = tomllib.load(f)
             if "cards" in deck_data:
                 decks.append(deck_data["cards"])
@@ -256,7 +259,7 @@ def generate_cooccurrence_pairs(
 # Dataset Classes
 # =============================================================================
 
-class CooccurrenceDataset(Dataset):
+class CooccurrenceDataset(Dataset[tuple[int, int, float]]):
     """
     Dataset for card co-occurrence learning.
 
@@ -296,7 +299,7 @@ class CooccurrenceDataset(Dataset):
             return (center, context, 0.0)
 
 
-class AttributeDataset(Dataset):
+class AttributeDataset(Dataset[dict[str, torch.Tensor]]):
     """
     Dataset for card attribute prediction.
 
@@ -340,7 +343,7 @@ class AttributeDataset(Dataset):
     def __len__(self) -> int:
         return len(self.card_ids)
 
-    def __getitem__(self, idx: int) -> dict:
+    def __getitem__(self, idx: int) -> dict[str, torch.Tensor]:
         return {
             "card_id": torch.tensor(self.card_ids[idx], dtype=torch.long),
             "cost": self.costs[idx],
@@ -701,26 +704,26 @@ def train_card2vec(
             preds = model.predict_attributes(card_ids)
 
             # Compute attribute losses
-            loss = 0.0
+            attr_loss: torch.Tensor = torch.tensor(0.0, device=device)
 
             # Continuous attributes (MSE)
-            loss += F.mse_loss(preds["cost"], cost_target)
-            loss += F.mse_loss(preds["attack"], attack_target)
-            loss += F.mse_loss(preds["health"], health_target)
+            attr_loss = attr_loss + F.mse_loss(preds["cost"], cost_target)
+            attr_loss = attr_loss + F.mse_loss(preds["attack"], attack_target)
+            attr_loss = attr_loss + F.mse_loss(preds["health"], health_target)
 
             # Categorical attributes (CE)
-            loss += F.cross_entropy(preds["card_type"], card_type_target)
-            loss += F.cross_entropy(preds["faction"], faction_target)
+            attr_loss = attr_loss + F.cross_entropy(preds["card_type"], card_type_target)
+            attr_loss = attr_loss + F.cross_entropy(preds["faction"], faction_target)
 
             # Keywords (BCE)
-            loss += F.binary_cross_entropy(preds["keywords"], keywords_target)
+            attr_loss = attr_loss + F.binary_cross_entropy(preds["keywords"], keywords_target)
 
-            loss = loss * config.attribute_weight
+            attr_loss = attr_loss * config.attribute_weight
 
-            loss.backward()
+            attr_loss.backward()
             optimizer.step()
 
-            total_attr_loss += loss.item()
+            total_attr_loss += attr_loss.item()
             num_attr_batches += 1
 
         # Logging
@@ -798,7 +801,7 @@ def visualize_embeddings(
     """
     try:
         import matplotlib.pyplot as plt
-        from sklearn.manifold import TSNE
+        from sklearn.manifold import TSNE  # type: ignore[import-not-found]
     except ImportError:
         print("matplotlib and sklearn required for visualization")
         return
@@ -815,7 +818,7 @@ def visualize_embeddings(
         reducer = TSNE(n_components=2, random_state=42, perplexity=30)
     else:
         try:
-            from umap import UMAP
+            from umap import UMAP  # type: ignore[import-not-found]
             reducer = UMAP(n_components=2, random_state=42)
         except ImportError:
             print("UMAP not installed, using t-SNE")

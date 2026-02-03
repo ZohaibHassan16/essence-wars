@@ -25,14 +25,16 @@ from __future__ import annotations
 import gzip
 import json
 import random
-from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import IO, Any
+from typing import IO, TYPE_CHECKING, Any
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset, IterableDataset
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterator
 
 
 @dataclass
@@ -115,11 +117,13 @@ class MCTSDataset(Dataset[dict[str, torch.Tensor]]):  # type: ignore[misc]
         games_loaded = 0
 
         # Handle gzipped files
-        open_fn: Callable[[Path], IO[str]]
-        if self.path.suffix == ".gz":
-            open_fn = lambda p: gzip.open(p, "rt", encoding="utf-8")
-        else:
-            open_fn = lambda p: open(p, encoding="utf-8")
+        def open_gzip(p: Path) -> IO[str]:
+            return gzip.open(p, "rt", encoding="utf-8")
+
+        def open_regular(p: Path) -> IO[str]:
+            return p.open(encoding="utf-8")
+
+        open_fn: Callable[[Path], IO[str]] = open_gzip if self.path.suffix == ".gz" else open_regular
 
         with open_fn(self.path) as f:
             for line in f:
@@ -206,11 +210,13 @@ class StreamingMCTSDataset:
     def __iter__(self) -> Iterator[MCTSSample]:
         """Iterate through all samples in the dataset."""
         # Handle gzipped files
-        open_fn: Callable[[Path], IO[str]]
-        if self.path.suffix == ".gz":
-            open_fn = lambda p: gzip.open(p, "rt", encoding="utf-8")
-        else:
-            open_fn = lambda p: open(p, encoding="utf-8")
+        def open_gzip(p: Path) -> IO[str]:
+            return gzip.open(p, "rt", encoding="utf-8")
+
+        def open_regular(p: Path) -> IO[str]:
+            return p.open(encoding="utf-8")
+
+        open_fn: Callable[[Path], IO[str]] = open_gzip if self.path.suffix == ".gz" else open_regular
 
         with open_fn(self.path) as f:
             for line in f:
@@ -240,11 +246,11 @@ class StreamingMCTSDataset:
             )
 
 
-class ChunkedMCTSDataset(IterableDataset):
+class ChunkedMCTSDataset(IterableDataset[dict[str, torch.Tensor]]):
     """Memory-efficient chunked dataset for large MCTS files.
 
     Streams data in fixed-size chunks with in-chunk shuffling.
-    Memory is bounded to chunk_size × ~3.5 KB per sample.
+    Memory is bounded to chunk_size x ~3.5 KB per sample.
 
     This is the recommended loader for large datasets (10k+ games)
     as it avoids loading everything into memory at once.
@@ -307,11 +313,13 @@ class ChunkedMCTSDataset(IterableDataset):
             random.seed(self.seed + worker_id)
 
         # Open file
-        open_fn: Callable[[Path], IO[str]]
-        if self.path.suffix == ".gz":
-            open_fn = lambda p: gzip.open(p, "rt", encoding="utf-8")
-        else:
-            open_fn = lambda p: open(p, encoding="utf-8")
+        def open_gzip(p: Path) -> IO[str]:
+            return gzip.open(p, "rt", encoding="utf-8")
+
+        def open_regular(p: Path) -> IO[str]:
+            return p.open(encoding="utf-8")
+
+        open_fn: Callable[[Path], IO[str]] = open_gzip if self.path.suffix == ".gz" else open_regular
 
         chunk: list[MCTSSample] = []
         game_idx = 0
@@ -378,7 +386,7 @@ def load_chunked_mcts_dataset(
     shuffle: bool = True,
     num_workers: int = 4,
     seed: int | None = None,
-) -> tuple[ChunkedMCTSDataset, DataLoader]:
+) -> tuple[ChunkedMCTSDataset, DataLoader[dict[str, torch.Tensor]]]:
     """Load MCTS dataset with memory-efficient chunked streaming.
 
     Recommended for large datasets (10k+ games) to avoid OOM crashes.
@@ -428,7 +436,7 @@ def load_mcts_dataset(
     num_workers: int = 0,
     max_games: int | None = None,
     normalize: bool = False,
-) -> tuple[MCTSDataset, DataLoader]:
+) -> tuple[MCTSDataset, DataLoader[dict[str, torch.Tensor]]]:
     """Convenience function to load MCTS dataset with DataLoader.
 
     Args:
@@ -477,11 +485,13 @@ def get_dataset_stats(path: str | Path, max_games: int | None = None) -> dict[st
     draws = 0
     decks: set[str] = set()
 
-    open_fn: Callable[[Path], IO[str]]
-    if path.suffix == ".gz":
-        open_fn = lambda p: gzip.open(p, "rt", encoding="utf-8")
-    else:
-        open_fn = lambda p: open(p, encoding="utf-8")
+    def open_gzip(p: Path) -> IO[str]:
+        return gzip.open(p, "rt", encoding="utf-8")
+
+    def open_regular(p: Path) -> IO[str]:
+        return p.open(encoding="utf-8")
+
+    open_fn: Callable[[Path], IO[str]] = open_gzip if path.suffix == ".gz" else open_regular
 
     with open_fn(path) as f:
         for line in f:

@@ -16,10 +16,11 @@ Based on the AlphaZero paper (Silver et al., 2017).
 from __future__ import annotations
 
 import math
+import random
 import time
 from collections import deque
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import torch
@@ -32,6 +33,9 @@ from essence_wars.env import EssenceWarsEnv
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
+
+# Type alias for replay buffer samples
+ReplaySample = tuple[np.ndarray, np.ndarray, np.ndarray, float]
 
 
 @dataclass
@@ -210,7 +214,7 @@ class MCTSNode:
 class RunningMeanStd:
     """Running mean and standard deviation for observation normalization."""
 
-    def __init__(self, shape: tuple, epsilon: float = 1e-8):
+    def __init__(self, shape: tuple[int, ...], epsilon: float = 1e-8):
         self.mean = np.zeros(shape, dtype=np.float64)
         self.var = np.ones(shape, dtype=np.float64)
         self.count = epsilon
@@ -345,7 +349,7 @@ class NeuralMCTS:
 
             # Backup: propagate value up the tree
             # Note: value alternates sign as we go up (opponent's perspective)
-            current_player = sim_game.current_player()
+            sim_game.current_player()
             for node in reversed(search_path):
                 # Flip value for opponent's nodes
                 node.visit_count += 1
@@ -567,7 +571,7 @@ class ReplayBuffer:
     """
 
     capacity: int = 100_000
-    buffer: deque = field(default_factory=deque)
+    buffer: deque[ReplaySample] = field(default_factory=deque)
 
     def __post_init__(self):
         self.buffer = deque(maxlen=self.capacity)
@@ -600,12 +604,12 @@ class ReplayBuffer:
         """
         # Assign values: each position gets the outcome from its player's perspective
         # Positions alternate between players, so values alternate
-        for i, (obs, mask, policy) in enumerate(zip(observations, masks, policies)):
+        for i, (obs, mask, policy) in enumerate(zip(observations, masks, policies, strict=False)):
             # Even indices are player 0, odd are player 1
             value = outcome if i % 2 == 0 else -outcome
             self.add(obs, mask, policy, value)
 
-    def sample(self, batch_size: int) -> tuple:
+    def sample(self, batch_size: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         Sample a random batch from the buffer.
 
@@ -663,9 +667,9 @@ class DualReplayBuffer:
     bc_capacity: int = 100_000
     selfplay_capacity: int = 100_000
 
-    def __post_init__(self):
-        self.bc_buffer: deque = deque(maxlen=self.bc_capacity)
-        self.selfplay_buffer: deque = deque(maxlen=self.selfplay_capacity)
+    def __post_init__(self) -> None:
+        self.bc_buffer: deque[ReplaySample] = deque(maxlen=self.bc_capacity)
+        self.selfplay_buffer: deque[ReplaySample] = deque(maxlen=self.selfplay_capacity)
 
     def add_bc(
         self,
@@ -703,11 +707,11 @@ class DualReplayBuffer:
             policies: List of MCTS policy targets from game
             outcome: Game outcome from player 0's perspective (+1/-1)
         """
-        for i, (obs, mask, policy) in enumerate(zip(observations, masks, policies)):
+        for i, (obs, mask, policy) in enumerate(zip(observations, masks, policies, strict=False)):
             value = outcome if i % 2 == 0 else -outcome
             self.add_selfplay(obs, mask, policy, value)
 
-    def sample(self, batch_size: int) -> tuple:
+    def sample(self, batch_size: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         Sample batch with fixed BC ratio.
 
@@ -745,7 +749,7 @@ class DualReplayBuffer:
 
         # Combine and shuffle
         all_samples = bc_samples + sp_samples
-        np.random.shuffle(all_samples)
+        random.shuffle(all_samples)
 
         # Convert to arrays
         obs = np.stack([s[0] for s in all_samples])
@@ -769,7 +773,7 @@ class DualReplayBuffer:
         """Number of self-play samples."""
         return len(self.selfplay_buffer)
 
-    def stats(self) -> dict:
+    def stats(self) -> dict[str, Any]:
         """Get buffer statistics."""
         total = len(self)
         return {
@@ -849,12 +853,12 @@ class AlphaZeroTrainer:
         # Training state
         self.iteration = 0
         self.total_games = 0
-        self.start_time = None
-        self.save_dir = None  # Will be set by train()
+        self.start_time: float | None = None
+        self.save_dir: str | None = None  # Will be set by train()
 
     def init_dual_buffer(
         self,
-        bc_samples: list[tuple],
+        bc_samples: list[ReplaySample],
         bc_ratio: float | None = None,
     ) -> None:
         """
@@ -900,7 +904,7 @@ class AlphaZeroTrainer:
         """Check if dual buffer mode is active."""
         return self.dual_buffer is not None
 
-    def self_play_game(self, seed: int | None = None) -> tuple[list, list, list, float]:
+    def self_play_game(self, seed: int | None = None) -> tuple[list[NDArray[np.float32]], list[NDArray[np.float32]], list[NDArray[np.float32]], float]:
         """
         Play one self-play game using MCTS.
 
@@ -969,13 +973,13 @@ class AlphaZeroTrainer:
                 seed=self.total_games + i
             )
             # Add to appropriate buffer
-            if self.using_dual_buffer:
+            if self.dual_buffer is not None:
                 self.dual_buffer.add_selfplay_game(observations, masks, policies, outcome)
             else:
                 self.replay_buffer.add_game(observations, masks, policies, outcome)
             self.total_games += 1
 
-    def train_step(self) -> dict:
+    def train_step(self) -> dict[str, float]:
         """
         Perform one training step on a batch from replay buffer.
 
@@ -985,7 +989,7 @@ class AlphaZeroTrainer:
         self.network.train()
 
         # Sample batch from appropriate buffer
-        if self.using_dual_buffer:
+        if self.dual_buffer is not None:
             obs, masks, policy_targets, value_targets = self.dual_buffer.sample(
                 self.config.batch_size
             )
@@ -1030,7 +1034,7 @@ class AlphaZeroTrainer:
             "total_loss": total_loss.item(),
         }
 
-    def train(self, num_iterations: int | None = None, save_dir: str | None = None) -> dict:
+    def train(self, num_iterations: int | None = None, save_dir: str | None = None) -> dict[str, Any]:
         """
         Main AlphaZero training loop.
 
@@ -1049,7 +1053,7 @@ class AlphaZeroTrainer:
         print(f"  Games per iteration: {self.config.games_per_iteration}")
         print(f"  Simulations per move: {self.config.num_simulations}")
         print(f"  Device: {self.device}")
-        if self.using_dual_buffer:
+        if self.dual_buffer is not None:
             print(f"  Mode: Dual buffer (BC ratio: {self.dual_buffer.bc_ratio:.0%})")
             print(f"  BC samples: {self.dual_buffer.bc_count:,}")
         if self.config.checkpoint_interval > 0:
@@ -1068,14 +1072,14 @@ class AlphaZeroTrainer:
                 self.generate_self_play_games(self.config.games_per_iteration)
 
                 # Print buffer stats
-                if self.using_dual_buffer:
+                if self.dual_buffer is not None:
                     stats = self.dual_buffer.stats()
                     print(f"  Buffer: {stats['bc_samples']:,} BC + {stats['selfplay_samples']:,} self-play (sampling {stats['effective_bc_ratio']:.0%} BC)")
                 else:
                     print(f"  Replay buffer size: {len(self.replay_buffer)}")
 
                 # Determine if we have enough samples to train
-                if self.using_dual_buffer:
+                if self.dual_buffer is not None:
                     # In dual buffer mode, we can train as soon as we have BC data
                     can_train = self.dual_buffer.bc_count >= self.config.min_replay_size
                 else:
@@ -1134,6 +1138,7 @@ class AlphaZeroTrainer:
             # Re-raise to allow outer handler
             raise
 
+        assert self.start_time is not None  # Set at beginning of train()
         total_time = time.time() - self.start_time
         print(f"\nTraining complete in {total_time:.1f}s")
 
@@ -1183,12 +1188,12 @@ class AlphaZeroTrainer:
                     policy, _ = self.network.evaluate(obs_t, mask_t)
 
                 # Select best action
-                action = policy.argmax(dim=-1).item()
+                action = int(policy.argmax(dim=-1).item())
 
                 obs, reward, terminated, truncated, info = env.step(action)
                 done = terminated or truncated
 
-                if done and reward > 0:
+                if done and float(reward) > 0:
                     wins += 1
 
         return wins / num_games
@@ -1215,12 +1220,12 @@ class AlphaZeroTrainer:
                 with torch.no_grad():
                     policy, _ = self.network.evaluate(obs_t, mask_t)
 
-                action = policy.argmax(dim=-1).item()
+                action = int(policy.argmax(dim=-1).item())
 
                 obs, reward, terminated, truncated, info = env.step(action)
                 done = terminated or truncated
 
-                if done and reward > 0:
+                if done and float(reward) > 0:
                     wins += 1
 
         return wins / num_games

@@ -16,10 +16,7 @@ if TYPE_CHECKING:
 
 # Try to import rich, fall back to simple print if not available
 try:
-    from rich import box
     from rich.console import Console
-    from rich.panel import Panel
-    from rich.table import Table
     from rich.text import Text
     RICH_AVAILABLE = True
 except ImportError:
@@ -274,7 +271,7 @@ class GameRenderer:
         else:
             return self._render_plain(state, mask)
 
-    def _render_rich(self, state: GameStateInfo, mask: np.ndarray, game: PyGame) -> str:
+    def _render_rich(self, state: GameStateInfo, mask: np.ndarray, _game: PyGame) -> str:
         """Render with rich formatting."""
         from io import StringIO
 
@@ -330,7 +327,7 @@ class GameRenderer:
 
         # Board - Creatures
         creature_strs = []
-        for i, c in enumerate(player.creatures):
+        for _i, c in enumerate(player.creatures):
             if c.occupied:
                 status = ""
                 if c.exhausted:
@@ -401,7 +398,7 @@ class GameRenderer:
         else:
             print(self.render(game))
 
-    def _print_rich(self, state: GameStateInfo, mask: np.ndarray, game: PyGame) -> None:
+    def _print_rich(self, state: GameStateInfo, mask: np.ndarray, _game: PyGame) -> None:
         """Print directly with rich console."""
         console = self.console
 

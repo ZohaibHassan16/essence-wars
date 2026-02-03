@@ -5,6 +5,7 @@ Generates unified HTML reports with tabs for different data views.
 
 from __future__ import annotations
 
+import contextlib
 from datetime import datetime
 from pathlib import Path
 
@@ -39,7 +40,7 @@ class ReportGenerator:
         self.theme = theme
 
         # Find template directory
-        self.template_dir = Path(__file__).parent.parent.parent.parent / "templates" / "report"
+        self.template_dir: Path | None = Path(__file__).parent.parent.parent.parent / "templates" / "report"
         if not self.template_dir.exists():
             # Fallback to embedded templates
             self.template_dir = None
@@ -76,10 +77,8 @@ class ReportGenerator:
         # Load ELO data if available
         elo_data = None
         if elo_file_exists(elo_file):
-            try:
+            with contextlib.suppress(Exception):
                 elo_data = load_elo_data(elo_file)
-            except Exception:
-                pass  # Skip ELO tab if loading fails
 
         # Determine which tabs to include
         all_tabs = ["overview", "validation", "research"]
@@ -1214,7 +1213,7 @@ function sortTable(table, columnIndex) {
 
     def _load_tuning_summaries(
         self, tuning_dir: Path, limit: int | None = None
-    ) -> list[dict]:
+    ) -> list[dict[str, str | int | float]]:
         """Load summary data from tuning experiments."""
         if not tuning_dir.exists():
             return []
@@ -1246,7 +1245,7 @@ function sortTable(table, columnIndex) {
         if limit:
             candidates = candidates[:limit]
 
-        for ts, d in candidates:
+        for _ts, d in candidates:
             try:
                 summary = self._parse_tuning_summary(d)
                 if summary:
@@ -1256,7 +1255,7 @@ function sortTable(table, columnIndex) {
 
         return summaries
 
-    def _parse_tuning_summary(self, exp_dir: Path) -> dict | None:
+    def _parse_tuning_summary(self, exp_dir: Path) -> dict[str, str | int | float] | None:
         """Parse summary data from a tuning experiment directory."""
         stats_file = exp_dir / "stats.csv"
         if not stats_file.exists():
@@ -1271,7 +1270,7 @@ function sortTable(table, columnIndex) {
         last_row = lines[-1].split(",")
 
         try:
-            data = dict(zip(header, last_row))
+            data = dict(zip(header, last_row, strict=False))
             return {
                 "experiment_id": exp_dir.name,
                 "tag": exp_dir.name.split("_", 2)[-1] if "_" in exp_dir.name else exp_dir.name,
@@ -1284,11 +1283,11 @@ function sortTable(table, columnIndex) {
             return None
 
     def _render_aggregated_html(
-        self, validation_data: list[ValidationData], tuning_data: list[dict]
+        self, validation_data: list[ValidationData], tuning_data: list[dict[str, str | int | float]]
     ) -> str:
         """Render the aggregated dashboard HTML."""
         # Calculate health scores and timeline data
-        health_timeline = []
+        health_timeline: list[dict[str, str | int | float]] = []
         for data in validation_data:
             health_timeline.append({
                 "run_id": data.run_id,
@@ -1313,7 +1312,8 @@ function sortTable(table, columnIndex) {
         # Build validation runs table
         validation_rows = []
         for entry in health_timeline:
-            status_class = "success" if entry["health_score"] >= 75 else "warning" if entry["health_score"] >= 50 else "danger"
+            hs = float(entry["health_score"])
+            status_class = "success" if hs >= 75 else "warning" if hs >= 50 else "danger"
             validation_rows.append(f"""
                 <tr>
                     <td><a href="{entry['run_id']}/index.html">{entry['run_id']}</a></td>
@@ -1457,7 +1457,7 @@ function sortTable(table, columnIndex) {
 </html>
 """
 
-    def _build_health_timeline_chart(self, health_timeline: list[dict]) -> str:
+    def _build_health_timeline_chart(self, health_timeline: list[dict[str, str | int | float]]) -> str:
         """Build a Plotly line chart for health score timeline."""
         if not health_timeline:
             return "<p>No data available</p>"

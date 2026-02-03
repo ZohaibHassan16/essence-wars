@@ -136,7 +136,7 @@ class DeckRatings:
         if not elo_file.exists():
             raise FileNotFoundError(f"Deck ratings file not found: {elo_file}")
 
-        with open(elo_file) as f:
+        with elo_file.open() as f:
             data = json.load(f)
 
         # Build deck-to-faction mapping
@@ -242,7 +242,7 @@ class DeckRatings:
             faction_data[faction]["total_games"] += deck.games
 
         # Calculate averages
-        for faction, data in faction_data.items():
+        for _faction, data in faction_data.items():
             if data["count"] > 0:
                 data["avg_rating"] = data["total_rating"] / data["count"]
             else:
@@ -265,7 +265,7 @@ class DeckRatings:
 
 def _build_deck_faction_map(decks_dir: Path) -> dict[str, str]:
     """Build a mapping of deck_id to faction from directory structure."""
-    mapping = {}
+    mapping: dict[str, str] = {}
 
     if not decks_dir.exists():
         return mapping
