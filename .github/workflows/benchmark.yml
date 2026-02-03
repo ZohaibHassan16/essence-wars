@@ -5,12 +5,12 @@
 #
 # Parallelization strategy:
 #   - fast/overnight: 12 jobs (one per deck1, runs vs all opponents)
-#   - release: 144 jobs (one per deck1×deck2 pair for max parallelization)
+#   - release: 132 jobs (one per deck1×deck2 pair, excluding mirrors)
 #
 # Estimated times on GitHub 4-core runners:
-#   - fast (depth 4): ~20min total
-#   - overnight (depth 6): ~6h total (may hit timeout on some jobs)
-#   - release (depth 8): ~3h total (144 parallel jobs)
+#   - fast (depth 4, 50 games): ~15min total
+#   - overnight (depth 6, 200 games): ~2h total
+#   - release (depth 6, 200 games): ~30min total (132 parallel jobs)
 
 name: Balance Benchmark
 
@@ -72,8 +72,8 @@ jobs:
               echo "games=200" >> $GITHUB_OUTPUT
               ;;
             release)
-              echo "depth=8" >> $GITHUB_OUTPUT
-              echo "games=500" >> $GITHUB_OUTPUT
+              echo "depth=6" >> $GITHUB_OUTPUT
+              echo "games=200" >> $GITHUB_OUTPUT
               ;;
           esac
 

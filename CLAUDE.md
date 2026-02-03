@@ -440,9 +440,9 @@ gh run list --workflow=benchmark.yml --limit 3
 
 | Preset | Depth | Games | Jobs | Time |
 |--------|-------|-------|------|------|
-| fast | 4 | 50 | 12 | ~20min |
-| overnight | 6 | 200 | 12 | ~6h |
-| release | 8 | 500 | 132 | ~3h |
+| fast | 4 | 50 | 12 | ~15min |
+| overnight | 6 | 200 | 12 | ~2h |
+| release | 6 | 200 | 132 | ~30min |
 
 Runs weekly (Sunday midnight UTC). Results saved as artifacts.
 
