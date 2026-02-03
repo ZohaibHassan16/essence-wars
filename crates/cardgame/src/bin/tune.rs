@@ -456,7 +456,6 @@ fn main() {
     println!("Generations: {}", args.generations);
     println!("Population: {}", cmaes_config.population_size.unwrap_or(4 + (3.0_f64 * (initial_weights.len() as f64).ln()).floor() as usize));
     println!("Games/eval: {}", args.games);
-    println!("MCTS sims: {}", args.mcts_sims);
     println!("Initial sigma: {:.3}", args.sigma);
     println!("Seed: {}", args.seed);
     if let Some(wr) = args.target_win_rate {
@@ -485,7 +484,6 @@ fn main() {
     writeln!(log_file, "Games/eval: {}", args.games).unwrap();
     writeln!(log_file, "Initial sigma: {:.3}", args.sigma).unwrap();
     writeln!(log_file, "Seed: {}", args.seed).unwrap();
-    writeln!(log_file, "MCTS sims: {}", args.mcts_sims).unwrap();
     writeln!(log_file).unwrap();
 
     // Create or restore optimizer and evaluator
