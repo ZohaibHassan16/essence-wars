@@ -70,7 +70,32 @@
     const idx = insights.moveScores.findIndex(m => m.isChosen);
     return idx >= 0 ? idx + 1 : null;
   });
+
+  // Keyboard shortcuts
+  function handleKeydown(event: KeyboardEvent) {
+    // Ignore if typing in an input
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      return;
+    }
+
+    switch (event.key.toLowerCase()) {
+      case "t":
+        // Toggle search tree (only if available)
+        if (insights?.treeRoot) {
+          showSearchTree = !showSearchTree;
+        }
+        break;
+      case "e":
+        // Toggle eval breakdown (only if available)
+        if (insights?.evalBreakdown) {
+          showEvalBreakdown = !showEvalBreakdown;
+        }
+        break;
+    }
+  }
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <div class="bg-ui-panel rounded-lg shadow-lg overflow-hidden">
   <!-- Header -->
@@ -123,6 +148,28 @@
             </div>
           {/if}
 
+          <!-- Confidence indicator -->
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-ui-text-dim">Confidence:</span>
+            <div class="flex items-center gap-2">
+              <div class="w-16 h-1.5 bg-ui-bg rounded-full overflow-hidden">
+                <div
+                  class="h-full rounded-full transition-all {
+                    insights.confidenceLevel === 'high' ? 'bg-health' :
+                    insights.confidenceLevel === 'medium' ? 'bg-gold' : 'bg-damage'
+                  }"
+                  style="width: {insights.confidence * 100}%"
+                ></div>
+              </div>
+              <span class="{
+                insights.confidenceLevel === 'high' ? 'text-health' :
+                insights.confidenceLevel === 'medium' ? 'text-gold' : 'text-damage'
+              } font-medium">
+                {Math.round(insights.confidence * 100)}%
+              </span>
+            </div>
+          </div>
+
           <!-- Top moves -->
           <div class="space-y-1">
             <div class="flex items-center justify-between text-xs">
@@ -169,11 +216,13 @@
                        ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
                        : 'bg-ui-bg/50 text-ui-text-dim hover:bg-ui-bg/70'}"
               onclick={() => showEvalBreakdown = !showEvalBreakdown}
+              title="Press E to toggle"
             >
               {showEvalBreakdown ? '▼' : '▶'} Position Evaluation
               <span class="ml-1 font-semibold {insights.evalBreakdown.totalScore > 0 ? 'text-health' : 'text-damage'}">
                 {formatScore(insights.evalBreakdown.totalScore)}
               </span>
+              <span class="ml-1 text-ui-text-dim/50">[E]</span>
             </button>
 
             {#if showEvalBreakdown}
@@ -203,11 +252,13 @@
                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                        : 'bg-ui-bg/50 text-ui-text-dim hover:bg-ui-bg/70'}"
               onclick={() => showSearchTree = !showSearchTree}
+              title="Press T to toggle"
             >
               {showSearchTree ? '▼' : '▶'} Search Tree
               <span class="ml-1 text-ui-text-dim">
                 {insights.treeRoot.children.length} moves
               </span>
+              <span class="ml-1 text-ui-text-dim/50">[T]</span>
             </button>
 
             {#if showSearchTree}

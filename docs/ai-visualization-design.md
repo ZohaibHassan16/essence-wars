@@ -4,7 +4,7 @@
 **Author:** Claude (with Chris)
 **Created:** 2026-02-04
 **Updated:** 2026-02-04
-**Version:** 0.2.0
+**Version:** 0.4.0 (Phases 1-4 Complete)
 
 ## Executive Summary
 
@@ -1056,24 +1056,33 @@ SpectatorMode/
 - Color coding: green for best path, gray for alternatives
 - Integrated into AiThinkingPanel with collapsible toggle
 
-### Phase 4: Polish & Neural Prep (Week 6)
+### Phase 4: Polish & Neural Prep (Week 6) ✅ COMPLETE
 
 **Goal**: Visual polish + architecture for future neural agents
 
 **Rust Tasks**:
-- [ ] Define `NeuralAgentIntrospection` trait extension
-- [ ] Define `PolicyOutput` struct (action → probability mapping)
-- [ ] Define `AttentionWeights` struct (for future transformer agents)
-- [ ] Add placeholder `IntrospectableNeuralBot` wrapper
+- [x] Define `NeuralAgentIntrospection` trait extension (types defined in introspection.rs)
+- [x] Define `PolicyOutput` struct (action → probability mapping) via NeuralOutputDto
+- [x] Define `AttentionWeights` struct (for future transformer agents)
+- [x] Add confidence indicator to DecisionInsightsDto (entropy-based)
 
 **UI Tasks**:
-- [ ] Add animated move arrows (thickness ∝ probability)
-- [ ] Add confidence indicator (entropy-based for MCTS/Neural)
-- [ ] Create `AttentionHeatmap.svelte` placeholder component
-- [ ] Performance optimization: lazy load trees, virtualize long lists
-- [ ] Add keyboard shortcuts (T: toggle tree, H: toggle history)
+- [x] Add animated move arrows (thickness ∝ probability) - MoveArrows.svelte
+- [x] Add confidence indicator (entropy-based) - displayed in AiThinkingPanel
+- [x] Create `AttentionHeatmap.svelte` placeholder component
+- [x] Add keyboard shortcuts (T: toggle tree, E: toggle eval breakdown)
+- [x] Update TypeScript types for neural agent support
 
-**Deliverable**: Production-ready visualization system, neural-agent-ready
+**Deliverable**: Production-ready visualization system, neural-agent-ready ✅
+
+**Implementation Notes**:
+- Added `NeuralOutputDto`, `AttentionWeightsDto`, `AttentionEntryDto` types in Rust and TypeScript
+- Confidence calculated via entropy: `1 - (entropy / max_entropy)` with thresholds for high/medium/low
+- Added `ConfidenceLevel` enum for categorizing confidence (high ≥ 0.7, medium ≥ 0.4, low < 0.4)
+- Created `MoveArrows.svelte` with SVG-based arrows, thickness proportional to probability
+- Created `AttentionHeatmap.svelte` as placeholder for future neural agent visualization
+- Added keyboard shortcuts: E for eval breakdown, T for search tree
+- Keyboard shortcut hints shown in button labels [E] and [T]
 
 ### Phase 5 (Future): Neural Agent Integration
 

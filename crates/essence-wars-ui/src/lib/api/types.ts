@@ -293,6 +293,47 @@ export interface TreeNodeDto {
   depth: number;
 }
 
+// ============================================================================
+// Neural Agent Types (for future transformer/policy network agents)
+// ============================================================================
+
+/** Attention weights for transformer-based agents */
+export interface AttentionWeightsDto {
+  /** Layer index (0-based) */
+  layer: number;
+  /** Attention head index (0-based) */
+  head: number;
+  /** Attention entries (source -> weight) */
+  weights: AttentionEntryDto[];
+}
+
+/** A single attention weight entry */
+export interface AttentionEntryDto {
+  /** Source type (card, creature, commander, global) */
+  sourceType: string;
+  /** Source identifier (slot number, card index, etc.) */
+  sourceId: number;
+  /** Attention weight (0-1) */
+  weight: number;
+}
+
+/** Neural network output for visualization */
+export interface NeuralOutputDto {
+  /** Policy head output (action probabilities) */
+  policy: number[];
+  /** Value head output (position evaluation, -1 to 1) */
+  value: number;
+  /** Attention weights (if transformer-based) */
+  attention: AttentionWeightsDto[] | null;
+  /** Model name/version */
+  modelName: string;
+  /** Inference time in ms */
+  inferenceTimeMs: number;
+}
+
+/** Confidence level for a decision */
+export type ConfidenceLevel = "high" | "medium" | "low";
+
 /** Complete decision insights for UI display */
 export interface DecisionInsightsDto {
   /** Player who made this decision (1 or 2) */
@@ -309,6 +350,12 @@ export interface DecisionInsightsDto {
   searchStats: SearchStatsDto;
   /** Search tree visualization (first level from move scores) */
   treeRoot: TreeNodeDto | null;
+  /** Confidence in the decision (0-1, based on probability concentration) */
+  confidence: number;
+  /** Confidence level category */
+  confidenceLevel: ConfidenceLevel;
+  /** Neural network output (for future neural agents) */
+  neuralOutput: NeuralOutputDto | null;
 }
 
 /** Complete pre-computed spectator match */

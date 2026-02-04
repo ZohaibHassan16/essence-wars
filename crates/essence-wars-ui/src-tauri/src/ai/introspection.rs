@@ -138,6 +138,67 @@ impl TreeNodeDto {
     }
 }
 
+// ============================================================================
+// Neural Agent Types (for future transformer/policy network agents)
+// ============================================================================
+
+/// Attention weights for transformer-based agents.
+/// Maps source elements to their attention weights for a given query.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AttentionWeightsDto {
+    /// Layer index (0-based)
+    pub layer: u32,
+    /// Attention head index (0-based)
+    pub head: u32,
+    /// Attention entries (source -> weight)
+    pub weights: Vec<AttentionEntryDto>,
+}
+
+/// A single attention weight entry.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AttentionEntryDto {
+    /// Source type (card, creature, commander, global)
+    pub source_type: String,
+    /// Source identifier (slot number, card index, etc.)
+    pub source_id: u32,
+    /// Attention weight (0-1)
+    pub weight: f32,
+}
+
+/// Neural network output for visualization.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NeuralOutputDto {
+    /// Policy head output (action probabilities)
+    pub policy: Vec<f32>,
+    /// Value head output (position evaluation, -1 to 1)
+    pub value: f32,
+    /// Attention weights (if transformer-based)
+    pub attention: Option<Vec<AttentionWeightsDto>>,
+    /// Model name/version
+    pub model_name: String,
+    /// Inference time in ms
+    pub inference_time_ms: u64,
+}
+
+// ============================================================================
+// Decision Insights
+// ============================================================================
+
+/// Confidence level for a decision.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ConfidenceLevel {
+    /// Very confident (entropy < 0.5)
+    High,
+    /// Moderately confident (entropy 0.5-1.5)
+    Medium,
+    /// Low confidence (entropy > 1.5)
+    Low,
+}
+
 /// Complete decision insights for UI display.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -156,6 +217,51 @@ pub struct DecisionInsightsDto {
     pub search_stats: SearchStatsDto,
     /// Search tree visualization (first level from move scores)
     pub tree_root: Option<TreeNodeDto>,
+    /// Confidence in the decision (0-1, based on probability concentration)
+    pub confidence: f32,
+    /// Confidence level category
+    pub confidence_level: ConfidenceLevel,
+    /// Neural network output (for future neural agents)
+    pub neural_output: Option<NeuralOutputDto>,
+}
+
+/// Calculate confidence from probability distribution using entropy.
+/// Returns (confidence 0-1, confidence level).
+pub fn calculate_confidence(probabilities: &[f32]) -> (f32, ConfidenceLevel) {
+    if probabilities.is_empty() {
+        return (0.5, ConfidenceLevel::Medium);
+    }
+
+    // Calculate entropy: -sum(p * log(p))
+    let entropy: f32 = probabilities
+        .iter()
+        .filter(|&&p| p > 0.0)
+        .map(|&p| -p * p.ln())
+        .sum();
+
+    // Max entropy for uniform distribution
+    let max_entropy = (probabilities.len() as f32).ln();
+
+    // Normalized entropy (0 = all probability on one action, 1 = uniform)
+    let normalized_entropy = if max_entropy > 0.0 {
+        entropy / max_entropy
+    } else {
+        0.0
+    };
+
+    // Confidence is inverse of normalized entropy
+    let confidence = 1.0 - normalized_entropy;
+
+    // Determine confidence level
+    let level = if confidence > 0.7 {
+        ConfidenceLevel::High
+    } else if confidence > 0.4 {
+        ConfidenceLevel::Medium
+    } else {
+        ConfidenceLevel::Low
+    };
+
+    (confidence, level)
 }
 
 /// Extract decision insights using greedy evaluation.
@@ -239,6 +345,10 @@ pub fn extract_decision_insights(
     // Build tree visualization from move scores
     let tree_root = build_tree_from_move_scores(&move_scores, mcts_simulations);
 
+    // Calculate confidence from probability distribution
+    let probabilities: Vec<f32> = move_scores.iter().map(|m| m.probability).collect();
+    let (confidence, confidence_level) = calculate_confidence(&probabilities);
+
     DecisionInsightsDto {
         player: current_player.0 + 1,
         turn,
@@ -247,6 +357,9 @@ pub fn extract_decision_insights(
         eval_breakdown: Some(eval_breakdown),
         search_stats,
         tree_root,
+        confidence,
+        confidence_level,
+        neural_output: None, // Populated by neural agents when available
     }
 }
 
