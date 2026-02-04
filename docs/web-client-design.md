@@ -807,14 +807,23 @@ s
 
 - [ ] **Task 9.6** Create Tauri Icons to replace current generic Tauri Icons with Essence Wars Specific Icons.
 
+- [ ] **Task9.7**  Polish SFX: AI-generated Battle SFX 
+  - Track currently used Battle SFX
+  - Generate SFX Files using ElevenLabs/Stability 
+    - Create Prompt List following established Art Direction
+      - Argentum, Symbiote, Obsidion
+      - Generic combat, Healing
+  - Delete `rpg/` and `creatures/`
+  - Use new Battle SFX in Source Code / Asset Manager
+  - Note: UI SFX are already good
 
 ### Phase 10: Release Prep & Distribution
 
 - [ ] **Task 10.1 Review and Update Repository Size Analysis**
-  - **Total Git repo**: ~227 MB
-  - **Static assets**: ~130 MB (59 MB cards, 58 MB music, 6 MB sounds, 4 MB backgrounds, 2.2 MB portraits, 1.8 MB tokens)
+  - **CHECK Total Git repo Size**: (was ~227 MB)
+  - **Get Static assets Size Distribution**: Was: ~130 MB (59 MB cards, 58 MB music, 6 MB sounds, 4 MB backgrounds, 2.2 MB portraits, 1.8 MB tokens)
   - **Source code**: <10 MB
-  - **Status**: Size is acceptable for GitHub Releases (2 GB limit per file)
+  - **Assess Status**: Is Size still acceptable for GitHub Releases (2 GB limit per file)?
 
 - [ ] **Task 10.2 Distribution Strategy (Open Source Project)**
 

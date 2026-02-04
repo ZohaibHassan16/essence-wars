@@ -525,6 +525,14 @@ impl GameClient {
         &self.card_db
     }
 
+    /// Get read-only access to the game engine for introspection.
+    ///
+    /// This is useful for AI visualization tools that need to evaluate
+    /// positions without modifying game state.
+    pub fn engine(&self) -> Option<&GameEngine<'static>> {
+        self.engine.as_ref()
+    }
+
     /// Emit an event (adds to buffer and history).
     fn emit_event(&mut self, event: GameEvent) {
         self.event_buffer.push(event.clone());

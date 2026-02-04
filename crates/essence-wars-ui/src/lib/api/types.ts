@@ -190,6 +190,8 @@ export interface SpectatorAction {
   stateAfter: GameStateDto;
   events: GameEventDto[];
   thinking: MctsThinkingDto | null;
+  /** AI decision insights with move scores and evaluation breakdown */
+  insights: DecisionInsightsDto | null;
   thinkingTimeMs: number;
 }
 
@@ -205,6 +207,80 @@ export interface MctsMoveDto {
   action: ActionInfo;
   visits: number;
   winRate: number;
+}
+
+// ============================================================================
+// AI Decision Insights Types
+// ============================================================================
+
+/** Move score for UI display */
+export interface MoveScoreDto {
+  /** The action info */
+  action: ActionInfo;
+  /** Raw evaluation score */
+  score: number;
+  /** Normalized probability (0-1) */
+  probability: number;
+  /** Whether this was the chosen move */
+  isChosen: boolean;
+  /** MCTS visits (if available) */
+  visits: number | null;
+  /** MCTS win rate (if available) */
+  winRate: number | null;
+}
+
+/** Evaluation factor for UI display */
+export interface EvalFactorDto {
+  /** Factor name */
+  name: string;
+  /** Player 1 value */
+  p1Value: number;
+  /** Player 2 value */
+  p2Value: number;
+  /** Weight */
+  weight: number;
+  /** Contribution to total score */
+  contribution: number;
+}
+
+/** Position evaluation breakdown for UI display */
+export interface EvalBreakdownDto {
+  /** Total evaluation score (positive = P1 advantage) */
+  totalScore: number;
+  /** Individual factors */
+  factors: EvalFactorDto[];
+}
+
+/** Search statistics for UI display */
+export interface SearchStatsDto {
+  /** Algorithm name */
+  algorithm: string;
+  /** Think time in ms */
+  timeMs: number;
+  /** Number of legal actions */
+  numActions: number;
+  /** MCTS simulations (if applicable) */
+  simulations: number | null;
+  /** AlphaBeta depth (if applicable) */
+  depth: number | null;
+  /** Nodes evaluated (if applicable) */
+  nodes: number | null;
+}
+
+/** Complete decision insights for UI display */
+export interface DecisionInsightsDto {
+  /** Player who made this decision (1 or 2) */
+  player: number;
+  /** Turn number */
+  turn: number;
+  /** The chosen action */
+  chosenAction: ActionInfo;
+  /** All moves ranked by score */
+  moveScores: MoveScoreDto[];
+  /** Evaluation breakdown (if available) */
+  evalBreakdown: EvalBreakdownDto | null;
+  /** Search statistics */
+  searchStats: SearchStatsDto;
 }
 
 /** Complete pre-computed spectator match */

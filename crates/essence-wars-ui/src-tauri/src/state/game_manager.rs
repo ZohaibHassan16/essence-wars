@@ -13,6 +13,7 @@ use uuid::Uuid;
 
 use super::serialization::*;
 use super::spectator::*;
+use crate::ai::extract_decision_insights;
 
 /// Represents an active game session
 pub struct GameSession {
@@ -669,6 +670,15 @@ pub struct SpectatorComputer {
 }
 
 impl SpectatorComputer {
+    /// Create a new SpectatorComputer without custom deck support
+    pub fn from_manager(manager: &GameManager) -> Self {
+        Self {
+            card_db: manager.card_db(),
+            deck_registry: manager.deck_registry(),
+            custom_deck_manager: None,
+        }
+    }
+
     /// Create a new SpectatorComputer with custom deck support
     pub fn from_manager_with_custom_decks(
         manager: &GameManager,
@@ -775,6 +785,9 @@ impl SpectatorComputer {
                 (&bot2_type, bot2_seed)
             };
 
+            // Get legal actions before bot selection (for introspection)
+            let legal_actions = client.get_legal_actions();
+
             // Create bot and get action
             let start = Instant::now();
             let mut bot = create_bot(
@@ -792,6 +805,30 @@ impl SpectatorComputer {
 
             let thinking_time_ms = start.elapsed().as_millis() as u64;
 
+            // Extract decision insights before applying the action
+            let insights = client.engine().map(|engine| {
+                let mcts_sims = if matches!(bot_type, BotType::Mcts) {
+                    Some(config.mcts_simulations)
+                } else {
+                    None
+                };
+                let ab_depth = if matches!(bot_type, BotType::AlphaBeta) {
+                    Some(config.alphabeta_depth)
+                } else {
+                    None
+                };
+                extract_decision_insights(
+                    engine,
+                    &action,
+                    &legal_actions,
+                    &self.card_db,
+                    bot.name(),
+                    thinking_time_ms,
+                    mcts_sims,
+                    ab_depth,
+                )
+            });
+
             // Apply action and capture events
             let action_index = action.to_index();
             let events = client
@@ -803,14 +840,15 @@ impl SpectatorComputer {
             let event_dtos: Vec<GameEventDto> = events.iter().map(game_event_to_dto).collect();
             let state_after = self.client_to_spectator_dto(&client, &match_id);
 
-            // Store action (no MCTS thinking data for now - can be added later)
+            // Store action with AI insights
             actions.push(SpectatorAction {
                 turn,
                 player: player_num,
                 action: action_info,
                 state_after,
                 events: event_dtos,
-                thinking: None, // TODO: Add MCTS introspection when available
+                thinking: None, // Legacy field - kept for compatibility
+                insights,
                 thinking_time_ms,
             });
 

@@ -1,9 +1,10 @@
 //! AI-related functionality for hints and thinking visualization.
 //!
-//! This module will contain:
-//! - AI hint generation with detailed reasoning
-//! - MCTS thinking visualization data
-//! - AI vs AI spectator mode support
+//! This module contains:
+//! - AI introspection types and wrapper bots
+//! - Decision insights for visualization
+//! - MCTS/AlphaBeta thinking data extraction
 
-// TODO: Implement AI hint system
-// TODO: Implement MCTS visualization
+mod introspection;
+
+pub use introspection::*;

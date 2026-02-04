@@ -9,6 +9,7 @@ import type {
   BotInfo,
   GameEventDto,
   CustomDeckInfo,
+  DecisionInsightsDto,
 } from "$lib/api/types";
 import * as api from "$lib/api/game";
 import * as deckBuilderApi from "$lib/api/deckBuilder";
@@ -131,6 +132,16 @@ class SpectatorStore {
     if (!this.match) return 0;
     if (this.currentActionIndex < 0) return this.match.initialState.turn;
     return this.match.actions[this.currentActionIndex].turn;
+  }
+
+  /** Current AI decision insights (null if at initial state or no insights available) */
+  get currentInsights(): DecisionInsightsDto | null {
+    return this.currentAction?.insights ?? null;
+  }
+
+  /** Whether AI insights are available for the current action */
+  get hasInsights(): boolean {
+    return this.currentInsights !== null;
   }
 
   // ============================================================================

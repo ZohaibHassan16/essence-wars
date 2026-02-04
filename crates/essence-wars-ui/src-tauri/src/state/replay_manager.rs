@@ -249,6 +249,7 @@ impl ReplayManager {
                 state_after,
                 events: event_dtos,
                 thinking: None, // No MCTS data for human games
+                insights: None, // No AI insights for human replays
                 thinking_time_ms: 0,
             });
         }

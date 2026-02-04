@@ -1,9 +1,12 @@
 <script lang="ts">
   import { spectatorStore } from "$lib/stores/spectatorState.svelte";
+  import type { MoveScoreDto } from "$lib/api/types";
 
   let isExpanded = $state(true);
+  let showEvalBreakdown = $state(false);
 
-  // Get current action's thinking data
+  // Get current action's data
+  const insights = $derived(spectatorStore.currentInsights);
   const thinking = $derived(spectatorStore.currentAction?.thinking);
   const thinkingTimeMs = $derived(spectatorStore.currentAction?.thinkingTimeMs ?? 0);
   const currentPlayer = $derived(spectatorStore.currentAction?.player);
@@ -20,6 +23,51 @@
   function formatVisits(visits: number, total: number): number {
     return total > 0 ? (visits / total) * 100 : 0;
   }
+
+  function formatProbability(prob: number): string {
+    return `${Math.round(prob * 100)}%`;
+  }
+
+  function formatScore(score: number): string {
+    const sign = score > 0 ? "+" : "";
+    return `${sign}${score.toFixed(1)}`;
+  }
+
+  function getActionDescription(move: MoveScoreDto): string {
+    const action = move.action;
+    switch (action.actionType) {
+      case "play_card":
+        return `Play card ${action.handIndex ?? "?"} → slot ${action.targetSlot}`;
+      case "attack":
+        return `Attack ${action.sourceSlot} → ${action.targetSlot}`;
+      case "end_turn":
+        return "End Turn";
+      case "use_ability":
+        return `Ability ${action.abilityIndex}`;
+      case "commander_insight":
+        return "Commander's Insight";
+      default:
+        return action.description;
+    }
+  }
+
+  function getProbabilityColor(prob: number): string {
+    if (prob >= 0.5) return "text-health";
+    if (prob >= 0.2) return "text-gold";
+    return "text-ui-text-dim";
+  }
+
+  // Get top moves from insights (sorted by score)
+  const topMoves = $derived(
+    insights?.moveScores.slice(0, 5) ?? []
+  );
+
+  // Get the chosen move rank
+  const chosenRank = $derived(() => {
+    if (!insights) return null;
+    const idx = insights.moveScores.findIndex(m => m.isChosen);
+    return idx >= 0 ? idx + 1 : null;
+  });
 </script>
 
 <div class="bg-ui-panel rounded-lg shadow-lg overflow-hidden">
@@ -47,8 +95,106 @@
         <div class="text-center text-ui-text-dim py-2 text-xs">
           No action selected. Press play to see AI decisions.
         </div>
+      {:else if insights}
+        <!-- New insights data available -->
+        <div class="space-y-2">
+          <!-- Bot info and stats -->
+          <div class="flex items-center justify-between text-xs">
+            <span class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-medium">
+              {insights.searchStats.algorithm}
+            </span>
+            <div class="flex items-center gap-2 text-ui-text-dim">
+              <span>{insights.searchStats.numActions} moves</span>
+              <span>{thinkingTimeMs}ms</span>
+            </div>
+          </div>
+
+          <!-- Search parameters if available -->
+          {#if insights.searchStats.simulations || insights.searchStats.depth}
+            <div class="text-xs text-ui-text-dim flex gap-2">
+              {#if insights.searchStats.simulations}
+                <span>Sims: {insights.searchStats.simulations}</span>
+              {/if}
+              {#if insights.searchStats.depth}
+                <span>Depth: {insights.searchStats.depth}</span>
+              {/if}
+            </div>
+          {/if}
+
+          <!-- Top moves -->
+          <div class="space-y-1">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-ui-text-dim">Top Moves:</span>
+              {#if chosenRank()}
+                <span class="text-health">Chose #{chosenRank()}</span>
+              {/if}
+            </div>
+            {#each topMoves as move, i (i)}
+              <div class="p-1.5 rounded {move.isChosen ? 'bg-health/10 border border-health/30' : 'bg-ui-bg/50'}">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs text-ui-text-dim">#{i + 1}</span>
+                    {#if move.isChosen}
+                      <span class="text-health text-xs">&#10003;</span>
+                    {/if}
+                    <span class="text-xs text-ui-text truncate max-w-[110px]">{getActionDescription(move)}</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-xs">
+                    <span class={getProbabilityColor(move.probability)} title="Probability">
+                      {formatProbability(move.probability)}
+                    </span>
+                    <span class="text-ui-text-dim" title="Score">
+                      {formatScore(move.score)}
+                    </span>
+                  </div>
+                </div>
+                <!-- Probability bar -->
+                <div class="h-1 mt-1 bg-ui-bg rounded-full overflow-hidden">
+                  <div
+                    class="h-full {move.isChosen ? 'bg-health' : 'bg-gray-500'} transition-all"
+                    style="width: {move.probability * 100}%"
+                  ></div>
+                </div>
+              </div>
+            {/each}
+          </div>
+
+          <!-- Eval breakdown toggle -->
+          {#if insights.evalBreakdown}
+            <button
+              class="w-full text-xs px-2 py-1 rounded transition-colors
+                     {showEvalBreakdown
+                       ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                       : 'bg-ui-bg/50 text-ui-text-dim hover:bg-ui-bg/70'}"
+              onclick={() => showEvalBreakdown = !showEvalBreakdown}
+            >
+              {showEvalBreakdown ? '▼' : '▶'} Position Evaluation
+              <span class="ml-1 font-semibold {insights.evalBreakdown.totalScore > 0 ? 'text-health' : 'text-damage'}">
+                {formatScore(insights.evalBreakdown.totalScore)}
+              </span>
+            </button>
+
+            {#if showEvalBreakdown}
+              <div class="space-y-0.5 text-xs pl-2">
+                {#each insights.evalBreakdown.factors as factor (factor.name)}
+                  <div class="flex items-center justify-between">
+                    <span class="text-ui-text-dim">{factor.name}</span>
+                    <div class="flex items-center gap-2">
+                      <span class="text-ui-text-dim">
+                        {factor.p1Value.toFixed(0)}|{factor.p2Value.toFixed(0)}
+                      </span>
+                      <span class="{factor.contribution > 0 ? 'text-health' : 'text-damage'}">
+                        {formatScore(factor.contribution)}
+                      </span>
+                    </div>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          {/if}
+        </div>
       {:else if thinking}
-        <!-- MCTS thinking data available -->
+        <!-- Legacy MCTS thinking data (fallback) -->
         <div class="space-y-2">
           <!-- Bot info -->
           <div class="flex items-center justify-between text-xs">
@@ -91,7 +237,7 @@
           </div>
         </div>
       {:else}
-        <!-- No MCTS data (non-MCTS bot or data not captured) -->
+        <!-- No data available -->
         <div class="space-y-2">
           <!-- Bot info -->
           <div class="flex items-center justify-between text-xs">
@@ -108,7 +254,7 @@
           {/if}
 
           <div class="text-xs text-ui-text-dim text-center">
-            Detailed thinking data not available for this bot type.
+            Detailed thinking data not available.
           </div>
         </div>
       {/if}

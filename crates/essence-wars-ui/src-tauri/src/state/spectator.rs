@@ -1,9 +1,10 @@
 //! Data structures for AI vs AI spectator mode.
 //!
-//! Supports pre-computed match playback with MCTS thinking visualization.
+//! Supports pre-computed match playback with AI decision visualization.
 
 use serde::{Deserialize, Serialize};
 use super::serialization::{ActionInfo, GameEventDto, GameStateDto};
+use crate::ai::DecisionInsightsDto;
 
 /// Configuration for starting a spectator match
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -51,8 +52,10 @@ pub struct SpectatorAction {
     pub state_after: GameStateDto,
     /// Events triggered by this action (for animations)
     pub events: Vec<GameEventDto>,
-    /// MCTS thinking data (if bot is MCTS)
+    /// MCTS thinking data (if bot is MCTS) - legacy field
     pub thinking: Option<MctsThinkingDto>,
+    /// AI decision insights with move scores and evaluation breakdown
+    pub insights: Option<DecisionInsightsDto>,
     /// Time spent computing this move in milliseconds
     pub thinking_time_ms: u64,
 }
@@ -311,6 +314,72 @@ mod tests {
             "Greedy match: {} turns, {} actions",
             match_data.total_turns,
             match_data.actions.len()
+        );
+    }
+
+    #[test]
+    fn test_insights_are_populated() {
+        use super::super::SpectatorComputer;
+
+        let game_manager = GameManager::new().expect("Failed to create game manager");
+        let computer = SpectatorComputer::from_manager(&game_manager);
+
+        let config = SpectatorConfig {
+            player1_deck_id: "architect_fortify".to_string(),
+            player1_bot_type: "greedy".to_string(),
+            player2_deck_id: "broodmother_pack".to_string(),
+            player2_bot_type: "greedy".to_string(),
+            seed: Some(99999),
+            mcts_simulations: 100,
+            alphabeta_depth: 4,
+        };
+
+        let result = computer.compute_match(config);
+        assert!(result.is_ok(), "Match computation failed: {:?}", result.err());
+
+        let match_data = result.unwrap();
+
+        // Verify that at least some actions have insights
+        let actions_with_insights = match_data.actions.iter()
+            .filter(|a| a.insights.is_some())
+            .count();
+
+        assert!(
+            actions_with_insights > 0,
+            "Expected at least some actions to have insights, found none"
+        );
+
+        // Verify insights structure for the first action with insights
+        let first_insight = match_data.actions.iter()
+            .find_map(|a| a.insights.as_ref())
+            .expect("Should have at least one insight");
+
+        // Verify insights have proper structure
+        assert!(!first_insight.move_scores.is_empty(), "Move scores should not be empty");
+        assert!(first_insight.eval_breakdown.is_some(), "Eval breakdown should be present");
+        assert_eq!(first_insight.search_stats.algorithm, "GreedyBot");
+
+        // Verify move scores have valid probabilities
+        let total_prob: f32 = first_insight.move_scores.iter()
+            .map(|m| m.probability)
+            .sum();
+        assert!(
+            (total_prob - 1.0).abs() < 0.01,
+            "Probabilities should sum to ~1.0, got {}",
+            total_prob
+        );
+
+        // Verify exactly one move is marked as chosen
+        let chosen_count = first_insight.move_scores.iter()
+            .filter(|m| m.is_chosen)
+            .count();
+        assert_eq!(chosen_count, 1, "Exactly one move should be marked as chosen");
+
+        println!(
+            "Insights test: {} actions, {} with insights, first insight has {} move scores",
+            match_data.actions.len(),
+            actions_with_insights,
+            first_insight.move_scores.len()
         );
     }
 }
