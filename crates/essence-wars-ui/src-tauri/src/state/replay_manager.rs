@@ -332,6 +332,9 @@ impl ReplayManager {
             player2_deck_name,
             player1_bot_name,
             player2_bot_name,
+            // Human replays don't have AI insights, so no eval history
+            eval_history: Vec::new(),
+            key_moments: Vec::new(),
         })
     }
 

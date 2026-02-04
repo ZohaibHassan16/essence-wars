@@ -295,6 +295,10 @@ export interface SpectatorMatch {
   player2DeckName: string;
   player1BotName: string;
   player2BotName: string;
+  /** Evaluation history for timeline visualization */
+  evalHistory: EvalPoint[];
+  /** Key moments where evaluation swung significantly */
+  keyMoments: KeyMoment[];
 }
 
 /** Result of a completed spectator match */
@@ -304,6 +308,39 @@ export interface SpectatorResult {
   player1FinalLife: number;
   player2FinalLife: number;
 }
+
+/** A point on the evaluation timeline */
+export interface EvalPoint {
+  /** Action index (0-based) */
+  actionIndex: number;
+  /** Turn number */
+  turn: number;
+  /** Which player acted (1 or 2) */
+  player: 1 | 2;
+  /** Evaluation score (positive = P1 advantage) */
+  evalScore: number;
+}
+
+/** A key moment in the game (significant eval swing) */
+export interface KeyMoment {
+  /** Action index where this moment occurred */
+  actionIndex: number;
+  /** Turn number */
+  turn: number;
+  /** Which player acted */
+  player: 1 | 2;
+  /** Description of the action */
+  actionDescription: string;
+  /** Evaluation change (delta from previous) */
+  evalDelta: number;
+  /** New evaluation score after this action */
+  evalAfter: number;
+  /** Type of moment */
+  momentType: KeyMomentType;
+}
+
+/** Types of key moments */
+export type KeyMomentType = "p1Surge" | "p2Surge" | "leadChange" | "decisive";
 
 // ============================================================================
 // Replay Mode Types

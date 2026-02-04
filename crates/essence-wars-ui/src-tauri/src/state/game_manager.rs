@@ -888,6 +888,9 @@ impl SpectatorComputer {
             player2_final_life: p2_life,
         };
 
+        // Compute eval history and key moments from actions
+        let (eval_history, key_moments) = Self::compute_eval_history_and_moments(&actions);
+
         Ok(SpectatorMatch {
             id: match_id,
             config,
@@ -899,7 +902,100 @@ impl SpectatorComputer {
             player2_deck_name: deck2.name.clone(),
             player1_bot_name: bot1_name,
             player2_bot_name: bot2_name,
+            eval_history,
+            key_moments,
         })
+    }
+
+    /// Compute evaluation history and detect key moments from spectator actions.
+    ///
+    /// Key moments are detected when:
+    /// - Eval delta exceeds 1.5 (significant swing)
+    /// - Lead changes hands (eval crosses 0)
+    pub fn compute_eval_history_and_moments(
+        actions: &[SpectatorAction],
+    ) -> (Vec<EvalPoint>, Vec<KeyMoment>) {
+        let mut eval_history = Vec::with_capacity(actions.len());
+        let mut key_moments = Vec::new();
+
+        const KEY_MOMENT_THRESHOLD: f32 = 1.5;
+
+        let mut prev_eval: Option<f32> = None;
+
+        for (i, action) in actions.iter().enumerate() {
+            // Get eval score from insights if available
+            let eval_score = action
+                .insights
+                .as_ref()
+                .and_then(|ins| ins.eval_breakdown.as_ref())
+                .map(|eb| eb.total_score)
+                .unwrap_or(0.0);
+
+            eval_history.push(EvalPoint {
+                action_index: i,
+                turn: action.turn,
+                player: action.player,
+                eval_score,
+            });
+
+            // Detect key moments
+            if let Some(prev) = prev_eval {
+                let delta = eval_score - prev;
+                let abs_delta = delta.abs();
+
+                // Check for significant swing
+                if abs_delta >= KEY_MOMENT_THRESHOLD {
+                    let moment_type = if prev.signum() != eval_score.signum() && prev.abs() > 0.5 {
+                        // Lead changed hands
+                        KeyMomentType::LeadChange
+                    } else if delta > 0.0 {
+                        KeyMomentType::P1Surge
+                    } else {
+                        KeyMomentType::P2Surge
+                    };
+
+                    key_moments.push(KeyMoment {
+                        action_index: i,
+                        turn: action.turn,
+                        player: action.player,
+                        action_description: action.action.description.clone(),
+                        eval_delta: delta,
+                        eval_after: eval_score,
+                        moment_type,
+                    });
+                }
+            }
+
+            prev_eval = Some(eval_score);
+        }
+
+        // Mark the final action as decisive if it's a win
+        if let Some(last_action) = actions.last() {
+            if last_action.state_after.is_game_over {
+                let last_idx = actions.len() - 1;
+                // Only add if not already a key moment
+                if !key_moments.iter().any(|km| km.action_index == last_idx) {
+                    let eval_score = last_action
+                        .insights
+                        .as_ref()
+                        .and_then(|ins| ins.eval_breakdown.as_ref())
+                        .map(|eb| eb.total_score)
+                        .unwrap_or(0.0);
+
+                    key_moments.push(KeyMoment {
+                        action_index: last_idx,
+                        turn: last_action.turn,
+                        player: last_action.player,
+                        action_description: last_action.action.description.clone(),
+                        eval_delta: 0.0,
+                        eval_after: eval_score,
+                        moment_type: KeyMomentType::Decisive,
+                    });
+                }
+            }
+        }
+
+        (eval_history, key_moments)
     }
 
     /// Get display name for a bot type

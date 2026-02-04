@@ -11,6 +11,7 @@
   import SpectatorControls from "./SpectatorControls.svelte";
   import CommentaryPanel from "./CommentaryPanel.svelte";
   import CommentaryOverlay from "./CommentaryOverlay.svelte";
+  import EvalTimeline from "./spectator/EvalTimeline.svelte";
   import { playMusic } from "$lib/audio";
 
   // Play spectator music when component mounts
@@ -320,6 +321,19 @@
     <div class="p-2 border-b border-gray-700">
       <AiThinkingPanel />
     </div>
+
+    <!-- Evaluation Timeline (only show when timeline can be shown) -->
+    {#if spectatorStore.canShowTimeline && (match?.evalHistory?.length ?? 0) > 0}
+      <div class="p-2 border-b border-gray-700">
+        <div class="text-xs text-ui-text-dim mb-1 flex items-center gap-1">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+          Evaluation Timeline
+        </div>
+        <EvalTimeline height={80} />
+      </div>
+    {/if}
 
     <!-- Commentary Panel -->
     <div class="p-2 border-b border-gray-700">

@@ -979,48 +979,56 @@ SpectatorMode/
 
 ## 10. Implementation Phases
 
-### Phase 1: Foundation (Week 1-2)
+### Phase 1: Foundation (Week 1-2) ✅ COMPLETE
 
 **Goal**: Wrapper architecture + basic move scores overlay + stats bar
 
 **Rust Tasks** (in `crates/essence-wars-ui/src-tauri/`):
-- [ ] Create `src/bots/` module for UI-only wrappers
-- [ ] Define `BotIntrospection` trait and data types
-- [ ] Create `IntrospectableGreedyBot` wrapper (simplest, for testing)
-- [ ] Create `IntrospectableMctsBot` wrapper
-- [ ] Implement `MoveScore` extraction (visit counts → probabilities)
-- [ ] Add Tauri command `get_ai_insights`
-- [ ] Wire up Spectator Mode to use introspectable wrappers
+- [x] Create `src/ai/` module for introspection types and utilities
+- [x] Define introspection data types (`DecisionInsightsDto`, `MoveScoreDto`, `EvalBreakdownDto`, etc.)
+- [x] Implement post-hoc greedy evaluation for all bot types (simpler than wrappers)
+- [x] Implement `MoveScore` extraction with softmax probabilities
+- [x] Embed insights in `SpectatorAction` (no separate command needed)
+- [x] Wire up `SpectatorComputer` to extract insights for each action
+- [x] Add `GameClient::engine()` accessor for introspection
 
 **UI Tasks**:
-- [ ] Create `aiInsightsStore.svelte.ts`
-- [ ] Create `AIOverlay` component with probability badges
-- [ ] Create `AIStatsBar` with basic metrics (eval, nodes, time)
-- [ ] Integrate into existing Spectator Mode game board
+- [x] Add TypeScript types for all insight DTOs
+- [x] Add `currentInsights` computed property to `spectatorStore`
+- [x] Update `AiThinkingPanel` to display move rankings with probabilities
+- [x] Add collapsible position evaluation breakdown
+- [x] Create `AIStatsBar.svelte` component (available for future use)
 
-**Deliverable**: Spectators see move probabilities on cards + a stats bar
+**Deliverable**: Spectators see move probabilities + evaluation breakdown in AI Thinking panel ✅
 
-**Verification**: Run `cargo bench -p cardgame` before/after to confirm zero perf impact on core
+**Verification**: `cargo bench -p cardgame` confirmed zero perf impact on core ✅
 
-### Phase 2: Evaluation Breakdown + History (Week 3)
+### Phase 2: Evaluation Breakdown + History (Week 3) ✅ COMPLETE
 
 **Goal**: Show what factors influence evaluation + historical timeline
 
 **Rust Tasks**:
-- [ ] Create `EvalBreakdown` struct with factor contributions
-- [ ] Extract breakdown from GreedyBot's evaluation (already has weighted factors)
-- [ ] Create `IntrospectableAlphaBetaBot` wrapper
-- [ ] Add `TurnSnapshot` and `GameInsightsHistory` to game session
-- [ ] Store snapshot after each move in Spectator Mode
+- [x] Create `EvalBreakdown` struct with factor contributions (done in Phase 1)
+- [x] Extract breakdown from GreedyBot's evaluation (done in Phase 1)
+- [x] Works for all bot types via post-hoc evaluation (done in Phase 1)
+- [x] Add eval history tracking to `SpectatorMatch`
+- [x] Compute eval deltas between turns for "key moments" detection
 
 **UI Tasks**:
-- [ ] Create `AIResearchPanel` shell (expandable sidepanel)
-- [ ] Create `EvalBreakdown.svelte` factor table
-- [ ] Create `MoveRankings.svelte` with full move list
-- [ ] Create `EvalTimeline.svelte` line chart component
-- [ ] Add "Key Moments" detection (eval swings > 1.5)
+- [x] Create `EvalBreakdown` display (collapsible in AiThinkingPanel)
+- [x] Create `MoveRankings` display with full move list (in AiThinkingPanel)
+- [x] Create `EvalTimeline.svelte` canvas-based line chart component
+- [x] Add "Key Moments" markers (eval swings > 1.5)
+- [x] Create clickable timeline to jump to turns
 
-**Deliverable**: Full evaluation breakdown + game history timeline
+**Deliverable**: Full evaluation breakdown + game history timeline ✅
+
+**Implementation Notes**:
+- Added `EvalPoint`, `KeyMoment`, and `KeyMomentType` types to `spectator.rs`
+- Added `eval_history` and `key_moments` fields to `SpectatorMatch`
+- Created `compute_eval_history_and_moments()` helper in `game_manager.rs`
+- Created `EvalTimeline.svelte` with canvas rendering, key moment markers, and click-to-jump
+- Integrated timeline into SpectatorPlayback sidebar
 
 ### Phase 3: Search Tree Visualization (Week 4-5)
 

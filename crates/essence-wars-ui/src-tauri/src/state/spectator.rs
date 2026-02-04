@@ -108,6 +108,58 @@ pub struct SpectatorMatch {
     pub player1_bot_name: String,
     /// Display name for player 2's bot
     pub player2_bot_name: String,
+    /// Evaluation history for timeline visualization
+    pub eval_history: Vec<EvalPoint>,
+    /// Key moments where evaluation swung significantly
+    pub key_moments: Vec<KeyMoment>,
+}
+
+/// A point on the evaluation timeline
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EvalPoint {
+    /// Action index (0-based)
+    pub action_index: usize,
+    /// Turn number
+    pub turn: u16,
+    /// Which player acted (1 or 2)
+    pub player: u8,
+    /// Evaluation score (positive = P1 advantage)
+    pub eval_score: f32,
+}
+
+/// A key moment in the game (significant eval swing)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct KeyMoment {
+    /// Action index where this moment occurred
+    pub action_index: usize,
+    /// Turn number
+    pub turn: u16,
+    /// Which player acted
+    pub player: u8,
+    /// Description of the action
+    pub action_description: String,
+    /// Evaluation change (delta from previous)
+    pub eval_delta: f32,
+    /// New evaluation score after this action
+    pub eval_after: f32,
+    /// Type of moment
+    pub moment_type: KeyMomentType,
+}
+
+/// Types of key moments
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum KeyMomentType {
+    /// Large positive swing for P1
+    P1Surge,
+    /// Large positive swing for P2 (negative eval delta)
+    P2Surge,
+    /// Lead changed hands
+    LeadChange,
+    /// Game-deciding moment
+    Decisive,
 }
 
 /// Result of a completed spectator match
