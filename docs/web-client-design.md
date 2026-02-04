@@ -301,8 +301,8 @@ Each faction has a distinct hand-painted frame style:
 #### Symbiote Circles
 - **Shape:** Organic, flowing curves with irregular edges
 - **Colors:** Deep forest green, purple bioluminescence, bone white
-- **Motifs:** Vine tendrils, chitin plates, spore clusters, breathing holes
-- **Texture:** Living tissue with subtle pulsing glow
+- **Motifs:** Vine tendrils, bone ornaments, bark patterns, wolf teeth borders
+- **Texture:** Ancient wood with bioluminescent fungal glow
 
 #### Obsidion Syndicate
 - **Shape:** Gothic Victorian, ornate with sharp points
@@ -799,7 +799,7 @@ Audit all token images `crates/essence-wars-ui/static/tokens/`, following our ar
 │ Neutral  │ Traveling Scholar │
 │ Neutral  │ Essence Collector │
 
-- [ ] **Task 9.3**: Generate new backgrounds that fit the art direction of the game, replace existing ones (Collages of Commanders, Scenes, Key Locations? Worldmap?)
+- [ ] **Task 9.3**: Generate new backgrounds that fit the art direction of the game, replace existing ones (Collages of Commanders, Scenes, Key Locations? Worldmap?). Discuss alternatives to local inference, since 2k/4k Backgrounds might not work on 12 GB VRAM with Flux Dev (Research API Providers for Claude Code to use).
 
 - [ ] **Task 9.4** Audit and discuss all Menus and Boards, they should be fitting our art direction
 s

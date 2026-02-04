@@ -10,7 +10,7 @@
 - Be able to play with custom decks
 - Cannot edit or overwrite the prebuilt 12 Starter Decks, only custom decks
 
-## (B) Update Lore and Other Documentation
+## ✅ (B) Update Lore and Other Documentation [DONE]
 
 Update `lore.md` with the new direction for Argentum, Symbiote and the Free Walkers in our Art Direction `docs/art-direction.md` and the prompts(Artwork). Free Walkers not using guns, Symbiote not being bio punk engineers but naturalists and druids etc. Make sure the whole Document is in sync, including `docs/essence-wars-design.md` Faction Descriptions.
 
@@ -18,7 +18,11 @@ Review all other existing Documentation and look for out of date statements/Info
 
 ## (C) Update and Enhance Diagnosis and Analysis Capabilities of Spectator Mode
 
+Review existing Analysis (Chris will have to supply Screenshots).
+
 Update and Enhance the Diagnosis/Analysis Screen in Spectator Mode, using the now fully enhanced Rust binary Diagnose/Analysis we have at our hand, with plots, graphs, tables, statistics, probabilities etc.
+
+Review and enhance AI Visualization Layout and integrate better with existing features, streamline and polish the UI/UX Exerience.
 
 ## (D) Review and Update MCP Server
 

@@ -1,8 +1,12 @@
 # ESSENCE WARS
 ## A Strategic Card Game Design Document
 
-**Version:** 1.7 (Essence War Edition)
+**Version:** 0.8.0 (Commander Edition)
 **Last Updated:** February 2026
+
+**Related Documentation:**
+- [Lore & Worldbuilding](lore.md) — Faction history, culture, and society
+- [Art Direction](art-direction.md) — Visual design guidelines by faction
 
 ---
 
@@ -42,7 +46,7 @@
 - **Players:** 2
 - **Age:** 12+
 - **Play Time:** 15-30 minutes
-- **Deck Size:** 30-40 cards (recommended 30 for starter games)
+- **Deck Size:** 30-60 cards (29 cards + 1 commander; recommended 30 for new players)
 
 ## 1.3 Objective
 
@@ -90,22 +94,16 @@ Combat resolution is predictable. Players can plan ahead with certainty about ou
 
 # 3. COMPONENTS
 
-## 3.1 Required Components
+## 3.1 Digital Implementation
 
-### Per Player
-- **1 Deck** of 30-40 cards
-- **1 Life Counter** (tracking 0-30+)
-- **1 Essence Counter** (tracking 0-10)
-- **1 Action Point Counter** (tracking 0-5)
+Essence Wars is a **digital card game**. All game state is managed automatically by the game engine:
 
-### Shared
-- **1 Game Board** (see Section 5)
-- **1 Turn Counter** (tracking turns 1-30)
-- **Status Tokens:**
-  - Exhausted markers (to indicate creatures that have attacked)
-  - Damage counters (1s and 5s recommended)
-  - Shield tokens
-  - Buff/Debuff tokens (+1/+1, -1/-1, etc.)
+- **Life, Essence, and Action Points** are tracked automatically
+- **Card states** (exhausted, damaged, buffed) are displayed visually
+- **Turn progression** and phase transitions are handled by the engine
+- **Perfect information** is maintained (both decks/hands visible)
+
+The board layout diagrams in this document are conceptual references for understanding game mechanics.
 
 ## 3.2 Card Breakdown (New Horizons Edition)
 
@@ -148,7 +146,7 @@ The New Horizons Edition contains **300 cards** organized across three factions 
 
 6. **Draw Starting Hands:** Each player draws **4 cards** from their deck.
 
-7. **Determine First Player:** Players may use any fair method (coin flip, dice roll, mutual agreement). The first player has a slight advantage, which is offset by drawing one fewer card on their first turn (they skip their first draw).
+7. **Determine First Player:** In the digital version, the game setup screen determines who goes first. The first player has a slight advantage, which is offset by Player 2 receiving bonus starting cards (see Starting Resources below).
 
 8. **Begin Play:** The first player begins their turn.
 
@@ -632,16 +630,10 @@ When your creature attacks an enemy creature, combat is resolved simultaneously:
 4. Any creature reduced to 0 or less Health is destroyed
 
 **Example:**
-> Your 4/3 attacks enemy 3/4
-> - Your creature deals 4 damage → Enemy creature becomes 3/0 → Dies
-> - Enemy creature deals 3 damage → Your creature becomes 4/0? No wait...
-> 
-> Let me recalculate:
-> - Your 4/3 (4 Attack, 3 Health)
-> - Enemy 3/4 (3 Attack, 4 Health)
-> - Your creature takes 3 damage → 4/0? No, 4 attack / (3-3=0) health → Dies
-> - Enemy takes 4 damage → (4-4=0) health → Dies
-> - Both creatures are destroyed!
+> Your 4/3 (4 Attack, 3 Health) attacks enemy 3/4 (3 Attack, 4 Health)
+> - Your creature deals 4 damage → Enemy becomes 3/0 → Dies
+> - Enemy creature deals 3 damage → Your creature becomes 4/0 → Dies
+> - Both creatures are destroyed (simultaneous damage)!
 
 ## 11.5 Attacking Face
 
@@ -681,14 +673,7 @@ If both creatures have Quick, combat is simultaneous (they cancel out).
 **Your Options:**
 - Attack the 2/3 in Slot 1 (within range: slots 1, 2, 3)
 - Attack the 4/2 in Slot 3 (within range: slots 1, 2, 3)
-- Cannot attack face (your direct lane, Slot 2, is... wait, there's no creature in enemy Slot 2)
-
-Actually, let me re-read. The enemy has creatures in Slots 1 and 3, not Slot 2.
-
-**Corrected Options:**
-- Attack the 2/3 in Slot 1 (within range)
-- Attack the 4/2 in Slot 3 (within range)
-- Attack face (enemy Slot 2 is empty, your Slot 2 creature can hit face!)
+- Attack face (enemy Slot 2 is empty, so your Slot 2 creature can hit face!)
 
 **If you attack the 2/3:**
 - Your 3/4 deals 3 damage → Enemy 2/3 becomes 2/0 → Dies
@@ -1169,100 +1154,18 @@ All 12 commander decks have been validated for competitive balance:
 
 ## 18.1 Overview
 
-Essence Wars features a **faction-based card system** that provides thematic identity and strategic focus. Cards are organized into three true factions plus a neutral category.
+Essence Wars features three true factions plus neutral cards. Each faction has distinct keywords, archetypes, and strategic identity.
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         FACTION HIERARCHY                                │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│   TRUE FACTIONS (Primary Identity)                                       │
-│   ├── Argentum Combine    "The Wall"     [Defensive, Industrial]        │
-│   ├── Symbiote Circles    "The Pack"     [Aggressive, Primal]           │
-│   └── Obsidion Syndicate  "The Shadow"   [Burst, Control]               │
-│                                                                          │
-│   NEUTRAL CARDS (Supplemental)                                           │
-│   └── Free-Walkers        "The Toolbox"  [Utility, Flexible]            │
-│       - Can be splashed into any faction deck                            │
-│       - Provides answers and flexibility                                 │
-│       - Similar to "colorless/artifact" cards in other games            │
-│                                                                          │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+**For detailed faction lore, culture, and worldbuilding, see [lore.md](lore.md).**
 
-## 18.2 True Factions
+| Faction | Tagline | Primary Keywords | Design Role |
+|---------|---------|------------------|-------------|
+| Argentum Combine | "The Wall" | Guard, Piercing, Shield | Defensive — outlast opponents |
+| Symbiote Circles | "The Pack" | Rush, Lethal, Regenerate | Aggressive — tempo and trading |
+| Obsidion Syndicate | "The Shadow" | Lifesteal, Stealth, Quick | Burst — setup and execution |
+| Free-Walkers | "The Toolbox" | Ranged, Charge | Utility — splashable neutral cards |
 
-### 🏛️ ARGENTUM COMBINE — "The Wall"
-
-**Thematic Identity:** Order, Industry, Defense
-**Lore:** Art Deco Steampunk civilization. "Structure is Safety."
-
-| Aspect | Definition |
-|--------|------------|
-| **Primary Keywords** | Guard, Piercing, Shield |
-| **Secondary Keywords** | Regenerate (rare) |
-| **Archetypes** | Soldiers, Constructs, Engineers |
-| **Strengths** | High HP, defensive formations, outlasting opponents |
-| **Weaknesses** | Low burst damage, slow tempo |
-| **Avoid** | Rush, Lethal, Ephemeral, Stealth |
-
-**Playstyle:** Wall up with Guard creatures, heal through damage, grind opponents down through superior board presence.
-
----
-
-### 🌿 SYMBIOTE CIRCLES — "The Pack"
-
-**Thematic Identity:** Primal Nature, Pack Bond, The Hunt
-**Lore:** Urza's Saga-era nature magic. "The Pack Endures. Hunt as One."
-
-| Aspect | Definition |
-|--------|------------|
-| **Primary Keywords** | Rush, Lethal, Regenerate |
-| **Secondary Keywords** | Frenzy, Volatile |
-| **Archetypes** | Wolves, Great Cats, Serpents, Druids, Treants |
-| **Strengths** | Tempo, efficient trading, sustained pressure |
-| **Weaknesses** | Low board control, vulnerable to AoE |
-| **Avoid** | Guard, Shield |
-
-**Playstyle:** Aggressive pack tactics with Rush creatures. Trade efficiently using Lethal predators. Regenerate provides staying power for ancient forest guardians.
-
----
-
-### 🔮 OBSIDION SYNDICATE — "The Glass Cannon"
-
-**Thematic Identity:** Knowledge, Ambition, Power
-**Lore:** Gothic Cyber-Magic underworld. "Power is Personal."
-
-| Aspect | Definition |
-|--------|------------|
-| **Primary Keywords** | Lifesteal, Stealth, Ephemeral, Quick |
-| **Secondary Keywords** | Lethal (assassins) |
-| **Archetypes** | Mages, Cultists, Assassins, Undead, Spirits |
-| **Strengths** | Burst damage, life manipulation, precision removal |
-| **Weaknesses** | Low creature stats, fragile board presence |
-| **Avoid** | Guard, Regenerate |
-
-**Playstyle:** Setup-based burst damage. Use Ephemeral creatures for tempo, Stealth for guaranteed damage, and Lifesteal to sustain through self-inflicted costs.
-
----
-
-### ⚖️ FREE-WALKERS — "The Toolbox" (Neutral)
-
-**Thematic Identity:** Mercenaries, Flexibility, Profit
-**Lore:** Rugged frontier survivors. "No Flag. Just Gold."
-
-| Aspect | Definition |
-|--------|------------|
-| **Primary Keywords** | Ranged, Charge |
-| **Secondary Keywords** | Any (neutral access) |
-| **Archetypes** | Giants, Hunters, Mercenaries, Scouts |
-| **Strengths** | Flexibility, precision damage, gap-filling |
-| **Weaknesses** | No strong faction identity, jack-of-all-trades |
-| **Special Rule** | Can be splashed into ANY faction deck |
-
-**Role:** Free-Walker cards are **neutral utility cards** that can be added to any faction deck. They fill gaps, provide answers, and add flexibility without diluting faction identity.
-
-## 18.3 Keyword Distribution by Faction
+## 18.2 Keyword Distribution by Faction
 
 | Keyword | Argentum | Symbiote | Obsidion | Free-Walker |
 |---------|:--------:|:--------:|:--------:|:-----------:|
@@ -1290,7 +1193,7 @@ Essence Wars features a **faction-based card system** that provides thematic ide
 - **Fortify** is Argentum's signature defensive mechanic (damage reduction)
 - **Ward** protects key Obsidion pieces from removal
 
-## 18.4 Balance Philosophy
+## 18.3 Balance Philosophy
 
 ### Design Goals
 
@@ -1316,60 +1219,26 @@ Essence Wars features a **faction-based card system** that provides thematic ide
 
 # 19. GLOSSARY
 
+Core terms not fully explained elsewhere. For keywords, see [Section 12: Keywords](#12-keywords).
+
 | Term | Definition |
 |------|------------|
-| **Action Point (AP)** | Resource spent to take actions. Players receive 3 AP per turn. |
-| **Adjacent Lane** | The lanes immediately next to a given lane. Slot 3 is adjacent to Slots 2 and 4. |
-| **Attack** | A creature's stat determining how much damage it deals in combat. |
-| **Combat Damage** | Damage dealt during creature-to-creature combat or face attacks. |
-| **Creature** | A card type that occupies board slots and engages in combat. |
-| **Current Essence** | The amount of Essence available to spend this turn. |
-| **Damage** | A reduction of Health (for creatures) or Life (for players). |
-| **Deck** | The pile of cards a player draws from. Visible to all players. |
-| **Destroy** | Remove a creature from the board and place it in the discard pile. |
-| **Discard Pile** | Where spent spells and destroyed cards go. Public information. |
-| **Durability** | How many turns a Support lasts before being removed. |
-| **Essence** | The primary resource used to play cards. |
-| **Exhausted** | A creature that has attacked this turn and cannot attack again. |
-| **Face** | The player themselves as an attack target (reduces Life). |
-| **Guard** | Keyword: Adjacent enemies must attack this creature first. |
-| **Hand** | Cards held by a player. Public information. |
-| **Health** | A creature's stat determining how much damage it can take. |
-| **Keyword** | A special ability word that modifies how a creature behaves. |
-| **Lane** | The vertical attack path between opposing creature slots. |
-| **Lethal** | Keyword: Any damage dealt destroys the target creature. |
-| **Life** | A player's Tactical Stability. Starting value is 30. Reaching 0 forces retreat. |
-| **Lifesteal** | Keyword: Combat damage dealt heals your hero. |
-| **Maximum Essence** | The cap on how much Essence you can have (increases each turn to 10). |
-| **OnPlay** | Trigger: Activates when the card is played from hand. |
-| **Piercing** | Keyword: Excess damage to creatures goes to the enemy player. |
-| **Quick** | Keyword: This creature deals combat damage first. |
-| **Ranged** | Keyword: Can attack any enemy creature, bypasses Guard. |
-| **Rush** | Keyword: Can attack the turn it is played. |
-| **Shield** | Keyword: First damage instance is absorbed and prevented. |
-| **Slot** | A position on the board where a creature or support is placed. |
-| **Spell** | A card type that has an immediate effect and is then discarded. |
-| **StartOfTurn** | Trigger: Activates at the beginning of your turn. |
-| **Summoning Sickness** | Creatures cannot attack the turn they are played (unless they have Rush). |
-| **Support** | A card type that provides ongoing effects with limited duration. |
-| **Tag** | A creature subtype (e.g., Soldier, Beast, Mage) for thematic grouping. |
-| **Target** | The selection of what a spell or ability affects. |
-| **Turn** | One player's complete cycle of phases (Start, Main, End). |
-| **Vanilla** | A creature with no keywords or abilities, just stats. |
-| **Essence Extracted** | Total face damage dealt to opponent. In Essence War mode, 50 triggers victory. |
-| **Essence War** | Default game mode: win by extracting 50 essence OR reducing opponent to 0 life. |
-| **Attrition** | Legacy game mode: win by reducing opponent to 0 life. Turn 30 tiebreaker uses life. |
-| **Tactical Stability** | Lore term for Life. Represents a commander's battlefield control. Zero = retreat. |
-| **Commander's Insight** | A catch-up mechanic allowing struggling players to draw a card for 4 essence (requires Turn 10+, ≤1 hand, behind on creatures OR life). |
-| **Frenzy** | Keyword: +1 attack after each attack this turn. |
-| **Volatile** | Keyword: Deal 2 damage to all enemy creatures when this creature dies. |
-| **Fortify** | Keyword: Take 1 less damage from all sources (minimum 1). |
-| **Ward** | Keyword: First spell/ability targeting this has no effect; then Ward is removed. |
-| **Commander** | A Legendary creature designed as a deck's centerpiece with powerful abilities. |
-| **Token** | A creature created by an effect, not from a card. |
-| **Bounce** | Return a creature to its owner's hand. |
-| **Conditional Effect** | An effect that triggers only if a condition is met (e.g., "if target died"). |
-| **Filter** | Criteria that restrict which creatures an effect can target (e.g., "max health ≤ 3"). |
+| **Action Point (AP)** | Resource for actions. 3 per turn. Play card = 1 AP, Attack = 0 AP. |
+| **Adjacent Lane** | Lanes next to a given lane. Slot 3 is adjacent to Slots 2 and 4. |
+| **Commander** | A Legendary creature serving as deck centerpiece with powerful abilities. |
+| **Commander's Insight** | Catch-up mechanic: draw card for 4 essence (Turn 10+, ≤1 hand, behind). |
+| **Creature** | Card type that occupies board slots and engages in combat. |
+| **Essence** | Primary resource for playing cards. Starts at 1, caps at 10. |
+| **Essence Extracted** | Total face damage dealt. Reaching 50 wins (Essence War mode). |
+| **Essence War** | Default mode: win by 50 essence extracted OR opponent's Life = 0. |
+| **Face** | The player as attack target. Face damage reduces Life and extracts essence. |
+| **Health** | Creature stat determining damage tolerance. 0 = destroyed. |
+| **Lane** | Vertical attack path between opposing creature slots. |
+| **Life** | Player's Tactical Stability. Starting: 30. Reaching 0 = defeat. |
+| **Slot** | Board position (1-5 for creatures, 2 for supports per player). |
+| **Spell** | Card type with immediate effect, then discarded. |
+| **Summoning Sickness** | Creatures can't attack the turn played (unless Rush). |
+| **Support** | Card type providing ongoing effects. Has Durability (turns until removed). |
 
 ---
 
@@ -1414,26 +1283,9 @@ Essence Wars features a **faction-based card system** that provides thematic ide
 | 4 | Slots 3, 4, 5 |
 | 5 | Slots 4, 5 |
 
-## 20.4 Keyword Quick Reference
+## 20.4 Keywords
 
-| Keyword | One-Line Summary | Faction |
-|---------|------------------|---------|
-| Rush | Attack immediately when played | Symbiote |
-| Ranged | Attack any slot, no counter-attack | Free-Walker |
-| Piercing | Overkill damage hits face | Argentum |
-| Guard | Force adjacent enemies to attack this | Argentum |
-| Lifesteal | Heal when dealing damage | Obsidion |
-| Lethal | Any damage kills creatures | Symbiote |
-| Shield | Block first damage, one time | Argentum |
-| Quick | Deal damage first in combat | Obsidion |
-| Ephemeral | Dies at end of your turn | Obsidion |
-| Regenerate | Heal 2 at start of your turn | Symbiote |
-| Stealth | Can't be targeted until attacking | Obsidion |
-| Charge | +2 attack damage when attacking | Free-Walker |
-| Frenzy | +1 attack after each attack this turn | Symbiote |
-| Volatile | Deal 2 AoE damage on death | Symbiote |
-| Fortify | Take 1 less damage (min 1) | Argentum |
-| Ward | Block first targeted spell/ability | Obsidion |
+See [Section 12: Keywords](#12-keywords) for full keyword definitions and [Section 18.2](#182-keyword-distribution-by-faction) for faction distribution.
 
 ## 20.5 Win Conditions (Essence War Mode)
 

@@ -117,7 +117,7 @@ cd ~/stable-diffusion.cpp
 
 ---
 
-### 🌿 SYMBIOTE CIRCLES (Growth & Adaptation)
+### 🌿 SYMBIOTE CIRCLES (Primal Nature & The Pack)
 
 **Female Grove Keeper:**
 ```bash
@@ -140,7 +140,7 @@ cd ~/stable-diffusion.cpp
   --clip_l ~/.ai-assets/models/flux/clip_l.safetensors \
   --t5xxl ~/.ai-assets/models/flux/t5-Q5_K_M.gguf \
   --lora-model-dir ~/.ai-assets/loras/ \
-  -p "A commanding female beast master with genetically enhanced predator features, chitinous armor revealing athletic form, bioluminescent tattoos, flanked by massive bio-engineered creatures, confident seductive pose, living jungle city background, 90s MTG card art, fantasy painting <lora:frazetta:0.5>" \
+  -p "A commanding female beast master with fierce predator features, bone and leather armor revealing athletic form, bioluminescent war paint, flanked by massive dire wolves and great cats, confident commanding pose, primordial forest background with ancient trees, 90s MTG card art, Urza's Saga aesthetic, fantasy painting <lora:frazetta:0.5>" \
   --cfg-scale 1.0 --sampling-method euler --steps 20 \
   -H 896 -W 704 -o ~/.ai-assets/output/symbiote_beastmaster.png
 ```
@@ -179,7 +179,7 @@ cd ~/stable-diffusion.cpp
 
 ### ⚖️ FREE-WALKERS (Mercenaries & Guilds)
 
-**Female Sniper:**
+**Female Archer:**
 ```bash
 ./build/bin/sd-cli \
   --diffusion-model ~/.ai-assets/models/flux/flux-dev-q8.gguf \
@@ -187,9 +187,9 @@ cd ~/stable-diffusion.cpp
   --clip_l ~/.ai-assets/models/flux/clip_l.safetensors \
   --t5xxl ~/.ai-assets/models/flux/t5-Q5_K_M.gguf \
   --lora-model-dir ~/.ai-assets/loras/ \
-  -p "A rugged female mercenary sniper in tactical wasteland gear, mix of brass goggles and leather straps, holding massive customized rifle, confident combat-ready pose, desert scavenger aesthetic, athletic form, wasteland ruins background, 90s Magic the Gathering card art, painted illustration <lora:frazetta:0.6>" \
+  -p "A rugged female mercenary archer in tactical wasteland gear, mix of brass goggles and leather straps, wielding an ornate composite bow, confident combat-ready pose, desert scavenger aesthetic, athletic form, wasteland ruins background, 90s Magic the Gathering card art, painted illustration <lora:frazetta:0.6>" \
   --cfg-scale 1.0 --sampling-method euler --steps 20 \
-  -H 896 -W 704 -o ~/.ai-assets/output/freewalker_sniper.png
+  -H 896 -W 704 -o ~/.ai-assets/output/freewalker_archer.png
 ```
 
 **Female Warlord:**

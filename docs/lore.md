@@ -416,14 +416,14 @@ Most members are recruited from outside: brilliant students from Combine univers
 **"No Flag. Just Gold."**
 
 **The Vibe:**
-Rugged, practical, Western/Scavenger aesthetic. They live in the "Unclaimed Zones" between the great cities. They use a mix of technology from all three factions—a Combine rifle, Circle armor, and Syndicate goggles.
+Rugged, practical, Western/Scavenger aesthetic. They live in the "Unclaimed Zones" between the great cities. They use a mix of equipment from all three factions—Combine brass goggles, Circle bone armor, and Syndicate leather.
 
 **The Philosophy:**
 Survival and Profit. They are the mercenaries, the traders, and the giants who were too big for the cities. They keep the balance of power because they will fight for whoever pays the most Essence.
 
 **Keywords & Archetypes:**
 
-* **Ranged:** Snipers and hunters who value distance.
+* **Ranged:** Archers and hunters who value distance.
 * **Giants:** Massive laborers turned warriors.
 * **Supports:** The infrastructure of war (Drums, Fountains).
 
@@ -456,7 +456,7 @@ The closest thing to leadership is **The Accord**—a seasonal gathering where G
 | Guild/Role | Function | Appearance & Equipment |
 |------------|----------|------------------------|
 | **The Iron Caravan** | Trade/transport | Patchwork wagons, armed guards, mix of all faction tech, merchant's weights |
-| **The Long Rifles** | Snipers/scouts | Desert cloaks, massive custom rifles, spotter scopes, ghillie modifications |
+| **The Farsight Guild** | Scouts/archers | Desert cloaks, custom composite bows, spotter lenses, camouflage modifications |
 | **The Drum Corps** | Battlefield support | Mobile sound platforms, war-horns, rhythm-keepers, morale specialists |
 | **The Stone Giants** | Heavy labor/combat | Massive humanoids in salvaged armor, improvised weapons, surprising gentleness off-duty |
 | **The Reclaimers** | Salvage/archaeology | Tool-harnesses, scanner equipment, maps to pre-Calamity ruins |
@@ -488,7 +488,7 @@ The Free-Walker aesthetic is **functional patchwork**: a mix of stolen, salvaged
 
 * **Salvaged Mix:** A Free-Walker might wear a Combine helmet, Circle bone-studded boots, and a Syndicate coat—all stripped from corpses, bought in markets, or won in games of chance. Nothing matches; everything works.
 * **Practical Layers:** The Unclaimed Zones range from scorching desert to frozen waste. Free-Walkers dress in layers: light underlayers for heat, heavy outer layers for cold, everything designed to be shed or added quickly.
-* **Personal Modification:** Every piece of equipment is customized. That rifle has been rebalanced, that armor patched with a different metal, that cloak dyed to match the local terrain. Free-Walkers take pride in making their gear *theirs*.
+* **Personal Modification:** Every piece of equipment is customized. That bow has been rebalanced, that armor patched with a different metal, that cloak dyed to match the local terrain. Free-Walkers take pride in making their gear *theirs*.
 
 **Physical Characteristics:**
 
@@ -502,7 +502,7 @@ The Free-Walker aesthetic is **functional patchwork**: a mix of stolen, salvaged
 * **Trophies:** Many Free-Walkers wear trophies from notable jobs: a Combine medal, a Circle fang, a Syndicate sigil ring. These prove experience and capability.
 * **Names:** Free-Walkers often take new names when they enter the Zones, shedding their faction past. "Dustwalker," "Ironhand," "Longshot"—names that describe what they do, not where they came from.
 
-*"I own nothing that I didn't earn. My rifle was payment for a job. My armor was taken from someone who didn't need it anymore. My scars are proof I'm hard to kill. What do you own that means anything?"* — Reaper Cortez, Long Rifle
+*"I own nothing that I didn't earn. My bow was payment for a job. My armor was taken from someone who didn't need it anymore. My scars are proof I'm hard to kill. What do you own that means anything?"* — Reaper Cortez, Farsight Scout
 
 ---
 
@@ -512,7 +512,7 @@ The Unclaimed Zones are the spaces between: **deserts, badlands, mountain passes
 
 **Daily Life:**
 
-There is no "typical" Free-Walker life. A caravan trader spends months on the road, sleeping in wagons, negotiating at every stop. A Long Rifle might spend weeks alone in the wilderness, watching a target's movements. A Giant laborer might work a season at a Combine construction site (for triple pay), then return to the Zones with enough Essence to live for years.
+There is no "typical" Free-Walker life. A caravan trader spends months on the road, sleeping in wagons, negotiating at every stop. A Farsight scout might spend weeks alone in the wilderness, watching a target's movements. A Giant laborer might work a season at a Combine construction site (for triple pay), then return to the Zones with enough Essence to live for years.
 
 What all Free-Walkers share is **self-reliance**. If your wagon breaks, you fix it. If someone tries to rob you, you handle it. If you get sick, you find a Fixer or you die. There is no government to appeal to, no system to protect you. Just your skills, your reputation, and your Guild.
 
