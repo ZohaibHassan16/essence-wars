@@ -73,6 +73,71 @@ pub struct SearchStatsDto {
     pub nodes: Option<u64>,
 }
 
+/// A node in the search tree (for visualization).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TreeNodeDto {
+    /// Action that led to this node (None for root)
+    pub action: Option<ActionInfo>,
+    /// Human-readable action description
+    pub action_str: String,
+    /// Visit count (MCTS) or node count (AlphaBeta)
+    pub visits: u32,
+    /// Score: win rate (0-1) for MCTS, eval score for AlphaBeta
+    pub score: f32,
+    /// Win rate as percentage string (e.g., "54%")
+    pub score_display: String,
+    /// Whether this is the best/chosen path
+    pub is_best_path: bool,
+    /// Whether this node is fully expanded
+    pub is_expanded: bool,
+    /// Child nodes (limited by depth)
+    pub children: Vec<TreeNodeDto>,
+    /// Whether children were truncated due to depth limit
+    pub is_truncated: bool,
+    /// Number of children that were truncated
+    pub truncated_child_count: u32,
+    /// Depth of this node in the tree (0 = root)
+    pub depth: u32,
+}
+
+impl TreeNodeDto {
+    /// Create a root node
+    pub fn root(score: f32, visits: u32) -> Self {
+        Self {
+            action: None,
+            action_str: "Root".to_string(),
+            visits,
+            score,
+            score_display: format!("{:.0}%", score * 100.0),
+            is_best_path: true,
+            is_expanded: true,
+            children: Vec::new(),
+            is_truncated: false,
+            truncated_child_count: 0,
+            depth: 0,
+        }
+    }
+
+    /// Create a child node from move score data
+    pub fn from_move_score(move_score: &MoveScoreDto, depth: u32) -> Self {
+        let score = move_score.win_rate.unwrap_or(move_score.probability);
+        Self {
+            action: Some(move_score.action.clone()),
+            action_str: move_score.action.description.clone(),
+            visits: move_score.visits.unwrap_or(0),
+            score,
+            score_display: format!("{:.0}%", score * 100.0),
+            is_best_path: move_score.is_chosen,
+            is_expanded: false,
+            children: Vec::new(),
+            is_truncated: false,
+            truncated_child_count: 0,
+            depth,
+        }
+    }
+}
+
 /// Complete decision insights for UI display.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -89,6 +154,8 @@ pub struct DecisionInsightsDto {
     pub eval_breakdown: Option<EvalBreakdownDto>,
     /// Search statistics
     pub search_stats: SearchStatsDto,
+    /// Search tree visualization (first level from move scores)
+    pub tree_root: Option<TreeNodeDto>,
 }
 
 /// Extract decision insights using greedy evaluation.
@@ -169,6 +236,9 @@ pub fn extract_decision_insights(
         nodes: None,
     };
 
+    // Build tree visualization from move scores
+    let tree_root = build_tree_from_move_scores(&move_scores, mcts_simulations);
+
     DecisionInsightsDto {
         player: current_player.0 + 1,
         turn,
@@ -176,7 +246,48 @@ pub fn extract_decision_insights(
         move_scores,
         eval_breakdown: Some(eval_breakdown),
         search_stats,
+        tree_root,
     }
+}
+
+/// Build a tree structure from move scores for visualization.
+/// This creates a simple root -> children tree from the evaluated moves.
+fn build_tree_from_move_scores(
+    move_scores: &[MoveScoreDto],
+    mcts_simulations: Option<u32>,
+) -> Option<TreeNodeDto> {
+    if move_scores.is_empty() {
+        return None;
+    }
+
+    // Find the best (chosen) move's score for the root
+    let best_score = move_scores
+        .iter()
+        .find(|m| m.is_chosen)
+        .map(|m| m.win_rate.unwrap_or(m.probability))
+        .unwrap_or(0.5);
+
+    // Total visits for root (sum of all children or simulations count)
+    let total_visits = mcts_simulations.unwrap_or_else(|| {
+        move_scores.iter().map(|m| m.visits.unwrap_or(1)).sum()
+    });
+
+    // Create root node
+    let mut root = TreeNodeDto::root(best_score, total_visits);
+
+    // Add children from move scores (top moves only for cleaner visualization)
+    let max_children = 6; // Show top 6 moves
+    for move_score in move_scores.iter().take(max_children) {
+        root.children.push(TreeNodeDto::from_move_score(move_score, 1));
+    }
+
+    // Mark if we truncated
+    if move_scores.len() > max_children {
+        root.is_truncated = true;
+        root.truncated_child_count = (move_scores.len() - max_children) as u32;
+    }
+
+    Some(root)
 }
 
 /// Extract evaluation breakdown for the current position.

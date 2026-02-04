@@ -267,6 +267,32 @@ export interface SearchStatsDto {
   nodes: number | null;
 }
 
+/** A node in the search tree (for visualization) */
+export interface TreeNodeDto {
+  /** Action that led to this node (null for root) */
+  action: ActionInfo | null;
+  /** Human-readable action description */
+  actionStr: string;
+  /** Visit count (MCTS) or node count (AlphaBeta) */
+  visits: number;
+  /** Score: win rate (0-1) for MCTS, eval score for AlphaBeta */
+  score: number;
+  /** Win rate as percentage string (e.g., "54%") */
+  scoreDisplay: string;
+  /** Whether this is the best/chosen path */
+  isBestPath: boolean;
+  /** Whether this node is fully expanded */
+  isExpanded: boolean;
+  /** Child nodes (limited by depth) */
+  children: TreeNodeDto[];
+  /** Whether children were truncated due to depth limit */
+  isTruncated: boolean;
+  /** Number of children that were truncated */
+  truncatedChildCount: number;
+  /** Depth of this node in the tree (0 = root) */
+  depth: number;
+}
+
 /** Complete decision insights for UI display */
 export interface DecisionInsightsDto {
   /** Player who made this decision (1 or 2) */
@@ -281,6 +307,8 @@ export interface DecisionInsightsDto {
   evalBreakdown: EvalBreakdownDto | null;
   /** Search statistics */
   searchStats: SearchStatsDto;
+  /** Search tree visualization (first level from move scores) */
+  treeRoot: TreeNodeDto | null;
 }
 
 /** Complete pre-computed spectator match */

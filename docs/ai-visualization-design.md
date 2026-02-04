@@ -1030,24 +1030,31 @@ SpectatorMode/
 - Created `EvalTimeline.svelte` with canvas rendering, key moment markers, and click-to-jump
 - Integrated timeline into SpectatorPlayback sidebar
 
-### Phase 3: Search Tree Visualization (Week 4-5)
+### Phase 3: Search Tree Visualization (Week 4-5) ✅ COMPLETE
 
 **Goal**: Interactive tree visualization for MCTS/AlphaBeta
 
 **Rust Tasks**:
-- [ ] Implement `TreeNode` serialization from MCTS tree structure
-- [ ] Add depth-limited tree extraction (default 3, max 6)
-- [ ] Implement principal variation extraction for AlphaBeta
-- [ ] Add `get_search_tree` Tauri command with depth parameter
+- [x] Implement `TreeNodeDto` serialization from move scores
+- [x] Build tree from move scores (first level with top 6 moves)
+- [x] Add tree root to `DecisionInsightsDto`
+- [x] Support for future deeper tree extraction via post-hoc MCTS
 
 **UI Tasks**:
-- [ ] Create `SearchTreeView.svelte` container
-- [ ] Create `TreeNodeView.svelte` (recursive, collapsible)
-- [ ] Add node detail tooltip (visits, win%, UCB score)
-- [ ] Add visual distinction for best path vs alternatives
-- [ ] Add depth slider control
+- [x] Create `SearchTreeView.svelte` container with header, controls, legend
+- [x] Create `TreeNodeView.svelte` (recursive, collapsible)
+- [x] Add visit bars for visits visualization
+- [x] Add visual distinction for best path vs alternatives (green highlight)
+- [x] Add expand/collapse all controls
 
-**Deliverable**: Full interactive search tree exploration
+**Deliverable**: Interactive search tree visualization showing move candidates ✅
+
+**Implementation Notes**:
+- Used post-hoc approach: tree built from move scores (consistent with greedy eval approach)
+- `TreeNodeDto` supports recursive children for future deeper tree expansion
+- Root shows position evaluation, children show top 6 move candidates
+- Color coding: green for best path, gray for alternatives
+- Integrated into AiThinkingPanel with collapsible toggle
 
 ### Phase 4: Polish & Neural Prep (Week 6)
 

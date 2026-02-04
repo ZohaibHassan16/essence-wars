@@ -1,9 +1,11 @@
 <script lang="ts">
   import { spectatorStore } from "$lib/stores/spectatorState.svelte";
   import type { MoveScoreDto } from "$lib/api/types";
+  import SearchTreeView from "./spectator/SearchTreeView.svelte";
 
   let isExpanded = $state(true);
   let showEvalBreakdown = $state(false);
+  let showSearchTree = $state(false);
 
   // Get current action's data
   const insights = $derived(spectatorStore.currentInsights);
@@ -190,6 +192,30 @@
                   </div>
                 {/each}
               </div>
+            {/if}
+          {/if}
+
+          <!-- Search Tree toggle -->
+          {#if insights.treeRoot}
+            <button
+              class="w-full text-xs px-2 py-1 rounded transition-colors
+                     {showSearchTree
+                       ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                       : 'bg-ui-bg/50 text-ui-text-dim hover:bg-ui-bg/70'}"
+              onclick={() => showSearchTree = !showSearchTree}
+            >
+              {showSearchTree ? '▼' : '▶'} Search Tree
+              <span class="ml-1 text-ui-text-dim">
+                {insights.treeRoot.children.length} moves
+              </span>
+            </button>
+
+            {#if showSearchTree}
+              <SearchTreeView
+                treeRoot={insights.treeRoot}
+                algorithm={insights.searchStats.algorithm}
+                totalSimulations={insights.searchStats.simulations ?? undefined}
+              />
             {/if}
           {/if}
         </div>
