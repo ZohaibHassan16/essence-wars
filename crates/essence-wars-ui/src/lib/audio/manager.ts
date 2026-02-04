@@ -36,7 +36,7 @@ export type Faction = 'argentum' | 'symbiote' | 'obsidion' | 'neutral';
 // Sound file paths - arrays allow random selection for variation
 const SOUND_FILES: Record<SoundEffect, string[]> = {
   // UI Sounds
-  buttonHover: ['/sounds/interface/tick_001.ogg', '/sounds/interface/tick_002.ogg'],
+  buttonHover: ['/sounds/interface/tick_001.ogg'],
   buttonClick: [
     '/sounds/interface/click_001.ogg',
     '/sounds/interface/click_002.ogg',
@@ -95,8 +95,8 @@ const SOUND_FILES: Record<SoundEffect, string[]> = {
   turnStartPlayer: ['/sounds/interface/confirmation_003.ogg'],
   turnStartOpponent: ['/sounds/interface/select_001.ogg'],
   // Victory/defeat use the music stings
-  victory: ['/music/victory.wav'],
-  defeat: ['/music/defeat.mp3'],
+  victory: ['/music/victory.ogg'],
+  defeat: ['/music/defeat.ogg'],
 };
 
 // Faction-specific attack sounds
@@ -202,9 +202,8 @@ function randomChoice<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// Play a sound file with volume control
-function playSoundFile(path: string): void {
-  const volume = audioSettings.effectiveVolume;
+// Play a sound file with explicit volume
+function playSoundFileWithVolume(path: string, volume: number): void {
   if (volume <= 0) return;
 
   // Try to use cached audio, or create new
@@ -222,9 +221,29 @@ function playSoundFile(path: string): void {
   }
 }
 
+// Play a UI sound file (full volume)
+function playSoundFile(path: string): void {
+  playSoundFileWithVolume(path, audioSettings.effectiveVolume);
+}
+
+// Play a battle sound file (reduced volume)
+function playBattleSoundFile(path: string): void {
+  playSoundFileWithVolume(path, audioSettings.effectiveBattleVolume);
+}
+
+// Battle sound effects (use reduced battle volume)
+const BATTLE_SOUND_EFFECTS: Set<SoundEffect> = new Set([
+  'attackLight',
+  'attackMedium',
+  'attackHeavy',
+  'damage',
+  'creatureDeath',
+]);
+
 // Play a sound effect (random selection from available files)
 export function playSound(effect: SoundEffect): void {
-  const volume = audioSettings.effectiveVolume;
+  const isBattle = BATTLE_SOUND_EFFECTS.has(effect);
+  const volume = isBattle ? audioSettings.effectiveBattleVolume : audioSettings.effectiveVolume;
   if (volume <= 0) return;
 
   const files = SOUND_FILES[effect];
@@ -234,10 +253,14 @@ export function playSound(effect: SoundEffect): void {
   }
 
   const path = randomChoice(files);
-  playSoundFile(path);
+  if (isBattle) {
+    playBattleSoundFile(path);
+  } else {
+    playSoundFile(path);
+  }
 }
 
-// Play attack sound based on damage amount (generic)
+// Play attack sound based on damage amount (generic, uses battle volume)
 export function playAttackSound(damage: number): void {
   if (damage >= 5) {
     playSound('attackHeavy');
@@ -248,35 +271,35 @@ export function playAttackSound(damage: number): void {
   }
 }
 
-// Play faction-specific attack sound
+// Play faction-specific attack sound (uses battle volume)
 export function playFactionAttackSound(damage: number, faction: Faction): void {
-  const volume = audioSettings.effectiveVolume;
+  const volume = audioSettings.effectiveBattleVolume;
   if (volume <= 0) return;
 
   const intensity = damage >= 5 ? 'heavy' : damage >= 3 ? 'medium' : 'light';
   const files = FACTION_ATTACK_SOUNDS[faction][intensity];
   const path = randomChoice(files);
-  playSoundFile(path);
+  playBattleSoundFile(path);
 }
 
-// Play faction-specific summon sound
+// Play faction-specific summon sound (uses battle volume)
 export function playFactionSummonSound(faction: Faction): void {
-  const volume = audioSettings.effectiveVolume;
+  const volume = audioSettings.effectiveBattleVolume;
   if (volume <= 0) return;
 
   const files = FACTION_SUMMON_SOUNDS[faction];
   const path = randomChoice(files);
-  playSoundFile(path);
+  playBattleSoundFile(path);
 }
 
-// Play faction-specific death sound
+// Play faction-specific death sound (uses battle volume)
 export function playFactionDeathSound(faction: Faction): void {
-  const volume = audioSettings.effectiveVolume;
+  const volume = audioSettings.effectiveBattleVolume;
   if (volume <= 0) return;
 
   const files = FACTION_DEATH_SOUNDS[faction];
   const path = randomChoice(files);
-  playSoundFile(path);
+  playBattleSoundFile(path);
 }
 
 // Play card play sound based on card type (with optional faction for creatures)

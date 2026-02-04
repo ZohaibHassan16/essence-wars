@@ -39,7 +39,6 @@ Search and review all Asset related Scripts, Data, Prompts, Artwork, Documention
 ## (H) Tutorials
 
 - Update Human vs AI Tutorial
-- Create Spectator Mode Tutorial
 - Use the Replay System to be sure each step is 100% the same each time
 
 ## (I) Expansion Planning
@@ -76,11 +75,15 @@ Review Win Conditions implementation and Discussion in Code Base and `win-discus
 **Thresholds:** 50 essence extracted to win (unchanged from VictoryPoints).
 
 
-## (N) Deck Library Visualization
+## (M) Deck Library Visualization
 
 Add Player 1 and Player 2 Libraries to Spectator Mode. THe Spectator should be able to scroll through all available cards in the library at any time.
 
 For Human vs AI Mode, let's discuss if we should keep it hidden as it is currently, or make it the same (More of a Game Design Discussion).
+
+## (N) Web-playable demo - WASM build where people can try it instantly
+
+Playing the Game online should be easy and quick, not require an .exe or Linux Binary / .deb download. Discuss hosting Options (huggingface or github pages, or other solutions?) and Infrastructure Concerns/Specs.
 
 ## (Z) Create new Documentation Suite
 

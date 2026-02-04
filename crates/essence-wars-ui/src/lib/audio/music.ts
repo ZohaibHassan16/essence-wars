@@ -16,6 +16,7 @@ const MUSIC_TRACKS: Record<MusicTrack, string[]> = {
     '/music/battle_1.ogg',  // Battle Theme A
     '/music/battle_2.ogg',  // Boss Battle
     '/music/battle_3.ogg',  // Determined Pursuit
+    '/music/battle_4.ogg',  // Battle Theme B
   ],
   spectator: [
     '/music/spectator_1.ogg',  // The Bard's Tale

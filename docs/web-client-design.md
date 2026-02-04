@@ -708,7 +708,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 
 ## 8. Development Phases
 
-### Phase 1: Foundation
+### ✅ Phase 1: Foundation
 - [x] Initialize Tauri 2.0 project in `crates/essence-wars-ui/`
 - [x] Set up Svelte + Vite + Tailwind
 - [x] Integrate `cardgame` crate as dependency
@@ -716,7 +716,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] Create minimal board layout (slots, placeholders)
 - [x] Test game creation and state retrieval
 
-### Phase 2: Core Gameplay
+### ✅ Phase 2: Core Gameplay
 - [x] Implement full IPC command set
 - [x] Card component with basic styling
 - [x] Hand display with card selection
@@ -726,13 +726,13 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] End turn flow
 - [x] Basic turn indicator and life display
 
-### Phase 3: AI Integration
+### ✅ Phase 3: AI Integration
 - [x] AI move execution
 - [x] AI hint system with reasoning
 - [x] Turn flow (human → AI → human)
 - [x] Game over detection and display
 
-### Phase 4: Visual Polish
+### ✅ Phase 4: Visual Polish
 - [x] GSAP animation integration
 - [x] Card play animations
 - [x] Combat animations (attack lunge, damage shake)
@@ -741,26 +741,26 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] Spawn animations
 - [x] Turn transition overlay
 
-### Phase 5: AI vs AI Mode
+### ✅ Phase 5: AI vs AI Mode
 - [x] Spectator match setup screen
 - [x] Speed slider implementation
 - [x] Step-through controls
 - [x] AI thinking visualization panel
 - [x] Pause/resume functionality
 
-### Phase 6: Replay System 
+### ✅ Phase 6: Replay System 
 - [x] Action recording during gameplay
 - [x] Save replay to file
 - [x] Replay browser/list
 - [x] Replay playback with controls
 - [x] State reconstruction from actions
 
-### Phase 6.5: Claude Code MCP Server
+### ✅ Phase 6.5: Claude Code MCP Server
 - [x] Design and Architect MCP Server enabling Claude Code to play the Game
 - [x] Implement and Test
 - [x] Debug and Playtest thoroughly
 
-### Phase 7: Asset Integration
+### ✅ Phase 7: Asset Integration
 - [x] Fix card art path generation in backend
 - [x] Wire card art display in CardPreview component
 - [x] Add card art backgrounds to HandCard component
@@ -770,7 +770,7 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 - [x] Add board background support (after backgrounds created)
 - [x] Add keyword icon rendering (after icons created)
 
-### Phase 8: Audio Implementation (Procedural SFX)
+### ✅ Phase 8: Audio Implementation (Procedural SFX)
 - [x] jsfxr integration for procedural sound generation
 - [x] UI sounds (button hover/click, card hover, menu open/close)
 - [x] Card sounds (draw, play creature/spell/support, select)
@@ -782,8 +782,11 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 
 ### Phase 9: Art Pass
 
-**Artwork**:
-- Generate artwork for the missing cards:
+- [ ] **Task 9.1: Token Images**
+
+Audit all token images `crates/essence-wars-ui/static/tokens/`, following our art direction outlined in `docs/art-direction.md`, and create a prompt file for using flux dev. See other prompt files for reference in `data/art/prompts/core_set`. Create a generate token python script in `scripts/`, see `scripts/generate-card-art.py` for reference.
+
+- [ ] **Task 9.2: Generate artwork for the missing cards**
 
 | Faction  │       Card        │
 |---       |---                |
@@ -796,44 +799,44 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
 │ Neutral  │ Traveling Scholar │
 │ Neutral  │ Essence Collector │
 
-- Generate better backgrounds that fit the art direction of the game, replace existing ones (Collages of Commanders, Scenes, Key Locations? Worldmap?)
-- Discuss and overhaul all Menus and Boards to be polished and fitting our art direction
-- Create more Banners, Flags, Symbols, Frames etc to give it all more flair and style
-- Audit all token images `crates/essence-wars-ui/static/tokens/`, following our art direction outlined in `docs/art-direction.md`, and create a prompt file for using flux dev. See other prompt files for reference in `data/art/prompts/core_set`. Create a generate token python script in `scripts/`, see `scripts/generate-card-art.py` for reference.
+- [ ] **Task 9.3**: Generate new backgrounds that fit the art direction of the game, replace existing ones (Collages of Commanders, Scenes, Key Locations? Worldmap?)
 
-**Audio**:
-- Audit SFX Library, current creature sounds are placeholders. Web Search for a consistent art asset pack that fits our theme and replace the existing ones.
-- Use new downloaded background music, review existing bgm (which to keep, which to replace or remove)
+- [ ] **Task 9.4** Audit and discuss all Menus and Boards, they should be fitting our art direction
+s
+- [ ] **Task 9.5** Create more Banners, Flags, Symbols, Frames etc to give it all more flair and style (Open for Discussion if needed)
+
+- [ ] **Task 9.6** Create Tauri Icons to replace current generic Tauri Icons with Essence Wars Specific Icons.
+
 
 ### Phase 10: Release Prep & Distribution
 
-#### 10.1 Repository Size Analysis
-- **Total Git repo**: ~227 MB
-- **Static assets**: ~130 MB (59 MB cards, 58 MB music, 6 MB sounds, 4 MB backgrounds, 2.2 MB portraits, 1.8 MB tokens)
-- **Source code**: <10 MB
-- **Status**: Size is acceptable for GitHub Releases (2 GB limit per file)
+- [ ] **Task 10.1 Review and Update Repository Size Analysis**
+  - **Total Git repo**: ~227 MB
+  - **Static assets**: ~130 MB (59 MB cards, 58 MB music, 6 MB sounds, 4 MB backgrounds, 2.2 MB portraits, 1.8 MB tokens)
+  - **Source code**: <10 MB
+  - **Status**: Size is acceptable for GitHub Releases (2 GB limit per file)
 
-#### 10.2 Distribution Strategy (Open Source Project)
+- [ ] **Task 10.2 Distribution Strategy (Open Source Project)**
 
-**Current Approach (✅ Recommended)**
-- Use **GitHub Releases** for binary distribution
-- 130 MB static assets are fine bundled in the executable
-- Free, version-controlled, no external dependencies
-- Simple workflow: `git clone` → `build-windows.sh` → release
+* **Current Approach (✅ Recommended)**
+  - Use **GitHub Releases** for binary distribution
+  - 130 MB static assets are fine bundled in the executable
+  - Free, version-controlled, no external dependencies
+  - Simple workflow: `git clone` → `build-windows.sh` → release
 
-**Future Option (If needed)**
-- **itch.io**: Free hosting up to 1 GB, great for open source games
-- Good for community visibility and easier download experience
-- Optional revenue/donation support built-in
+* **Future Option (If needed)**
+  - **itch.io**: Free hosting up to 1 GB, great for open source games
+  - Good for community visibility and easier download experience
+  - Optional revenue/donation support built-in
 
-#### 10.3 Contributor DX Concerns
+- [ ] **Task 10.3 Discuss Contributor DX Concerns**
 
-**Problem**: Monorepo with heavy assets (~130 MB) impacts contributors who only want to work on:
-- Rust engine (`crates/cardgame/`)
-- Python AI/research (`python/`, `research/`)
-- Not the UI/assets
+* **Problem**: Monorepo with heavy assets (~130 MB) impacts contributors who only want to work on:
+  - Rust engine (`crates/cardgame/`)
+  - Python AI/research (`python/`, `research/`)
+  - Not the UI/assets
 
-**Solutions to Consider**:
+* **Solutions to Consider**:
 
 1. **Git LFS (Lazy Download)**
    ```bash
@@ -867,42 +870,40 @@ Example: `2026-01-21_1530_broodmother_vs_sovereign.replay.json`
    - ❌ More complex workflow (submodules)
    - ❌ Overkill for current 130 MB size
 
-**Recommendation for Now**: 
-- **Keep assets in main repo** (130 MB is reasonable)
-- Add `.github/CONTRIBUTING.md` noting asset size
-- Consider **Git LFS** only if assets grow >500 MB
-- Focus on CI automation for releases instead
+* **Recommendation for Now**: 
+  - **Keep assets in main repo** (130 MB is reasonable)
+  - Add `.github/CONTRIBUTING.md` noting asset size
+  - Consider **Git LFS** only if assets grow >500 MB
+  - Focus on CI automation for releases instead
 
-#### 10.4 Build & Release Workflow
-
-**Tasks:**
-- [ ] Fix Linux build configuration in `tauri.conf.json`
-- [ ] Set up GitHub Actions for automated cross-platform builds
+- [ ] **Task 10. 10.4 Build & Release Workflow**
+  - [ ] Review Linux build configuration in `tauri.conf.json`
+  - [ ] Set up GitHub Actions for automated cross-platform builds
   - [ ] Windows .exe (already working via `build-windows.sh`)
   - [ ] Linux AppImage or .deb
   - [ ] Auto-upload to GitHub Releases on tag
-- [ ] Create release checklist (versioning, changelog, testing)
-- [ ] Document build process for contributors
-- [ ] Optional: Set up itch.io project page for community visibility
+  - [ ] Create release checklist (versioning, changelog, testing)
+  - [ ] Document build process for contributors
+  - [ ] Optional: Set up itch.io project page for community visibility
 
-**Containerization**: 
-- ❌ Not necessary for desktop game distribution
-- Use native OS installers (Windows NSIS, Linux AppImage/deb)
+* **Containerization**: 
+  - ❌ Not necessary for desktop game distribution
+  - Use native OS installers (Windows NSIS, Linux AppImage/deb)
 
-**No Commercial CDN Needed**: 
-- GitHub Releases handles bandwidth for open source
-- No need for external storage (Google Drive, Cloudflare R2, etc.)
+* **No Commercial CDN Needed**: 
+  - GitHub Releases handles bandwidth for open source
+  - No need for external storage (Google Drive, Cloudflare R2, etc.)
 
-#### 10.5 Build Variants
+- [ ] **Task 10.5 Discuss Build Variants**
 
-**Single Build Strategy (Recommended)**:
-- All-in-one executable with embedded assets (current approach)
-- Simpler maintenance, one binary per platform
-- 130 MB download is acceptable for modern internet
+* **Single Build Strategy (Recommended)**:
+  - All-in-one executable with embedded assets (current approach)
+  - Simpler maintenance, one binary per platform
+  - 130 MB download is acceptable for modern internet
 
-**Alternative (If assets grow significantly)**:
-- Slim installer (~10 MB) + asset downloader
-- Only worthwhile if static/ exceeds 500+ MB
+* **Alternative (If assets grow significantly)**:
+  - Slim installer (~10 MB) + asset downloader
+  - Only worthwhile if static/ exceeds 500+ MB
 
 ---
 

@@ -5,13 +5,14 @@ const STORAGE_KEY = 'essence-wars-audio-settings';
 interface AudioSettingsData {
   masterVolume: number;
   sfxVolume: number;
+  battleSfxVolume: number; // Separate volume for combat sounds (attacks, damage, death)
   musicVolume: number;
   muted: boolean;
 }
 
 function loadSettings(): AudioSettingsData {
   if (typeof localStorage === 'undefined') {
-    return { masterVolume: 0.7, sfxVolume: 0.8, musicVolume: 0.6, muted: false };
+    return { masterVolume: 0.7, sfxVolume: 0.8, battleSfxVolume: 0.5, musicVolume: 0.6, muted: false };
   }
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -20,6 +21,7 @@ function loadSettings(): AudioSettingsData {
       return {
         masterVolume: typeof parsed.masterVolume === 'number' ? parsed.masterVolume : 0.7,
         sfxVolume: typeof parsed.sfxVolume === 'number' ? parsed.sfxVolume : 0.8,
+        battleSfxVolume: typeof parsed.battleSfxVolume === 'number' ? parsed.battleSfxVolume : 0.5,
         musicVolume: typeof parsed.musicVolume === 'number' ? parsed.musicVolume : 0.6,
         muted: typeof parsed.muted === 'boolean' ? parsed.muted : false,
       };
@@ -27,7 +29,7 @@ function loadSettings(): AudioSettingsData {
   } catch (e) {
     console.warn('Failed to load audio settings:', e);
   }
-  return { masterVolume: 0.7, sfxVolume: 0.8, musicVolume: 0.6, muted: false };
+  return { masterVolume: 0.7, sfxVolume: 0.8, battleSfxVolume: 0.5, musicVolume: 0.6, muted: false };
 }
 
 function saveSettings(settings: AudioSettingsData) {
@@ -42,6 +44,7 @@ function saveSettings(settings: AudioSettingsData) {
 class AudioSettingsStore {
   private _masterVolume = $state(0.7);
   private _sfxVolume = $state(0.8);
+  private _battleSfxVolume = $state(0.5); // Lower default for battle sounds
   private _musicVolume = $state(0.6);
   private _muted = $state(false);
 
@@ -51,6 +54,7 @@ class AudioSettingsStore {
       const settings = loadSettings();
       this._masterVolume = settings.masterVolume;
       this._sfxVolume = settings.sfxVolume;
+      this._battleSfxVolume = settings.battleSfxVolume;
       this._musicVolume = settings.musicVolume;
       this._muted = settings.muted;
     }
@@ -74,6 +78,15 @@ class AudioSettingsStore {
     this.persist();
   }
 
+  get battleSfxVolume() {
+    return this._battleSfxVolume;
+  }
+
+  set battleSfxVolume(value: number) {
+    this._battleSfxVolume = Math.max(0, Math.min(1, value));
+    this.persist();
+  }
+
   get musicVolume() {
     return this._musicVolume;
   }
@@ -92,10 +105,16 @@ class AudioSettingsStore {
     this.persist();
   }
 
-  // Computed effective volume for SFX (combines master, sfx, and mute)
+  // Computed effective volume for UI SFX (combines master, sfx, and mute)
   get effectiveVolume() {
     if (this._muted) return 0;
     return this._masterVolume * this._sfxVolume;
+  }
+
+  // Computed effective volume for Battle SFX (combines master, battle, and mute)
+  get effectiveBattleVolume() {
+    if (this._muted) return 0;
+    return this._masterVolume * this._battleSfxVolume;
   }
 
   // Computed effective volume for Music (combines master, music, and mute)
@@ -113,6 +132,7 @@ class AudioSettingsStore {
     saveSettings({
       masterVolume: this._masterVolume,
       sfxVolume: this._sfxVolume,
+      battleSfxVolume: this._battleSfxVolume,
       musicVolume: this._musicVolume,
       muted: this._muted,
     });
