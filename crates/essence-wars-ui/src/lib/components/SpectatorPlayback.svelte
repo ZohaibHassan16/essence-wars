@@ -6,13 +6,35 @@
   import CommanderCardLarge from "./board/CommanderCardLarge.svelte";
   import EssenceBar from "./board/EssenceBar.svelte";
   import CollapsibleSidebar from "./board/CollapsibleSidebar.svelte";
-  import ActionLog from "./ActionLog.svelte";
   import AiThinkingPanel from "./AiThinkingPanel.svelte";
   import SpectatorControls from "./SpectatorControls.svelte";
-  import CommentaryPanel from "./CommentaryPanel.svelte";
   import CommentaryOverlay from "./CommentaryOverlay.svelte";
-  import EvalTimeline from "./spectator/EvalTimeline.svelte";
+  import BottomTimelinePanel from "./spectator/BottomTimelinePanel.svelte";
+  import AnalysisDashboard from "./spectator/AnalysisDashboard.svelte";
+  import ActionLogModal from "./ActionLogModal.svelte";
   import { playMusic } from "$lib/audio";
+
+  // View mode
+  const viewMode = $derived(spectatorStore.viewMode);
+
+  // Keyboard shortcuts
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      return;
+    }
+    switch (event.key.toLowerCase()) {
+      case "a":
+        spectatorStore.toggleViewMode();
+        break;
+      case "l":
+        if (spectatorStore.showActionLog) {
+          spectatorStore.closeActionLog();
+        } else {
+          spectatorStore.openActionLog();
+        }
+        break;
+    }
+  }
 
   // Play spectator music when component mounts
   $effect(() => {
@@ -45,18 +67,6 @@
     }
   }
 
-  // Convert spectator actions to ActionInfo format for the log
-  const actionsForLog = $derived(
-    spectatorStore.match?.actions.slice(0, spectatorStore.currentActionIndex + 1).map(a => ({
-      index: a.action.index,
-      actionType: a.action.actionType,
-      description: `[P${a.player}] ${a.action.description}`,
-      sourceSlot: a.action.sourceSlot,
-      targetSlot: a.action.targetSlot,
-      handIndex: a.action.handIndex,
-      cardId: a.action.cardId,
-    })) ?? []
-  );
 
   // Derive player 1 faction from first available card
   const player1Faction = $derived(() => {
@@ -81,7 +91,15 @@
   const boardBgClass = $derived(`board-bg-${player1Faction()}`);
 </script>
 
-<div class="w-full h-full flex {boardBgClass}">
+<svelte:window onkeydown={handleKeydown} />
+
+{#if viewMode === "analysis"}
+  <!-- ANALYSIS MODE: Full-width analysis dashboard -->
+  <AnalysisDashboard />
+{:else}
+  <!-- WATCH MODE: Game board with bottom timeline -->
+  <div class="w-full h-full flex flex-col">
+    <div class="flex-1 flex min-h-0 {boardBgClass}">
   <!-- LEFT COLUMN: Commander Cards -->
   <div class="flex flex-col justify-between p-2 bg-ui-panel/30 border-r border-gray-700/50 overflow-visible"
        style="width: var(--commander-card-width, 250px);">
@@ -301,6 +319,15 @@
             {/if}
           </button>
         </div>
+
+        <!-- Quit to Menu button -->
+        <button
+          class="px-4 py-2 bg-damage/20 text-damage rounded-lg font-semibold
+                 border border-damage/50 hover:bg-damage hover:text-white transition-all"
+          onclick={() => spectatorStore.backToMenu()}
+        >
+          Quit to Menu
+        </button>
       {:else}
         <!-- Empty state when game not finished -->
         <div class="text-ui-text-dim text-sm">
@@ -309,54 +336,42 @@
       {/if}
     </div>
 
+    </div>
+
+    <!-- RIGHT COLUMN: Simplified Sidebar (Watch Mode) -->
+    <CollapsibleSidebar>
+      <!-- AI Thinking Panel -->
+      <div class="p-2 border-b border-gray-700">
+        <AiThinkingPanel />
+      </div>
+
+      <!-- Action Log Button -->
+      <div class="p-2">
+        <button
+          class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors
+                 bg-gray-700/50 text-ui-text-dim hover:bg-gray-700 hover:text-ui-text border border-gray-600"
+          onclick={() => spectatorStore.openActionLog()}
+        >
+          <span>📋</span>
+          <span>Action Log</span>
+          <span class="text-xs text-ui-text-dim/60">[L]</span>
+        </button>
+      </div>
+    </CollapsibleSidebar>
+    </div>
+
+    <!-- Bottom Timeline Panel (full width) -->
+    <BottomTimelinePanel />
+
     <!-- Playback controls -->
-    <div class="border-t border-gray-700">
+    <div class="border-t border-gray-700 flex-shrink-0">
       <SpectatorControls />
     </div>
   </div>
-
-  <!-- RIGHT COLUMN: Sidebar -->
-  <CollapsibleSidebar>
-    <!-- AI Thinking Panel -->
-    <div class="p-2 border-b border-gray-700">
-      <AiThinkingPanel />
-    </div>
-
-    <!-- Evaluation Timeline (only show when timeline can be shown) -->
-    {#if spectatorStore.canShowTimeline && (match?.evalHistory?.length ?? 0) > 0}
-      <div class="p-2 border-b border-gray-700">
-        <div class="text-xs text-ui-text-dim mb-1 flex items-center gap-1">
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-          </svg>
-          Evaluation Timeline
-        </div>
-        <EvalTimeline height={80} />
-      </div>
-    {/if}
-
-    <!-- Commentary Panel -->
-    <div class="p-2 border-b border-gray-700">
-      <!-- Toggle button -->
-      <button
-        class="w-full text-xs px-2 py-1 mb-2 rounded transition-colors
-               {spectatorStore.commentaryEnabled
-                 ? 'bg-ui-action/20 text-ui-action border border-ui-action/50'
-                 : 'bg-gray-700 text-ui-text-dim border border-gray-600 hover:border-gray-500'}"
-        onclick={() => spectatorStore.setCommentaryEnabled(!spectatorStore.commentaryEnabled)}
-        title="Toggle AI Commentary"
-      >
-        📊 Commentary {spectatorStore.commentaryEnabled ? 'ON' : 'OFF'}
-      </button>
-      <CommentaryPanel />
-    </div>
-
-    <!-- Action Log -->
-    <div class="flex-1 p-2 overflow-hidden">
-      <ActionLog actions={actionsForLog} maxItems={10} />
-    </div>
-  </CollapsibleSidebar>
-</div>
+{/if}
 
 <!-- Commentary overlay for key moments -->
 <CommentaryOverlay />
+
+<!-- Action Log Modal -->
+<ActionLogModal />

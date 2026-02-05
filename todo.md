@@ -16,7 +16,7 @@ Update `lore.md` with the new direction for Argentum, Symbiote and the Free Walk
 
 Review all other existing Documentation and look for out of date statements/Info.
 
-## (C) Update and Enhance Diagnosis and Analysis Capabilities of Spectator Mode
+## ✅ (C) Update and Enhance Diagnosis and Analysis Capabilities of Spectator Mode [DONE]
 
 Review existing Analysis (Chris will have to supply Screenshots).
 

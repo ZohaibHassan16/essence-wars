@@ -3,6 +3,7 @@
   import type { MatchStatistics } from "$lib/stats/types";
   import { downloadJson, downloadCsv } from "$lib/stats/export";
   import { comparisonStore } from "$lib/stores/comparisonState.svelte";
+  import { spectatorStore } from "$lib/stores/spectatorState.svelte";
   import StatsOverviewPanel from "./panels/StatsOverviewPanel.svelte";
   import StatsActionPanel from "./panels/StatsActionPanel.svelte";
   import StatsCombatPanel from "./panels/StatsCombatPanel.svelte";
@@ -18,6 +19,22 @@
   }
 
   let { match, statistics, onClose }: Props = $props();
+
+  // Navigation functions
+  function goToAnalysis() {
+    spectatorStore.setViewMode("analysis");
+    onClose();
+  }
+
+  function goToReplay() {
+    spectatorStore.setViewMode("watch");
+    onClose();
+  }
+
+  function quitToMenu() {
+    spectatorStore.backToMenu();
+    onClose();
+  }
 
   // Tab state
   type TabId = "overview" | "action" | "combat" | "resources" | "keywords" | "ai" | "timeline";
@@ -223,6 +240,51 @@
         {:else if activeTab === "timeline"}
           <StatsTimelineTabs {statistics} />
         {/if}
+      </div>
+    </div>
+
+    <!-- Footer with navigation -->
+    <div class="flex items-center justify-between px-6 py-4 border-t border-gray-700 bg-gray-900/50">
+      <div class="text-sm text-ui-text-dim">
+        Navigate to continue exploring the match
+      </div>
+      <div class="flex items-center gap-3">
+        <!-- Replay button -->
+        <button
+          class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors
+                 bg-gray-700 text-ui-text hover:bg-gray-600"
+          onclick={goToReplay}
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Watch Replay
+        </button>
+
+        <!-- Analysis button -->
+        <button
+          class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors
+                 bg-ui-action/20 text-ui-action hover:bg-ui-action hover:text-white border border-ui-action/50"
+          onclick={goToAnalysis}
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          Analysis Mode
+        </button>
+
+        <!-- Quit button -->
+        <button
+          class="flex items-center gap-2 px-4 py-2 text-sm rounded-lg transition-colors
+                 bg-damage/20 text-damage hover:bg-damage hover:text-white border border-damage/50"
+          onclick={quitToMenu}
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Quit to Menu
+        </button>
       </div>
     </div>
   </div>

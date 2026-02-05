@@ -58,6 +58,9 @@ class SpectatorStore {
   // "Watch Live" mode - hides timeline and result until end
   watchLive = $state<boolean>(false);
 
+  // View mode: "watch" (game board visible) or "analysis" (full analysis dashboard)
+  viewMode = $state<"watch" | "analysis">("watch");
+
   // Commentary state
   commentaryEnabled = $state<boolean>(false);
   showCommentaryOverlay = $state<boolean>(false);
@@ -72,6 +75,9 @@ class SpectatorStore {
   matchStatistics = $state<MatchStatistics | null>(null);
   showStatsSummary = $state<boolean>(false);
   private statsAutoPopupTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // Action log modal
+  showActionLog = $state<boolean>(false);
 
   // ============================================================================
   // Computed Properties
@@ -343,6 +349,16 @@ class SpectatorStore {
     this.watchLive = enabled;
   }
 
+  /** Set view mode (watch or analysis) */
+  setViewMode(mode: "watch" | "analysis") {
+    this.viewMode = mode;
+  }
+
+  /** Toggle between watch and analysis modes */
+  toggleViewMode() {
+    this.viewMode = this.viewMode === "watch" ? "analysis" : "watch";
+  }
+
   /** Toggle SFX mute */
   toggleSfxMute() {
     this.sfxMuted = !this.sfxMuted;
@@ -454,14 +470,10 @@ class SpectatorStore {
     // Compute statistics
     this.computeStatistics();
 
-    // Start auto-popup timer (5 seconds)
-    this.clearStatsAutoPopupTimer();
-    this.statsAutoPopupTimer = setTimeout(() => {
-      // Only auto-show if we're still in the finished state
-      if (this.phase === "finished" && this.matchStatistics) {
-        this.showStatsSummary = true;
-      }
-    }, 5000);
+    // Show stats popup immediately when game finishes
+    if (this.matchStatistics) {
+      this.showStatsSummary = true;
+    }
   }
 
   /** Open the statistics summary modal */
@@ -476,6 +488,16 @@ class SpectatorStore {
   closeStatsSummary() {
     this.clearStatsAutoPopupTimer();
     this.showStatsSummary = false;
+  }
+
+  /** Open the action log modal */
+  openActionLog() {
+    this.showActionLog = true;
+  }
+
+  /** Close the action log modal */
+  closeActionLog() {
+    this.showActionLog = false;
   }
 
   /** Clear the auto-popup timer */

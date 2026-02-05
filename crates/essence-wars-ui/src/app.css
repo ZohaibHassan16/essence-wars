@@ -54,6 +54,12 @@
   /* Commander Card (large, left-side display) */
   --commander-card-width: 250px;
   --commander-portrait-height: 150px;
+
+  /* Analysis Mode Layout */
+  --timeline-height-watch: 120px;
+  --timeline-height-analysis: 200px;
+  --analysis-grid-gap: 1rem;
+  --analysis-card-min-width: 300px;
 }
 
 /* Base Styles */
