@@ -57,6 +57,10 @@ class GameStore {
   currentHint = $state<AiHintResponse | null>(null);
   isHintLoading = $state(false);
 
+  // Modal state
+  showHintModal = $state(false);
+  showActionLogModal = $state(false);
+
   // AI turn tracking (prevents race conditions)
   private isAiTurnInProgress = false;
 
@@ -585,6 +589,23 @@ class GameStore {
 
   clearHint() {
     this.currentHint = null;
+  }
+
+  // Modal controls
+  openHintModal() {
+    this.showHintModal = true;
+  }
+
+  closeHintModal() {
+    this.showHintModal = false;
+  }
+
+  openActionLogModal() {
+    this.showActionLogModal = true;
+  }
+
+  closeActionLogModal() {
+    this.showActionLogModal = false;
   }
 
   clearError() {

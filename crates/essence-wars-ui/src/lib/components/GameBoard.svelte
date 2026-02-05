@@ -6,13 +6,12 @@
   import FanningHand from "./board/FanningHand.svelte";
   import CommanderCardLarge from "./board/CommanderCardLarge.svelte";
   import EssenceBar from "./board/EssenceBar.svelte";
-  import CollapsibleSidebar from "./board/CollapsibleSidebar.svelte";
-  import ActionLog from "./ActionLog.svelte";
-  import HintPanel from "./HintPanel.svelte";
   import TurnTransition from "./TurnTransition.svelte";
   import TutorialOverlay from "./TutorialOverlay.svelte";
   import AudioControls from "./AudioControls.svelte";
   import CreatureActionMenu from "./CreatureActionMenu.svelte";
+  import HintModal from "./HintModal.svelte";
+  import GameActionLogModal from "./GameActionLogModal.svelte";
   import { playSound, playMusic } from "$lib/audio";
 
   // Play battle music when component mounts
@@ -113,19 +112,6 @@
     if (gameStore.selectedCardIndex === null) return [];
     return gameStore.highlightedSlots;
   }
-
-  // Convert LoggedAction to ActionInfo for the log
-  const actionsForLog = $derived(
-    gameStore.actionHistory.map(a => ({
-      index: a.index,
-      actionType: a.actionType,
-      description: `[P${a.player}] ${a.description}`,
-      sourceSlot: a.sourceSlot,
-      targetSlot: a.targetSlot,
-      handIndex: a.handIndex,
-      cardId: a.cardId,
-    }))
-  );
 
   // Derive player faction from first available card (hand or board)
   const playerFaction = $derived(() => {
@@ -378,12 +364,39 @@
         >
           End Turn{#if gameSettings.showKeyboardHints}<span class="ml-2 text-xs opacity-70">(Space)</span>{/if}
         </button>
+        <!-- Get Hint button -->
+        <button
+          class="px-4 py-2 bg-purple-600/80 text-white rounded-lg font-semibold
+                 hover:bg-purple-600 active:scale-95 transition-all
+                 flex items-center gap-2"
+          onclick={() => {
+            playSound('buttonClick');
+            gameStore.openHintModal();
+          }}
+          onmouseenter={() => playSound('buttonHover')}
+        >
+          <span>💡</span>
+          Get Hint
+        </button>
       {:else}
         <div class="px-5 py-2 bg-gray-700 text-ui-text-dim rounded-lg font-semibold flex items-center gap-2">
           <div class="w-4 h-4 border-2 border-ui-text-dim border-t-transparent rounded-full animate-spin"></div>
           AI Thinking...
         </div>
       {/if}
+      <!-- Action Log button -->
+      <button
+        class="px-4 py-2 bg-gray-700 text-ui-text rounded-lg hover:bg-gray-600 transition-colors
+               flex items-center gap-2"
+        onclick={() => {
+          playSound('buttonClick');
+          gameStore.openActionLogModal();
+        }}
+        onmouseenter={() => playSound('buttonHover')}
+      >
+        <span>📋</span>
+        Log
+      </button>
       <button
         class="px-4 py-2 bg-gray-700 text-ui-text rounded-lg hover:bg-gray-600 transition-colors"
         onclick={() => {
@@ -398,25 +411,6 @@
     </div>
   </div>
 
-  <!-- RIGHT COLUMN: Sidebar -->
-  <CollapsibleSidebar>
-    <!-- AI Hint Panel (only when player's turn) -->
-    {#if isPlayerTurn}
-      <div class="p-2 border-b border-gray-700">
-        <HintPanel
-          hint={gameStore.currentHint}
-          isLoading={gameStore.isHintLoading}
-          onRequestHint={() => gameStore.requestHint()}
-          onApplyHint={(action) => gameStore.applyHint(action)}
-        />
-      </div>
-    {/if}
-
-    <!-- Action Log -->
-    <div class="flex-1 p-2 overflow-hidden">
-      <ActionLog actions={actionsForLog} />
-    </div>
-  </CollapsibleSidebar>
 </div>
 
 <!-- Creature Action Menu (Attack/Ability selection) -->
@@ -432,3 +426,9 @@
 
 <!-- Tutorial overlay -->
 <TutorialOverlay />
+
+<!-- Hint Modal -->
+<HintModal />
+
+<!-- Action Log Modal -->
+<GameActionLogModal />
