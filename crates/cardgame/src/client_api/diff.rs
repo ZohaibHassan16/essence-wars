@@ -193,6 +193,35 @@ pub fn diff_states(before: &StateSnapshot, after: &StateSnapshot) -> Vec<GameEve
             });
         }
 
+        // Card draw/discard detection
+        // Note: We can detect draws by hand/deck size changes, but we can't know
+        // exactly which card was drawn without tracking at the engine level.
+        // We emit simplified events with card_id 0 for stats tracking purposes.
+        if after_player.deck_size < before_player.deck_size {
+            let cards_from_deck = before_player.deck_size - after_player.deck_size;
+            let hand_increase = after_player.hand_size.saturating_sub(before_player.hand_size);
+
+            // Cards that made it to hand
+            for _ in 0..hand_increase {
+                events.push(GameEvent::CardDrawn {
+                    player: player_id,
+                    card_id: crate::core::types::CardId(0), // Unknown from diff
+                    hand_position: after_player.hand_size,
+                    cards_remaining_in_deck: after_player.deck_size,
+                });
+            }
+
+            // Cards that were discarded (overdraw)
+            let discarded = cards_from_deck.saturating_sub(hand_increase);
+            for _ in 0..discarded {
+                events.push(GameEvent::CardDiscarded {
+                    player: player_id,
+                    card_id: crate::core::types::CardId(0), // Unknown from diff
+                    reason: crate::client_api::events::DiscardReason::Overdraw,
+                });
+            }
+        }
+
         // Creature changes
         diff_creatures(player_id, before_player, after_player, &mut events);
 

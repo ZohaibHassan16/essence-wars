@@ -600,34 +600,80 @@ function computeCardPerformanceStats(
 // =============================================================================
 
 function computeAiAnalysis(actions: SpectatorAction[]): AiAnalysisStats | undefined {
-  // Check if we have any MCTS thinking data
+  // Check if we have any decision insights data (works for ALL bot types)
+  const actionsWithInsights = actions.filter(a => a.insights !== null);
+
+  // Fallback: also check legacy MCTS thinking data
   const actionsWithThinking = actions.filter(a => a.thinking !== null);
-  if (actionsWithThinking.length === 0) {
+
+  if (actionsWithInsights.length === 0 && actionsWithThinking.length === 0) {
     return undefined;
   }
 
   let totalSimulations = 0;
   let totalThinkingTime = 0;
   let maxThinkingTime = 0;
+  let totalConfidence = 0;
+  let confidenceCount = 0;
   const winProbs: number[] = [];
   const criticalMoments: CriticalMoment[] = [];
 
   let prevWinProb = 0.5; // Start at 50/50
+  let prevEvalScore = 0;
 
   for (const action of actions) {
     totalThinkingTime += action.thinkingTimeMs;
     maxThinkingTime = Math.max(maxThinkingTime, action.thinkingTimeMs);
 
-    if (action.thinking) {
+    // Primary source: DecisionInsightsDto (works for all bots)
+    if (action.insights) {
+      // Track simulations from search stats
+      if (action.insights.searchStats.simulations) {
+        totalSimulations += action.insights.searchStats.simulations;
+      }
+
+      // Track confidence from entropy-based calculation
+      totalConfidence += action.insights.confidence;
+      confidenceCount++;
+
+      // Calculate win probability from evaluation score
+      // evalBreakdown.totalScore ranges roughly -50 to +50
+      // Use sigmoid normalization to convert to 0-1 probability
+      const evalScore = action.insights.evalBreakdown?.totalScore ?? 0;
+      const winProb = 1 / (1 + Math.exp(-evalScore / 20));
+
+      // Adjust for player perspective (score is from current player's view)
+      const p1WinProb = action.player === 1 ? winProb : 1 - winProb;
+      winProbs.push(p1WinProb);
+
+      // Check for critical moments using evaluation score swings
+      // A swing of 10 points in eval score is significant (~15% win prob change)
+      const evalSwing = evalScore - prevEvalScore;
+      const winProbSwing = p1WinProb - prevWinProb;
+
+      if (Math.abs(evalSwing) >= 10 || Math.abs(winProbSwing) >= 0.15) {
+        criticalMoments.push({
+          turn: action.turn,
+          player: action.player,
+          actionDescription: action.action.description,
+          winProbBefore: prevWinProb,
+          winProbAfter: p1WinProb,
+          swing: winProbSwing,
+        });
+      }
+
+      prevWinProb = p1WinProb;
+      prevEvalScore = evalScore;
+    }
+    // Fallback: Legacy MCTS thinking data
+    else if (action.thinking) {
       totalSimulations += action.thinking.totalSimulations;
 
-      // Track win probability from P1 perspective
       const winProb = action.player === 1
         ? action.thinking.selectedWinRate
         : 1 - action.thinking.selectedWinRate;
       winProbs.push(winProb);
 
-      // Check for critical moments (>15% swing)
       const swing = winProb - prevWinProb;
       if (Math.abs(swing) >= 0.15) {
         criticalMoments.push({
@@ -644,13 +690,19 @@ function computeAiAnalysis(actions: SpectatorAction[]): AiAnalysisStats | undefi
     }
   }
 
-  const avgSimulationsPerMove = actionsWithThinking.length > 0
-    ? totalSimulations / actionsWithThinking.length
+  const actionsWithData = actionsWithInsights.length > 0 ? actionsWithInsights : actionsWithThinking;
+  const avgSimulationsPerMove = actionsWithData.length > 0
+    ? totalSimulations / actionsWithData.length
     : 0;
 
   const avgThinkingTimeMs = actions.length > 0
     ? totalThinkingTime / actions.length
     : 0;
+
+  // Calculate average confidence from insights
+  const avgMoveConfidence = confidenceCount > 0
+    ? totalConfidence / confidenceCount
+    : 0.8; // Fallback for legacy data
 
   // Find max win prob swing
   let maxWinProbSwing = 0;
@@ -668,7 +720,7 @@ function computeAiAnalysis(actions: SpectatorAction[]): AiAnalysisStats | undefi
     startingWinProb: winProbs.length > 0 ? winProbs[0] : 0.5,
     finalWinProb: winProbs.length > 0 ? winProbs[winProbs.length - 1] : 0.5,
     maxWinProbSwing: Math.round(maxWinProbSwing * 100) / 100,
-    avgMoveConfidence: 0.8, // Placeholder - would need variance calculation
+    avgMoveConfidence: Math.round(avgMoveConfidence * 100) / 100,
   };
 }
 
@@ -729,8 +781,18 @@ function computeTimelineData(
       player1EssenceSpent.push(p1TotalEssence);
       player2EssenceSpent.push(p2TotalEssence);
 
-      // Win probability from MCTS
-      if (action.thinking) {
+      // Win probability from decision insights (works for all bots)
+      // or fallback to legacy MCTS thinking data
+      if (action.insights?.evalBreakdown) {
+        // Calculate win probability from evaluation score using sigmoid
+        const evalScore = action.insights.evalBreakdown.totalScore;
+        const winProb = 1 / (1 + Math.exp(-evalScore / 20));
+        // Adjust for player perspective
+        const p1Prob = action.player === 1 ? winProb : 1 - winProb;
+        player1WinProb.push(p1Prob);
+        player2WinProb.push(1 - p1Prob);
+      } else if (action.thinking) {
+        // Legacy MCTS data
         const p1Prob = action.player === 1
           ? action.thinking.selectedWinRate
           : 1 - action.thinking.selectedWinRate;

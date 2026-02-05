@@ -9,7 +9,8 @@ use std::sync::Arc;
 
 use crate::bots::{AnalyzableBot, Bot, BotDecision, IntrospectionConfig};
 use crate::client_api::diff::{diff_states, StateSnapshot};
-use crate::client_api::events::GameEvent;
+use crate::client_api::events::{GameEvent, KeywordType};
+use crate::core::keywords::Keywords;
 use crate::core::actions::Action;
 use crate::core::cards::CardDatabase;
 use crate::core::engine::GameEngine;
@@ -328,20 +329,212 @@ impl GameClient {
                 }
             }
             Action::Attack { attacker, defender } => {
-                // Combat events already emitted by diff
-                // We could add CombatStarted/CombatResolved here for more detail
                 let attacker_player = before.active_player;
                 let defender_player = attacker_player.opponent();
 
-                if let (Some(_attacker_c), Some(_defender_c)) = (
-                    before.player(attacker_player).get_creature(attacker),
-                    before.player(defender_player).get_creature(defender),
-                ) {
+                // Get creature snapshots before and after combat
+                let before_attacker = before.player(attacker_player).get_creature(attacker);
+                let before_defender = before.player(defender_player).get_creature(defender);
+                let after_attacker = after.player(attacker_player).get_creature(attacker);
+                let after_defender = after.player(defender_player).get_creature(defender);
+
+                if let (Some(atk_before), Some(def_before)) = (before_attacker, before_defender) {
+                    // Emit CombatStarted
                     events_to_emit.push(GameEvent::CombatStarted {
                         attacker_player,
                         attacker_slot: attacker,
                         defender_player,
                         defender_slot: defender,
+                    });
+
+                    let atk_keywords = Keywords(atk_before.keywords);
+                    let def_keywords = Keywords(def_before.keywords);
+
+                    // Calculate damage dealt (for keyword detection)
+                    let atk_damage = atk_before.attack.max(0) as u8;
+                    let def_damage = def_before.attack.max(0) as u8;
+
+                    // Check for defender death
+                    let defender_died = after_defender.is_none();
+                    // Check for attacker death
+                    let attacker_died = after_attacker.is_none();
+
+                    // Calculate actual damage taken by defender
+                    let defender_damage_taken = if defender_died {
+                        def_before.health as u8
+                    } else if let Some(def_after) = after_defender {
+                        (def_before.health - def_after.health).max(0) as u8
+                    } else {
+                        0
+                    };
+
+                    // Calculate actual damage taken by attacker
+                    let attacker_damage_taken = if attacker_died {
+                        atk_before.health as u8
+                    } else if let Some(atk_after) = after_attacker {
+                        (atk_before.health - atk_after.health).max(0) as u8
+                    } else {
+                        0
+                    };
+
+                    // ==== KEYWORD ACTIVATIONS ====
+
+                    // Shield: Defender had Shield and lost it (blocked damage)
+                    if def_keywords.has_shield() {
+                        if let Some(def_after) = after_defender {
+                            let after_keywords = Keywords(def_after.keywords);
+                            if !after_keywords.has_shield() {
+                                // Shield blocked the attack (blocked all damage)
+                                events_to_emit.push(GameEvent::KeywordActivated {
+                                    player: defender_player,
+                                    slot: defender,
+                                    keyword: KeywordType::Shield,
+                                    value: atk_damage, // Damage that was blocked
+                                    target_player: None,
+                                    target_slot: None,
+                                });
+                            }
+                        }
+                    }
+
+                    // Attacker's Shield consumed if it existed
+                    if atk_keywords.has_shield() {
+                        if let Some(atk_after) = after_attacker {
+                            let after_keywords = Keywords(atk_after.keywords);
+                            if !after_keywords.has_shield() && def_damage > 0 {
+                                events_to_emit.push(GameEvent::KeywordActivated {
+                                    player: attacker_player,
+                                    slot: attacker,
+                                    keyword: KeywordType::Shield,
+                                    value: def_damage, // Damage that was blocked
+                                    target_player: None,
+                                    target_slot: None,
+                                });
+                            }
+                        }
+                    }
+
+                    // Ranged: Attacker didn't take counter-damage
+                    if atk_keywords.has_ranged() && attacker_damage_taken == 0 && !attacker_died {
+                        events_to_emit.push(GameEvent::KeywordActivated {
+                            player: attacker_player,
+                            slot: attacker,
+                            keyword: KeywordType::Ranged,
+                            value: 0,
+                            target_player: None,
+                            target_slot: None,
+                        });
+                    }
+
+                    // Quick: Attacker struck first and killed defender before counter
+                    if atk_keywords.has_quick() && defender_died && !attacker_died && attacker_damage_taken == 0 {
+                        events_to_emit.push(GameEvent::KeywordActivated {
+                            player: attacker_player,
+                            slot: attacker,
+                            keyword: KeywordType::Quick,
+                            value: atk_damage,
+                            target_player: Some(defender_player),
+                            target_slot: Some(defender),
+                        });
+                    }
+
+                    // Lethal: Attacker killed defender (regardless of damage amount)
+                    if atk_keywords.has_lethal() && defender_died {
+                        events_to_emit.push(GameEvent::KeywordActivated {
+                            player: attacker_player,
+                            slot: attacker,
+                            keyword: KeywordType::Lethal,
+                            value: 1, // Lethal kill
+                            target_player: Some(defender_player),
+                            target_slot: Some(defender),
+                        });
+                    }
+
+                    // Lifesteal: Check if attacker's controller gained life
+                    let before_atk_player_life = before.player(attacker_player).life;
+                    let after_atk_player_life = after.player(attacker_player).life;
+                    if atk_keywords.has_lifesteal() && after_atk_player_life > before_atk_player_life {
+                        let healed = (after_atk_player_life - before_atk_player_life) as u8;
+                        events_to_emit.push(GameEvent::KeywordActivated {
+                            player: attacker_player,
+                            slot: attacker,
+                            keyword: KeywordType::Lifesteal,
+                            value: healed,
+                            target_player: Some(attacker_player),
+                            target_slot: None,
+                        });
+                    }
+
+                    // Piercing: Check if overflow damage hit defender's commander
+                    let before_def_player_life = before.player(defender_player).life;
+                    let after_def_player_life = after.player(defender_player).life;
+                    if atk_keywords.has_piercing() && defender_died && after_def_player_life < before_def_player_life {
+                        let overflow = (before_def_player_life - after_def_player_life) as u8;
+                        events_to_emit.push(GameEvent::KeywordActivated {
+                            player: attacker_player,
+                            slot: attacker,
+                            keyword: KeywordType::Piercing,
+                            value: overflow,
+                            target_player: Some(defender_player),
+                            target_slot: None,
+                        });
+                    }
+
+                    // Guard: Defender had Guard (forced the attack)
+                    if def_keywords.has_guard() {
+                        events_to_emit.push(GameEvent::KeywordActivated {
+                            player: defender_player,
+                            slot: defender,
+                            keyword: KeywordType::Guard,
+                            value: 1,
+                            target_player: None,
+                            target_slot: None,
+                        });
+                    }
+
+                    // Fortify: Defender reduced incoming damage
+                    if def_keywords.has_fortify() && defender_damage_taken > 0 {
+                        // Fortify reduces damage by 1 (min 1)
+                        events_to_emit.push(GameEvent::KeywordActivated {
+                            player: defender_player,
+                            slot: defender,
+                            keyword: KeywordType::Fortify,
+                            value: 1, // Damage reduced
+                            target_player: None,
+                            target_slot: None,
+                        });
+                    }
+
+                    // Charge: Attacker gained bonus attack
+                    if atk_keywords.has_charge() {
+                        events_to_emit.push(GameEvent::KeywordActivated {
+                            player: attacker_player,
+                            slot: attacker,
+                            keyword: KeywordType::Charge,
+                            value: 2, // Charge gives +2 attack
+                            target_player: None,
+                            target_slot: None,
+                        });
+                    }
+
+                    // Frenzy: Attacker gains +1 attack after attacking
+                    if atk_keywords.has_frenzy() {
+                        events_to_emit.push(GameEvent::KeywordActivated {
+                            player: attacker_player,
+                            slot: attacker,
+                            keyword: KeywordType::Frenzy,
+                            value: 1, // +1 attack gained
+                            target_player: None,
+                            target_slot: None,
+                        });
+                    }
+
+                    // Emit CombatResolved
+                    events_to_emit.push(GameEvent::CombatResolved {
+                        attacker_damage_dealt: defender_damage_taken,
+                        defender_damage_dealt: attacker_damage_taken,
+                        attacker_died,
+                        defender_died,
                     });
                 }
             }

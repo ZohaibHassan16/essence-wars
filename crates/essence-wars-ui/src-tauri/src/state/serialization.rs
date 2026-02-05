@@ -750,32 +750,32 @@ pub fn game_event_to_dto(event: &GameEvent) -> GameEventDto {
         ),
         GameEvent::TurnStarted { player, turn_number, .. } => (
             "turn_started",
-            serde_json::json!({ "player": player.0, "turn": turn_number }),
+            serde_json::json!({ "player": player.0 + 1, "turn": turn_number }),
         ),
         GameEvent::TurnEnded { player, turn_number } => (
             "turn_ended",
-            serde_json::json!({ "player": player.0, "turn": turn_number }),
+            serde_json::json!({ "player": player.0 + 1, "turn": turn_number }),
         ),
         GameEvent::ActionTaken { player, action, turn } => (
             "action_taken",
             serde_json::json!({
-                "player": player.0,
+                "player": player.0 + 1,
                 "action": format!("{:?}", action),
                 "turn": turn
             }),
         ),
         GameEvent::CreatureSpawned { player, slot, card_id, .. } => (
             "creature_spawned",
-            serde_json::json!({ "player": player.0, "slot": slot.0, "card_id": card_id.0 }),
+            serde_json::json!({ "player": player.0 + 1, "slot": slot.0, "card_id": card_id.0 }),
         ),
         GameEvent::CreatureDied { player, slot, card_id, .. } => (
             "creature_died",
-            serde_json::json!({ "player": player.0, "slot": slot.0, "card_id": card_id.0 }),
+            serde_json::json!({ "player": player.0 + 1, "slot": slot.0, "card_id": card_id.0 }),
         ),
         GameEvent::LifeChanged { player, old_life, new_life, source } => (
             "life_changed",
             serde_json::json!({
-                "player": player.0,
+                "player": player.0 + 1,
                 "old": old_life,
                 "new": new_life,
                 "source": format!("{:?}", source)
@@ -784,17 +784,17 @@ pub fn game_event_to_dto(event: &GameEvent) -> GameEventDto {
         GameEvent::KeywordActivated { player, slot, keyword, value, target_player, target_slot } => (
             "keyword_activated",
             serde_json::json!({
-                "player": player.0,
+                "player": player.0 + 1,
                 "slot": slot.0,
                 "keyword": format!("{:?}", keyword),
                 "value": value,
-                "target_player": target_player.map(|p| p.0),
+                "target_player": target_player.map(|p| p.0 + 1),
                 "target_slot": target_slot.map(|s| s.0)
             }),
         ),
         GameEvent::GameEnded { result, final_turn } => {
             let (winner, reason) = match result {
-                GameResult::Win { winner, reason } => (Some(winner.0), format!("{:?}", reason)),
+                GameResult::Win { winner, reason } => (Some(winner.0 + 1), format!("{:?}", reason)),
                 GameResult::Draw => (None, "draw".to_string()),
             };
             (
@@ -806,7 +806,254 @@ pub fn game_event_to_dto(event: &GameEvent) -> GameEventDto {
                 }),
             )
         }
-        _ => ("unknown", serde_json::json!({})),
+
+        // Cards in Hand
+        GameEvent::CardDrawn {
+            player,
+            card_id,
+            hand_position,
+            cards_remaining_in_deck,
+        } => (
+            "card_drawn",
+            serde_json::json!({
+                "player": player.0 + 1,
+                "cardId": card_id.0,
+                "handPosition": hand_position,
+                "deckRemaining": cards_remaining_in_deck
+            }),
+        ),
+        GameEvent::CardPlayed {
+            player,
+            card_id,
+            hand_index,
+            target_slot,
+            essence_cost,
+        } => (
+            "card_played",
+            serde_json::json!({
+                "player": player.0 + 1,
+                "cardId": card_id.0,
+                "handIndex": hand_index,
+                "targetSlot": target_slot.0,
+                "essenceCost": essence_cost
+            }),
+        ),
+        GameEvent::CardDiscarded {
+            player,
+            card_id,
+            reason,
+        } => (
+            "card_discarded",
+            serde_json::json!({
+                "player": player.0 + 1,
+                "cardId": card_id.0,
+                "reason": format!("{:?}", reason)
+            }),
+        ),
+
+        // Creatures
+        GameEvent::CreatureDamaged {
+            player,
+            slot,
+            damage,
+            new_health,
+            source,
+        } => (
+            "creature_damaged",
+            serde_json::json!({
+                "player": player.0 + 1,
+                "slot": slot.0,
+                "damage": damage,
+                "newHealth": new_health,
+                "source": format!("{:?}", source)
+            }),
+        ),
+        GameEvent::CreatureHealed {
+            player,
+            slot,
+            amount,
+            new_health,
+        } => (
+            "creature_healed",
+            serde_json::json!({
+                "player": player.0 + 1,
+                "slot": slot.0,
+                "amount": amount,
+                "newHealth": new_health
+            }),
+        ),
+        GameEvent::CreatureStatsChanged {
+            player,
+            slot,
+            old_attack,
+            new_attack,
+            old_health,
+            new_health,
+        } => (
+            "creature_stats_changed",
+            serde_json::json!({
+                "player": player.0 + 1,
+                "slot": slot.0,
+                "oldAttack": old_attack,
+                "newAttack": new_attack,
+                "oldHealth": old_health,
+                "newHealth": new_health
+            }),
+        ),
+        GameEvent::CreatureKeywordsChanged {
+            player,
+            slot,
+            old_keywords,
+            new_keywords,
+        } => (
+            "creature_keywords_changed",
+            serde_json::json!({
+                "player": player.0 + 1,
+                "slot": slot.0,
+                "oldKeywords": format!("{:?}", old_keywords),
+                "newKeywords": format!("{:?}", new_keywords)
+            }),
+        ),
+        GameEvent::CreatureBounced {
+            player,
+            slot,
+            card_id,
+        } => (
+            "creature_bounced",
+            serde_json::json!({
+                "player": player.0 + 1,
+                "slot": slot.0,
+                "cardId": card_id.0
+            }),
+        ),
+
+        // Combat
+        GameEvent::CombatStarted {
+            attacker_player,
+            attacker_slot,
+            defender_player,
+            defender_slot,
+        } => (
+            "combat_started",
+            serde_json::json!({
+                "attackerPlayer": attacker_player.0 + 1,
+                "attackerSlot": attacker_slot.0,
+                "defenderPlayer": defender_player.0 + 1,
+                "defenderSlot": defender_slot.0
+            }),
+        ),
+        GameEvent::CombatResolved {
+            attacker_damage_dealt,
+            defender_damage_dealt,
+            attacker_died,
+            defender_died,
+        } => (
+            "combat_resolved",
+            serde_json::json!({
+                "attackerDamageDealt": attacker_damage_dealt,
+                "defenderDamageDealt": defender_damage_dealt,
+                "attackerDied": attacker_died,
+                "defenderDied": defender_died
+            }),
+        ),
+
+        // Supports
+        GameEvent::SupportPlaced {
+            player,
+            slot,
+            card_id,
+            durability,
+        } => (
+            "support_placed",
+            serde_json::json!({
+                "player": player.0 + 1,
+                "slot": slot.0,
+                "cardId": card_id.0,
+                "durability": durability
+            }),
+        ),
+        GameEvent::SupportDurabilityChanged {
+            player,
+            slot,
+            old_durability,
+            new_durability,
+        } => (
+            "support_durability_changed",
+            serde_json::json!({
+                "player": player.0 + 1,
+                "slot": slot.0,
+                "oldDurability": old_durability,
+                "newDurability": new_durability
+            }),
+        ),
+        GameEvent::SupportRemoved {
+            player,
+            slot,
+            card_id,
+            reason,
+        } => (
+            "support_removed",
+            serde_json::json!({
+                "player": player.0 + 1,
+                "slot": slot.0,
+                "cardId": card_id.0,
+                "reason": format!("{:?}", reason)
+            }),
+        ),
+
+        // Player Resources
+        GameEvent::EssenceChanged {
+            player,
+            old_essence,
+            new_essence,
+            max_essence,
+        } => (
+            "essence_changed",
+            serde_json::json!({
+                "player": player.0 + 1,
+                "old": old_essence,
+                "new": new_essence,
+                "max": max_essence
+            }),
+        ),
+        GameEvent::ActionPointsChanged {
+            player,
+            old_ap,
+            new_ap,
+        } => (
+            "action_points_changed",
+            serde_json::json!({
+                "player": player.0 + 1,
+                "oldAp": old_ap,
+                "newAp": new_ap
+            }),
+        ),
+
+        // Effects & Abilities
+        GameEvent::AbilityTriggered {
+            source_player,
+            source_slot,
+            card_id,
+            trigger_name,
+        } => (
+            "ability_triggered",
+            serde_json::json!({
+                "player": source_player.0 + 1,
+                "slot": source_slot.0,
+                "cardId": card_id.0,
+                "triggerName": trigger_name
+            }),
+        ),
+        GameEvent::SpellEffectApplied {
+            card_id,
+            effect_description,
+        } => (
+            "spell_effect_applied",
+            serde_json::json!({
+                "cardId": card_id.0,
+                "effectDescription": effect_description
+            }),
+        ),
     };
 
     GameEventDto {
