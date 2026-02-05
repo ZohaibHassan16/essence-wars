@@ -12,6 +12,7 @@
   import BottomTimelinePanel from "./spectator/BottomTimelinePanel.svelte";
   import AnalysisDashboard from "./spectator/AnalysisDashboard.svelte";
   import ActionLogModal from "./ActionLogModal.svelte";
+  import DeckLibraryModal from "./DeckLibraryModal.svelte";
   import { playMusic } from "$lib/audio";
 
   // View mode
@@ -31,6 +32,13 @@
           spectatorStore.closeActionLog();
         } else {
           spectatorStore.openActionLog();
+        }
+        break;
+      case "d":
+        if (spectatorStore.showDeckLibrary) {
+          spectatorStore.closeDeckLibrary();
+        } else {
+          spectatorStore.openDeckLibrary();
         }
         break;
     }
@@ -346,7 +354,7 @@
       </div>
 
       <!-- Action Log Button -->
-      <div class="p-2">
+      <div class="p-2 space-y-2">
         <button
           class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors
                  bg-gray-700/50 text-ui-text-dim hover:bg-gray-700 hover:text-ui-text border border-gray-600"
@@ -355,6 +363,17 @@
           <span>📋</span>
           <span>Action Log</span>
           <span class="text-xs text-ui-text-dim/60">[L]</span>
+        </button>
+
+        <!-- Deck Library Button -->
+        <button
+          class="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors
+                 bg-gray-700/50 text-ui-text-dim hover:bg-gray-700 hover:text-ui-text border border-gray-600"
+          onclick={() => spectatorStore.openDeckLibrary()}
+        >
+          <span>📚</span>
+          <span>Deck Library</span>
+          <span class="text-xs text-ui-text-dim/60">[D]</span>
         </button>
       </div>
     </CollapsibleSidebar>
@@ -375,3 +394,16 @@
 
 <!-- Action Log Modal -->
 <ActionLogModal />
+
+<!-- Deck Library Modal -->
+{#if match}
+  <DeckLibraryModal
+    show={spectatorStore.showDeckLibrary}
+    player1DeckId={match.config.player1DeckId}
+    player2DeckId={match.config.player2DeckId}
+    player1DeckName={match.player1DeckName}
+    player2DeckName={match.player2DeckName}
+    allowDeckOrder={true}
+    onClose={() => spectatorStore.closeDeckLibrary()}
+  />
+{/if}

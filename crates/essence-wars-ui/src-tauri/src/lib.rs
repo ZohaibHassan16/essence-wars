@@ -77,6 +77,7 @@ pub fn run() {
             undo_action,
             can_undo,
             end_game,
+            get_deck_cards,
             // Spectator mode
             compute_spectator_match,
             // Replay mode

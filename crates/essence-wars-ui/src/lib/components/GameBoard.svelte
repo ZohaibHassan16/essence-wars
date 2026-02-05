@@ -12,7 +12,24 @@
   import CreatureActionMenu from "./CreatureActionMenu.svelte";
   import HintModal from "./HintModal.svelte";
   import GameActionLogModal from "./GameActionLogModal.svelte";
+  import DeckLibraryModal from "./DeckLibraryModal.svelte";
   import { playSound, playMusic } from "$lib/audio";
+
+  // Keyboard shortcuts
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      return;
+    }
+    switch (event.key.toLowerCase()) {
+      case "d":
+        if (gameStore.showDeckLibrary) {
+          gameStore.closeDeckLibrary();
+        } else {
+          gameStore.openDeckLibrary();
+        }
+        break;
+    }
+  }
 
   // Play battle music when component mounts
   $effect(() => {
@@ -145,6 +162,8 @@
     return turn >= 8 && handSize <= 3 && essence >= 4;
   });
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <!-- Turn transition overlay -->
 <TurnTransition
@@ -397,6 +416,20 @@
         <span>📋</span>
         Log
       </button>
+      <!-- Deck Library button -->
+      <button
+        class="px-4 py-2 bg-gray-700 text-ui-text rounded-lg hover:bg-gray-600 transition-colors
+               flex items-center gap-2"
+        onclick={() => {
+          playSound('buttonClick');
+          gameStore.openDeckLibrary();
+        }}
+        onmouseenter={() => playSound('buttonHover')}
+        title="View deck cards (organized by type)"
+      >
+        <span>📚</span>
+        Decks
+      </button>
       <button
         class="px-4 py-2 bg-gray-700 text-ui-text rounded-lg hover:bg-gray-600 transition-colors"
         onclick={() => {
@@ -432,3 +465,16 @@
 
 <!-- Action Log Modal -->
 <GameActionLogModal />
+
+<!-- Deck Library Modal (organized view only to avoid spoiling deck order) -->
+{#if gameStore.playerDeckId && gameStore.opponentDeckId}
+  <DeckLibraryModal
+    show={gameStore.showDeckLibrary}
+    player1DeckId={gameStore.playerDeckId}
+    player2DeckId={gameStore.opponentDeckId}
+    player1DeckName={gameStore.playerDeckName}
+    player2DeckName={gameStore.opponentDeckName}
+    allowDeckOrder={false}
+    onClose={() => gameStore.closeDeckLibrary()}
+  />
+{/if}

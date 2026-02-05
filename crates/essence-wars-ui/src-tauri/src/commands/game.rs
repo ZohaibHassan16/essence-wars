@@ -1,7 +1,7 @@
 //! Game-related Tauri commands.
 
 use crate::state::{
-    ActionInfo, AiHintResponse, BotInfo, CustomDeckManager, DeckInfo, GameConfig, GameManager,
+    ActionInfo, AiHintResponse, BotInfo, CardDto, CustomDeckManager, DeckInfo, GameConfig, GameManager,
     GameResultDto, GameStateDto, GameStateUpdate,
 };
 use tauri::State;
@@ -99,4 +99,17 @@ pub fn can_undo(
     game_manager: State<'_, GameManager>,
 ) -> Result<bool, String> {
     game_manager.can_undo(&game_id)
+}
+
+/// Get all cards in a deck (for deck library visualization)
+///
+/// Supports both built-in deck IDs and custom deck IDs (with "custom:" prefix).
+/// Returns the cards in deck order (index 0 = first card to draw).
+#[tauri::command]
+pub fn get_deck_cards(
+    deck_id: String,
+    game_manager: State<'_, GameManager>,
+    custom_deck_manager: State<'_, CustomDeckManager>,
+) -> Result<Vec<CardDto>, String> {
+    game_manager.get_deck_cards(&deck_id, Some(custom_deck_manager.inner()))
 }

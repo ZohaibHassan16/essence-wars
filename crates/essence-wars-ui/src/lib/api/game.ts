@@ -14,6 +14,7 @@ import type {
   SpectatorMatch,
   ReplayInfo,
   McpSyncedState,
+  CardDto,
 } from "./types";
 
 /** Error thrown when an IPC call times out */
@@ -100,6 +101,16 @@ export async function undoAction(gameId: string): Promise<GameStateDto> {
 
 export async function canUndo(gameId: string): Promise<boolean> {
   return await invoke<boolean>("can_undo", { gameId });
+}
+
+/**
+ * Get all cards in a deck (for deck library visualization)
+ *
+ * Supports both built-in deck IDs and custom deck IDs (with "custom:" prefix).
+ * Returns the cards in deck order (index 0 = first card to draw).
+ */
+export async function getDeckCards(deckId: string): Promise<CardDto[]> {
+  return await invoke<CardDto[]>("get_deck_cards", { deckId });
 }
 
 // ============================================================================

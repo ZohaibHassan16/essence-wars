@@ -115,6 +115,33 @@ impl GameManager {
             .collect()
     }
 
+    /// Get the cards in a deck (for deck viewer/library display)
+    ///
+    /// Supports both built-in deck IDs and custom deck IDs (with "custom:" prefix).
+    pub fn get_deck_cards(
+        &self,
+        deck_id: &str,
+        custom_deck_manager: Option<&super::CustomDeckManager>,
+    ) -> Result<Vec<CardDto>, String> {
+        let deck = self.resolve_deck(deck_id, custom_deck_manager)?;
+
+        // Convert card IDs to CardDtos
+        let cards: Vec<CardDto> = deck
+            .cards
+            .iter()
+            .filter_map(|&card_id| {
+                self.card_db
+                    .get(cardgame::CardId(card_id))
+                    .map(CardDto::from_card_def)
+            })
+            .collect();
+
+        // Sort by card ID to preserve deck order
+        // (The deck's card list is already in the intended order)
+
+        Ok(cards)
+    }
+
     /// List available bot types
     pub fn list_bots(&self) -> Vec<BotInfo> {
         vec![

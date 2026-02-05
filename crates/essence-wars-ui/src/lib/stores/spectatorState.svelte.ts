@@ -79,6 +79,9 @@ class SpectatorStore {
   // Action log modal
   showActionLog = $state<boolean>(false);
 
+  // Deck library modal
+  showDeckLibrary = $state<boolean>(false);
+
   // ============================================================================
   // Computed Properties
   // ============================================================================
@@ -498,6 +501,16 @@ class SpectatorStore {
   /** Close the action log modal */
   closeActionLog() {
     this.showActionLog = false;
+  }
+
+  /** Open the deck library modal */
+  openDeckLibrary() {
+    this.showDeckLibrary = true;
+  }
+
+  /** Close the deck library modal */
+  closeDeckLibrary() {
+    this.showDeckLibrary = false;
   }
 
   /** Clear the auto-popup timer */

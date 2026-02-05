@@ -60,6 +60,13 @@ class GameStore {
   // Modal state
   showHintModal = $state(false);
   showActionLogModal = $state(false);
+  showDeckLibrary = $state(false);
+
+  // Track deck IDs for deck library modal
+  playerDeckId = $state<string | null>(null);
+  opponentDeckId = $state<string | null>(null);
+  playerDeckName = $state<string>("");
+  opponentDeckName = $state<string>("");
 
   // AI turn tracking (prevents race conditions)
   private isAiTurnInProgress = false;
@@ -157,8 +164,8 @@ class GameStore {
   }
 
   async startGame(
-    playerDeckId: string,
-    opponentDeckId: string,
+    playerDeckIdArg: string,
+    opponentDeckIdArg: string,
     opponentBotType: string,
     playerGoesFirst: boolean = true,
     seed?: number
@@ -167,8 +174,8 @@ class GameStore {
     this.error = null;
     try {
       const state = await api.newGame({
-        playerDeckId,
-        opponentDeckId,
+        playerDeckId: playerDeckIdArg,
+        opponentDeckId: opponentDeckIdArg,
         opponentBotType,
         playerGoesFirst,
         seed,
@@ -177,6 +184,17 @@ class GameStore {
       this.phase = "playing";
       this.actionHistory = [];
       this.eventHistory = [];
+
+      // Store deck IDs for deck library modal
+      this.playerDeckId = playerDeckIdArg;
+      this.opponentDeckId = opponentDeckIdArg;
+
+      // Look up deck names from loaded decks
+      const playerDeck = this.decks.find(d => d.id === playerDeckIdArg);
+      const opponentDeck = this.decks.find(d => d.id === opponentDeckIdArg);
+      this.playerDeckName = playerDeck?.name ?? "Player Deck";
+      this.opponentDeckName = opponentDeck?.name ?? "AI Deck";
+
       await this.refreshLegalActions();
 
       // If AI goes first, do their turn
@@ -606,6 +624,14 @@ class GameStore {
 
   closeActionLogModal() {
     this.showActionLogModal = false;
+  }
+
+  openDeckLibrary() {
+    this.showDeckLibrary = true;
+  }
+
+  closeDeckLibrary() {
+    this.showDeckLibrary = false;
   }
 
   clearError() {
