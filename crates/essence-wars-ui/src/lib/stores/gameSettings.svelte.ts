@@ -6,11 +6,12 @@ interface GameSettingsData {
   animationSpeed: number;       // 0.5-2.0 multiplier
   aiTurnDelay: number;          // 100-1000ms delay between AI actions
   showKeyboardHints: boolean;   // Show keyboard shortcut hints in UI
+  showEndTurnWarning: boolean;  // Show warning when ending turn with actions remaining
 }
 
 function loadSettings(): GameSettingsData {
   if (typeof localStorage === 'undefined') {
-    return { animationSpeed: 1.0, aiTurnDelay: 150, showKeyboardHints: true };
+    return { animationSpeed: 1.0, aiTurnDelay: 150, showKeyboardHints: true, showEndTurnWarning: true };
   }
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -20,12 +21,13 @@ function loadSettings(): GameSettingsData {
         animationSpeed: typeof parsed.animationSpeed === 'number' ? parsed.animationSpeed : 1.0,
         aiTurnDelay: typeof parsed.aiTurnDelay === 'number' ? parsed.aiTurnDelay : 150,
         showKeyboardHints: typeof parsed.showKeyboardHints === 'boolean' ? parsed.showKeyboardHints : true,
+        showEndTurnWarning: typeof parsed.showEndTurnWarning === 'boolean' ? parsed.showEndTurnWarning : true,
       };
     }
   } catch (e) {
     console.warn('Failed to load game settings:', e);
   }
-  return { animationSpeed: 1.0, aiTurnDelay: 150, showKeyboardHints: true };
+  return { animationSpeed: 1.0, aiTurnDelay: 150, showKeyboardHints: true, showEndTurnWarning: true };
 }
 
 function saveSettings(settings: GameSettingsData) {
@@ -41,6 +43,7 @@ class GameSettingsStore {
   private _animationSpeed = $state(1.0);
   private _aiTurnDelay = $state(150);
   private _showKeyboardHints = $state(true);
+  private _showEndTurnWarning = $state(true);
 
   constructor() {
     // Load settings on construction (will be called client-side)
@@ -49,6 +52,7 @@ class GameSettingsStore {
       this._animationSpeed = settings.animationSpeed;
       this._aiTurnDelay = settings.aiTurnDelay;
       this._showKeyboardHints = settings.showKeyboardHints;
+      this._showEndTurnWarning = settings.showEndTurnWarning;
     }
   }
 
@@ -79,6 +83,15 @@ class GameSettingsStore {
     this.persist();
   }
 
+  get showEndTurnWarning() {
+    return this._showEndTurnWarning;
+  }
+
+  set showEndTurnWarning(value: boolean) {
+    this._showEndTurnWarning = value;
+    this.persist();
+  }
+
   /** Get animation duration adjusted by speed multiplier */
   getAdjustedDuration(baseDurationMs: number): number {
     return baseDurationMs / this._animationSpeed;
@@ -89,6 +102,7 @@ class GameSettingsStore {
     this._animationSpeed = 1.0;
     this._aiTurnDelay = 150;
     this._showKeyboardHints = true;
+    this._showEndTurnWarning = true;
     this.persist();
   }
 
@@ -97,6 +111,7 @@ class GameSettingsStore {
       animationSpeed: this._animationSpeed,
       aiTurnDelay: this._aiTurnDelay,
       showKeyboardHints: this._showKeyboardHints,
+      showEndTurnWarning: this._showEndTurnWarning,
     });
   }
 }

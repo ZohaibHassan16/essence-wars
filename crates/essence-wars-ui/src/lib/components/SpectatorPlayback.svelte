@@ -13,7 +13,11 @@
   import AnalysisDashboard from "./spectator/AnalysisDashboard.svelte";
   import ActionLogModal from "./ActionLogModal.svelte";
   import DeckLibraryModal from "./DeckLibraryModal.svelte";
+  import KeyboardShortcutsHelp from "./KeyboardShortcutsHelp.svelte";
   import { playMusic } from "$lib/audio";
+
+  // Keyboard shortcuts help state
+  let showShortcutsHelp = $state(false);
 
   // View mode
   const viewMode = $derived(spectatorStore.viewMode);
@@ -40,6 +44,9 @@
         } else {
           spectatorStore.openDeckLibrary();
         }
+        break;
+      case "?":
+        showShortcutsHelp = !showShortcutsHelp;
         break;
     }
   }
@@ -407,3 +414,10 @@
     onClose={() => spectatorStore.closeDeckLibrary()}
   />
 {/if}
+
+<!-- Keyboard Shortcuts Help -->
+<KeyboardShortcutsHelp
+  show={showShortcutsHelp}
+  mode="spectator"
+  onClose={() => showShortcutsHelp = false}
+/>

@@ -79,7 +79,7 @@ Review Win Conditions implementation and Discussion in Code Base and `win-discus
 **Thresholds:** 50 essence extracted to win (unchanged from VictoryPoints).
 
 
-## (M) Deck Library Visualization
+## (M) ✅ Deck Library Visualization [DONE]
 
 Add Player 1 and Player 2 Libraries to Spectator Mode. THe Spectator should be able to scroll through all available cards in the library at any time.
 

@@ -13,20 +13,36 @@
   import HintModal from "./HintModal.svelte";
   import GameActionLogModal from "./GameActionLogModal.svelte";
   import DeckLibraryModal from "./DeckLibraryModal.svelte";
+  import KeyboardShortcutsHelp from "./KeyboardShortcutsHelp.svelte";
+  import ConfirmDialog from "./ConfirmDialog.svelte";
+  import EndTurnWarning from "./EndTurnWarning.svelte";
   import { playSound, playMusic } from "$lib/audio";
+
+  // Keyboard shortcuts help state
+  let showShortcutsHelp = $state(false);
+
+  // Quit confirmation state
+  let showQuitConfirm = $state(false);
+
+  // End turn warning state
+  let showEndTurnWarning = $state(false);
 
   // Keyboard shortcuts
   function handleKeydown(event: KeyboardEvent) {
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
       return;
     }
-    switch (event.key.toLowerCase()) {
+    switch (event.key) {
       case "d":
+      case "D":
         if (gameStore.showDeckLibrary) {
           gameStore.closeDeckLibrary();
         } else {
           gameStore.openDeckLibrary();
         }
+        break;
+      case "?":
+        showShortcutsHelp = !showShortcutsHelp;
         break;
     }
   }
@@ -38,6 +54,30 @@
 
   const gameState = $derived(gameStore.gameState);
   const isPlayerTurn = $derived(gameStore.isPlayerTurn);
+
+  // Computed values for end turn warning (must be after gameState is defined)
+  const remainingActionPoints = $derived(gameState?.player.actionPoints ?? 0);
+  const playableCardsCount = $derived(
+    gameStore.legalActions.filter(a => a.actionType === "play_card").length > 0
+      ? gameState?.player.hand.filter((_, i) =>
+          gameStore.legalActions.some(a => a.actionType === "play_card" && a.handIndex === i)
+        ).length ?? 0
+      : 0
+  );
+
+  function tryEndTurn() {
+    // Check if we should show a warning (respects persistent setting)
+    if (gameSettings.showEndTurnWarning && (remainingActionPoints > 0 || playableCardsCount > 0)) {
+      showEndTurnWarning = true;
+    } else {
+      executeEndTurn();
+    }
+  }
+
+  function executeEndTurn() {
+    gameStore.endTurn();
+    tutorialStore.checkAdvanceCondition('end_turn');
+  }
 
   // Track turn changes for transition animation
   let lastActivePlayer: number | null = $state(null);
@@ -375,8 +415,7 @@
                  disabled:opacity-50 disabled:cursor-not-allowed"
           onclick={() => {
             playSound('buttonClick');
-            gameStore.endTurn();
-            tutorialStore.checkAdvanceCondition('end_turn');
+            tryEndTurn();
           }}
           onmouseenter={() => playSound('buttonHover')}
           disabled={gameStore.isLoading}
@@ -434,7 +473,7 @@
         class="px-4 py-2 bg-gray-700 text-ui-text rounded-lg hover:bg-gray-600 transition-colors"
         onclick={() => {
           playSound('buttonClick');
-          gameStore.quitGame();
+          showQuitConfirm = true;
         }}
         onmouseenter={() => playSound('buttonHover')}
       >
@@ -478,3 +517,38 @@
     onClose={() => gameStore.closeDeckLibrary()}
   />
 {/if}
+
+<!-- Keyboard Shortcuts Help -->
+<KeyboardShortcutsHelp
+  show={showShortcutsHelp}
+  mode="game"
+  onClose={() => showShortcutsHelp = false}
+/>
+
+<!-- Quit Confirmation Dialog -->
+<ConfirmDialog
+  show={showQuitConfirm}
+  title="Quit Game?"
+  message="Are you sure you want to quit? Your progress will be lost."
+  confirmText="Quit"
+  cancelText="Continue Playing"
+  confirmVariant="danger"
+  onConfirm={() => {
+    showQuitConfirm = false;
+    gameStore.quitGame();
+  }}
+  onCancel={() => showQuitConfirm = false}
+/>
+
+<!-- End Turn Warning Dialog -->
+<EndTurnWarning
+  show={showEndTurnWarning}
+  actionPoints={remainingActionPoints}
+  playableCards={playableCardsCount}
+  onConfirm={() => {
+    showEndTurnWarning = false;
+    executeEndTurn();
+  }}
+  onCancel={() => showEndTurnWarning = false}
+  onDisableWarning={() => gameSettings.showEndTurnWarning = false}
+/>

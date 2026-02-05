@@ -146,6 +146,9 @@
       onSaveReplay: state?.id ? async () => {
         await api.saveReplay(state.id);
       } : undefined,
+      // Pass action and event history for detailed stats
+      actionHistory: gameStore.actionHistory,
+      eventHistory: gameStore.eventHistory,
     };
   }
 

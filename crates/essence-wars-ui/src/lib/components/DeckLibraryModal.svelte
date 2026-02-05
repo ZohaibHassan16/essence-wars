@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { CardDto } from "$lib/api/types";
   import { getDeckCards } from "$lib/api/game";
+  import KeywordTooltip from "./KeywordTooltip.svelte";
 
   interface Props {
     show: boolean;
@@ -120,7 +121,7 @@
   }
 
   function getKeywordBadges(keywords: string[]): string[] {
-    return keywords.slice(0, 3); // Limit to 3 keywords for space
+    return keywords.slice(0, 2); // Limit to 2 keywords for space
   }
 </script>
 
@@ -226,7 +227,7 @@
                           <span class="text-xs text-ui-text-dim">{card.attack}/{card.health}</span>
                         {/if}
                         {#each getKeywordBadges(card.keywords) as keyword}
-                          <span class="px-1 py-0.5 text-[10px] bg-gray-700 text-ui-text-dim rounded">{keyword}</span>
+                          <KeywordTooltip {keyword} size={10} showLabel={false} />
                         {/each}
                       </div>
                     {/each}
@@ -279,7 +280,7 @@
                           <span class="text-xs text-ui-text-dim">{card.attack}/{card.health}</span>
                         {/if}
                         {#each getKeywordBadges(card.keywords) as keyword}
-                          <span class="px-1 py-0.5 text-[10px] bg-gray-700 text-ui-text-dim rounded">{keyword}</span>
+                          <KeywordTooltip {keyword} size={10} showLabel={false} />
                         {/each}
                       </div>
                     {/each}

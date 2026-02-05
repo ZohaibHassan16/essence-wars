@@ -1,10 +1,16 @@
 <script lang="ts">
   import { playSting } from "$lib/audio";
+  import type { GameEventDto } from "$lib/api/types";
 
   interface PlayerInfo {
     name: string;
     life: number;
     type: string; // "human", "ai", or bot name
+  }
+
+  interface ActionHistoryItem {
+    player: 1 | 2;
+    actionType: string;
   }
 
   interface Props {
@@ -20,6 +26,10 @@
     onReviewMatch?: () => void;
     onViewStatistics?: () => void;
     replaySaved?: boolean;
+    /** Optional action history for computing detailed stats */
+    actionHistory?: ActionHistoryItem[];
+    /** Optional event history for computing detailed stats */
+    eventHistory?: GameEventDto[];
   }
 
   let {
@@ -35,6 +45,8 @@
     onReviewMatch,
     onViewStatistics,
     replaySaved = false,
+    actionHistory = [],
+    eventHistory = [],
   }: Props = $props();
 
   // For player mode: winner=1 means player wins, winner=2 means AI wins
@@ -122,6 +134,31 @@
     if (isDraw) return "🤝";
     return winner === 1 ? "🏆" : "🏆";
   }
+
+  // Compute detailed stats from action/event history
+  const hasDetailedStats = $derived(actionHistory.length > 0);
+
+  const player1Actions = $derived(actionHistory.filter(a => a.player === 1));
+  const player2Actions = $derived(actionHistory.filter(a => a.player === 2));
+
+  const player1CardsPlayed = $derived(player1Actions.filter(a => a.actionType === "play_card").length);
+  const player2CardsPlayed = $derived(player2Actions.filter(a => a.actionType === "play_card").length);
+
+  const player1Attacks = $derived(player1Actions.filter(a => a.actionType === "attack").length);
+  const player2Attacks = $derived(player2Actions.filter(a => a.actionType === "attack").length);
+
+  const player1CreatureDeaths = $derived(
+    eventHistory.filter(e =>
+      e.eventType === "creature_died" &&
+      (e.data as Record<string, unknown>).player === 1
+    ).length
+  );
+  const player2CreatureDeaths = $derived(
+    eventHistory.filter(e =>
+      e.eventType === "creature_died" &&
+      (e.data as Record<string, unknown>).player === 2
+    ).length
+  );
 </script>
 
 <div class="min-h-screen flex flex-col items-center justify-center p-8 bg-ui-bg overflow-hidden">
@@ -193,6 +230,32 @@
           </div>
         </div>
       </div>
+
+      <!-- Detailed stats (when available) -->
+      {#if hasDetailedStats}
+        <div class="mt-6 pt-6 border-t border-gray-700">
+          <div class="grid grid-cols-3 gap-6 text-sm">
+            <!-- Player 1 / You column -->
+            <div class="space-y-2 text-center">
+              <div class="text-ui-text font-semibold">{player1CardsPlayed}</div>
+              <div class="text-ui-text font-semibold">{player1Attacks}</div>
+              <div class="text-ui-text font-semibold">{player1CreatureDeaths}</div>
+            </div>
+            <!-- Labels column -->
+            <div class="space-y-2 text-center text-ui-text-dim">
+              <div>Cards Played</div>
+              <div>Attacks</div>
+              <div>Creatures Lost</div>
+            </div>
+            <!-- Player 2 / Opponent column -->
+            <div class="space-y-2 text-center">
+              <div class="text-ui-text font-semibold">{player2CardsPlayed}</div>
+              <div class="text-ui-text font-semibold">{player2Attacks}</div>
+              <div class="text-ui-text font-semibold">{player2CreatureDeaths}</div>
+            </div>
+          </div>
+        </div>
+      {/if}
     </div>
 
     <!-- Action buttons -->
