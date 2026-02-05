@@ -278,7 +278,7 @@ mod tests {
         use super::super::SpectatorComputer;
 
         let game_manager = GameManager::new().expect("Failed to create game manager");
-        let computer = SpectatorComputer::from_manager(&game_manager);
+        let computer = SpectatorComputer::new(&game_manager, None);
 
         let config = SpectatorConfig {
             player1_deck_id: "architect_fortify".to_string(),
@@ -338,7 +338,7 @@ mod tests {
         use super::super::SpectatorComputer;
 
         let game_manager = GameManager::new().expect("Failed to create game manager");
-        let computer = SpectatorComputer::from_manager(&game_manager);
+        let computer = SpectatorComputer::new(&game_manager, None);
 
         let config = SpectatorConfig {
             player1_deck_id: "sovereign_lifesteal".to_string(),
@@ -374,7 +374,7 @@ mod tests {
         use super::super::SpectatorComputer;
 
         let game_manager = GameManager::new().expect("Failed to create game manager");
-        let computer = SpectatorComputer::from_manager(&game_manager);
+        let computer = SpectatorComputer::new(&game_manager, None);
 
         let config = SpectatorConfig {
             player1_deck_id: "architect_fortify".to_string(),

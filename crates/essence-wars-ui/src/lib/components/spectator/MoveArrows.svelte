@@ -137,7 +137,7 @@
     </defs>
 
     <!-- Render arrows -->
-    {#each attackMoves() as move}
+    {#each attackMoves() as move (move.action.index)}
       {@const { source, target, thickness, opacity, color } = getArrowProps(move)}
       {@const midX = (source.x + target.x) / 2}
       {@const midY = (source.y + target.y) / 2}

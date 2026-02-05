@@ -13,7 +13,7 @@ use uuid::Uuid;
 
 use super::serialization::*;
 use super::spectator::*;
-use crate::ai::extract_decision_insights;
+use crate::ai::{extract_decision_insights, SearchContext};
 
 /// Represents an active game session
 pub struct GameSession {
@@ -670,24 +670,17 @@ pub struct SpectatorComputer {
 }
 
 impl SpectatorComputer {
-    /// Create a new SpectatorComputer without custom deck support
-    pub fn from_manager(manager: &GameManager) -> Self {
-        Self {
-            card_db: manager.card_db(),
-            deck_registry: manager.deck_registry(),
-            custom_deck_manager: None,
-        }
-    }
-
-    /// Create a new SpectatorComputer with custom deck support
-    pub fn from_manager_with_custom_decks(
+    /// Create a new SpectatorComputer.
+    ///
+    /// Pass `None` for `custom_deck_manager` if custom deck support is not needed.
+    pub fn new(
         manager: &GameManager,
-        custom_deck_manager: Arc<super::CustomDeckManager>,
+        custom_deck_manager: Option<Arc<super::CustomDeckManager>>,
     ) -> Self {
         Self {
             card_db: manager.card_db(),
             deck_registry: manager.deck_registry(),
-            custom_deck_manager: Some(custom_deck_manager),
+            custom_deck_manager,
         }
     }
 
@@ -807,25 +800,26 @@ impl SpectatorComputer {
 
             // Extract decision insights before applying the action
             let insights = client.engine().map(|engine| {
-                let mcts_sims = if matches!(bot_type, BotType::Mcts) {
-                    Some(config.mcts_simulations)
-                } else {
-                    None
-                };
-                let ab_depth = if matches!(bot_type, BotType::AlphaBeta) {
-                    Some(config.alphabeta_depth)
-                } else {
-                    None
+                let search_ctx = SearchContext {
+                    bot_name: bot.name(),
+                    think_time_ms: thinking_time_ms,
+                    mcts_simulations: if matches!(bot_type, BotType::Mcts) {
+                        Some(config.mcts_simulations)
+                    } else {
+                        None
+                    },
+                    alphabeta_depth: if matches!(bot_type, BotType::AlphaBeta) {
+                        Some(config.alphabeta_depth)
+                    } else {
+                        None
+                    },
                 };
                 extract_decision_insights(
                     engine,
                     &action,
                     &legal_actions,
                     &self.card_db,
-                    bot.name(),
-                    thinking_time_ms,
-                    mcts_sims,
-                    ab_depth,
+                    search_ctx,
                 )
             });
 

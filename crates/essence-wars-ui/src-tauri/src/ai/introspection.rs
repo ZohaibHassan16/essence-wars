@@ -264,6 +264,22 @@ pub fn calculate_confidence(probabilities: &[f32]) -> (f32, ConfidenceLevel) {
     (confidence, level)
 }
 
+/// Context about the search/bot for decision insight extraction.
+///
+/// Groups bot-related parameters to keep the `extract_decision_insights`
+/// function signature clean.
+#[derive(Debug, Clone, Copy)]
+pub struct SearchContext<'a> {
+    /// Name of the bot algorithm
+    pub bot_name: &'a str,
+    /// Time spent thinking in milliseconds
+    pub think_time_ms: u64,
+    /// MCTS simulations (if applicable)
+    pub mcts_simulations: Option<u32>,
+    /// AlphaBeta depth (if applicable)
+    pub alphabeta_depth: Option<u32>,
+}
+
 /// Extract decision insights using greedy evaluation.
 ///
 /// This function evaluates all legal actions using the greedy bot's
@@ -274,10 +290,7 @@ pub fn extract_decision_insights(
     chosen_action: &Action,
     legal_actions: &[Action],
     card_db: &CardDatabase,
-    bot_type: &str,
-    think_time_ms: u64,
-    mcts_simulations: Option<u32>,
-    alphabeta_depth: Option<u32>,
+    search_ctx: SearchContext<'_>,
 ) -> DecisionInsightsDto {
     let current_player = engine.current_player();
     let turn = engine.state.current_turn;
@@ -334,16 +347,16 @@ pub fn extract_decision_insights(
 
     // Build search stats
     let search_stats = SearchStatsDto {
-        algorithm: bot_type.to_string(),
-        time_ms: think_time_ms,
+        algorithm: search_ctx.bot_name.to_string(),
+        time_ms: search_ctx.think_time_ms,
         num_actions: legal_actions.len() as u32,
-        simulations: mcts_simulations,
-        depth: alphabeta_depth,
+        simulations: search_ctx.mcts_simulations,
+        depth: search_ctx.alphabeta_depth,
         nodes: None,
     };
 
     // Build tree visualization from move scores
-    let tree_root = build_tree_from_move_scores(&move_scores, mcts_simulations);
+    let tree_root = build_tree_from_move_scores(&move_scores, search_ctx.mcts_simulations);
 
     // Calculate confidence from probability distribution
     let probabilities: Vec<f32> = move_scores.iter().map(|m| m.probability).collect();

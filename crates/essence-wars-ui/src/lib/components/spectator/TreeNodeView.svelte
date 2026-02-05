@@ -1,15 +1,17 @@
 <script lang="ts">
+  import { SvelteSet } from "svelte/reactivity";
   import type { TreeNodeDto } from "$lib/api/types";
+  import TreeNodeView from "./TreeNodeView.svelte";
 
   let {
     node,
     isRoot = false,
-    expandedNodes = $bindable(new Set<string>()),
+    expandedNodes = new SvelteSet<string>(),
     onNodeClick,
   }: {
     node: TreeNodeDto;
     isRoot?: boolean;
-    expandedNodes?: Set<string>;
+    expandedNodes?: SvelteSet<string>;
     onNodeClick?: (node: TreeNodeDto) => void;
   } = $props();
 
@@ -29,7 +31,7 @@
     } else {
       expandedNodes.add(nodeId);
     }
-    expandedNodes = new Set(expandedNodes);
+    // SvelteSet is already reactive, no need to reassign
   }
 
   function handleClick() {
@@ -109,8 +111,8 @@
   <!-- Children (if expanded) -->
   {#if isExpanded && hasChildren}
     <div class="children">
-      {#each node.children as child, i (i)}
-        <svelte:self
+      {#each node.children as child (child.actionStr)}
+        <TreeNodeView
           node={child}
           {expandedNodes}
           {onNodeClick}

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { SvelteSet } from "svelte/reactivity";
   import type { TreeNodeDto } from "$lib/api/types";
   import TreeNodeView from "./TreeNodeView.svelte";
 
@@ -13,29 +14,28 @@
   } = $props();
 
   // Track expanded nodes
-  let expandedNodes = $state(new Set<string>(["root"]));
+  const expandedNodes = new SvelteSet<string>(["root"]);
 
   // Expand/collapse all
   function expandAll() {
     if (!treeRoot) return;
-    const newExpanded = new Set<string>(["root"]);
 
-    function addChildren(node: TreeNodeDto, prefix: string) {
+    function addChildren(node: TreeNodeDto) {
       for (const child of node.children) {
         const childId = `${child.depth}-${child.actionStr.replace(/\s+/g, "-")}`;
-        newExpanded.add(childId);
+        expandedNodes.add(childId);
         if (child.children.length > 0) {
-          addChildren(child, childId);
+          addChildren(child);
         }
       }
     }
 
-    addChildren(treeRoot, "root");
-    expandedNodes = newExpanded;
+    addChildren(treeRoot);
   }
 
   function collapseAll() {
-    expandedNodes = new Set(["root"]);
+    expandedNodes.clear();
+    expandedNodes.add("root");
   }
 
   // Count visible nodes
@@ -88,7 +88,7 @@
       <TreeNodeView
         node={treeRoot}
         isRoot={true}
-        bind:expandedNodes
+        {expandedNodes}
       />
     {:else}
       <div class="no-tree">

@@ -21,10 +21,7 @@ pub async fn compute_spectator_match(
 ) -> Result<SpectatorMatch, String> {
     // Clone the custom deck manager so it can be moved into the blocking task
     let custom_manager = Arc::new(custom_deck_manager.inner().clone());
-    let computer = SpectatorComputer::from_manager_with_custom_decks(
-        game_manager.inner(),
-        custom_manager,
-    );
+    let computer = SpectatorComputer::new(game_manager.inner(), Some(custom_manager));
 
     // Run the CPU-intensive game simulation in a blocking thread
     tokio::task::spawn_blocking(move || computer.compute_match(config))

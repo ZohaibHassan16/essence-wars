@@ -1,6 +1,5 @@
 <script lang="ts">
   import { spectatorStore } from "$lib/stores/spectatorState.svelte";
-  import type { EvalPoint, KeyMoment } from "$lib/api/types";
 
   let {
     height = 100,
@@ -255,7 +254,7 @@
   {#if showKeyMoments && keyMoments.length > 0}
     <div class="key-moments-legend">
       <span class="legend-label">Key Moments:</span>
-      {#each keyMoments.slice(0, 3) as moment}
+      {#each keyMoments.slice(0, 3) as moment (moment.actionIndex)}
         <button
           class="moment-chip"
           style="--moment-color: {getMomentColor(moment.momentType, 1)}"
