@@ -228,7 +228,8 @@ ignore_missing_imports = true
 testpaths = ["python/tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
-addopts = "-v --tb=short"
+# AI-friendly: quiet mode reduces token consumption for LLM assistants
+addopts = "-q --tb=short --no-header"
 
 # =============================================================================
 # Dependency Groups (used by uv)

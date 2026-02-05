@@ -1,5 +1,14 @@
 # Cargo configuration for Essence Wars
 
+# Custom aliases for common commands
+[alias]
+lint = "clippy --all-targets --all-features -- -D warnings"
+
+# AI-friendly terminal settings (reduces token consumption)
+[term]
+color = "never"
+progress.when = "never"
+
 # WASM-specific settings
 [target.wasm32-unknown-unknown]
 rustflags = [

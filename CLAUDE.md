@@ -18,7 +18,7 @@ cargo nextest run --status-level=fail    # ~668 tests (recommended)
 uv run pytest python/tests
 
 # Lint and Type Checking
-./scripts/run-clippy.sh                  # or cargo clippy
+cargo lint                               # Alias for clippy with strict settings
 uv run mypy python/essence_wars
 uv run ruff check python/essence_wars --fix
 pnpm run check # For Tauri/Svelte Modules
@@ -106,6 +106,30 @@ RUST_LOG=info cargo run --release --bin arena -- ...      # See weight loading i
 RUST_LOG=warn cargo run --release --bin benchmark -- ...  # Only warnings/errors
 RUST_LOG=debug cargo run --release --bin tune -- ...      # Verbose debugging
 ```
+
+## AI-Friendly Tooling
+
+This project is configured for token-efficient CLI output when working with LLM coding assistants. Verbose output (colors, progress bars, spinners) wastes context tokens without providing value to AI.
+
+**Configured optimizations:**
+
+| Tool | Config | Effect |
+|------|--------|--------|
+| cargo | `.cargo/config.toml` | No colors, no progress bars |
+| pytest | `pyproject.toml` | Quiet mode, short tracebacks |
+| eslint | `package.json` | `--quiet` (errors only) |
+| svelte-check | `package.json` | `--output human` (less verbose) |
+
+**Environment variables** (`.envrc` for direnv):
+```bash
+NO_COLOR=1                      # Disables colors in most tools
+CARGO_TERM_COLOR=never          # Cargo-specific
+CARGO_TERM_PROGRESS_WHEN=never  # No progress bars
+PIP_QUIET=1                     # Quieter pip
+npm_config_loglevel=warn        # Quieter npm
+```
+
+Run `direnv allow` once to enable automatic loading of `.envrc`.
 
 ## Project Structure
 
