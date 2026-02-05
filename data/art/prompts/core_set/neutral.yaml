@@ -996,3 +996,44 @@ cards:
       90s Magic the Gathering card art, painted fantasy illustration
     lora: "frazetta:0.5, classical-painting:0.5"
     negative: "gun, modern, Gothic, chitin, torn, defeated, blurry, low quality, text, watermark"
+
+# === ADDITIONAL CREATURES (New Horizons Expansion) ===
+
+  - id: 4075
+    name: "Traveling Scholar"
+    card_type: creature
+    tags: [Sage]
+    prompt: >
+      A weathered traveling scholar in dusty robes of brown and tan, carrying
+      a worn leather satchel overflowing with scrolls and books, elderly but
+      sharp-eyed with a knowing expression, quill and inkwell in hand ready to
+      record discoveries, mixed faction trinkets collected during travels -
+      a brass Argentum compass, bone Symbiote amulet, dark Obsidion tome,
+      standing at a desert crossroads with ancient milestone markers, trade
+      caravan visible in distance, golden sunset lighting, wisdom and experience
+      evident in weathered features, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "gun, modern, Gothic cathedral, chitin, young, inexperienced, blurry, low quality, text, watermark"
+
+  - id: 4076
+    name: "Essence Collector"
+    card_type: creature
+    tags: [Mystic]
+    prompt: >
+      A mysterious essence collector in practical traveling clothes with mystical
+      accessories, young woman with intense focused eyes, holding a crystalline
+      vial that glows with captured essence energy, belt lined with similar vials
+      of various colors - blue, green, and crimson - representing essence from
+      all factions, hooded cloak partially obscuring features, standing in a
+      frontier marketplace with essence traders and mystic goods stalls, copper
+      and brass equipment mixed with magical implements, twilight atmosphere with
+      essence vials providing soft multicolored illumination, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "gun, modern, Gothic, chitin, factory, industrial, blurry, low quality, text, watermark"
+
+# =============================================================================
+# FREE-WALKER (NEUTRAL) PROMPTS COMPLETE - 77 CARDS
+# Aesthetic: Frontier mercenaries, practical warriors, mixed faction gear
+# =============================================================================

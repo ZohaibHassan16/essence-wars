@@ -1193,4 +1193,38 @@ cards:
     lora: "rutkowski:0.4, classical-painting:0.6"
     negative: "organic, soft, natural, blurry, low quality, golden, orange, fire, dark, text, watermark"
 
+# === ADDITIONAL CREATURES (New Horizons Expansion) ===
+
+  - id: 1076
+    name: "Field Surgeon"
+    card_type: creature
+    tags: [Medic, Soldier]
+    prompt: >
+      A skilled female military medic in white and gold Argentum armor with brass
+      medical equipment, kneeling beside a wounded soldier applying healing salves,
+      compassionate but professional expression, medical satchel with brass clasps
+      open beside her revealing vials of blue healing essence, white coat over armor
+      with red cross symbol, soft blue essence glow emanating from her healing hands,
+      battlefield medical tent with brass surgical equipment in background, white
+      marble columns visible, golden sunlight, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "organic, dark, gothic, fire, orange, blurry, low quality, text, watermark"
+
+  - id: 1077
+    name: "Shield Technician"
+    card_type: creature
+    tags: [Engineer, Construct]
+    prompt: >
+      A burly male Argentum engineer in brass-augmented white armor with geometric
+      Art Deco patterns, operating a portable shield generator that projects a
+      shimmering blue energy barrier, focused expression behind brass goggles with
+      blue lenses, thick protective gauntlets adjusting controls on the humming
+      device, tool belt with precision instruments, blue essence conduits running
+      from backpack power unit to the generator, white marble workshop with brass
+      machinery and technical diagrams in background, golden light, blue sky visible
+      through windows, 90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "organic, dark, gothic, fire, orange, blurry, low quality, text, watermark"
+
 # === ALL ARGENTUM PROMPTS COMPLETE ===

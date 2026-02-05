@@ -1,0 +1,281 @@
+# Essence Wars - Token Art Prompts
+# Summoned creature tokens that appear during gameplay
+# All tokens use 704x896 resolution (same as cards)
+# Style: 90s Magic the Gathering painted fantasy illustration
+
+# =============================================================================
+# ARGENTUM COMBINE TOKENS
+# Theme: Brass constructs, clockwork, Art Deco geometry, blue essence glow
+# =============================================================================
+
+argentum:
+  # Brass Cog - Small worker automaton (2/2 or 1/1)
+  - id: brass_cog
+    name: "Brass Cog"
+    prompt: >
+      A small brass automaton worker, humanoid form with Art Deco geometric
+      patterns etched into polished brass plating, glowing blue essence core
+      visible through chest window, simple but precise construction, standing
+      at attention ready to serve, steam wisps from shoulder vents, white
+      marble factory floor with brass machinery in background, golden sunlight
+      streaming through windows, blue sky visible, 90s Magic the Gathering
+      card art, painted fantasy illustration, dramatic lighting
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "cute, chibi, 3D render, photorealistic, modern, organic, dark, fire, orange, text, watermark"
+
+  # Brass Sentinel - Guardian construct (2/2 with Guard)
+  - id: brass_sentinel
+    name: "Brass Sentinel"
+    prompt: >
+      A stalwart brass guardian construct in defensive stance, polished brass
+      armor plates with geometric Art Deco reinforcement patterns, large
+      tower shield bearing the Argentum sun-gear insignia, glowing blue sensor
+      eyes alert for threats, steam venting from joints, sturdy legs planted
+      firmly on white marble tiles, white fortress walls and brass machinery
+      behind, protective posture, golden sunlight, blue sky, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "cute, chibi, 3D render, photorealistic, modern, organic, dark, fire, orange, text, watermark"
+
+  # Battle Drone - Flying combat unit (2/1)
+  - id: battle_drone
+    name: "Battle Drone"
+    prompt: >
+      A brass flying combat drone with swept-back wings and Art Deco geometric
+      design, twin essence cannons mounted beneath, glowing blue propulsion
+      jets, sleek aggressive profile built for speed and attack, polished
+      brass hull reflecting sunlight, hovering above an Argentum fortress with
+      other drones in formation behind, white marble towers and brass spires
+      below, blue sky with white clouds, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "cute, chibi, 3D render, photorealistic, modern, organic, dark, fire, orange, text, watermark"
+
+  # Repair Drone - Support construct (0/2)
+  - id: repair_drone
+    name: "Repair Drone"
+    prompt: >
+      A small hovering brass repair drone with multiple articulated tool arms,
+      welding torch and precision instruments extended, soft blue essence glow
+      from its central core, delicate clockwork mechanisms visible through
+      glass panels, gentle and precise demeanor, repairing a damaged brass
+      construct in an Argentum workshop, white marble walls with brass fixtures,
+      golden light from windows, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "cute, chibi, 3D render, photorealistic, modern, organic, dark, fire, orange, text, watermark"
+
+  # Generic Argentum Token - Fallback image
+  - id: generic_argentum
+    name: "Argentum Construct"
+    prompt: >
+      A noble brass automaton standing at attention, polished Art Deco armor
+      with geometric sun patterns, glowing blue essence core in chest, dignified
+      mechanical soldier of the Argentum Combine, white steel and brass
+      construction with gold filigree accents, white marble plaza with brass
+      columns and machinery in background, blue sky visible, golden sunlight
+      gleaming off polished surfaces, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "cute, chibi, 3D render, photorealistic, modern, organic, dark, fire, orange, text, watermark"
+
+# =============================================================================
+# SYMBIOTE CIRCLES TOKENS
+# Theme: Pack predators, forest spirits, primal nature, bioluminescence
+# NOT alien/insectoid - use wolves, natural beasts, druids
+# =============================================================================
+
+symbiote:
+  # Pack Whelp - Young wolf (1/1 with Rush)
+  - id: pack_whelp
+    name: "Pack Whelp"
+    prompt: >
+      A young wolf pup with fierce golden predator eyes, soft grey fur with
+      darker markings, small but determined stance showing pack hunter instincts,
+      baring tiny fangs with youthful aggression, bioluminescent tribal markings
+      glowing faintly on its fur, ancient primordial forest background with
+      massive trees and glowing fungi, dappled forest light filtering through
+      canopy, other wolves visible in shadows behind, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "cute, chibi, 3D render, photorealistic, alien, insect, chitin, mechanical, text, watermark"
+
+  # Pack Beast - Generic pack creature (1/1 with Rush)
+  - id: pack_beast
+    name: "Pack Beast"
+    prompt: >
+      A fierce wolf-like pack predator mid-stride in hunting pose, powerful
+      muscles visible beneath thick grey-brown fur, golden predator eyes locked
+      on prey, natural armor of thick hide and fur, bioluminescent pack markings
+      glowing on shoulders, fangs bared in primal aggression, running through
+      ancient forest with pack mates visible as shadows, massive trees and
+      glowing mushrooms in background, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "cute, chibi, 3D render, photorealistic, alien, insect, chitin, mechanical, text, watermark"
+
+  # Forest Sprite - Nature spirit (1/1)
+  - id: forest_sprite
+    name: "Forest Sprite"
+    prompt: >
+      A small ethereal forest spirit made of living leaves and soft green light,
+      humanoid form woven from vines and flowers, gentle glowing eyes of
+      amber light, floating gracefully among ancient trees, trailing sparkles
+      of nature magic, peaceful but wild expression, surrounded by butterflies
+      and small woodland creatures, bioluminescent mushrooms and flowers in
+      the sacred grove background, dappled sunlight, 90s Magic the Gathering
+      card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "cute, chibi, 3D render, photorealistic, alien, insect, chitin, mechanical, dark, scary, text, watermark"
+
+  # Young Wolf - Wolf creature (1/1)
+  - id: young_wolf
+    name: "Young Wolf"
+    prompt: >
+      A young but fierce wolf standing alert in the forest, silver-grey fur
+      with white chest markings, bright golden eyes showing intelligence and
+      pack loyalty, lean muscular build of an adolescent predator, ears perked
+      and nose testing the wind, faint bioluminescent markings on fur showing
+      druidic blessing, ancient forest with towering trees and glowing fungi
+      in background, moonlight filtering through leaves, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "cute, chibi, 3D render, photorealistic, alien, insect, chitin, mechanical, text, watermark"
+
+  # Generic Symbiote Token - Fallback image
+  - id: generic_symbiote
+    name: "Symbiote Beast"
+    prompt: >
+      A primal forest predator with powerful build, wolf-like but larger and
+      more ancient, thick fur with natural camouflage patterns, golden predator
+      eyes glowing with pack bond magic, bioluminescent tribal markings across
+      shoulders and flanks, surrounded by swirling nature magic and small
+      forest spirits, ancient primordial forest grove with massive trees and
+      glowing mushrooms, moonlit clearing, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "cute, chibi, 3D render, photorealistic, alien, insect, chitin, mechanical, text, watermark"
+
+# =============================================================================
+# OBSIDION SYNDICATE TOKENS
+# Theme: Gothic vampiric, shadows, crimson and blue essence, elegant darkness
+# =============================================================================
+
+obsidion:
+  # Corrupted Shade - Transformed creature (2/2)
+  - id: corrupted_shade
+    name: "Corrupted Shade"
+    prompt: >
+      A tormented shade, once-living creature transformed into ghostly shadow,
+      translucent dark form with wisps of crimson and neon blue essence energy,
+      anguished ethereal face barely visible in the darkness, flowing tattered
+      robes dissolving into shadow and mist, clawed hands reaching out, haunted
+      glowing eyes of pale blue, floating in a gothic cathedral with stained
+      glass windows casting colored light, candles flickering, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "cute, chibi, 3D render, photorealistic, bright, cheerful, natural, organic forest, text, watermark"
+
+  # Generic Obsidion Token - Fallback image
+  - id: generic_obsidion
+    name: "Obsidion Shade"
+    prompt: >
+      A dark ethereal spirit of the Obsidion Syndicate, translucent form of
+      swirling shadows and neon blue essence energy, elegant flowing robes
+      fading into darkness, pale aristocratic features visible through the
+      ghostly form, crimson accents in the darkness, floating in a gothic
+      Victorian chamber with candelabras and dark stone architecture, stained
+      glass window casting dim colored light, mysterious and dangerous presence,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "cute, chibi, 3D render, photorealistic, bright, cheerful, natural, organic forest, text, watermark"
+
+# =============================================================================
+# NEUTRAL / FREE-WALKER TOKENS
+# Theme: Mercenaries, practical warriors, mixed faction gear, desert/frontier
+# =============================================================================
+
+neutral:
+  # Mercenary - Hired sword (1/1)
+  - id: mercenary
+    name: "Mercenary"
+    prompt: >
+      A battle-hardened mercenary soldier in practical mixed armor salvaged
+      from multiple factions, brass pauldron on one shoulder, dark leather
+      chest piece, worn but well-maintained equipment, weathered face with
+      battle scars showing veteran experience, gripping a practical sword,
+      coin purse visible on belt, professional neutral expression, dusty
+      desert frontier camp with tents in background, golden hour lighting,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "cute, chibi, 3D render, photorealistic, modern, guns, firearms, clean pristine, text, watermark"
+
+  # Militia - Common soldier (1/1)
+  - id: militia
+    name: "Militia"
+    prompt: >
+      A common militia soldier in simple leather armor and cloth, not a
+      professional warrior but a determined defender, holding a basic spear
+      and wooden shield, weathered peasant face with resolve, standing guard
+      at a frontier town gate, mixed civilian and military appearance, dusty
+      roads and simple buildings in background, warm sunset lighting, humble
+      but courageous bearing, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "cute, chibi, 3D render, photorealistic, modern, guns, firearms, ornate armor, text, watermark"
+
+  # Arcane Guardian - Magical protector (2/3 with Guard)
+  - id: arcane_guardian
+    name: "Arcane Guardian"
+    prompt: >
+      A conjured magical guardian made of solidified arcane energy, humanoid
+      form of swirling blue and gold magical light, translucent crystalline
+      armor materializing around its form, shield of pure energy in one hand,
+      protective stance defending its summoner, glowing runes orbiting its
+      body, ancient magical circle on the ground beneath it, mystical frontier
+      temple ruins in background, dramatic magical lighting, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "cute, chibi, 3D render, photorealistic, modern, mechanical, dark evil, text, watermark"
+
+  # Hired Thug - Street enforcer (2/2)
+  - id: hired_thug
+    name: "Hired Thug"
+    prompt: >
+      A rough street enforcer in worn leather armor, muscular intimidating
+      build, scarred face with broken nose and mean expression, gripping a
+      heavy club studded with brass, criminal underworld appearance but
+      professional demeanor, coin purse and brass knuckles on belt, standing
+      in a shadowy frontier town alley, dim torch light, menacing but
+      businesslike posture, 90s Magic the Gathering card art, painted
+      fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "cute, chibi, 3D render, photorealistic, modern, guns, firearms, noble elegant, text, watermark"
+
+  # Summoned Warrior - Conjured fighter (2/2 with Rush)
+  - id: summoned_warrior
+    name: "Summoned Warrior"
+    prompt: >
+      A magically summoned warrior materializing from golden light, spectral
+      armor forming around a translucent humanoid form, sword of solidified
+      magic in hand, determined warrior spirit expression, golden summoning
+      runes swirling around the manifestation, partially transparent showing
+      the magical nature, emerging from a summoning circle in a frontier
+      mystic's tent, arcane symbols glowing, 90s Magic the Gathering card
+      art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "cute, chibi, 3D render, photorealistic, modern, mechanical, fully solid opaque, text, watermark"
+
+  # Generic Neutral Token - Fallback image
+  - id: generic_neutral
+    name: "Free-Walker"
+    prompt: >
+      A weathered Free-Walker mercenary standing ready for hire, practical
+      armor combining elements from all factions - brass Argentum pauldron,
+      Symbiote bone trinkets, dark Obsidion leather pieces, experienced
+      warrior bearing with professional neutrality, sword sheathed but hand
+      ready, frontier desert camp with trade caravans in background, dusty
+      roads and distant mountains, golden sunset lighting, 90s Magic the
+      Gathering card art, painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "cute, chibi, 3D render, photorealistic, modern, guns, firearms, faction-specific colors dominating, text, watermark"

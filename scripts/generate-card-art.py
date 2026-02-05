@@ -42,12 +42,12 @@ FLUX_SETTINGS = {
     "width": "704",
 }
 
-# Faction ID ranges
+# Faction ID ranges (expanded to include New Horizons expansion cards)
 FACTION_RANGES = {
-    "argentum": (1000, 1074),
-    "symbiote": (2000, 2074),
-    "obsidion": (3000, 3074),
-    "neutral": (4000, 4074),
+    "argentum": (1000, 1077),
+    "symbiote": (2000, 2076),
+    "obsidion": (3000, 3076),
+    "neutral": (4000, 4076),
 }
 
 

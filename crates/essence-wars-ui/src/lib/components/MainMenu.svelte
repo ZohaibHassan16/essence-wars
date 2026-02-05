@@ -15,34 +15,15 @@
   let isLoadingTutorial = $state(false);
   let isLoadingDeckBuilder = $state(false);
 
-  // Background images for random rotation
-  const menuBackgrounds = [
-    '/backgrounds/argentum_construct_hangar.webp',
-    '/backgrounds/argentum_essence_refinery.webp',
-    '/backgrounds/argentum_factory_interior.webp',
-    '/backgrounds/argentum_throne_room.webp',
-    '/backgrounds/symbiote_evolution_temple.webp',
-    '/backgrounds/symbiote_jungle_canopy.webp',
-    '/backgrounds/symbiote_spore_fields.webp',
-    '/backgrounds/symbiote_war_beast_pens.webp',
-    '/backgrounds/obsidion_blood_ritual_chamber.webp',
-    '/backgrounds/obsidion_library_archive.webp',
-    '/backgrounds/obsidion_necropolis.webp',
-    '/backgrounds/obsidion_vampire_court.webp',
-    '/backgrounds/neutral_battlefield_aftermath.webp',
-    '/backgrounds/neutral_caravan_road.webp',
-    '/backgrounds/neutral_essence_storm.webp',
-    '/backgrounds/neutral_giant_encampment.webp',
-    '/backgrounds/neutral_last_hope_city.webp',
-    '/backgrounds/neutral_trade_post.webp',
-    '/backgrounds/conflict_zone_skirmish.webp',
-    '/backgrounds/dawn_of_the_truce.webp',
-    '/backgrounds/essence_geode_cavern.webp',
-    '/backgrounds/omyra_world_map.webp',
-  ];
+  // Dynamically load all background images from the backgrounds folder
+  // This uses Vite's import.meta.glob to automatically discover all .webp files
+  const backgroundModules = import.meta.glob('/static/backgrounds/*.webp', { eager: true, query: '?url', import: 'default' });
+  const menuBackgrounds = Object.values(backgroundModules) as string[];
 
-  // Select random background on component creation
-  const currentBackground = menuBackgrounds[Math.floor(Math.random() * menuBackgrounds.length)];
+  // Select random background on component creation (fallback to solid color if none available)
+  const currentBackground = menuBackgrounds.length > 0
+    ? menuBackgrounds[Math.floor(Math.random() * menuBackgrounds.length)]
+    : null;
 
   // Play menu music when component mounts
   $effect(() => {
@@ -104,14 +85,14 @@
 
 <div
   class="min-h-screen bg-cover bg-center bg-no-repeat"
-  style="background-image: url('{currentBackground}')"
+  style={currentBackground ? `background-image: url('${currentBackground}')` : 'background-color: #1A1A2E'}
 >
   <!-- Dark overlay for readability -->
   <div class="min-h-screen flex flex-col items-center justify-center p-8 bg-black/60 backdrop-blur-[2px]">
     <div class="text-center">
       <!-- Banner image -->
       <img
-        src="/backgrounds/essence_wars_banner.webp"
+        src="/ui/essence_wars_banner.webp"
         alt="Essence Wars"
         class="h-32 md:h-40 lg:h-48 mx-auto mb-2 drop-shadow-2xl"
       />

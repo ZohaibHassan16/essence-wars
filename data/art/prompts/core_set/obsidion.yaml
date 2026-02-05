@@ -981,8 +981,43 @@ cards:
     lora: "rutkowski:0.5, classical-painting:0.5"
     negative: "bright colors, nature, forests, mechanical, blurry, low quality, text, watermark"
 
+# === ADDITIONAL CREATURES (New Horizons Expansion) ===
+
+  - id: 3075
+    name: "Blood Channeler"
+    card_type: creature
+    tags: [Mage]
+    prompt: >
+      A powerful female blood mage in elegant crimson and black robes with gold
+      trim, pale aristocratic features with sharp cheekbones and crimson lips,
+      channeling streams of blood magic between her outstretched hands, neon blue
+      essence vials attached to her belt glowing with stolen life force, confident
+      predatory expression as she prepares to strike, crimson tendrils of blood
+      magic swirling around her form, standing in a Gothic cathedral chamber with
+      stained glass windows casting crimson light, candelabras and blood altar
+      visible in background, 90s Magic the Gathering card art, painted fantasy
+      illustration
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "bright colors, nature, forests, mechanical, blurry, low quality, text, watermark"
+
+  - id: 3076
+    name: "Soul Leech"
+    card_type: creature
+    tags: [Shade]
+    prompt: >
+      A horrifying spectral entity draining the life force from its victim,
+      translucent dark form with wisps of crimson and neon blue essence flowing
+      into its ghostly maw, elongated clawed hands wrapped around a helpless
+      soul, anguished face visible within the shade's form showing its victims,
+      eyes burning with pale blue hunger, floating in a shadow-filled Gothic
+      crypt with coffins and tomb markers, chains and candles casting flickering
+      shadows, streams of stolen life essence flowing into the creature, 90s
+      Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "bright colors, nature, forests, mechanical, blurry, low quality, text, watermark"
+
 # =============================================================================
-# OBSIDION SYNDICATE PROMPTS COMPLETE - 75 CARDS
+# OBSIDION SYNDICATE PROMPTS COMPLETE - 77 CARDS
 # Aesthetic: Gothic Victorian elegance, vampiric aristocracy, shadow assassins
 # Colors: Crimson blood, neon blue essence, black shadows, pale skin
 # =============================================================================

@@ -1,0 +1,183 @@
+# Essence Wars - Background Art Prompts
+# World-themed backgrounds for menus and game boards
+# Resolution: 1344x768 (16:9, FLUX-friendly) → Upscale 2x to 2688x1536
+#
+# STYLE GUIDE:
+# - 90s Magic the Gathering painted fantasy illustration
+# - Oil painting technique, visible brushstrokes
+# - Classical fantasy art (Frazetta, Vallejo, MTG artists)
+# - Rich colors, dramatic lighting, painterly atmosphere
+# - NO digital art, NO concept art, NO photorealistic rendering
+
+backgrounds:
+  # 1. Extraction Dispute - Battle over an Essence vein
+  - id: extraction_dispute
+    name: "Extraction Dispute"
+    description: "Active battle over an Essence vein with forces from all factions"
+    prompt: >
+      An epic fantasy battle scene painted in oil, three armies clashing over a massive
+      glowing crystal formation erupting from rocky earth, white-armored knights with
+      brass shields on one side, wild druids with wolf companions and bone totems on
+      another, dark-robed mages channeling crimson energy on the third, the prismatic
+      crystal radiating blue and purple magical light at the center, ancient brass
+      steam-powered war machines in the distance belching white steam, dust and magical
+      energy swirling, dramatic sunset with golden orange clouds, classical fantasy
+      oil painting, 90s Magic the Gathering card art style, painted with visible
+      brushstrokes, rich saturated colors, epic composition, Frank Frazetta style
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "digital art, concept art, photorealistic, 3D render, modern, industrial, oil derrick, oil rig, photography, smooth gradients, airbrushed, anime, cartoon, text, watermark, signature, border, frame, letterbox"
+
+  # 2. The Scars at Dawn - Panoramic conflict zone
+  - id: the_scars_at_dawn
+    name: "The Scars at Dawn"
+    description: "The famous conflict zone between faction territories at sunrise"
+    prompt: >
+      A vast panoramic landscape painting of ancient battlefields at dawn, scarred
+      earth with overgrown trenches and crumbling stone fortifications stretching to
+      the horizon, broken wooden catapults and overturned brass-wheeled wagons half-buried
+      in the soil, shattered siege towers of timber and iron, glowing crystal craters
+      pulsing with faint blue magical residue, distant silhouettes of three different
+      civilizations on the horizons - gleaming white towers to the west, massive ancient
+      forest to the east, dark Gothic spires to the north, golden dawn light breaking
+      through dramatic clouds casting long shadows across the wounded land, mist rising
+      from the scarred valleys, classical landscape oil painting, 90s Magic the Gathering
+      art style, painterly brushwork, romantic fantasy atmosphere, Hudson River School influence
+    lora: "rutkowski:0.5, classical-painting:0.5"
+    negative: "digital art, concept art, photorealistic, 3D render, modern, contemporary, photography, smooth, clean lines, vector art, anime, text, watermark, signature, border, frame, walker, AT-AT, bipedal machine, robot, mech, mechanical legs, science fiction"
+
+  # 3. Last Hope City - Free-Walker settlement
+  - id: last_hope_city
+    name: "Last Hope City"
+    description: "The ramshackle Free-Walker city built in pre-Calamity ruins"
+    prompt: >
+      A fantastical frontier city painted in rich oils, built within colossal ancient
+      stone ruins overgrown with vines, ramshackle wooden buildings and colorful tents
+      nestled among crumbling marble columns and broken statues, busy market streets
+      filled with diverse merchants and towering giant humanoids, brass clockwork
+      decorations mixed with bone ornaments and dark leather goods, trade caravans
+      with exotic beasts of burden arriving through massive broken gates, desert
+      wasteland visible beyond the walls, warm golden hour lighting with dust motes
+      catching the light, classical fantasy cityscape oil painting, 90s Magic the
+      Gathering art style, visible brushstrokes, warm color palette
+    lora: "rutkowski:0.5, classical-painting:0.5"
+    negative: "digital art, concept art, photorealistic, 3D render, modern buildings, contemporary, guns, firearms, clean lines, smooth gradients, anime, text, watermark, signature, border, frame"
+
+  # 4. Prismatic Geode Cavern - Underground Essence deposits
+  - id: prismatic_geode_cavern
+    name: "Prismatic Geode Cavern"
+    description: "A vast underground cavern filled with glowing Essence crystals"
+    prompt: >
+      A breathtaking underground cavern painted with luminous colors, enormous
+      crystalline formations glowing with inner blue purple and gold light, massive
+      geodes splitting open to reveal prismatic cores, ancient wooden scaffolding
+      and rope bridges spanning the depths, tiny figures of explorers dwarfed by
+      the crystal formations, an underground lake reflecting the magical glow like
+      scattered stars, stalactites dripping with crystallized magical essence,
+      mysterious and awe-inspiring atmosphere, classical fantasy oil painting with
+      dramatic chiaroscuro lighting, 90s Magic the Gathering art style, rich
+      jewel-tone colors, painterly technique
+    lora: "rutkowski:0.5, classical-painting:0.5"
+    negative: "digital art, concept art, photorealistic, 3D render, modern, sci-fi, technology, neon, cyberpunk, smooth gradients, anime, text, watermark, signature, border, frame"
+
+  # 5. Trade Road Crossroads - Neutral meeting point
+  - id: trade_road_crossroads
+    name: "Trade Road Crossroads"
+    description: "Where caravans from all factions meet to trade"
+    prompt: >
+      A bustling desert crossroads market painted in warm earth tones, colorful
+      merchant tents and market stalls arranged around an ancient stone obelisk
+      carved with runes, horse-drawn covered wagons and exotic camel caravans,
+      merchants in flowing robes haggling over goods, crates and barrels of trade
+      goods stacked high, brass lanterns hanging from tent poles, worn cobblestone
+      road meeting from four directions, distant red rock mesas on the horizon,
+      warm afternoon golden hour light casting long dramatic shadows, dust motes
+      in the air, classical orientalist oil painting style, 90s Magic the Gathering
+      art, visible brushwork, Jean-Leon Gerome influence, romantic adventure atmosphere
+    lora: "frazetta:0.4, classical-painting:0.6"
+    negative: "digital art, concept art, photorealistic, 3D render, modern, guns, vehicles, contemporary, smooth, clean, anime, text, watermark, signature, border, frame, giant, monster, skeleton, bones, corpse"
+
+  # 6. Commander's Farsight - Strategic overview
+  - id: commanders_farsight
+    name: "Commander's Farsight"
+    description: "A commander's strategic table showing the battlefield from above"
+    prompt: >
+      An ornate war room interior painted in deep rich colors, a magical scrying
+      table made of polished brass and crystal showing a glowing ethereal map of
+      a battlefield floating above its surface, tiny magical figures representing
+      troops moving across the illusory terrain, a knight's mailed hands in chainmail
+      gloves visible at the edge of frame gesturing over the display, ancient maps
+      and scrolls scattered on wooden surfaces, brass oil lamps casting warm flickering
+      light, heraldic banners hanging from dark wood paneled walls, a tall window
+      showing distant airships with canvas sails, classical interior oil painting,
+      90s Magic the Gathering art style, Rembrandt lighting, rich atmosphere
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "digital art, concept art, photorealistic, 3D render, modern technology, screens, monitors, hologram, sci-fi, clean lines, anime, text, watermark, signature, border, frame, robot, robotic, prosthetic, mechanical arm, cyborg, futuristic"
+
+  # 7. The Gilded Truce - Diplomatic gathering
+  - id: the_gilded_truce
+    name: "The Gilded Truce"
+    description: "The great hall where faction leaders maintain the peace"
+    prompt: >
+      A grand fantasy throne room where faction leaders meet, painted in rich oils,
+      four delegations gathered around a central glowing crystal table, armored
+      knights in white cloaks and brass pauldrons on one side, wild druids in
+      fur-trimmed robes with antler headdresses on another, dark sorcerers in
+      flowing black robes with crimson trim on the third, grizzled mercenary
+      captains in leather armor on the fourth, towering Gothic stone arches
+      overhead with hanging tapestries depicting battles, magical torchlight
+      casting dramatic shadows, tension and uneasy peace in the air, classical
+      fantasy oil painting, 90s Magic the Gathering art style, visible brushstrokes,
+      Larry Elmore influence, dramatic fantasy atmosphere
+    lora: "rutkowski:0.5, classical-painting:0.5"
+    negative: "digital art, concept art, photorealistic, 3D render, modern, contemporary, clean lines, smooth, minimalist, anime, text, watermark, signature, border, frame, suits, business attire, founding fathers, congress, parliament, 18th century, colonial, wigs, modern clothing, crowd, audience"
+
+  # 8. Calamity Ruins - Ancient technology
+  - id: calamity_ruins
+    name: "Calamity Ruins"
+    description: "Overgrown ruins of pre-Calamity civilization"
+    prompt: >
+      Haunting ancient ruins painted in melancholic earth tones, impossibly grand
+      stone and bronze architecture now crumbling and overgrown with centuries of
+      vegetation, massive broken columns and fallen statues half-buried in wild
+      grass, faded murals barely visible on weathered walls, ancient brass mechanisms
+      covered in moss still faintly glowing with residual blue magic, trees growing
+      through shattered domes, wolves denning in fallen towers, small figures of
+      explorers dwarfed by the massive ruins, sunset light casting everything in
+      amber and shadow, classical romantic ruin painting, 90s Magic the Gathering
+      art style, Caspar David Friedrich influence, sublime atmosphere
+    lora: "rutkowski:0.5, classical-painting:0.5"
+    negative: "digital art, concept art, photorealistic, 3D render, modern, futuristic, sci-fi, technology, clean, pristine, anime, text, watermark, signature, border, frame"
+
+  # 9. Essence Storm - Raw magical phenomenon
+  - id: essence_storm
+    name: "Essence Storm"
+    description: "A rare and dangerous raw Essence storm sweeping across the land"
+    prompt: >
+      A terrifying and beautiful magical storm painted with dramatic energy, swirling
+      vortex of prismatic crystalline energy dominating the sky, blue and purple and
+      gold lightning crackling between clouds of solidified magic, the ground below
+      being transformed with rocks floating and plants growing wildly, distant figures
+      fleeing on horseback toward shelter, abandoned carts and equipment left behind,
+      reality itself warping and bending near the storm's edge, raw elemental power
+      beyond mortal control, classical fantasy storm painting, 90s Magic the Gathering
+      art style, JMW Turner influence, sublime terror and beauty, dramatic brushwork
+    lora: "rutkowski:0.5, classical-painting:0.5"
+    negative: "digital art, concept art, photorealistic, 3D render, modern, tornado, hurricane, realistic weather, photography, smooth, anime, text, watermark, signature, border, frame"
+
+  # 10. Omyra World Map - Stylized continent
+  - id: omyra_world_map
+    name: "Omyra World Map"
+    description: "A stylized map of Pangea-Prime showing faction territories"
+    prompt: >
+      An ancient hand-painted fantasy map on aged yellowed parchment with torn edges
+      and coffee stains, the continent drawn in classical cartography style with
+      illustrated mountains forests and cities, western territories marked with
+      geometric brass-colored city symbols, eastern lands shown as dense illustrated
+      forests with beast drawings, northern regions depicted with dark Gothic spire
+      illustrations, central scarred wasteland marked with skull warnings, trade
+      roads drawn as dotted paths connecting all regions, decorative compass rose
+      in the corner, illustrated sea monsters in the surrounding oceans, ornate
+      border with faction symbols, classical fantasy cartography, hand-drawn
+      illustration style, aged and weathered appearance
+    lora: "classical-painting:0.7, rutkowski:0.3"
+    negative: "digital art, modern fonts, clean lines, photorealistic, satellite view, Google maps, 3D render, smooth gradients, contemporary, anime, border frame around entire image"

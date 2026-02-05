@@ -1067,7 +1067,42 @@ cards:
     lora: "rutkowski:0.4, classical-painting:0.6"
     negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
 
+# === ADDITIONAL CREATURES (New Horizons Expansion) ===
+
+  - id: 2075
+    name: "Brood Tender"
+    card_type: creature
+    tags: [Beast]
+    prompt: >
+      A nurturing female beast master with wild auburn hair woven with vines and
+      flowers, muscular athletic build in form-fitting leather armor, kneeling
+      among a group of young wolf pups and forest creatures she is raising,
+      gentle but fierce maternal expression as she feeds a small beast from her
+      hand, bioluminescent tribal markings glowing softly on her arms, pack of
+      young wolves and forest beasts gathered around her protectively, ancient
+      primordial forest clearing with massive trees and glowing fungi, dappled
+      sunlight filtering through canopy, 90s Magic the Gathering card art,
+      painted fantasy illustration
+    lora: "frazetta:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
+  - id: 2076
+    name: "Spore Shaman"
+    card_type: creature
+    tags: [Parasite]
+    prompt: >
+      A mysterious male shaman wreathed in toxic spore clouds, gaunt figure in
+      robes of woven moss and fungal growths, face partially obscured by a mask
+      of living bark, glowing purple and green bioluminescent mushrooms growing
+      from his staff and shoulders, hands extended releasing clouds of deadly
+      spores toward enemies, eyes glowing with primal fungal magic, standing in
+      a circle of giant poisonous mushrooms in a dark forest grove, sickly green
+      mist swirling around his feet, other creatures keeping their distance,
+      90s Magic the Gathering card art, painted fantasy illustration
+    lora: "rutkowski:0.5, classical-painting:0.5"
+    negative: "chitin, insect, alien, mechanical, industrial, blurry, low quality, text, watermark"
+
 # =============================================================================
-# SYMBIOTE CIRCLES PROMPTS COMPLETE - 75 CARDS
+# SYMBIOTE CIRCLES PROMPTS COMPLETE - 77 CARDS
 # Aesthetic: Urza's Saga nature magic, primordial forests, pack predators
 # =============================================================================
