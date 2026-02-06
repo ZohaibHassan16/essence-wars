@@ -1,0 +1,291 @@
+# Essence Wars - Battle SFX Generation Prompts
+# For use with ElevenLabs Sound Effects / Stability Audio / Local models
+#
+# Art Direction Reference:
+#   - Argentum Combine: Clockwork, brass, steam-powered, mechanical precision, metallic
+#   - Symbiote Circles: Primal, organic, bestial, nature-infused, feral growls
+#   - Obsidion Syndicate: Dark magic, blood sorcery, ethereal whispers, arcane energy
+#   - Neutral/Generic: Universal combat sounds, weapon impacts, physical actions
+#
+# Output Format: .ogg or .wav, 44.1kHz, mono, 1-3 seconds duration
+# Naming Convention: {category}_{faction}_{type}_{number}.ogg
+
+metadata:
+  version: "1.0"
+  total_sounds: 54
+  target_folder: "static/sounds/battle"
+
+# =============================================================================
+# ARGENTUM COMBINE - Mechanical / Clockwork / Steam
+# =============================================================================
+argentum:
+  description: |
+    The Argentum Combine uses clockwork constructs, brass automatons, and steam-powered
+    machinery. Their sounds should evoke precision engineering, metallic impacts,
+    grinding gears, and hissing steam. Think steampunk war machines.
+
+  attack:
+    - id: attack_argentum_light_01
+      prompt: "Light metallic punch, brass knuckle impact on armor, quick mechanical strike, steampunk"
+    - id: attack_argentum_light_02
+      prompt: "Small clockwork mechanism firing, spring-loaded dart launcher, precise mechanical click"
+    - id: attack_argentum_medium_01
+      prompt: "Heavy brass gear grinding impact, clockwork fist slam, mechanical crunch"
+    - id: attack_argentum_medium_02
+      prompt: "Steam-powered piston punch, hydraulic strike with metal clang, industrial impact"
+    - id: attack_argentum_heavy_01
+      prompt: "Massive clockwork colossus stomp, thunderous brass impact, heavy machinery slam"
+    - id: attack_argentum_heavy_02
+      prompt: "Steam cannon blast, pressurized metal explosion, industrial war machine firing"
+    - id: attack_argentum_heavy_03
+      prompt: "Giant gear mechanism crushing, massive clockwork destruction, catastrophic metal impact"
+
+  summon:
+    - id: summon_argentum_01
+      prompt: "Clockwork automaton powering up, gears clicking into place, brass machinery awakening"
+    - id: summon_argentum_02
+      prompt: "Steam pressure building and releasing, mechanical construct activating, hissing valves"
+    - id: summon_argentum_03
+      prompt: "Heavy metal footsteps approaching, brass sentinel arriving, mechanical march"
+
+  death:
+    - id: death_argentum_01
+      prompt: "Clockwork mechanism breaking down, gears grinding to halt, springs snapping"
+    - id: death_argentum_02
+      prompt: "Steam venting from destroyed machine, brass construct collapsing, metal crumpling"
+    - id: death_argentum_03
+      prompt: "Automaton powering down, clockwork winding down slowly, mechanical death rattle"
+
+# =============================================================================
+# SYMBIOTE CIRCLES - Primal / Organic / Bestial
+# =============================================================================
+symbiote:
+  description: |
+    The Symbiote Circles bond with nature and beasts. Their sounds should evoke
+    primal ferocity, organic growth, animal vocalizations, and the raw power of
+    nature. Think wolves, great cats, living vines, and forest predators.
+
+  attack:
+    - id: attack_symbiote_light_01
+      prompt: "Quick claw swipe, small predator scratch, feline paw strike"
+    - id: attack_symbiote_light_02
+      prompt: "Venomous spit, snake strike, quick organic projectile"
+    - id: attack_symbiote_medium_01
+      prompt: "Wolf bite and tear, predator mauling, beast clamping down on prey"
+    - id: attack_symbiote_medium_02
+      prompt: "Thorny vine whip crack, living plant lashing out, organic tendril strike"
+    - id: attack_symbiote_heavy_01
+      prompt: "Massive beast pounce and slam, dire wolf tackle, apex predator takedown"
+    - id: attack_symbiote_heavy_02
+      prompt: "Giant treant smash, ancient tree spirit crushing blow, nature's wrath impact"
+    - id: attack_symbiote_heavy_03
+      prompt: "Pack of wolves attacking together, coordinated beast assault, primal fury unleashed"
+
+  summon:
+    - id: summon_symbiote_01
+      prompt: "Wolf howl calling the pack, beast emerging from forest, predator announcing presence"
+    - id: summon_symbiote_02
+      prompt: "Rapid plant growth, vines unfurling, organic matter expanding and spreading"
+    - id: summon_symbiote_03
+      prompt: "Large creature emerging from undergrowth, heavy beast footsteps on forest floor"
+
+  death:
+    - id: death_symbiote_01
+      prompt: "Wounded animal whimper and collapse, beast falling, creature's final breath"
+    - id: death_symbiote_02
+      prompt: "Plant withering rapidly, organic matter decomposing, nature reclaiming"
+    - id: death_symbiote_03
+      prompt: "Wolf death howl, mournful beast cry, pack mourning fallen member"
+
+# =============================================================================
+# OBSIDION SYNDICATE - Dark Magic / Blood Sorcery / Ethereal
+# =============================================================================
+obsidion:
+  description: |
+    The Obsidion Syndicate practices forbidden magic, blood sorcery, and necromancy.
+    Their sounds should evoke dark energy, ethereal whispers, arcane power, and
+    supernatural dread. Think vampires, liches, shadow magic, and eldritch horror.
+
+  attack:
+    - id: attack_obsidion_light_01
+      prompt: "Shadow bolt firing, dark magic projectile, ethereal energy whoosh"
+    - id: attack_obsidion_light_02
+      prompt: "Quick blood magic slash, vampiric strike, supernatural claw swipe"
+    - id: attack_obsidion_medium_01
+      prompt: "Dark energy burst, arcane explosion, forbidden magic detonation"
+    - id: attack_obsidion_medium_02
+      prompt: "Soul drain attack, life force being extracted, ghostly siphoning sound"
+    - id: attack_obsidion_heavy_01
+      prompt: "Massive dark magic explosion, eldritch blast, catastrophic arcane detonation"
+    - id: attack_obsidion_heavy_02
+      prompt: "Lightning storm spell, thunder magic crackling, electrical arcane discharge"
+    - id: attack_obsidion_heavy_03
+      prompt: "Demonic roar with dark energy wave, hellfire explosion, apocalyptic magic"
+
+  summon:
+    - id: summon_obsidion_01
+      prompt: "Dark portal opening, supernatural gateway, ethereal doorway materializing"
+    - id: summon_obsidion_02
+      prompt: "Undead rising from grave, bones reassembling, necromantic resurrection"
+    - id: summon_obsidion_03
+      prompt: "Demonic presence manifesting, evil entity arriving, dark summoning complete"
+
+  death:
+    - id: death_obsidion_01
+      prompt: "Soul departing body, ghostly wail fading, spirit dissipating"
+    - id: death_obsidion_02
+      prompt: "Dark magic backfiring, arcane energy imploding, supernatural collapse"
+    - id: death_obsidion_03
+      prompt: "Vampire death screech, undead creature perishing, unholy being destroyed"
+
+# =============================================================================
+# NEUTRAL / GENERIC - Universal Combat Sounds
+# =============================================================================
+neutral:
+  description: |
+    Neutral sounds for mercenaries, Free-Walkers, and generic combat. These should
+    be versatile weapon impacts, physical actions, and universal battle sounds
+    that work across all factions. Think swords, arrows, shields, and raw combat.
+
+  attack:
+    - id: attack_neutral_light_01
+      prompt: "Quick sword slash through air, blade swing, light weapon strike"
+    - id: attack_neutral_light_02
+      prompt: "Arrow firing from bow, projectile whoosh, ranged weapon shot"
+    - id: attack_neutral_medium_01
+      prompt: "Sword clashing against armor, blade impact on metal, weapon hitting shield"
+    - id: attack_neutral_medium_02
+      prompt: "Heavy mace or hammer swing and impact, blunt weapon strike"
+    - id: attack_neutral_heavy_01
+      prompt: "Massive two-handed sword cleave, devastating blade strike, powerful slash"
+    - id: attack_neutral_heavy_02
+      prompt: "Giant warhammer ground slam, earth-shaking impact, titan weapon strike"
+    - id: attack_neutral_heavy_03
+      prompt: "Explosive arrow or bomb impact, siege weapon hit, destructive projectile"
+
+  summon:
+    - id: summon_neutral_01
+      prompt: "Mercenary arriving, boots on ground, warrior taking position"
+    - id: summon_neutral_02
+      prompt: "Weapon being drawn from sheath, blade unsheathing, ready for battle"
+    - id: summon_neutral_03
+      prompt: "War horn sounding, battle drums beginning, troops rallying"
+
+  death:
+    - id: death_neutral_01
+      prompt: "Warrior falling in battle, armor clanking on ground, body collapse"
+    - id: death_neutral_02
+      prompt: "Final breath and weapon dropping, defeated soldier, battle death"
+    - id: death_neutral_03
+      prompt: "Dramatic death with armor crash, heavy warrior falling, combat casualty"
+
+# =============================================================================
+# GENERIC COMBAT - Shared across all factions
+# =============================================================================
+generic:
+  description: |
+    Universal combat sounds used by all factions - damage taken, healing effects,
+    and other shared battle audio that doesn't need faction-specific variants.
+
+  damage:
+    - id: damage_generic_01
+      prompt: "Physical impact on body, punch or kick landing, combat hit received"
+    - id: damage_generic_02
+      prompt: "Sharp pain reaction, getting struck, receiving blow grunt"
+    - id: damage_generic_03
+      prompt: "Heavy hit received, taking damage, impact with pain"
+    - id: damage_generic_04
+      prompt: "Magical damage zap, energy hit, supernatural strike received"
+    - id: damage_generic_05
+      prompt: "Critical hit impact, devastating blow landing, powerful strike connecting"
+
+  heal:
+    - id: heal_generic_01
+      prompt: "Gentle healing magic, restorative energy flowing, wounds mending"
+    - id: heal_generic_02
+      prompt: "Life force returning, rejuvenating shimmer, health restoring chime"
+    - id: heal_generic_03
+      prompt: "Powerful healing burst, significant restoration, magical recovery"
+
+  block:
+    - id: block_generic_01
+      prompt: "Shield blocking attack, defensive parry, guard absorbing hit"
+    - id: block_generic_02
+      prompt: "Magical barrier deflecting, energy shield impact, arcane protection"
+
+  buff:
+    - id: buff_generic_01
+      prompt: "Power-up activation, strength increasing, magical enhancement applied"
+    - id: buff_generic_02
+      prompt: "Blessing bestowed, divine favor granted, positive aura surrounding"
+
+  debuff:
+    - id: debuff_generic_01
+      prompt: "Weakening curse applied, power draining, debilitating magic effect"
+    - id: debuff_generic_02
+      prompt: "Poisoned or corrupted, negative effect spreading, harmful aura"
+
+# =============================================================================
+# GENERATION NOTES
+# =============================================================================
+generation_notes:
+  elevenlabs:
+    - "Use Sound Effects API with detailed prompts"
+    - "Request 2-3 second duration max"
+    - "Post-process to normalize volume levels"
+
+  stability_audio:
+    - "Use Stable Audio model"
+    - "44.1kHz sample rate"
+    - "Consider adding 'game sound effect' to prompts"
+
+  local_models:
+    - "AudioLDM2 or similar can generate from text"
+    - "May need prompt engineering for game-quality output"
+
+  post_processing:
+    - "Normalize all files to consistent volume (-14 LUFS recommended)"
+    - "Convert to .ogg for web compatibility"
+    - "Trim silence from start/end"
+    - "Apply light compression if needed"
+
+# =============================================================================
+# FILE MAPPING - Maps new files to audio manager categories
+# =============================================================================
+file_mapping:
+  attack_light:
+    argentum: [attack_argentum_light_01, attack_argentum_light_02]
+    symbiote: [attack_symbiote_light_01, attack_symbiote_light_02]
+    obsidion: [attack_obsidion_light_01, attack_obsidion_light_02]
+    neutral: [attack_neutral_light_01, attack_neutral_light_02]
+
+  attack_medium:
+    argentum: [attack_argentum_medium_01, attack_argentum_medium_02]
+    symbiote: [attack_symbiote_medium_01, attack_symbiote_medium_02]
+    obsidion: [attack_obsidion_medium_01, attack_obsidion_medium_02]
+    neutral: [attack_neutral_medium_01, attack_neutral_medium_02]
+
+  attack_heavy:
+    argentum: [attack_argentum_heavy_01, attack_argentum_heavy_02, attack_argentum_heavy_03]
+    symbiote: [attack_symbiote_heavy_01, attack_symbiote_heavy_02, attack_symbiote_heavy_03]
+    obsidion: [attack_obsidion_heavy_01, attack_obsidion_heavy_02, attack_obsidion_heavy_03]
+    neutral: [attack_neutral_heavy_01, attack_neutral_heavy_02, attack_neutral_heavy_03]
+
+  summon:
+    argentum: [summon_argentum_01, summon_argentum_02, summon_argentum_03]
+    symbiote: [summon_symbiote_01, summon_symbiote_02, summon_symbiote_03]
+    obsidion: [summon_obsidion_01, summon_obsidion_02, summon_obsidion_03]
+    neutral: [summon_neutral_01, summon_neutral_02, summon_neutral_03]
+
+  death:
+    argentum: [death_argentum_01, death_argentum_02, death_argentum_03]
+    symbiote: [death_symbiote_01, death_symbiote_02, death_symbiote_03]
+    obsidion: [death_obsidion_01, death_obsidion_02, death_obsidion_03]
+    neutral: [death_neutral_01, death_neutral_02, death_neutral_03]
+
+  generic:
+    damage: [damage_generic_01, damage_generic_02, damage_generic_03, damage_generic_04, damage_generic_05]
+    heal: [heal_generic_01, heal_generic_02, heal_generic_03]
+    block: [block_generic_01, block_generic_02]
+    buff: [buff_generic_01, buff_generic_02]
+    debuff: [debuff_generic_01, debuff_generic_02]

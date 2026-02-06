@@ -821,22 +821,18 @@ Audit all token images `crates/essence-wars-ui/static/tokens/`, following our ar
 
 - [ ] **Task 10.1 Review and Update Repository Size Analysis**
   - **CHECK Total Git repo Size**: (was ~227 MB)
-  - **Get Static assets Size Distribution**: Was: ~130 MB (59 MB cards, 58 MB music, 6 MB sounds, 4 MB backgrounds, 2.2 MB portraits, 1.8 MB tokens)
+  - **Get Static assets Size Distribution**: *Was:* ~130 MB (59 MB cards, 58 MB music, 6 MB sounds, 4 MB backgrounds, 2.2 MB portraits, 1.8 MB tokens)
   - **Source code**: <10 MB
   - **Assess Status**: Is Size still acceptable for GitHub Releases (2 GB limit per file)?
 
 - [ ] **Task 10.2 Distribution Strategy (Open Source Project)**
 
-* **Current Approach (✅ Recommended)**
+* **✅ Recommended Approach**
   - Use **GitHub Releases** for binary distribution
   - 130 MB static assets are fine bundled in the executable
   - Free, version-controlled, no external dependencies
-  - Simple workflow: `git clone` → `build-windows.sh` → release
+  - Create GitHub Actions Workflow for creating the Release
 
-* **Future Option (If needed)**
-  - **itch.io**: Free hosting up to 1 GB, great for open source games
-  - Good for community visibility and easier download experience
-  - Optional revenue/donation support built-in
 
 - [ ] **Task 10.3 Discuss Contributor DX Concerns**
 
@@ -895,14 +891,6 @@ Audit all token images `crates/essence-wars-ui/static/tokens/`, following our ar
   - [ ] Document build process for contributors
   - [ ] Optional: Set up itch.io project page for community visibility
 
-* **Containerization**: 
-  - ❌ Not necessary for desktop game distribution
-  - Use native OS installers (Windows NSIS, Linux AppImage/deb)
-
-* **No Commercial CDN Needed**: 
-  - GitHub Releases handles bandwidth for open source
-  - No need for external storage (Google Drive, Cloudflare R2, etc.)
-
 - [ ] **Task 10.5 Discuss Build Variants**
 
 * **Single Build Strategy (Recommended)**:
@@ -937,7 +925,7 @@ Using FLUX Dev model via stable-diffusion.cpp:
 - Steps: 20 (high quality)
 - LoRAs: classical-painting, frazetta, rutkowski (faction-appropriate)
 
-See `docs/flux-guide.md` for full command templates.
+See `docs/ai-asset-generation.md` for full command templates.
 
 ### 9.3 Other Assets Needed
 

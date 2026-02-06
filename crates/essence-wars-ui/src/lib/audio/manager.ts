@@ -67,29 +67,52 @@ const SOUND_FILES: Record<SoundEffect, string[]> = {
     '/sounds/casino/card-place-3.ogg',
     '/sounds/casino/card-place-4.ogg',
   ],
-  cardPlaySpell: ['/sounds/rpg/spell_01.ogg', '/sounds/rpg/spell_02.ogg'],
-  cardPlaySupport: ['/sounds/rpg/metal_01.ogg', '/sounds/rpg/metal_02.ogg'],
+  cardPlaySpell: [
+    '/sounds/battle/buff_generic_01.ogg',
+    '/sounds/battle/buff_generic_02.ogg',
+  ],
+  cardPlaySupport: [
+    '/sounds/battle/block_generic_01.ogg',
+    '/sounds/battle/block_generic_02.ogg',
+  ],
 
-  // Combat Sounds (generic/neutral)
-  attackLight: ['/sounds/rpg/blade_01.ogg'],
-  attackMedium: ['/sounds/rpg/blade_02.ogg'],
-  attackHeavy: ['/sounds/rpg/blade_03.ogg'],
+  // Combat Sounds (generic/neutral) - AI-generated battle SFX
+  attackLight: [
+    '/sounds/battle/attack_neutral_light_01.ogg',
+    '/sounds/battle/attack_neutral_light_02.ogg',
+  ],
+  attackMedium: [
+    '/sounds/battle/attack_neutral_medium_01.ogg',
+    '/sounds/battle/attack_neutral_medium_02.ogg',
+  ],
+  attackHeavy: [
+    '/sounds/battle/attack_neutral_heavy_01.ogg',
+    '/sounds/battle/attack_neutral_heavy_02.ogg',
+    '/sounds/battle/attack_neutral_heavy_03.ogg',
+  ],
   damage: [
-    '/sounds/creatures/hurt_01.ogg',
-    '/sounds/creatures/hurt_02.ogg',
-    '/sounds/creatures/hurt_03.ogg',
-    '/sounds/creatures/hurt_04.ogg',
-    '/sounds/creatures/hurt_05.ogg',
+    '/sounds/battle/damage_generic_01.ogg',
+    '/sounds/battle/damage_generic_02.ogg',
+    '/sounds/battle/damage_generic_03.ogg',
+    '/sounds/battle/damage_generic_04.ogg',
+    '/sounds/battle/damage_generic_05.ogg',
   ],
-  creatureDeath: ['/sounds/rpg/creature_die_01.ogg'],
+  creatureDeath: [
+    '/sounds/battle/death_neutral_01.ogg',
+    '/sounds/battle/death_neutral_02.ogg',
+    '/sounds/battle/death_neutral_03.ogg',
+  ],
   heal: [
-    '/sounds/rpg/item_gem_01.ogg',
-    '/sounds/rpg/item_gem_02.ogg',
-    '/sounds/rpg/item_gem_03.ogg',
+    '/sounds/battle/heal_generic_01.ogg',
+    '/sounds/battle/heal_generic_02.ogg',
+    '/sounds/battle/heal_generic_03.ogg',
   ],
 
-  // Ability Sounds
-  abilityActivate: ['/sounds/rpg/spell_01.ogg', '/sounds/rpg/spell_02.ogg'],
+  // Ability Sounds - AI-generated battle SFX
+  abilityActivate: [
+    '/sounds/battle/buff_generic_01.ogg',
+    '/sounds/battle/buff_generic_02.ogg',
+  ],
 
   // Game State Sounds
   turnStartPlayer: ['/sounds/interface/confirmation_003.ogg'],
@@ -99,77 +122,115 @@ const SOUND_FILES: Record<SoundEffect, string[]> = {
   defeat: ['/music/defeat.ogg'],
 };
 
-// Faction-specific attack sounds
+// Faction-specific attack sounds - AI-generated battle SFX
 const FACTION_ATTACK_SOUNDS: Record<Faction, Record<'light' | 'medium' | 'heavy', string[]>> = {
   argentum: {
-    light: ['/sounds/rpg/metal_01.ogg'],
-    medium: ['/sounds/rpg/metal_02.ogg', '/sounds/rpg/chain_01.ogg'],
-    heavy: ['/sounds/rpg/metal_03.ogg', '/sounds/rpg/chain_02.ogg', '/sounds/rpg/chain_03.ogg'],
+    light: [
+      '/sounds/battle/attack_argentum_light_01.ogg',
+      '/sounds/battle/attack_argentum_light_02.ogg',
+    ],
+    medium: [
+      '/sounds/battle/attack_argentum_medium_01.ogg',
+      '/sounds/battle/attack_argentum_medium_02.ogg',
+    ],
+    heavy: [
+      '/sounds/battle/attack_argentum_heavy_01.ogg',
+      '/sounds/battle/attack_argentum_heavy_02.ogg',
+      '/sounds/battle/attack_argentum_heavy_03.ogg',
+    ],
   },
   symbiote: {
-    light: ['/sounds/creatures/spit_01.ogg', '/sounds/creatures/spit_02.ogg'],
-    medium: ['/sounds/rpg/creature_slime_01.ogg', '/sounds/rpg/creature_slime_02.ogg'],
-    heavy: ['/sounds/rpg/creature_slime_03.ogg', '/sounds/rpg/creature_slime_04.ogg'],
+    light: [
+      '/sounds/battle/attack_symbiote_light_01.ogg',
+      '/sounds/battle/attack_symbiote_light_02.ogg',
+    ],
+    medium: [
+      '/sounds/battle/attack_symbiote_medium_01.ogg',
+      '/sounds/battle/attack_symbiote_medium_02.ogg',
+    ],
+    heavy: [
+      '/sounds/battle/attack_symbiote_heavy_01.ogg',
+      '/sounds/battle/attack_symbiote_heavy_02.ogg',
+      '/sounds/battle/attack_symbiote_heavy_03.ogg',
+    ],
   },
   obsidion: {
-    light: ['/sounds/rpg/spell_fire_01.ogg', '/sounds/rpg/spell_fire_02.ogg'],
-    medium: ['/sounds/rpg/spell_fire_03.ogg', '/sounds/rpg/spell_fire_04.ogg'],
-    heavy: ['/sounds/rpg/spell_fire_05.ogg', '/sounds/rpg/spell_fire_06.ogg', '/sounds/rpg/spell_fire_07.ogg'],
+    light: [
+      '/sounds/battle/attack_obsidion_light_01.ogg',
+      '/sounds/battle/attack_obsidion_light_02.ogg',
+    ],
+    medium: [
+      '/sounds/battle/attack_obsidion_medium_01.ogg',
+      '/sounds/battle/attack_obsidion_medium_02.ogg',
+    ],
+    heavy: [
+      '/sounds/battle/attack_obsidion_heavy_01.ogg',
+      '/sounds/battle/attack_obsidion_heavy_02.ogg',
+      '/sounds/battle/attack_obsidion_heavy_03.ogg',
+    ],
   },
   neutral: {
-    light: ['/sounds/rpg/blade_01.ogg'],
-    medium: ['/sounds/rpg/blade_02.ogg'],
-    heavy: ['/sounds/rpg/blade_03.ogg'],
+    light: [
+      '/sounds/battle/attack_neutral_light_01.ogg',
+      '/sounds/battle/attack_neutral_light_02.ogg',
+    ],
+    medium: [
+      '/sounds/battle/attack_neutral_medium_01.ogg',
+      '/sounds/battle/attack_neutral_medium_02.ogg',
+    ],
+    heavy: [
+      '/sounds/battle/attack_neutral_heavy_01.ogg',
+      '/sounds/battle/attack_neutral_heavy_02.ogg',
+      '/sounds/battle/attack_neutral_heavy_03.ogg',
+    ],
   },
 };
 
-// Faction-specific summon sounds
+// Faction-specific summon sounds - AI-generated battle SFX
 const FACTION_SUMMON_SOUNDS: Record<Faction, string[]> = {
   argentum: [
-    '/sounds/rpg/lock_01.ogg',
-    '/sounds/rpg/lock_02.ogg',
-    '/sounds/rpg/stones_01.ogg',
-    '/sounds/rpg/stones_02.ogg',
+    '/sounds/battle/summon_argentum_01.ogg',
+    '/sounds/battle/summon_argentum_02.ogg',
+    '/sounds/battle/summon_argentum_03.ogg',
   ],
   symbiote: [
-    '/sounds/creatures/burble_01.ogg',
-    '/sounds/creatures/burble_02.ogg',
-    '/sounds/creatures/bug_01.ogg',
-    '/sounds/creatures/bug_02.ogg',
+    '/sounds/battle/summon_symbiote_01.ogg',
+    '/sounds/battle/summon_symbiote_02.ogg',
+    '/sounds/battle/summon_symbiote_03.ogg',
   ],
   obsidion: [
-    '/sounds/rpg/creature_roar_01.ogg',
-    '/sounds/rpg/creature_roar_02.ogg',
-    '/sounds/rpg/creature_roar_03.ogg',
+    '/sounds/battle/summon_obsidion_01.ogg',
+    '/sounds/battle/summon_obsidion_02.ogg',
+    '/sounds/battle/summon_obsidion_03.ogg',
   ],
   neutral: [
-    '/sounds/casino/card-place-1.ogg',
-    '/sounds/casino/card-place-2.ogg',
-    '/sounds/casino/card-place-3.ogg',
+    '/sounds/battle/summon_neutral_01.ogg',
+    '/sounds/battle/summon_neutral_02.ogg',
+    '/sounds/battle/summon_neutral_03.ogg',
   ],
 };
 
-// Faction-specific death sounds
+// Faction-specific death sounds - AI-generated battle SFX
 const FACTION_DEATH_SOUNDS: Record<Faction, string[]> = {
   argentum: [
-    '/sounds/rpg/metal_03.ogg',
-    '/sounds/rpg/stones_03.ogg',
-    '/sounds/rpg/stones_04.ogg',
+    '/sounds/battle/death_argentum_01.ogg',
+    '/sounds/battle/death_argentum_02.ogg',
+    '/sounds/battle/death_argentum_03.ogg',
   ],
   symbiote: [
-    '/sounds/creatures/alien_01.ogg',
-    '/sounds/creatures/alien_02.ogg',
-    '/sounds/creatures/weird_01.ogg',
-    '/sounds/creatures/weird_02.ogg',
+    '/sounds/battle/death_symbiote_01.ogg',
+    '/sounds/battle/death_symbiote_02.ogg',
+    '/sounds/battle/death_symbiote_03.ogg',
   ],
   obsidion: [
-    '/sounds/creatures/scream_01.ogg',
-    '/sounds/creatures/scream_02.ogg',
-    '/sounds/creatures/monster_01.ogg',
+    '/sounds/battle/death_obsidion_01.ogg',
+    '/sounds/battle/death_obsidion_02.ogg',
+    '/sounds/battle/death_obsidion_03.ogg',
   ],
   neutral: [
-    '/sounds/rpg/creature_die_01.ogg',
-    '/sounds/creatures/hurt_05.ogg',
+    '/sounds/battle/death_neutral_01.ogg',
+    '/sounds/battle/death_neutral_02.ogg',
+    '/sounds/battle/death_neutral_03.ogg',
   ],
 };
 
