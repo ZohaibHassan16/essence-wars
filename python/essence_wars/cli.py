@@ -79,7 +79,6 @@ def main() -> int:
           essence-wars report generate --run-id latest
           essence-wars benchmark --checkpoint model.pt
         """
-        pass
 
     # Register command groups
     _register_train_commands(cli)
@@ -119,7 +118,6 @@ def _register_train_commands(cli: click.Group) -> None:
           card2vec            - Card embedding model
           decision-transformer - Sequence modeling approach
         """
-        pass
 
     @train.command("ppo")
     @click.option("--timesteps", "-t", default=500_000, help="Total training timesteps")
@@ -328,7 +326,6 @@ def _register_report_commands(cli: click.Group) -> None:
           aggregate     - Aggregated dashboard across runs
           leaderboard   - Agent/deck leaderboard
         """
-        pass
 
     @report.command("generate")
     @click.option("--run-id", "-r", default="latest",
@@ -453,7 +450,6 @@ def _register_data_commands(cli: click.Group) -> None:
           generate-distillation  - MCTS demonstration data
           generate-exits         - Game exit/outcome data
         """
-        pass
 
     @data.command("generate-distillation")
     @click.option("--games", "-n", default=10000, help="Number of games to generate")

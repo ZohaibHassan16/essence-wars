@@ -18,8 +18,8 @@ pub fn start_game(
 ) -> String {
     match manager.start_game(player_deck, opponent_deck, bot_type, seed) {
         Ok(()) => {
-            let session = manager.active_session().unwrap();
-            let state = session.client.get_state().unwrap();
+            let session = manager.active_session().expect("session exists after check");
+            let state = session.client.get_state().expect("game state available");
 
             // Sync state to Tauri UI
             try_push_state_to_ui(
@@ -163,12 +163,12 @@ pub fn play_action(manager: &mut SessionManager, action_index: u8) -> String {
 
     // Check if it's opponent's turn - if so, run AI
     {
-        let session = manager.active_session().unwrap();
+        let session = manager.active_session().expect("session exists after check");
         if session.client.is_game_over() {
             return "Game is already over.".to_string();
         }
 
-        let state = session.client.get_state().unwrap();
+        let state = session.client.get_state().expect("game state available");
         if state.active_player != session.player_id {
             // It's AI's turn - run the AI
             let _ = session;
@@ -178,7 +178,7 @@ pub fn play_action(manager: &mut SessionManager, action_index: u8) -> String {
 
     // Apply player action
     let action_result = {
-        let actions = manager.active_session().unwrap().client.get_legal_actions();
+        let actions = manager.active_session().expect("session exists after check").client.get_legal_actions();
         let action = actions.iter().find(|a| a.to_index() == action_index);
         action.cloned()
     };
@@ -209,9 +209,9 @@ pub fn play_action(manager: &mut SessionManager, action_index: u8) -> String {
 
     // Check if game ended
     {
-        let session = manager.active_session().unwrap();
+        let session = manager.active_session().expect("session exists after check");
         if session.client.is_game_over() {
-            let state = session.client.get_state().unwrap();
+            let state = session.client.get_state().expect("game state available");
             output.push_str(&ascii::render_board(
                 state,
                 manager.card_db(),
@@ -227,8 +227,8 @@ pub fn play_action(manager: &mut SessionManager, action_index: u8) -> String {
 
     // If it's now opponent's turn, run AI
     {
-        let session = manager.active_session().unwrap();
-        let state = session.client.get_state().unwrap();
+        let session = manager.active_session().expect("session exists after check");
+        let state = session.client.get_state().expect("game state available");
         if state.active_player != session.player_id {
             let _ = session;
             output.push_str("---\n\n");
@@ -238,8 +238,8 @@ pub fn play_action(manager: &mut SessionManager, action_index: u8) -> String {
     }
 
     // Still player's turn - show state
-    let session = manager.active_session().unwrap();
-    let state = session.client.get_state().unwrap();
+    let session = manager.active_session().expect("session exists after check");
+    let state = session.client.get_state().expect("game state available");
     output.push_str(&ascii::render_board(
         state,
         manager.card_db(),
@@ -320,8 +320,8 @@ fn run_ai_and_show_state(manager: &mut SessionManager) -> String {
     sync_state_to_ui(manager);
 
     // Show updated state
-    let session = manager.active_session().unwrap();
-    let state = session.client.get_state().unwrap();
+    let session = manager.active_session().expect("session exists after check");
+    let state = session.client.get_state().expect("game state available");
     output.push_str(&ascii::render_board(
         state,
         manager.card_db(),

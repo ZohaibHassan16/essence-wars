@@ -26,7 +26,6 @@ import time
 from pathlib import Path
 
 import torch
-import numpy as np
 
 # Add parent to path for local development
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))

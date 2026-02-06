@@ -26,7 +26,7 @@ pub fn wilson_score_interval(successes: usize, total: usize, confidence: f64) ->
     let p = successes as f64 / n;
 
     // Z-score for the confidence level
-    let normal = Normal::new(0.0, 1.0).unwrap();
+    let normal = Normal::new(0.0, 1.0).expect("standard normal is always valid");
     let alpha = 1.0 - confidence;
     let z = normal.inverse_cdf(1.0 - alpha / 2.0);
     let z2 = z * z;
@@ -84,7 +84,7 @@ pub fn chi_square_test(
     let chi_square = chi_sq_success + chi_sq_failure;
 
     // Degrees of freedom = 1 for binary test
-    let chi_dist = ChiSquared::new(1.0).unwrap();
+    let chi_dist = ChiSquared::new(1.0).expect("df=1 chi-squared is always valid");
     let p_value = 1.0 - chi_dist.cdf(chi_square);
 
     (chi_square, p_value)
@@ -199,7 +199,7 @@ pub fn correlation_p_value(r: f64, n: usize) -> f64 {
 
     // Two-tailed p-value using t-distribution
     // Approximation using normal for large n
-    let normal = Normal::new(0.0, 1.0).unwrap();
+    let normal = Normal::new(0.0, 1.0).expect("standard normal is always valid");
     let p_one_tail = 1.0 - normal.cdf(t.abs());
     2.0 * p_one_tail
 }

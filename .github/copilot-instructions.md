@@ -1,9 +1,9 @@
 # AI Coding Agent Instructions - Essence Wars
 
 ## Project Overview
-**Essence Wars** is a deterministic, perfect-information card game engine built in Rust. Think "Chess with Cards" - no hidden information, no RNG during play. The engine prioritizes performance (cloning speed for tree search) and correctness (629+ tests).
+**Essence Wars** is a deterministic, perfect-information card game engine built in Rust. Think "Chess with Cards" - no hidden information, no RNG during play. The engine prioritizes performance (cloning speed for tree search) and correctness (630+ tests).
 
-**Current Version:** 0.6.0
+**Current Version:** 0.8.5
 
 ## Workspace Structure
 
@@ -54,15 +54,15 @@ cargo build --release                    # Full workspace
 cargo build --release -p cardgame        # Engine only
 
 # Run tests
-cargo nextest run --status-level=fail    # Preferred: 629+ tests, only shows failures
+cargo nextest run --status-level=fail    # Preferred: 630+ tests, only shows failures
 cargo test                               # Alternative: standard cargo test
+./scripts/run-tests.sh                   # Tiered test runner (standard/quick/medium/long/overnight)
 
 # Run linter
-./scripts/run-clippy.sh                  # Lint production code (excludes tests)
+cargo lint                               # Clippy with strict settings (alias in .cargo/config.toml)
 
 # Run benchmarks
 cargo bench -p cardgame                  # Criterion benchmarks
-./scripts/run-benchmarks.sh              # Full benchmark suite with report
 ```
 
 ### Run Bots
@@ -123,8 +123,8 @@ When adding tests for a core module, create the corresponding `_tests.rs` file i
 
 
 ### Card Definitions
-- **YAML format**: data/cards/core_set - 300 cards organized by faction (argentum.yaml, symbiote.yaml, obsidion.yaml, neutral.yaml - 75 cards each)
-- **Deck format**: TOML files in data/decks - Card ID arrays (29-60 cards), organized by faction subdirectories
+- **YAML format**: data/cards/core_set/{faction}/{type}.yaml - 124 cards total organized by faction (argentum, symbiote, obsidion, neutral) and type (creatures, spells, supports)
+- **Deck format**: TOML files in data/decks/{faction}/*.toml - Card ID arrays (29-60 cards), organized by faction subdirectories
 - **12 Commander Decks**: 4 Argentum, 4 Symbiote, 4 Obsidion (see `cargo run --release --bin arena -- --list-decks`)
 
 ### Python Environment

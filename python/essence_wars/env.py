@@ -237,11 +237,9 @@ class EssenceWarsEnv(gym.Env[np.ndarray, int]):
 
     def render(self) -> None:
         """Render the environment (not implemented)."""
-        pass
 
     def close(self) -> None:
         """Clean up resources."""
-        pass
 
     @property
     def unwrapped(self) -> EssenceWarsEnv:
@@ -499,7 +497,6 @@ class VectorizedEssenceWars:
 
     def close(self) -> None:
         """Clean up resources."""
-        pass
 
     @property
     def observation_shape(self) -> tuple[int, ...]:

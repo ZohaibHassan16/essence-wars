@@ -539,3 +539,88 @@ fn test_deck_shuffle_determinism() {
         );
     }
 }
+
+// ============================================================================
+// 100-Run Challenge Test
+// ============================================================================
+
+/// Captures game state for hashing
+#[derive(Debug, PartialEq, Eq, Hash)]
+struct StateHash {
+    turn: u16,
+    p1_life: i16,
+    p2_life: i16,
+    p1_deck_size: usize,
+    p2_deck_size: usize,
+    p1_hand_size: usize,
+    p2_hand_size: usize,
+    p1_creature_count: usize,
+    p2_creature_count: usize,
+    result: Option<bool>, // Some(true) = P1 wins, Some(false) = P2 wins, None = ongoing
+}
+
+fn compute_state_hash(engine: &GameEngine) -> StateHash {
+    let result = engine.state.result.as_ref().map(|r| match r {
+        cardgame::state::GameResult::Win { winner, .. } => *winner == PlayerId::PLAYER_ONE,
+        cardgame::state::GameResult::Draw => false,
+    });
+
+    StateHash {
+        turn: engine.state.current_turn,
+        p1_life: engine.state.players[0].life,
+        p2_life: engine.state.players[1].life,
+        p1_deck_size: engine.state.players[0].deck.len(),
+        p2_deck_size: engine.state.players[1].deck.len(),
+        p1_hand_size: engine.state.players[0].hand.len(),
+        p2_hand_size: engine.state.players[1].hand.len(),
+        p1_creature_count: engine.state.players[0].creatures.len(),
+        p2_creature_count: engine.state.players[1].creatures.len(),
+        result,
+    }
+}
+
+/// Run a GreedyBot vs GreedyBot game for N moves and return the final state hash
+fn run_greedy_game_for_moves(card_db: &CardDatabase, seed: u64, max_moves: usize) -> StateHash {
+    let mut engine = GameEngine::new(card_db);
+    let deck1 = valid_yaml_deck();
+    let deck2 = valid_yaml_deck();
+    engine.start_game_raw(deck1, deck2, DEFAULT_COMMANDER, DEFAULT_COMMANDER, seed, GameMode::default()).unwrap();
+
+    let mut bot1 = GreedyBot::new(card_db, seed);
+    let mut bot2 = GreedyBot::new(card_db, seed + 1000);
+
+    let mut move_count = 0;
+    while !engine.is_game_over() && move_count < max_moves {
+        let action = if engine.state.active_player == PlayerId::PLAYER_ONE {
+            bot1.select_action_with_engine(&engine)
+        } else {
+            bot2.select_action_with_engine(&engine)
+        };
+
+        engine.apply_action(action).unwrap();
+        move_count += 1;
+    }
+
+    compute_state_hash(&engine)
+}
+
+/// 100-run challenge: Verify game is perfectly deterministic over 100 runs
+#[test]
+fn test_100_run_challenge() {
+    let card_db = load_real_card_db();
+    let seed = 12345u64;
+    let max_moves = 50;
+
+    // Get baseline hash from first run
+    let baseline = run_greedy_game_for_moves(&card_db, seed, max_moves);
+
+    // Run 99 more times and verify all match
+    for run in 1..100 {
+        let hash = run_greedy_game_for_moves(&card_db, seed, max_moves);
+        assert_eq!(
+            baseline, hash,
+            "Run {} produced different state than baseline.\nBaseline: {:?}\nActual: {:?}",
+            run, baseline, hash
+        );
+    }
+}

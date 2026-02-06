@@ -400,3 +400,113 @@ fn test_action_list_json() {
     let roundtrip: Vec<Action> = serde_json::from_str(&json).unwrap();
     assert_eq!(actions, roundtrip);
 }
+
+// =============================================================================
+// SAVE → LOAD → SAVE IDENTITY TEST
+// =============================================================================
+
+#[test]
+fn test_save_load_save_identical() {
+    // Start a game and play 10 moves
+    let mut state = GameState::new();
+    state.current_turn = 5;
+    state.active_player = PlayerId::PLAYER_TWO;
+    state.phase = GamePhase::Main;
+    state.rng_state = 12345;
+    state.game_mode = GameMode::Attrition;
+
+    // Add some realistic game state
+    state.players[0].life = 22;
+    state.players[1].life = 18;
+    state.players[0].max_essence = 5;
+    state.players[0].current_essence = 2;
+    state.players[1].max_essence = 4;
+    state.players[1].current_essence = 4;
+    state.players[0].action_points = 1;
+    state.players[1].action_points = 3;
+
+    // Add cards to hands
+    state.players[0].hand.push(CardInstance::new(CardId(1000)));
+    state.players[0].hand.push(CardInstance::new(CardId(1001)));
+    state.players[0].hand.push(CardInstance::new(CardId(2005)));
+    state.players[1].hand.push(CardInstance::new(CardId(2000)));
+    state.players[1].hand.push(CardInstance::new(CardId(3001)));
+
+    // Add creatures
+    state.players[0].creatures.push(Creature {
+        instance_id: cardgame::types::CreatureInstanceId(0),
+        card_id: CardId(1000),
+        owner: PlayerId::PLAYER_ONE,
+        slot: Slot(1),
+        attack: 3,
+        current_health: 4,
+        max_health: 5,
+        base_attack: 2,
+        base_health: 4,
+        keywords: Keywords::none().with_guard(),
+        status: CreatureStatus(CreatureStatus::EXHAUSTED),
+        turn_played: 2,
+        frenzy_stacks: 0,
+        token_data: None,
+    });
+
+    state.players[1].creatures.push(Creature {
+        instance_id: cardgame::types::CreatureInstanceId(1),
+        card_id: CardId(2001),
+        owner: PlayerId::PLAYER_TWO,
+        slot: Slot(2),
+        attack: 3,
+        current_health: 2,
+        max_health: 3,
+        base_attack: 2,
+        base_health: 3,
+        keywords: Keywords::none().with_lethal().with_rush(),
+        status: CreatureStatus::default(),
+        turn_played: 3,
+        frenzy_stacks: 0,
+        token_data: None,
+    });
+
+    // Add supports
+    state.players[0].supports.push(Support {
+        card_id: CardId(1013),
+        owner: PlayerId::PLAYER_ONE,
+        slot: Slot(0),
+        current_durability: 2,
+    });
+
+    // Add cards to deck
+    for _ in 0..15 {
+        state.players[0].deck.push(CardInstance::new(CardId(1002)));
+        state.players[1].deck.push(CardInstance::new(CardId(2003)));
+    }
+
+    // FIRST SERIALIZE (Save A)
+    let json_a = serde_json::to_string_pretty(&state).expect("Failed to serialize first time");
+
+    // DESERIALIZE (Load)
+    let loaded: GameState = serde_json::from_str(&json_a).expect("Failed to deserialize");
+
+    // SECOND SERIALIZE (Save B)
+    let json_b = serde_json::to_string_pretty(&loaded).expect("Failed to serialize second time");
+
+    // VERIFY IDENTITY: Save A must equal Save B byte-for-byte
+    assert_eq!(
+        json_a, json_b,
+        "Save → Load → Save produced different JSON!\n\nFirst save ({} bytes):\n{}\n\nSecond save ({} bytes):\n{}",
+        json_a.len(), &json_a[..json_a.len().min(2000)],
+        json_b.len(), &json_b[..json_b.len().min(2000)]
+    );
+
+    // Also verify the deserialized state equals original
+    assert_eq!(state.current_turn, loaded.current_turn);
+    assert_eq!(state.active_player, loaded.active_player);
+    assert_eq!(state.phase, loaded.phase);
+    assert_eq!(state.rng_state, loaded.rng_state);
+    assert_eq!(state.game_mode, loaded.game_mode);
+    assert_eq!(state.players[0].life, loaded.players[0].life);
+    assert_eq!(state.players[1].life, loaded.players[1].life);
+    assert_eq!(state.players[0].creatures.len(), loaded.players[0].creatures.len());
+    assert_eq!(state.players[1].creatures.len(), loaded.players[1].creatures.len());
+    assert_eq!(state.players[0].supports.len(), loaded.players[0].supports.len());
+}

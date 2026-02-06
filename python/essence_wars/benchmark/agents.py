@@ -84,7 +84,6 @@ class BaseAgent(ABC):
 
     def reset(self) -> None:  # noqa: B027
         """Default reset does nothing."""
-        pass
 
 
 class RandomAgent(BaseAgent):

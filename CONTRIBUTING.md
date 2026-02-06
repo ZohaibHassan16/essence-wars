@@ -44,7 +44,7 @@ cargo build --release
 cargo nextest run --status-level=fail
 
 # Lint
-cargo lint  # alias for clippy
+cargo lint  # clippy alias in .cargo/config.toml
 
 # Run arena matches
 cargo run --release --bin arena -- --help

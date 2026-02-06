@@ -243,7 +243,6 @@ class NeuralMctsBot:
 
     def reset(self) -> None:
         """Reset bot state (no-op for MCTS)."""
-        pass
 
     def select_action(
         self,

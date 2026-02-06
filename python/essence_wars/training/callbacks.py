@@ -62,7 +62,6 @@ class TrainingCallback(ABC):
 
         Override to perform initialization or logging.
         """
-        pass
 
     @abstractmethod
     def on_step(self, step: int, info: dict[str, Any], context: CallbackContext) -> bool:
@@ -76,7 +75,6 @@ class TrainingCallback(ABC):
         Returns:
             True to stop training, False to continue.
         """
-        pass
 
     def on_train_complete(  # noqa: B027
         self,
@@ -91,7 +89,6 @@ class TrainingCallback(ABC):
             context: Training context
             results: Dictionary of training results
         """
-        pass
 
 
 class CallbackList:

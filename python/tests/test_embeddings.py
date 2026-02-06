@@ -1,6 +1,5 @@
 """Tests for learned card embeddings module."""
 
-import numpy as np
 import pytest
 import torch
 
@@ -130,7 +129,7 @@ class TestObservationTransformer:
 
     def test_output_dimension_without_embed_section(self):
         """Test output dimension without trailing embed section."""
-        from essence_wars.agents.embeddings import ObservationTransformer, STATE_TENSOR_SIZE
+        from essence_wars.agents.embeddings import ObservationTransformer
 
         embed_dim = 32
         card_embedding = torch.nn.Embedding(5000, embed_dim)

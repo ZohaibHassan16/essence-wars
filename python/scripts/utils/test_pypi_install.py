@@ -23,7 +23,7 @@ def test_import_and_version():
     print(f"✓ Imported essence_wars")
     print(f"✓ Version: {essence_wars.__version__}")
 
-    from essence_wars import PyGame, PyParallelGames, STATE_TENSOR_SIZE, ACTION_SPACE_SIZE
+    from essence_wars import STATE_TENSOR_SIZE, ACTION_SPACE_SIZE
     print(f"✓ STATE_TENSOR_SIZE: {STATE_TENSOR_SIZE}")
     print(f"✓ ACTION_SPACE_SIZE: {ACTION_SPACE_SIZE}")
 

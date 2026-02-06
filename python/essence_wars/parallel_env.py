@@ -293,11 +293,9 @@ class EssenceWarsParallelEnv(ParallelEnvBase):  # type: ignore[misc]
 
     def render(self) -> None:
         """Render the environment (not implemented)."""
-        pass
 
     def close(self) -> None:
         """Clean up resources."""
-        pass
 
     @property
     def unwrapped(self) -> EssenceWarsParallelEnv:

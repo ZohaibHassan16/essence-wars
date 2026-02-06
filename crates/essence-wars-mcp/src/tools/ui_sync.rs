@@ -223,7 +223,7 @@ fn build_game_state_dto(
     player_id: PlayerId,
     game_id: &str,
 ) -> GameStateDto {
-    let state = client.get_state().unwrap();
+    let state = client.get_state().expect("game state available");
     let opponent_id = player_id.opponent();
 
     let player_state = build_player_state_dto(&state.players[player_id.index()], card_db, state.current_turn, true);
