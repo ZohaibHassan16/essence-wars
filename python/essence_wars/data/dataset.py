@@ -31,6 +31,7 @@ from typing import IO, TYPE_CHECKING, Any
 
 import numpy as np
 import torch
+from numpy.typing import NDArray
 from torch.utils.data import DataLoader, Dataset, IterableDataset
 
 if TYPE_CHECKING:
@@ -41,10 +42,10 @@ if TYPE_CHECKING:
 class MCTSSample:
     """A single training sample from MCTS data."""
 
-    state_tensor: np.ndarray  # (326,)
-    action_mask: np.ndarray   # (256,) bool
+    state_tensor: NDArray[np.float32]  # (326,)
+    action_mask: NDArray[np.float32]   # (256,) bool
     action: int               # 0-255
-    mcts_policy: np.ndarray   # (256,) visit count distribution
+    mcts_policy: NDArray[np.float32]   # (256,) visit count distribution
     value_target: float       # +1 if player won, -1 if lost, 0 if draw
 
     def to_tensors(self) -> dict[str, torch.Tensor]:
@@ -107,8 +108,8 @@ class MCTSDataset(Dataset[dict[str, torch.Tensor]]):  # type: ignore[misc]
         self._load_data(max_games)
 
         # Compute normalization stats if needed
-        self.mean: np.ndarray | None = None
-        self.std: np.ndarray | None = None
+        self.mean: NDArray[np.float32] | None = None
+        self.std: NDArray[np.float32] | None = None
         if self.normalize and len(self.samples) > 0:
             self._compute_normalization_stats()
 

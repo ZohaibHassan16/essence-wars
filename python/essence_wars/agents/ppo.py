@@ -37,6 +37,7 @@ if TYPE_CHECKING:
 
 # Type alias for numpy arrays
 NDArrayFloat = npt.NDArray[np.floating[Any]]
+NDArrayBool = npt.NDArray[np.bool_]
 
 
 class RunningMeanStd:
@@ -52,7 +53,7 @@ class RunningMeanStd:
         self.count = epsilon
         self.epsilon = epsilon
 
-    def update(self, batch: np.ndarray) -> None:
+    def update(self, batch: npt.NDArray[np.floating[Any]]) -> None:
         """Update running statistics with a batch of observations."""
         batch = np.asarray(batch)
         batch_mean = batch.mean(axis=0)
@@ -76,7 +77,7 @@ class RunningMeanStd:
         self.var = new_var
         self.count = tot_count
 
-    def normalize(self, x: np.ndarray) -> np.ndarray:
+    def normalize(self, x: npt.NDArray[np.floating[Any]]) -> npt.NDArray[np.float64]:
         """Normalize observations using running statistics."""
         return (x - self.mean) / np.sqrt(self.var + self.epsilon)
 
@@ -364,7 +365,7 @@ class PPOTrainer:
         self.global_step = 0
         self.start_time: float | None = None
         self._last_obs: NDArrayFloat | None = None
-        self._last_masks: NDArrayFloat | None = None
+        self._last_masks: NDArrayBool | None = None
 
         # Episode tracking
         self.episode_rewards: list[float] = []

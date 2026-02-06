@@ -35,11 +35,12 @@ from typing import Any, ClassVar, SupportsFloat
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
+from numpy.typing import NDArray
 
 from essence_wars._core import ACTION_SPACE_SIZE, STATE_TENSOR_SIZE, PyGame, PyParallelGames
 
 
-class EssenceWarsEnv(gym.Env[np.ndarray, int]):
+class EssenceWarsEnv(gym.Env[NDArray[np.float32], int]):
     """
     Gymnasium environment for the Essence Wars card game.
 
@@ -121,7 +122,7 @@ class EssenceWarsEnv(gym.Env[np.ndarray, int]):
         *,
         seed: int | None = None,
         options: dict[str, Any] | None = None,  # noqa: ARG002
-    ) -> tuple[np.ndarray, dict[str, Any]]:
+    ) -> tuple[NDArray[np.float32], dict[str, Any]]:
         """
         Reset the environment to start a new episode.
 
@@ -155,7 +156,7 @@ class EssenceWarsEnv(gym.Env[np.ndarray, int]):
     def step(
         self,
         action: int,
-    ) -> tuple[np.ndarray, SupportsFloat, bool, bool, dict[str, Any]]:
+    ) -> tuple[NDArray[np.float32], SupportsFloat, bool, bool, dict[str, Any]]:
         """
         Execute one step in the environment.
 
@@ -203,9 +204,9 @@ class EssenceWarsEnv(gym.Env[np.ndarray, int]):
 
         return obs, reward, done, truncated, info
 
-    def _get_obs(self) -> np.ndarray:
+    def _get_obs(self) -> NDArray[np.float32]:
         """Get current observation (state tensor)."""
-        obs: np.ndarray = self._game.observe()
+        obs: NDArray[np.float32] = self._game.observe()
         return obs
 
     def _get_info(self) -> dict[str, Any]:
@@ -246,7 +247,7 @@ class EssenceWarsEnv(gym.Env[np.ndarray, int]):
         """Return the unwrapped environment."""
         return self
 
-    def action_masks(self) -> np.ndarray:
+    def action_masks(self) -> NDArray[np.bool_]:
         """
         Get the current action mask.
 
@@ -256,8 +257,8 @@ class EssenceWarsEnv(gym.Env[np.ndarray, int]):
         Returns:
             Boolean array of shape (256,)
         """
-        mask: np.ndarray = self._game.action_mask()
-        result: np.ndarray = mask > 0.0
+        mask: NDArray[np.float32] = self._game.action_mask()
+        result: NDArray[np.bool_] = mask > 0.0
         return result
 
 
@@ -298,7 +299,7 @@ class EssenceWarsSelfPlayEnv(EssenceWarsEnv):
     def step(
         self,
         action: int,
-    ) -> tuple[np.ndarray, SupportsFloat, bool, bool, dict[str, Any]]:
+    ) -> tuple[NDArray[np.float32], SupportsFloat, bool, bool, dict[str, Any]]:
         """
         Execute one step. Reward is from current player's perspective.
         """
@@ -404,7 +405,7 @@ class VectorizedEssenceWars:
         self,
         *,
         seed: int | None = None,
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[NDArray[np.float32], NDArray[np.bool_]]:
         """
         Reset all environments.
 
@@ -433,8 +434,8 @@ class VectorizedEssenceWars:
 
     def step(
         self,
-        actions: np.ndarray,
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        actions: NDArray[np.uint8],
+    ) -> tuple[NDArray[np.float32], NDArray[np.float32], NDArray[np.bool_], NDArray[np.bool_]]:
         """
         Step all environments with the given actions.
 
@@ -479,7 +480,7 @@ class VectorizedEssenceWars:
 
         return observations, rewards, dones, action_masks
 
-    def step_async(self, actions: np.ndarray) -> None:
+    def step_async(self, actions: NDArray[np.uint8]) -> None:
         """
         Begin stepping environments asynchronously.
 
@@ -487,7 +488,7 @@ class VectorizedEssenceWars:
         """
         self._pending_actions = np.asarray(actions, dtype=np.uint8)
 
-    def step_wait(self) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    def step_wait(self) -> tuple[NDArray[np.float32], NDArray[np.float32], NDArray[np.bool_], NDArray[np.bool_]]:
         """
         Wait for async step to complete and return results.
 
@@ -509,22 +510,22 @@ class VectorizedEssenceWars:
         size: int = ACTION_SPACE_SIZE
         return size
 
-    def action_masks(self) -> np.ndarray:
+    def action_masks(self) -> NDArray[np.bool_]:
         """
         Get current action masks for all environments.
 
         Returns:
             Boolean array of shape (num_envs, 256)
         """
-        masks: np.ndarray = self._games.action_mask_batch()
-        result: np.ndarray = masks > 0.0
+        masks: NDArray[np.float32] = self._games.action_mask_batch()
+        result: NDArray[np.bool_] = masks > 0.0
         return result
 
-    def get_episode_rewards(self) -> np.ndarray:
+    def get_episode_rewards(self) -> NDArray[np.float32]:
         """Get cumulative rewards for current episodes."""
         return self._episode_rewards.copy()
 
-    def get_episode_lengths(self) -> np.ndarray:
+    def get_episode_lengths(self) -> NDArray[np.int32]:
         """Get current episode lengths."""
         return self._episode_lengths.copy()
 
@@ -582,9 +583,9 @@ class VectorizedEssenceWarsWithShaping(VectorizedEssenceWars):
         self.board_weight = board_weight
 
         # Track previous state for computing deltas
-        self._prev_observations: np.ndarray | None = None
+        self._prev_observations: NDArray[np.float32] | None = None
 
-    def _count_creatures(self, obs: np.ndarray, player: int) -> np.ndarray:
+    def _count_creatures(self, obs: NDArray[np.float32], player: int) -> NDArray[np.float32]:
         """Count number of creatures on board for given player across all envs."""
         start = self.P0_CREATURE_START if player == 0 else self.P1_CREATURE_START
 
@@ -598,9 +599,9 @@ class VectorizedEssenceWarsWithShaping(VectorizedEssenceWars):
 
     def _compute_shaped_reward(
         self,
-        prev_obs: np.ndarray,
-        curr_obs: np.ndarray,
-    ) -> np.ndarray:
+        prev_obs: NDArray[np.float32],
+        curr_obs: NDArray[np.float32],
+    ) -> NDArray[np.float32]:
         """
         Compute shaped intermediate reward based on state changes.
 
@@ -622,14 +623,14 @@ class VectorizedEssenceWarsWithShaping(VectorizedEssenceWars):
         )
         board_reward = (curr_board_diff - prev_board_diff) * self.board_weight
 
-        result: np.ndarray = life_reward + board_reward
+        result = (life_reward + board_reward).astype(np.float32)
         return result
 
     def reset(
         self,
         *,
         seed: int | None = None,
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[NDArray[np.float32], NDArray[np.bool_]]:
         """Reset all environments and initialize state tracking."""
         observations, action_masks = super().reset(seed=seed)
         self._prev_observations = observations.copy()
@@ -637,8 +638,8 @@ class VectorizedEssenceWarsWithShaping(VectorizedEssenceWars):
 
     def step(
         self,
-        actions: np.ndarray,
-    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        actions: NDArray[np.uint8],
+    ) -> tuple[NDArray[np.float32], NDArray[np.float32], NDArray[np.bool_], NDArray[np.bool_]]:
         """
         Step all environments with shaped rewards.
 

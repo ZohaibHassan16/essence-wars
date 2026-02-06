@@ -20,22 +20,20 @@ import random
 import time
 from collections import deque
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from numpy.typing import NDArray
 
 from essence_wars._core import STATE_TENSOR_SIZE, PyGame
 from essence_wars.agents.networks import AlphaZeroNetwork
 from essence_wars.env import EssenceWarsEnv
 
-if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
 # Type alias for replay buffer samples
-ReplaySample = tuple[np.ndarray, np.ndarray, np.ndarray, float]
+ReplaySample = tuple[NDArray[np.float32], NDArray[np.float32], NDArray[np.float32], float]
 
 
 @dataclass
@@ -220,7 +218,7 @@ class RunningMeanStd:
         self.count = epsilon
         self.epsilon = epsilon
 
-    def update(self, batch: np.ndarray) -> None:
+    def update(self, batch: NDArray[np.float32]) -> None:
         """Update running statistics with a batch of observations."""
         batch = np.asarray(batch)
         if batch.ndim == 1:
@@ -242,7 +240,7 @@ class RunningMeanStd:
         self.var = new_var
         self.count = tot_count
 
-    def normalize(self, x: np.ndarray) -> np.ndarray:
+    def normalize(self, x: NDArray[np.float32]) -> NDArray[np.float64]:
         return (x - self.mean) / np.sqrt(self.var + self.epsilon)
 
 
@@ -609,7 +607,7 @@ class ReplayBuffer:
             value = outcome if i % 2 == 0 else -outcome
             self.add(obs, mask, policy, value)
 
-    def sample(self, batch_size: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    def sample(self, batch_size: int) -> tuple[NDArray[np.float32], NDArray[np.float32], NDArray[np.float32], NDArray[np.float32]]:
         """
         Sample a random batch from the buffer.
 
@@ -711,7 +709,7 @@ class DualReplayBuffer:
             value = outcome if i % 2 == 0 else -outcome
             self.add_selfplay(obs, mask, policy, value)
 
-    def sample(self, batch_size: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    def sample(self, batch_size: int) -> tuple[NDArray[np.float32], NDArray[np.float32], NDArray[np.float32], NDArray[np.float32]]:
         """
         Sample batch with fixed BC ratio.
 

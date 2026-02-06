@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import numpy as np
+from numpy.typing import NDArray
 
 if TYPE_CHECKING:
     from essence_wars._core import PyGame
@@ -128,7 +129,7 @@ class GameStateInfo:
     players: list[PlayerInfo]
 
 
-def decode_tensor(tensor: np.ndarray) -> GameStateInfo:
+def decode_tensor(tensor: NDArray[np.float32]) -> GameStateInfo:
     """Decode a state tensor into human-readable GameStateInfo."""
     idx = 0
 
@@ -271,7 +272,7 @@ class GameRenderer:
         else:
             return self._render_plain(state, mask)
 
-    def _render_rich(self, state: GameStateInfo, mask: np.ndarray, _game: PyGame) -> str:
+    def _render_rich(self, state: GameStateInfo, mask: NDArray[np.float32], _game: PyGame) -> str:
         """Render with rich formatting."""
         from io import StringIO
 
@@ -354,7 +355,7 @@ class GameRenderer:
 
         console.print()
 
-    def _render_plain(self, state: GameStateInfo, mask: np.ndarray) -> str:
+    def _render_plain(self, state: GameStateInfo, mask: NDArray[np.float32]) -> str:
         """Render without rich (fallback)."""
         lines = []
 
@@ -398,7 +399,7 @@ class GameRenderer:
         else:
             print(self.render(game))
 
-    def _print_rich(self, state: GameStateInfo, mask: np.ndarray, _game: PyGame) -> None:
+    def _print_rich(self, state: GameStateInfo, mask: NDArray[np.float32], _game: PyGame) -> None:
         """Print directly with rich console."""
         console = self.console
 

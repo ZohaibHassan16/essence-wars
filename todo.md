@@ -1,10 +1,5 @@
 # To Do
 
-## (F) Review and Update Python Gym
-
-- Look into the changes, update and integrate everything
-- review Github Action workflows for Maturin/PyPI for Publishing to Github Packages / PyPI
-
 ## (I) Expansion Planning
 
 | Question | Decision |

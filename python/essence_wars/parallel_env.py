@@ -28,6 +28,7 @@ from typing import Any, ClassVar
 
 import numpy as np
 from gymnasium import spaces
+from numpy.typing import NDArray
 
 try:
     from pettingzoo import ParallelEnv as ParallelEnvBase
@@ -145,7 +146,7 @@ class EssenceWarsParallelEnv(ParallelEnvBase):  # type: ignore[misc]
         self,
         seed: int | None = None,
         options: dict[str, Any] | None = None,  # noqa: ARG002
-    ) -> tuple[dict[str, np.ndarray], dict[str, dict[str, Any]]]:
+    ) -> tuple[dict[str, NDArray[np.float32]], dict[str, dict[str, Any]]]:
         """
         Reset the environment to start a new episode.
 
@@ -174,7 +175,7 @@ class EssenceWarsParallelEnv(ParallelEnvBase):  # type: ignore[misc]
         self,
         actions: dict[str, int],
     ) -> tuple[
-        dict[str, np.ndarray],
+        dict[str, NDArray[np.float32]],
         dict[str, float],
         dict[str, bool],
         dict[str, bool],
@@ -258,7 +259,7 @@ class EssenceWarsParallelEnv(ParallelEnvBase):  # type: ignore[misc]
 
         return observations, rewards, terminations, truncations, infos
 
-    def _get_observations(self) -> dict[str, np.ndarray]:
+    def _get_observations(self) -> dict[str, NDArray[np.float32]]:
         """Get observations for all agents."""
         # Both players see the same game state tensor
         # (The tensor is from the game's perspective, not player-relative)
@@ -302,14 +303,14 @@ class EssenceWarsParallelEnv(ParallelEnvBase):  # type: ignore[misc]
         """Return the unwrapped environment."""
         return self
 
-    def state(self) -> np.ndarray:
+    def state(self) -> NDArray[np.float32]:
         """
         Return the global state of the environment.
 
         For Essence Wars, the state is the same as the observation since
         it's a perfect information game.
         """
-        state: np.ndarray = self._game.observe()
+        state: NDArray[np.float32] = self._game.observe()
         return state
 
 

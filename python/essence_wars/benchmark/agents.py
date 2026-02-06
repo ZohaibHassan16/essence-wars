@@ -12,6 +12,7 @@ from typing import Protocol, runtime_checkable
 
 import numpy as np
 import torch
+from numpy.typing import NDArray
 
 
 @runtime_checkable
@@ -45,8 +46,8 @@ class BenchmarkAgent(Protocol):
 
     def select_action(
         self,
-        observation: np.ndarray,
-        action_mask: np.ndarray,
+        observation: NDArray[np.float32],
+        action_mask: NDArray[np.float32],
     ) -> int:
         """Select an action given observation and legal action mask.
 
@@ -77,8 +78,8 @@ class BaseAgent(ABC):
     @abstractmethod
     def select_action(
         self,
-        observation: np.ndarray,
-        action_mask: np.ndarray,
+        observation: NDArray[np.float32],
+        action_mask: NDArray[np.float32],
     ) -> int:
         pass
 
@@ -99,8 +100,8 @@ class RandomAgent(BaseAgent):
 
     def select_action(
         self,
-        _observation: np.ndarray,
-        action_mask: np.ndarray,
+        _observation: NDArray[np.float32],
+        action_mask: NDArray[np.float32],
     ) -> int:
         valid_actions = np.where(action_mask > 0.5)[0]
         if len(valid_actions) == 0:
@@ -129,8 +130,8 @@ class GreedyAgent(BaseAgent):
 
     def select_action(
         self,
-        observation: np.ndarray,
-        action_mask: np.ndarray,
+        observation: NDArray[np.float32],
+        action_mask: NDArray[np.float32],
     ) -> int:
         # This is a placeholder - actual implementation uses Rust bot
         # through the benchmark runner which has access to the game state
@@ -161,8 +162,8 @@ class MCTSAgent(BaseAgent):
 
     def select_action(
         self,
-        observation: np.ndarray,
-        action_mask: np.ndarray,
+        observation: NDArray[np.float32],
+        action_mask: NDArray[np.float32],
     ) -> int:
         # Placeholder - uses Rust MCTS through benchmark runner
         raise NotImplementedError(
@@ -198,8 +199,8 @@ class AlphaBetaAgent(BaseAgent):
 
     def select_action(
         self,
-        observation: np.ndarray,
-        action_mask: np.ndarray,
+        observation: NDArray[np.float32],
+        action_mask: NDArray[np.float32],
     ) -> int:
         # Placeholder - uses Rust Alpha-Beta through benchmark runner
         raise NotImplementedError(
@@ -242,8 +243,8 @@ class NeuralAgent(BaseAgent):
 
     def select_action(
         self,
-        observation: np.ndarray,
-        action_mask: np.ndarray,
+        observation: NDArray[np.float32],
+        action_mask: NDArray[np.float32],
     ) -> int:
         with torch.no_grad():
             obs = torch.from_numpy(observation).float().unsqueeze(0).to(self.device)

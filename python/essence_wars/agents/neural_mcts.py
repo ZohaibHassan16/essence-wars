@@ -33,10 +33,9 @@ from typing import TYPE_CHECKING, Any, Protocol
 import numpy as np
 import torch
 import torch.nn as nn
+from numpy.typing import NDArray
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
     from essence_wars._core import PyGame
 
 
@@ -173,12 +172,12 @@ class MCTSNode:
 class ObsNormalizer:
     """Simple observation normalizer that matches PPO's RunningMeanStd."""
 
-    def __init__(self, mean: np.ndarray, var: np.ndarray, epsilon: float = 1e-8):
+    def __init__(self, mean: NDArray[np.float64], var: NDArray[np.float64], epsilon: float = 1e-8):
         self.mean = mean
         self.var = var
         self.epsilon = epsilon
 
-    def normalize(self, x: np.ndarray) -> np.ndarray:
+    def normalize(self, x: NDArray[np.float32]) -> NDArray[np.float64]:
         return (x - self.mean) / np.sqrt(self.var + self.epsilon)
 
 

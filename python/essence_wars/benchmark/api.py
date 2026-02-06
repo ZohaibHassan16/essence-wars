@@ -26,6 +26,7 @@ import time
 from typing import TYPE_CHECKING, ClassVar
 
 import numpy as np
+from numpy.typing import NDArray
 
 if TYPE_CHECKING:
     from essence_wars._core import PyGame
@@ -300,8 +301,8 @@ class EssenceWarsBenchmark:
         self,
         game: PyGame,
         opponent: str,
-        _obs: np.ndarray,
-        mask: np.ndarray,
+        _obs: NDArray[np.float32],
+        mask: NDArray[np.float32],
     ) -> int:
         """Get action from opponent bot."""
         if opponent == "random":
