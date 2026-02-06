@@ -3,8 +3,8 @@
   import { playSound } from "$lib/audio";
   import { assetUrl } from "$lib/utils/paths";
 
-  // Essence crystal icon
-  const essenceCrystalIcon = assetUrl("/ui/decorations/icons/essence_icon_crystal.png");
+  // Essence crystal icon - use $derived to evaluate lazily
+  const essenceCrystalIcon = $derived(assetUrl("/ui/decorations/icons/essence_icon_crystal.png"));
 
   const ESSENCE_EXTRACTION_THRESHOLD = 50;
 

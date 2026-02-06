@@ -10,7 +10,8 @@
     onSelect?: (faction: string) => void;
   } = $props();
 
-  const factions = [
+  // Computed lazily to avoid SSR/hydration issues with base path
+  const factions = $derived([
     {
       id: "argentum",
       name: "Argentum Combine",
@@ -44,7 +45,7 @@
       textColor: "text-obsidion-essence",
       description: "Masters of shadow and burst",
     },
-  ];
+  ]);
 
   function handleSelect(factionId: string) {
     playSound("buttonClick");

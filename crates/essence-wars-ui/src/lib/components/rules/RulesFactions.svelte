@@ -1,13 +1,13 @@
 <script lang="ts">
   import { assetUrl } from "$lib/utils/paths";
 
-  // Faction emblems - generated AI art assets
-  const factionEmblems = {
+  // Faction emblems - computed lazily to avoid SSR/hydration issues
+  const factionEmblems = $derived({
     argentum: assetUrl("/ui/decorations/emblems/emblem_argentum.png"),
     symbiote: assetUrl("/ui/decorations/emblems/emblem_symbiote.png"),
     obsidion: assetUrl("/ui/decorations/emblems/emblem_obsidion.png"),
     neutral: assetUrl("/ui/decorations/emblems/emblem_neutral.png"),
-  };
+  });
 </script>
 
 <div class="space-y-8">

@@ -14,21 +14,14 @@
 
   let activeTab = $state<Tab>("world");
 
-  // Faction emblems
-  const factionEmblems: Record<string, string> = {
-    argentum: assetUrl("/ui/decorations/emblems/emblem_argentum.png"),
-    symbiote: assetUrl("/ui/decorations/emblems/emblem_symbiote.png"),
-    obsidion: assetUrl("/ui/decorations/emblems/emblem_obsidion.png"),
-    freewalkers: assetUrl("/ui/decorations/emblems/emblem_neutral.png"),
-  };
-
-  const tabs: { id: Tab; label: string; icon?: typeof Globe; emblem?: string; color: string }[] = [
-    { id: "world", label: "Omyra", icon: Globe, color: "text-blue-400" },
-    { id: "argentum", label: "Argentum", emblem: factionEmblems.argentum, color: "text-gold" },
-    { id: "symbiote", label: "Symbiote", emblem: factionEmblems.symbiote, color: "text-green-400" },
-    { id: "obsidion", label: "Obsidion", emblem: factionEmblems.obsidion, color: "text-red-400" },
-    { id: "freewalkers", label: "Free-Walkers", emblem: factionEmblems.freewalkers, color: "text-amber-400" },
-  ];
+  // Faction emblems - computed lazily to avoid SSR/hydration issues with base path
+  const tabs = $derived([
+    { id: "world" as Tab, label: "Omyra", icon: Globe, emblem: undefined, color: "text-blue-400" },
+    { id: "argentum" as Tab, label: "Argentum", icon: undefined, emblem: assetUrl("/ui/decorations/emblems/emblem_argentum.png"), color: "text-gold" },
+    { id: "symbiote" as Tab, label: "Symbiote", icon: undefined, emblem: assetUrl("/ui/decorations/emblems/emblem_symbiote.png"), color: "text-green-400" },
+    { id: "obsidion" as Tab, label: "Obsidion", icon: undefined, emblem: assetUrl("/ui/decorations/emblems/emblem_obsidion.png"), color: "text-red-400" },
+    { id: "freewalkers" as Tab, label: "Free-Walkers", icon: undefined, emblem: assetUrl("/ui/decorations/emblems/emblem_neutral.png"), color: "text-amber-400" },
+  ] as { id: Tab; label: string; icon?: typeof Globe; emblem?: string; color: string }[]);
 
   function handleButtonHover() {
     playSound('buttonHover');
