@@ -144,6 +144,15 @@
       }
       gameStore.applyAction(action.index);
       tutorialStore.checkAdvanceCondition(action.actionType);
+    } else {
+      // No valid action - check if we're trying to attack and the target has Stealth
+      const targetCreature = gameState?.opponent.creatures[slot];
+      if (targetCreature && gameStore.selectedCreatureSlot !== null) {
+        // We have a selected attacker and clicked on an opponent creature
+        if (targetCreature.keywords.includes("Stealth")) {
+          gameStore.showWarning(`Cannot attack ${targetCreature.name}: Stealth prevents targeting`);
+        }
+      }
     }
   }
 
@@ -237,6 +246,26 @@
             Dismiss
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Warning banner (auto-dismisses) -->
+{#if gameStore.warning}
+  <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-lg animate-fade-in">
+    <div class="p-4 bg-amber-600/90 border border-amber-500 rounded-lg text-white shadow-xl">
+      <div class="flex items-center gap-3">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <p class="text-sm font-medium">{gameStore.warning}</p>
+        <button
+          class="ml-auto px-2 py-1 bg-white/20 hover:bg-white/30 rounded text-sm transition-colors"
+          onclick={() => gameStore.clearWarning()}
+        >
+          ✕
+        </button>
       </div>
     </div>
   </div>
@@ -552,3 +581,20 @@
   onCancel={() => showEndTurnWarning = false}
   onDisableWarning={() => gameSettings.showEndTurnWarning = false}
 />
+
+<style>
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  :global(.animate-fade-in) {
+    animation: fade-in 0.2s ease-out;
+  }
+</style>

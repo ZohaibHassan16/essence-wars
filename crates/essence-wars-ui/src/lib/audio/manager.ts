@@ -306,6 +306,11 @@ const BATTLE_SOUND_EFFECTS: Set<SoundEffect> = new Set([
   'attackHeavy',
   'damage',
   'creatureDeath',
+  'heal',
+  'abilityActivate',
+  'cardPlayCreature',
+  'cardPlaySpell',
+  'cardPlaySupport',
 ]);
 
 // Play a sound effect (random selection from available files)

@@ -12,7 +12,7 @@ interface AudioSettingsData {
 
 function loadSettings(): AudioSettingsData {
   if (typeof localStorage === 'undefined') {
-    return { masterVolume: 0.7, sfxVolume: 0.4, battleSfxVolume: 0.25, musicVolume: 0.6, muted: false };
+    return { masterVolume: 0.7, sfxVolume: 0.2, battleSfxVolume: 0.15, musicVolume: 0.6, muted: false };
   }
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -20,8 +20,8 @@ function loadSettings(): AudioSettingsData {
       const parsed = JSON.parse(stored);
       return {
         masterVolume: typeof parsed.masterVolume === 'number' ? parsed.masterVolume : 0.7,
-        sfxVolume: typeof parsed.sfxVolume === 'number' ? parsed.sfxVolume : 0.4,
-        battleSfxVolume: typeof parsed.battleSfxVolume === 'number' ? parsed.battleSfxVolume : 0.25,
+        sfxVolume: typeof parsed.sfxVolume === 'number' ? parsed.sfxVolume : 0.2,
+        battleSfxVolume: typeof parsed.battleSfxVolume === 'number' ? parsed.battleSfxVolume : 0.15,
         musicVolume: typeof parsed.musicVolume === 'number' ? parsed.musicVolume : 0.6,
         muted: typeof parsed.muted === 'boolean' ? parsed.muted : false,
       };
@@ -29,7 +29,7 @@ function loadSettings(): AudioSettingsData {
   } catch (e) {
     console.warn('Failed to load audio settings:', e);
   }
-  return { masterVolume: 0.7, sfxVolume: 0.4, battleSfxVolume: 0.25, musicVolume: 0.6, muted: false };
+  return { masterVolume: 0.7, sfxVolume: 0.2, battleSfxVolume: 0.15, musicVolume: 0.6, muted: false };
 }
 
 function saveSettings(settings: AudioSettingsData) {
@@ -43,8 +43,8 @@ function saveSettings(settings: AudioSettingsData) {
 
 class AudioSettingsStore {
   private _masterVolume = $state(0.7);
-  private _sfxVolume = $state(0.4);
-  private _battleSfxVolume = $state(0.25); // Lower default for battle sounds
+  private _sfxVolume = $state(0.2);
+  private _battleSfxVolume = $state(0.15); // Lower default for battle sounds
   private _musicVolume = $state(0.6);
   private _muted = $state(false);
 

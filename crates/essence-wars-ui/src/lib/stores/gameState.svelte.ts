@@ -33,6 +33,8 @@ class GameStore {
   legalActions = $state<ActionInfo[]>([]);
   isLoading = $state(false);
   error = $state<string | null>(null);
+  warning = $state<string | null>(null);
+  private warningTimeout: ReturnType<typeof setTimeout> | null = null;
 
   // Setup state
   decks = $state<DeckInfo[]>([]);
@@ -636,6 +638,27 @@ class GameStore {
 
   clearError() {
     this.error = null;
+  }
+
+  /** Show a temporary warning message (auto-clears after 3 seconds) */
+  showWarning(message: string) {
+    // Clear any existing timeout
+    if (this.warningTimeout) {
+      clearTimeout(this.warningTimeout);
+    }
+    this.warning = message;
+    this.warningTimeout = setTimeout(() => {
+      this.warning = null;
+      this.warningTimeout = null;
+    }, 3000);
+  }
+
+  clearWarning() {
+    if (this.warningTimeout) {
+      clearTimeout(this.warningTimeout);
+      this.warningTimeout = null;
+    }
+    this.warning = null;
   }
 
   /** Retry AI turn after a failure */
