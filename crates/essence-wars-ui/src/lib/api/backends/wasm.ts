@@ -1,8 +1,9 @@
 /**
- * WASM backend implementation (stub).
+ * WASM backend implementation.
  *
- * This will be implemented in Phase 3-4 to provide browser-based gameplay.
- * For now, all methods throw "not implemented" errors.
+ * Game backend: Full WASM implementation
+ * Storage backend: IndexedDB implementation
+ * MCP backend: Not supported on web
  */
 
 import type {
@@ -31,31 +32,68 @@ import type {
   PlaystyleScore,
   ReplayInfo,
 } from "../types";
+import * as idb from "../../storage/indexeddb";
+import type { StoredReplay, StoredCustomDeck } from "../../storage/indexeddb";
 
-class NotImplementedError extends Error {
-  constructor(method: string) {
-    super(
-      `WasmBackend.${method}() is not yet implemented. ` +
-        `WASM support will be added in Phase 3-4.`
-    );
-    this.name = "NotImplementedError";
-  }
+// WASM module imports
+import wasmInit, {
+  WasmGameManager,
+  compute_spectator_match,
+  init as wasmPanicHook,
+} from "$wasm";
+
+/**
+ * Generate a unique ID for replays and decks.
+ */
+function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
 /**
- * WASM implementation of the game backend (stub).
+ * Format a date for display.
+ */
+function formatDate(timestamp: number): string {
+  return new Date(timestamp).toLocaleString();
+}
+
+/**
+ * WASM implementation of the game backend.
+ *
+ * Uses the Rust game engine compiled to WebAssembly for full game logic
+ * running entirely in the browser.
  */
 export class WasmGameBackend implements GameBackend {
   readonly platform: Platform = "web";
+  private manager: WasmGameManager | null = null;
+  private initialized = false;
 
   async init(): Promise<void> {
-    // TODO: Phase 3 - Initialize WASM module
-    // await init();
-    // this.manager = new WasmGameManager();
-    console.warn(
-      "WasmGameBackend: WASM support not yet implemented. " +
-        "This stub will be replaced in Phase 3-4."
-    );
+    if (this.initialized) {
+      return;
+    }
+
+    console.log("[WasmGameBackend] Initializing WASM module...");
+
+    // Initialize the WASM module
+    await wasmInit();
+
+    // Set up panic hook for better error messages
+    wasmPanicHook();
+
+    // Create the game manager
+    this.manager = new WasmGameManager();
+    this.initialized = true;
+
+    console.log("[WasmGameBackend] WASM module initialized successfully");
+  }
+
+  private getManager(): WasmGameManager {
+    if (!this.manager) {
+      throw new Error(
+        "WasmGameBackend not initialized. Call init() first."
+      );
+    }
+    return this.manager;
   }
 
   // ===========================================================================
@@ -63,16 +101,18 @@ export class WasmGameBackend implements GameBackend {
   // ===========================================================================
 
   async listDecks(): Promise<DeckInfo[]> {
-    throw new NotImplementedError("listDecks");
+    const json = this.getManager().list_decks();
+    return JSON.parse(json) as DeckInfo[];
   }
 
   async listBots(): Promise<BotInfo[]> {
-    throw new NotImplementedError("listBots");
+    const json = this.getManager().list_bots();
+    return JSON.parse(json) as BotInfo[];
   }
 
   async getDeckCards(deckId: string): Promise<CardDto[]> {
-    void deckId;
-    throw new NotImplementedError("getDeckCards");
+    const json = this.getManager().get_deck_cards(deckId);
+    return JSON.parse(json) as CardDto[];
   }
 
   // ===========================================================================
@@ -80,52 +120,59 @@ export class WasmGameBackend implements GameBackend {
   // ===========================================================================
 
   async newGame(config: GameConfig): Promise<GameStateDto> {
-    void config;
-    throw new NotImplementedError("newGame");
+    // Convert our config to the format expected by WASM
+    const wasmConfig = {
+      player_deck_id: config.playerDeckId,
+      opponent_deck_id: config.opponentDeckId,
+      opponent_bot_type: config.opponentBotType,
+      player_goes_first: config.playerGoesFirst ?? true,
+      seed: config.seed,
+    };
+
+    const json = this.getManager().new_game(JSON.stringify(wasmConfig));
+    return JSON.parse(json) as GameStateDto;
   }
 
   async getGameState(gameId: string): Promise<GameStateDto> {
-    void gameId;
-    throw new NotImplementedError("getGameState");
+    const json = this.getManager().get_game_state(gameId);
+    return JSON.parse(json) as GameStateDto;
   }
 
   async getLegalActions(gameId: string): Promise<ActionInfo[]> {
-    void gameId;
-    throw new NotImplementedError("getLegalActions");
+    const json = this.getManager().get_legal_actions(gameId);
+    return JSON.parse(json) as ActionInfo[];
   }
 
   async applyAction(
     gameId: string,
     actionIndex: number
   ): Promise<GameStateUpdate> {
-    void gameId;
-    void actionIndex;
-    throw new NotImplementedError("applyAction");
+    const json = this.getManager().apply_action(gameId, actionIndex);
+    return JSON.parse(json) as GameStateUpdate;
   }
 
   async getAiMove(gameId: string): Promise<ActionInfo> {
-    void gameId;
-    throw new NotImplementedError("getAiMove");
+    const json = this.getManager().get_ai_move(gameId);
+    return JSON.parse(json) as ActionInfo;
   }
 
   async getAiHint(gameId: string): Promise<AiHintResponse> {
-    void gameId;
-    throw new NotImplementedError("getAiHint");
+    const json = this.getManager().get_ai_hint(gameId);
+    return JSON.parse(json) as AiHintResponse;
   }
 
   async endGame(gameId: string): Promise<GameResultDto> {
-    void gameId;
-    throw new NotImplementedError("endGame");
+    const json = this.getManager().end_game(gameId);
+    return JSON.parse(json) as GameResultDto;
   }
 
   async undoAction(gameId: string): Promise<GameStateDto> {
-    void gameId;
-    throw new NotImplementedError("undoAction");
+    const json = this.getManager().undo_action(gameId);
+    return JSON.parse(json) as GameStateDto;
   }
 
   async canUndo(gameId: string): Promise<boolean> {
-    void gameId;
-    throw new NotImplementedError("canUndo");
+    return this.getManager().can_undo(gameId);
   }
 
   // ===========================================================================
@@ -135,8 +182,19 @@ export class WasmGameBackend implements GameBackend {
   async computeSpectatorMatch(
     config: SpectatorConfig
   ): Promise<SpectatorMatch> {
-    void config;
-    throw new NotImplementedError("computeSpectatorMatch");
+    // Convert to snake_case for Rust
+    const wasmConfig = {
+      player1_deck_id: config.player1DeckId,
+      player1_bot_type: config.player1BotType,
+      player2_deck_id: config.player2DeckId,
+      player2_bot_type: config.player2BotType,
+      seed: config.seed,
+      mcts_simulations: config.mctsSimulations,
+      alphabeta_depth: config.alphabetaDepth,
+    };
+
+    const json = compute_spectator_match(JSON.stringify(wasmConfig));
+    return JSON.parse(json) as SpectatorMatch;
   }
 
   // ===========================================================================
@@ -144,41 +202,42 @@ export class WasmGameBackend implements GameBackend {
   // ===========================================================================
 
   async listAllCards(faction?: string): Promise<BrowsableCard[]> {
-    void faction;
-    throw new NotImplementedError("listAllCards");
+    const json = this.getManager().list_all_cards(faction ?? null);
+    return JSON.parse(json) as BrowsableCard[];
   }
 
   async listCommanders(): Promise<CommanderDto[]> {
-    throw new NotImplementedError("listCommanders");
+    const json = this.getManager().list_commanders();
+    return JSON.parse(json) as CommanderDto[];
   }
 
   async validateCustomDeck(deck: CustomDeck): Promise<DeckValidation> {
-    void deck;
-    throw new NotImplementedError("validateCustomDeck");
+    const json = this.getManager().validate_custom_deck(JSON.stringify(deck));
+    return JSON.parse(json) as DeckValidation;
   }
 
   async calculateDeckPlaystyle(
     cards: number[],
     commanderId: number
   ): Promise<PlaystyleScore> {
-    void cards;
-    void commanderId;
-    throw new NotImplementedError("calculateDeckPlaystyle");
+    const json = this.getManager().calculate_deck_playstyle(
+      JSON.stringify(cards),
+      commanderId
+    );
+    return JSON.parse(json) as PlaystyleScore;
   }
 }
 
 /**
- * WASM/IndexedDB implementation of the storage backend (stub).
+ * IndexedDB implementation of the storage backend for web.
  */
 export class WasmStorageBackend implements StorageBackend {
   readonly platform: Platform = "web";
 
   async init(): Promise<void> {
-    // TODO: Phase 2 - Initialize IndexedDB
-    console.warn(
-      "WasmStorageBackend: IndexedDB support not yet implemented. " +
-        "This stub will be replaced in Phase 2."
-    );
+    // Open the IndexedDB database
+    await idb.openDatabase();
+    console.log("[WasmStorageBackend] IndexedDB initialized");
   }
 
   // ===========================================================================
@@ -186,32 +245,72 @@ export class WasmStorageBackend implements StorageBackend {
   // ===========================================================================
 
   async saveReplay(gameId: string, name?: string): Promise<string> {
+    // On web, saveReplay requires the game state to be passed in.
+    // This is different from Tauri where the backend can access the game.
+    // For now, throw an error - use saveSpectatorReplay instead.
     void gameId;
     void name;
-    throw new NotImplementedError("saveReplay");
+    throw new Error(
+      "saveReplay() is not supported on web. Use saveSpectatorReplay() instead."
+    );
   }
 
   async saveSpectatorReplay(
     match: SpectatorMatch,
     name?: string
   ): Promise<string> {
-    void match;
-    void name;
-    throw new NotImplementedError("saveSpectatorReplay");
+    const id = generateId();
+    const timestamp = Date.now();
+
+    const storedReplay: StoredReplay = {
+      id,
+      name: name || `${match.player1DeckName} vs ${match.player2DeckName}`,
+      timestamp,
+      player1DeckName: match.player1DeckName,
+      player2DeckName: match.player2DeckName,
+      player1Type: match.player1BotName || "Human",
+      player2Type: match.player2BotName,
+      winner: match.result.winner,
+      totalTurns: match.totalTurns,
+      totalActions: match.actions.length,
+      data: JSON.stringify(match),
+    };
+
+    await idb.saveReplay(storedReplay);
+    console.log(`[WasmStorageBackend] Saved replay: ${id}`);
+    return id;
   }
 
   async listReplays(): Promise<ReplayInfo[]> {
-    throw new NotImplementedError("listReplays");
+    const storedReplays = await idb.getAllReplays();
+
+    return storedReplays.map((replay) => ({
+      path: replay.id, // Use ID as path for web
+      filename: replay.name,
+      timestamp: replay.timestamp,
+      dateString: formatDate(replay.timestamp),
+      player1DeckName: replay.player1DeckName,
+      player2DeckName: replay.player2DeckName,
+      player1Type: replay.player1Type,
+      player2Type: replay.player2Type,
+      winner: replay.winner,
+      totalTurns: replay.totalTurns,
+      totalActions: replay.totalActions,
+    }));
   }
 
   async loadReplay(pathOrId: string): Promise<SpectatorMatch> {
-    void pathOrId;
-    throw new NotImplementedError("loadReplay");
+    const storedReplay = await idb.getReplay(pathOrId);
+
+    if (!storedReplay) {
+      throw new Error(`Replay not found: ${pathOrId}`);
+    }
+
+    return JSON.parse(storedReplay.data) as SpectatorMatch;
   }
 
   async deleteReplay(pathOrId: string): Promise<void> {
-    void pathOrId;
-    throw new NotImplementedError("deleteReplay");
+    await idb.deleteReplay(pathOrId);
   }
 
   // ===========================================================================
@@ -219,22 +318,62 @@ export class WasmStorageBackend implements StorageBackend {
   // ===========================================================================
 
   async saveCustomDeck(deck: CustomDeck): Promise<string> {
-    void deck;
-    throw new NotImplementedError("saveCustomDeck");
+    const now = new Date().toISOString();
+    const existing = await idb.getCustomDeck(deck.id);
+
+    const storedDeck: StoredCustomDeck = {
+      id: deck.id,
+      name: deck.name,
+      commander: deck.commander,
+      cards: deck.cards,
+      description: deck.description,
+      tags: deck.tags,
+      createdAt: existing?.createdAt || now,
+      modifiedAt: now,
+    };
+
+    await idb.saveCustomDeck(storedDeck);
+    console.log(`[WasmStorageBackend] Saved custom deck: ${deck.id}`);
+    return deck.id;
   }
 
   async listCustomDecks(): Promise<CustomDeckInfo[]> {
-    throw new NotImplementedError("listCustomDecks");
+    const storedDecks = await idb.getAllCustomDecks();
+
+    // Note: We don't have access to commander name or playstyle calculation
+    // on web without the WASM engine. Return basic info for now.
+    return storedDecks.map((deck) => ({
+      id: deck.id,
+      name: deck.name,
+      description: deck.description,
+      commanderId: deck.commander,
+      commanderName: `Commander #${deck.commander}`, // Placeholder until WASM
+      faction: "unknown", // Would need WASM to determine
+      cardCount: deck.cards.length,
+      createdAt: deck.createdAt,
+      modifiedAt: deck.modifiedAt,
+    }));
   }
 
   async loadCustomDeck(deckId: string): Promise<CustomDeck> {
-    void deckId;
-    throw new NotImplementedError("loadCustomDeck");
+    const storedDeck = await idb.getCustomDeck(deckId);
+
+    if (!storedDeck) {
+      throw new Error(`Custom deck not found: ${deckId}`);
+    }
+
+    return {
+      id: storedDeck.id,
+      name: storedDeck.name,
+      commander: storedDeck.commander,
+      cards: storedDeck.cards,
+      description: storedDeck.description,
+      tags: storedDeck.tags,
+    };
   }
 
   async deleteCustomDeck(deckId: string): Promise<void> {
-    void deckId;
-    throw new NotImplementedError("deleteCustomDeck");
+    await idb.deleteCustomDeck(deckId);
   }
 }
 

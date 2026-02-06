@@ -5,6 +5,10 @@
 import adapter from "@sveltejs/adapter-static";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
+// For GitHub Pages deployment, set BASE_PATH=/essence-wars
+// @ts-expect-error process is a nodejs global
+const basePath = process.env.BASE_PATH || "";
+
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
   preprocess: vitePreprocess(),
@@ -12,6 +16,14 @@ const config = {
     adapter: adapter({
       fallback: "index.html",
     }),
+    alias: {
+      // WASM package for web builds
+      $wasm: "./src-wasm/pkg",
+    },
+    paths: {
+      // Set base path for GitHub Pages (empty for Tauri/local dev)
+      base: basePath,
+    },
   },
 };
 

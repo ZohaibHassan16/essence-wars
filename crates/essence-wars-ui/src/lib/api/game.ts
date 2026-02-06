@@ -27,7 +27,13 @@ import type {
 } from "./types";
 
 // Re-export the IpcTimeoutError for backwards compatibility
-export { IpcTimeoutError } from "./backends/tauri";
+// Note: This class is defined in the tauri backend but is a generic error type
+export class IpcTimeoutError extends Error {
+  constructor(operation: string, timeoutMs: number) {
+    super(`Operation "${operation}" timed out after ${timeoutMs}ms`);
+    this.name = "IpcTimeoutError";
+  }
+}
 
 // ===========================================================================
 // Game Setup

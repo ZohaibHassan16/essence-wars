@@ -17,26 +17,32 @@ pub mod core;
 // AI tensor representation (depends on core)
 pub mod tensor;
 
-// Bot and arena modules (engine-agnostic)
+// Bot modules (engine-agnostic)
 pub mod bots;
-pub mod arena;
 pub mod decks;
+
+// Arena module for batch game running (CLI only - uses execution)
+#[cfg(feature = "cli")]
+pub mod arena;
 
 // Tuning module (requires parallel feature for heavy computation)
 #[cfg(feature = "parallel")]
 pub mod tuning;
 
-// Execution utilities for game running (parallel when available)
+// Execution utilities for game running (CLI only - uses clap, indicatif, etc.)
+#[cfg(feature = "cli")]
 pub mod execution;
 
 // Validation module for balance testing (requires parallel feature)
 #[cfg(feature = "parallel")]
 pub mod validation;
 
-// Diagnostics module for P1/P2 asymmetry analysis
+// Diagnostics module for P1/P2 asymmetry analysis (CLI only - uses execution)
+#[cfg(feature = "cli")]
 pub mod diagnostics;
 
-// Card statistics module for per-card performance analysis
+// Card statistics module for per-card performance analysis (CLI only - uses execution)
+#[cfg(feature = "cli")]
 pub mod stats;
 
 // Client API for game integration (web, JRPG, training)

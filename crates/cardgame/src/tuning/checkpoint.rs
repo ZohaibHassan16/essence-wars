@@ -25,6 +25,8 @@ pub fn is_interrupted() -> bool {
 }
 
 /// Register SIGINT handler for graceful checkpoint on Ctrl+C.
+/// Only available when the `cli` feature is enabled.
+#[cfg(feature = "cli")]
 pub fn register_interrupt_handler() {
     ctrlc::set_handler(move || {
         if INTERRUPTED.swap(true, Ordering::SeqCst) {
@@ -35,6 +37,12 @@ pub fn register_interrupt_handler() {
         eprintln!("\nInterrupt received, saving checkpoint...");
     })
     .expect("Error setting Ctrl+C handler");
+}
+
+/// No-op interrupt handler for WASM builds.
+#[cfg(not(feature = "cli"))]
+pub fn register_interrupt_handler() {
+    // No signal handling in WASM
 }
 
 /// Errors that can occur during checkpoint operations.

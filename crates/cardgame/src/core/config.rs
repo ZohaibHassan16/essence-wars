@@ -70,6 +70,9 @@ pub mod game {
 
     /// Essence extraction threshold for EssenceWar mode (deal 50 face damage to win)
     pub const VICTORY_POINTS_THRESHOLD: u16 = 50;
+
+    /// Maximum actions per game before aborting (prevents infinite loops)
+    pub const MAX_ACTIONS_PER_GAME: usize = 1000;
 }
 
 /// Commander's Insight (catch-up mechanic) constants

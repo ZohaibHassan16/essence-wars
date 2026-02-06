@@ -49,8 +49,8 @@ use std::sync::Arc;
 const DEFAULT_COMMANDER: CardId = CardId(5000);
 
 /// Initialize panic hook for better error messages in browser console.
+/// Called automatically when loading the WASM module.
 #[cfg(feature = "wasm")]
-#[wasm_bindgen(start)]
 pub fn init_panic_hook() {
     console_error_panic_hook::set_once();
 }

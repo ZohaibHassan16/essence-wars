@@ -4,6 +4,7 @@ members = [
     "crates/cardgame",
     "crates/essence-wars-mcp",
     "crates/essence-wars-ui/src-tauri",
+    "crates/essence-wars-ui/src-wasm",
 ]
 
 [workspace.package]

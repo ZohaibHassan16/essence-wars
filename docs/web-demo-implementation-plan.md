@@ -1,6 +1,6 @@
 # Essence Wars Web Demo - Implementation Plan
 
-**Status:** Planning
+**Status:** Complete - Ready for Deployment
 **Author:** Chris + Claude
 **Created:** 2026-02-06
 
@@ -158,17 +158,17 @@ export async function getBackend(): Promise<GameBackend> {
 
 ## Implementation Phases
 
-### Phase 1: Backend Abstraction Layer
+### Phase 1: Backend Abstraction Layer ✅
 **Goal:** Refactor existing code to use abstraction without changing behavior.
 
 #### Tasks
-1. [ ] Create `src/lib/api/interface.ts` with `GameBackend` interface
-2. [ ] Create `src/lib/api/backends/tauri.ts` (extract from current game.ts)
-3. [ ] Create `src/lib/api/backends/index.ts` with detection logic
-4. [ ] Create stub `src/lib/api/backends/wasm.ts` (throws "not implemented")
-5. [ ] Update `game.ts` to use `getBackend()`
-6. [ ] Update `deckBuilder.ts` to use `getBackend()`
-7. [ ] Test that desktop app still works identically
+1. [x] Create `src/lib/api/interface.ts` with `GameBackend` interface
+2. [x] Create `src/lib/api/backends/tauri.ts` (extract from current game.ts)
+3. [x] Create `src/lib/api/backends/index.ts` with detection logic
+4. [x] Create stub `src/lib/api/backends/wasm.ts` (throws "not implemented")
+5. [x] Update `game.ts` to use `getBackend()`
+6. [x] Update `deckBuilder.ts` to use `getBackend()`
+7. [x] Test that desktop app still works identically
 
 #### Files Changed
 - `src/lib/api/game.ts` (modified)
@@ -186,16 +186,18 @@ pnpm run check  # No type errors
 
 ---
 
-### Phase 2: Storage Abstraction
+### Phase 2: Storage Abstraction ✅
 **Goal:** Abstract replay and custom deck storage for cross-platform support.
 
 #### Tasks
-1. [ ] Create `src/lib/storage/interface.ts` with `StorageBackend`
-2. [ ] Create `src/lib/storage/filesystem.ts` (Tauri implementation)
-3. [ ] Create `src/lib/storage/indexeddb.ts` (Web implementation)
-4. [ ] Update replay-related functions to use storage abstraction
-5. [ ] Update custom deck functions to use storage abstraction
-6. [ ] Test desktop replay save/load still works
+1. [x] Create `src/lib/storage/interface.ts` with `StorageBackend` (in backends/interface.ts)
+2. [x] Create `src/lib/storage/filesystem.ts` (Tauri implementation in backends/tauri.ts)
+3. [x] Create `src/lib/storage/indexeddb.ts` (Web implementation)
+4. [x] Update replay-related functions to use storage abstraction
+5. [x] Update custom deck functions to use storage abstraction
+6. [x] Test desktop replay save/load still works
+
+> **Note:** Storage backends are colocated with game backends in `backends/` folder for simplicity.
 
 #### Web Storage Design
 ```typescript
@@ -226,16 +228,25 @@ interface EssenceWarsDB {
 
 ---
 
-### Phase 3: WASM Engine Bindings
+### Phase 3: WASM Engine Bindings ✅
 **Goal:** Create complete WASM bindings for the game engine.
 
 #### Tasks
-1. [ ] Create `src-wasm/` crate with wasm-bindgen
-2. [ ] Implement `WasmGameManager` mirroring Tauri's `GameManager`
-3. [ ] Expose all required functions via `#[wasm_bindgen]`
-4. [ ] Handle game state management in WASM
-5. [ ] Implement AI with reduced simulation count for web
-6. [ ] Build and test WASM module locally
+1. [x] Create `src-wasm/` crate with wasm-bindgen
+2. [x] Implement `WasmGameManager` mirroring Tauri's `GameManager`
+3. [x] Expose all required functions via `#[wasm_bindgen]`
+4. [x] Handle game state management in WASM
+5. [x] Implement AI with reduced simulation count for web
+6. [x] Build and test WASM module locally
+
+#### Build Output
+```
+src-wasm/pkg/
+├── essence_wars_wasm.js        (40 KB - JS glue)
+├── essence_wars_wasm.d.ts      (11 KB - TypeScript types)
+├── essence_wars_wasm_bg.wasm   (1.3 MB - WASM binary)
+└── package.json
+```
 
 #### WASM Crate Structure
 ```rust
@@ -284,14 +295,14 @@ const WEB_AI_CONFIG = {
 
 ---
 
-### Phase 4: WASM Backend Implementation
+### Phase 4: WASM Backend Implementation ✅
 **Goal:** Connect Svelte UI to WASM engine.
 
 #### Tasks
-1. [ ] Implement `WasmBackend` class in `backends/wasm.ts`
-2. [ ] Handle WASM module initialization
-3. [ ] Convert between JS objects and WASM types
-4. [ ] Add loading state for WASM initialization
+1. [x] Implement `WasmBackend` class in `backends/wasm.ts`
+2. [x] Handle WASM module initialization
+3. [x] Convert between JS objects and WASM types
+4. [x] Add loading state for WASM initialization
 5. [ ] Test all game functions in browser
 
 #### WASM Backend Implementation
@@ -322,16 +333,16 @@ export class WasmBackend implements GameBackend {
 
 ---
 
-### Phase 5: Progressive Asset Loading
+### Phase 5: Progressive Asset Loading ✅
 **Goal:** Implement lazy loading for optimal web performance.
 
 #### Tasks
-1. [ ] Create `src/lib/assets/loader.svelte.ts` using Svelte 5 runes
-2. [ ] Implement essential asset preloading
-3. [ ] Add intersection observer for card art lazy loading
-4. [ ] Add background audio loading
-5. [ ] Create loading indicators for components
-6. [ ] Update card components to use loader
+1. [x] Create `src/lib/assets/loader.svelte.ts` using Svelte 5 runes
+2. [x] Implement essential asset preloading (`preload.ts`)
+3. [x] Add intersection observer for card art lazy loading
+4. [x] Create loading indicators with shimmer effects
+5. [x] Create `CardImage` and `LazyImage` components
+6. [x] Integrate asset preloading into app layout
 
 #### Asset Loading Strategy
 ```
@@ -393,15 +404,15 @@ export const assetLoader = new AssetLoader();
 
 ---
 
-### Phase 6: SvelteKit Static Build
+### Phase 6: SvelteKit Static Build ✅
 **Goal:** Configure SvelteKit for static site generation.
 
 #### Tasks
-1. [ ] Update `svelte.config.js` for static adapter
-2. [ ] Create `routes/+layout.ts` with `prerender = true`
-3. [ ] Handle dynamic routes appropriately
-4. [ ] Configure base path for GitHub Pages
-5. [ ] Test static build locally
+1. [x] Update `svelte.config.js` with configurable base path
+2. [x] Update `routes/+layout.ts` with `prerender = true`
+3. [x] Add `build:web` script with BASE_PATH=/essence-wars
+4. [x] Configure base path for GitHub Pages
+5. [x] Test static build locally
 
 #### SvelteKit Configuration
 ```javascript
@@ -430,16 +441,16 @@ export const ssr = false;  // Client-side only
 
 ---
 
-### Phase 7: GitHub Pages Deployment
+### Phase 7: GitHub Pages Deployment ✅
 **Goal:** Automated deployment via GitHub Actions.
 
 #### Tasks
-1. [ ] Create `.github/workflows/deploy-web.yml`
-2. [ ] Build WASM module in CI
-3. [ ] Build SvelteKit static site
-4. [ ] Deploy to `gh-pages` branch
-5. [ ] Configure custom domain (optional)
-6. [ ] Add deployment status badge
+1. [x] Create `.github/workflows/deploy-web.yml`
+2. [x] Build WASM module in CI
+3. [x] Build SvelteKit static site
+4. [x] Deploy to GitHub Pages using `actions/deploy-pages`
+5. [ ] Configure custom domain (optional - deferred)
+6. [ ] Add deployment status badge (optional - deferred)
 
 #### Workflow
 ```yaml

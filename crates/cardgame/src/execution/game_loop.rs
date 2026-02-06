@@ -69,11 +69,8 @@ use crate::types::PlayerId;
 // Constants
 // ============================================================================
 
-/// Safety limit for maximum actions per game.
-///
-/// Prevents infinite loops from bugs or degenerate game states.
-/// 1000 actions is approximately 50x the typical game length of ~20 actions.
-pub const MAX_ACTIONS_PER_GAME: usize = 1000;
+// Re-export safety limit from core config
+pub use crate::core::config::game::MAX_ACTIONS_PER_GAME;
 
 // ============================================================================
 // Configuration

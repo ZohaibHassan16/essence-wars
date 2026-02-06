@@ -12,13 +12,24 @@ export type { GameBackend, StorageBackend, McpBackend, Platform } from "./interf
 
 /**
  * Detect the current platform at runtime.
- * Tauri injects `__TAURI__` into the window object.
+ * Tauri 2 injects `__TAURI_INTERNALS__` into the window object.
  */
 export function detectPlatform(): Platform {
-  if (typeof window !== "undefined" && "__TAURI__" in window) {
-    return "tauri";
+  if (typeof window === "undefined") {
+    return "web";
   }
-  return "web";
+
+  // Tauri 2.x uses __TAURI_INTERNALS__
+  // Tauri 1.x used __TAURI__
+  const isTauri = "__TAURI_INTERNALS__" in window || "__TAURI__" in window;
+
+  console.log("[Backend] Platform detection:", {
+    hasTauriInternals: "__TAURI_INTERNALS__" in window,
+    hasTauri: "__TAURI__" in window,
+    detected: isTauri ? "tauri" : "web",
+  });
+
+  return isTauri ? "tauri" : "web";
 }
 
 // Singleton instances (lazy initialized)
@@ -32,35 +43,48 @@ let _initialized = false;
  * Call this once at app startup.
  */
 export async function initBackends(): Promise<void> {
-  if (_initialized) return;
-
-  const platform = detectPlatform();
-  console.log(`[Backend] Detected platform: ${platform}`);
-
-  if (platform === "tauri") {
-    const { TauriGameBackend, TauriStorageBackend, TauriMcpBackend } =
-      await import("./tauri");
-
-    _gameBackend = new TauriGameBackend();
-    _storageBackend = new TauriStorageBackend();
-    _mcpBackend = new TauriMcpBackend();
-  } else {
-    const { WasmGameBackend, WasmStorageBackend, WasmMcpBackend } =
-      await import("./wasm");
-
-    _gameBackend = new WasmGameBackend();
-    _storageBackend = new WasmStorageBackend();
-    _mcpBackend = new WasmMcpBackend();
+  if (_initialized) {
+    console.log("[Backend] Already initialized, skipping");
+    return;
   }
 
-  // Initialize all backends
-  await Promise.all([
-    _gameBackend.init(),
-    _storageBackend.init(),
-  ]);
+  const platform = detectPlatform();
+  console.log(`[Backend] Initializing for platform: ${platform}`);
 
-  _initialized = true;
-  console.log(`[Backend] Initialized successfully`);
+  try {
+    if (platform === "tauri") {
+      console.log("[Backend] Loading Tauri backend modules...");
+      const { TauriGameBackend, TauriStorageBackend, TauriMcpBackend } =
+        await import("./tauri");
+
+      _gameBackend = new TauriGameBackend();
+      _storageBackend = new TauriStorageBackend();
+      _mcpBackend = new TauriMcpBackend();
+      console.log("[Backend] Tauri backends created");
+    } else {
+      console.log("[Backend] Loading WASM backend modules...");
+      const { WasmGameBackend, WasmStorageBackend, WasmMcpBackend } =
+        await import("./wasm");
+
+      _gameBackend = new WasmGameBackend();
+      _storageBackend = new WasmStorageBackend();
+      _mcpBackend = new WasmMcpBackend();
+      console.log("[Backend] WASM backends created");
+    }
+
+    // Initialize all backends
+    console.log("[Backend] Calling init() on backends...");
+    await Promise.all([
+      _gameBackend.init(),
+      _storageBackend.init(),
+    ]);
+
+    _initialized = true;
+    console.log("[Backend] Initialization complete!");
+  } catch (error) {
+    console.error("[Backend] Initialization failed:", error);
+    throw error;
+  }
 }
 
 /**

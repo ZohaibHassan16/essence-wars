@@ -127,7 +127,11 @@ impl MctsConfig {
     /// Uses multiple parallel trees for faster response time, distributing
     /// the simulation budget across available CPU cores.
     pub fn interactive(simulations: u32) -> Self {
+        #[cfg(feature = "cli")]
         let cores = num_cpus::get() as u32;
+        #[cfg(not(feature = "cli"))]
+        let cores = 1u32; // WASM runs single-threaded
+
         let trees = cores.min(8); // Cap at 8 trees
         Self {
             simulations: simulations / trees, // Distribute across trees
