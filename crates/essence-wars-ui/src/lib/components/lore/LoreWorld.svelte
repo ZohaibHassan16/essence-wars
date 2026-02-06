@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Globe, Sparkles, Shield, Swords } from "lucide-svelte";
+  import { assetUrl } from "$lib/utils/paths";
 </script>
 
 <div class="space-y-8">
@@ -7,7 +8,7 @@
   <section class="relative">
     <div class="rounded-xl overflow-hidden border border-gray-700 shadow-2xl">
       <img
-        src="/backgrounds/omyra_world_map.webp"
+        src={assetUrl("/backgrounds/omyra_world_map.webp")}
         alt="The World of Omyra"
         class="w-full h-64 md:h-96 object-cover"
       />

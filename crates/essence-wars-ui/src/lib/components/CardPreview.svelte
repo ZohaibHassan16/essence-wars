@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { CardDto, CreatureDto, SupportDto } from "$lib/api/types";
   import KeywordIcon from "./KeywordIcon.svelte";
+  import { assetUrl, cardArtUrl } from "$lib/utils/paths";
 
   let {
     card,
@@ -114,7 +115,7 @@
       <div class="flex items-center justify-between">
         <span class="font-bold text-ui-text text-lg">{card.name}</span>
         <div class="h-8 px-2 rounded-full bg-mana flex items-center gap-1 text-white text-base font-bold">
-          <img src="/ui/decorations/icons/essence_icon_crystal.png" alt="" class="w-5 h-5 object-contain" />
+          <img src={assetUrl("/ui/decorations/icons/essence_icon_crystal.png")} alt="" class="w-5 h-5 object-contain" />
           <span>{card.cost}</span>
         </div>
       </div>
@@ -127,7 +128,7 @@
     <div class="h-48 bg-gray-800/50 overflow-hidden border-b border-gray-700 relative">
       {#if currentArtPath}
         <img
-          src="/{currentArtPath}"
+          src={assetUrl(`/${currentArtPath}`)}
           alt={card.name}
           class="w-full h-full object-cover object-center"
           onerror={handleImageError}

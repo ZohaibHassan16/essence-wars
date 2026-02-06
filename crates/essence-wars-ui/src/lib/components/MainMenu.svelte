@@ -7,6 +7,7 @@
   import { deckBuilderStore } from "$lib/stores/deckBuilderState.svelte";
   import { startTutorialGame } from "$lib/tutorial/tutorialGame";
   import { playSound, playMusic } from "$lib/audio";
+  import { assetUrl } from "$lib/utils/paths";
 
   let { onOpenSettings, onOpenRules, onOpenLore }: { onOpenSettings?: () => void; onOpenRules?: () => void; onOpenLore?: () => void } = $props();
 
@@ -92,7 +93,7 @@
     <div class="text-center">
       <!-- Banner image -->
       <img
-        src="/ui/essence_wars_banner.webp"
+        src={assetUrl("/ui/essence_wars_banner.webp")}
         alt="Essence Wars"
         class="h-32 md:h-40 lg:h-48 mx-auto mb-2 drop-shadow-2xl"
       />

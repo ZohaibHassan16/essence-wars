@@ -14,6 +14,7 @@
 
 import { assetLoader } from "./loader.svelte";
 import { getPlatform } from "$lib/api/backends";
+import { assetUrl, cardArtUrl } from "$lib/utils/paths";
 
 /**
  * Essential asset paths that must load before app is interactive.
@@ -31,15 +32,18 @@ const ESSENTIAL_ASSETS = {
 };
 
 /**
- * Asset paths that can be deferred but should load early.
+ * Get asset paths that can be deferred but should load early.
+ * Function call needed to apply base path at runtime.
  */
-const DEFERRED_ASSETS = {
-  // Backgrounds for the menu and game board
-  backgrounds: [
-    "/backgrounds/menu_bg.webp",
-    "/backgrounds/game_board.webp",
-  ],
-};
+function getDeferredAssets() {
+  return {
+    // Backgrounds for the menu and game board
+    backgrounds: [
+      assetUrl("/backgrounds/menu_bg.webp"),
+      assetUrl("/backgrounds/game_board.webp"),
+    ],
+  };
+}
 
 /**
  * Preload essential assets for app startup.
@@ -75,7 +79,7 @@ export async function preloadDeferredAssets(): Promise<void> {
   console.log("[Preload] Starting deferred asset preload...");
 
   // Load backgrounds in background
-  assetLoader.preloadBatch(DEFERRED_ASSETS.backgrounds).catch((err) => {
+  assetLoader.preloadBatch(getDeferredAssets().backgrounds).catch((err) => {
     console.warn("[Preload] Some deferred assets failed:", err);
   });
 }
@@ -87,11 +91,8 @@ export async function preloadDeferredAssets(): Promise<void> {
 export async function preloadDeckCards(cardIds: number[]): Promise<void> {
   console.log(`[Preload] Preloading ${cardIds.length} deck cards...`);
 
-  const paths = cardIds.map((id) => {
-    // Determine card type folder based on ID range
-    // This is a simplified approach - actual path depends on card type
-    return `/cards/creatures/${id}.webp`;
-  });
+  // All cards are in /cards/core_set/{id}.webp
+  const paths = cardIds.map((id) => cardArtUrl(id));
 
   await assetLoader.preloadBatch(paths);
 }

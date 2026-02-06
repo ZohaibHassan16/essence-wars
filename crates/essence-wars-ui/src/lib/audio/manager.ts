@@ -1,5 +1,6 @@
 // Audio manager using preloaded sound files with random variation and faction support
 import { audioSettings } from '$lib/stores/audioSettings.svelte';
+import { assetUrl } from '$lib/utils/paths';
 
 // Sound effect types available in the game
 export type SoundEffect =
@@ -239,21 +240,24 @@ const audioCache = new Map<string, HTMLAudioElement>();
 
 // Preload a single audio file
 async function preloadAudio(path: string): Promise<HTMLAudioElement | null> {
-  if (audioCache.has(path)) {
-    return audioCache.get(path)!;
+  // Apply base path for web deployment
+  const fullPath = assetUrl(path);
+
+  if (audioCache.has(fullPath)) {
+    return audioCache.get(fullPath)!;
   }
 
   try {
-    const audio = new Audio(path);
+    const audio = new Audio(fullPath);
     await new Promise<void>((resolve, reject) => {
       audio.addEventListener('canplaythrough', () => resolve(), { once: true });
-      audio.addEventListener('error', () => reject(new Error(`Failed to load: ${path}`)), { once: true });
+      audio.addEventListener('error', () => reject(new Error(`Failed to load: ${fullPath}`)), { once: true });
       audio.load();
     });
-    audioCache.set(path, audio);
+    audioCache.set(fullPath, audio);
     return audio;
   } catch (e) {
-    console.warn(`Failed to preload audio: ${path}`, e);
+    console.warn(`Failed to preload audio: ${fullPath}`, e);
     return null;
   }
 }
@@ -267,18 +271,21 @@ function randomChoice<T>(arr: T[]): T {
 function playSoundFileWithVolume(path: string, volume: number): void {
   if (volume <= 0) return;
 
+  // Apply base path for web deployment
+  const fullPath = assetUrl(path);
+
   // Try to use cached audio, or create new
-  const cached = audioCache.get(path);
+  const cached = audioCache.get(fullPath);
   if (cached) {
     // Clone the audio for overlapping sounds
     const audio = cached.cloneNode() as HTMLAudioElement;
     audio.volume = volume;
-    audio.play().catch((e) => console.warn(`Failed to play: ${path}`, e));
+    audio.play().catch((e) => console.warn(`Failed to play: ${fullPath}`, e));
   } else {
     // Fallback: create and play directly
-    const audio = new Audio(path);
+    const audio = new Audio(fullPath);
     audio.volume = volume;
-    audio.play().catch((e) => console.warn(`Failed to play: ${path}`, e));
+    audio.play().catch((e) => console.warn(`Failed to play: ${fullPath}`, e));
   }
 }
 

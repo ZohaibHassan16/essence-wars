@@ -4,6 +4,7 @@
   import KeywordIcon from "./KeywordIcon.svelte";
   import { playSound } from "$lib/audio";
   import { gameSettings } from "$lib/stores/gameSettings.svelte";
+  import { assetUrl } from "$lib/utils/paths";
 
   let {
     card,
@@ -157,7 +158,7 @@
       <!-- Cost badge with essence crystal -->
       <div class="absolute -top-2 -right-2 h-7 px-1.5 rounded-full bg-mana flex items-center gap-0.5
                   text-white text-sm font-bold shadow-md border-2 border-blue-400 z-10">
-        <img src="/ui/decorations/icons/essence_icon_crystal.png" alt="" class="w-4 h-4 object-contain" />
+        <img src={assetUrl("/ui/decorations/icons/essence_icon_crystal.png")} alt="" class="w-4 h-4 object-contain" />
         <span>{card.cost}</span>
       </div>
 

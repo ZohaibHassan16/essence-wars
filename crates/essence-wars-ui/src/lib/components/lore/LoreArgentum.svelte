@@ -1,7 +1,8 @@
 <script lang="ts">
   import { Building, Wrench, Users } from "lucide-svelte";
+  import { assetUrl, cardArtUrl } from "$lib/utils/paths";
 
-  const emblem = "/ui/decorations/emblems/emblem_argentum.png";
+  const emblem = assetUrl("/ui/decorations/emblems/emblem_argentum.png");
 
   // Featured card IDs for Argentum (1000-1074)
   const featuredCards = [
@@ -33,7 +34,7 @@
         <div class="group relative">
           <div class="rounded-lg overflow-hidden border-2 border-gold/30 hover:border-gold transition-all shadow-lg">
             <img
-              src="/cards/core_set/{card.id}.webp"
+              src={cardArtUrl(card.id)}
               alt={card.name}
               class="w-full aspect-[3/4] object-cover group-hover:scale-105 transition-transform duration-300"
             />

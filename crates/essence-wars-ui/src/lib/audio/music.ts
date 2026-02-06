@@ -1,10 +1,12 @@
 // Music manager for background music playback with track variety
 import { audioSettings } from '$lib/stores/audioSettings.svelte';
+import { assetUrl } from '$lib/utils/paths';
 
 export type MusicTrack = 'menu' | 'battle' | 'spectator';
 export type MusicSting = 'victory' | 'defeat';
 
 // Track file paths - arrays for variety (OGG Vorbis for optimal size)
+// Note: These are relative paths that get prefixed with base path at runtime
 const MUSIC_TRACKS: Record<MusicTrack, string[]> = {
   menu: [
     '/music/menu_1.ogg',  // Town Theme RPG
@@ -71,7 +73,7 @@ export function playMusic(track: MusicTrack, fadeInMs: number = 1000): void {
 
   currentTrack = track;
   currentFilePath = getRandomTrackFile(track);
-  currentAudio = new Audio(currentFilePath);
+  currentAudio = new Audio(assetUrl(currentFilePath));
   currentAudio.loop = false; // Don't loop - we'll play a different track when it ends
   currentAudio.volume = 0;
 
@@ -80,7 +82,7 @@ export function playMusic(track: MusicTrack, fadeInMs: number = 1000): void {
     if (currentTrack === track) {
       // Pick a different track for variety
       currentFilePath = getRandomTrackFile(track, true);
-      currentAudio = new Audio(currentFilePath);
+      currentAudio = new Audio(assetUrl(currentFilePath));
       currentAudio.loop = false;
       currentAudio.volume = audioSettings.effectiveMusicVolume;
       // onended handler is already set
@@ -129,7 +131,7 @@ function playNextTrack(track: MusicTrack): void {
   if (currentTrack !== track) return;
 
   currentFilePath = getRandomTrackFile(track, true);
-  currentAudio = new Audio(currentFilePath);
+  currentAudio = new Audio(assetUrl(currentFilePath));
   currentAudio.loop = false;
   currentAudio.volume = audioSettings.effectiveMusicVolume;
 
@@ -206,7 +208,7 @@ export function playSting(sting: MusicSting): void {
   }
 
   // Play the sting
-  stingAudio = new Audio(MUSIC_STINGS[sting]);
+  stingAudio = new Audio(assetUrl(MUSIC_STINGS[sting]));
   stingAudio.volume = audioSettings.effectiveMusicVolume;
 
   stingAudio.onended = () => {

@@ -9,6 +9,7 @@
  */
 
 import { SvelteMap, SvelteSet } from "svelte/reactivity";
+import { assetUrl, cardArtUrl } from "$lib/utils/paths";
 
 export type AssetStatus = "idle" | "loading" | "loaded" | "error";
 
@@ -148,25 +149,11 @@ class AssetLoader {
 
   /**
    * Load a card image by card ID.
-   * Handles the card art path convention.
+   * All cards are in /cards/core_set/{id}.webp
    */
   async loadCard(cardId: number): Promise<string> {
-    const path = `/cards/creatures/${cardId}.webp`;
-
-    // Try creatures first, then spells, then supports
-    try {
-      return await this.loadImage(path);
-    } catch {
-      // Try spells folder
-      const spellPath = `/cards/spells/${cardId}.webp`;
-      try {
-        return await this.loadImage(spellPath);
-      } catch {
-        // Try supports folder
-        const supportPath = `/cards/supports/${cardId}.webp`;
-        return await this.loadImage(supportPath);
-      }
-    }
+    const path = cardArtUrl(cardId);
+    return await this.loadImage(path);
   }
 
   /**
@@ -175,7 +162,7 @@ class AssetLoader {
   async loadCommander(commanderId: number): Promise<string> {
     // Commander portraits use a name-based path
     // We'll need to map ID to name or use ID directly
-    const path = `/portrait/commander_${commanderId}.webp`;
+    const path = assetUrl(`/portrait/commander_${commanderId}.webp`);
     return this.loadImage(path);
   }
 
@@ -183,7 +170,7 @@ class AssetLoader {
    * Load a token image.
    */
   async loadToken(tokenId: number): Promise<string> {
-    const path = `/tokens/${tokenId}.webp`;
+    const path = assetUrl(`/tokens/${tokenId}.webp`);
     return this.loadImage(path);
   }
 
@@ -191,7 +178,7 @@ class AssetLoader {
    * Load a background image.
    */
   async loadBackground(name: string): Promise<string> {
-    const path = `/backgrounds/${name}.webp`;
+    const path = assetUrl(`/backgrounds/${name}.webp`);
     return this.loadImage(path);
   }
 
@@ -222,9 +209,9 @@ class AssetLoader {
 
     const essentialPaths = [
       // UI elements
-      "/ui/card-back.webp",
-      "/ui/card-frame.webp",
-      "/ui/board-bg.webp",
+      assetUrl("/ui/card-back.webp"),
+      assetUrl("/ui/card-frame.webp"),
+      assetUrl("/ui/board-bg.webp"),
     ];
 
     await this.preloadBatch(essentialPaths);
@@ -246,7 +233,7 @@ class AssetLoader {
     // Commander IDs: 5000-5011 (12 commanders)
     const commanderPaths: string[] = [];
     for (let i = 5000; i <= 5011; i++) {
-      commanderPaths.push(`/portrait/commander_${i}.webp`);
+      commanderPaths.push(assetUrl(`/portrait/commander_${i}.webp`));
     }
 
     await this.preloadBatch(commanderPaths);

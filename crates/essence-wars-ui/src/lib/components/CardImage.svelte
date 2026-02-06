@@ -1,5 +1,6 @@
 <script lang="ts">
   import { assetLoader } from "$lib/assets";
+  import { cardArtUrl } from "$lib/utils/paths";
 
   interface Props {
     cardId: number;
@@ -33,23 +34,8 @@
     }
   });
 
-  // Derive the card art path based on card type
-  const cardPaths = $derived.by(() => {
-    const basePaths = {
-      creature: `/cards/creatures/${cardId}.webp`,
-      spell: `/cards/spells/${cardId}.webp`,
-      support: `/cards/supports/${cardId}.webp`,
-    };
-
-    // Return paths in order of priority
-    if (cardType === "creature") {
-      return [basePaths.creature, basePaths.spell, basePaths.support];
-    } else if (cardType === "spell") {
-      return [basePaths.spell, basePaths.creature, basePaths.support];
-    } else {
-      return [basePaths.support, basePaths.creature, basePaths.spell];
-    }
-  });
+  // All cards are in /cards/core_set/{id}.webp - use cardArtUrl for base path
+  const cardPath = $derived(cardArtUrl(cardId));
 
   $effect(() => {
     if (!containerElement || inViewport) return;
@@ -72,27 +58,21 @@
     return () => observer.disconnect();
   });
 
-  // Load image when in viewport, trying each path in order
+  // Load image when in viewport
   $effect(() => {
     if (!inViewport) return;
 
-    async function tryLoadPaths() {
-      for (const path of cardPaths) {
-        try {
-          await assetLoader.loadImage(path);
-          actualSrc = path;
-          loaded = true;
-          return;
-        } catch {
-          // Try next path
-          continue;
-        }
+    async function loadCard() {
+      try {
+        await assetLoader.loadImage(cardPath);
+        actualSrc = cardPath;
+        loaded = true;
+      } catch {
+        error = true;
       }
-      // All paths failed
-      error = true;
     }
 
-    tryLoadPaths();
+    loadCard();
   });
 </script>
 
