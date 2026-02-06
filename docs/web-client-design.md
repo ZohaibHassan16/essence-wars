@@ -801,11 +801,11 @@ Audit all token images `crates/essence-wars-ui/static/tokens/`, following our ar
 
 - [x] **Task 9.3**: Generate new backgrounds that fit the art direction of the game, replace existing ones (Collages of Commanders, Scenes, Key Locations? Worldmap?). Discuss alternatives to local inference, since 2k/4k Backgrounds might not work on 12 GB VRAM with Flux Dev (Research API Providers for Claude Code to use).
 
-- [ ] **Task 9.4** Audit and discuss all Menus and Boards, they should be fitting our art direction
+- [x] **Task 9.4** Audit and discuss all Menus and Boards, they should be fitting our art direction
 
-- [ ] **Task 9.5** Create more Banners, Flags, Symbols, Frames etc to give it all more flair and style (Open for Discussion if needed)
+- [x] **Task 9.5** Create more Banners, Flags, Symbols, Frames etc to give it all more flair and style (Open for Discussion if needed)
 
-- [ ] **Task 9.6** Create Tauri Icons to replace current generic Tauri Icons with Essence Wars Specific Icons.
+- [x] **Task 9.6** Create Tauri Icons to replace current generic Tauri Icons with Essence Wars Specific Icons.
 
 - [ ] **Task9.7**  Polish SFX: AI-generated Battle SFX 
   - Track currently used Battle SFX

@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { Cog, PawPrint, Skull, Compass } from "lucide-svelte";
+  // Faction emblems - generated AI art assets
+  const factionEmblems = {
+    argentum: "/ui/decorations/emblems/emblem_argentum.png",
+    symbiote: "/ui/decorations/emblems/emblem_symbiote.png",
+    obsidion: "/ui/decorations/emblems/emblem_obsidion.png",
+    neutral: "/ui/decorations/emblems/emblem_neutral.png",
+  };
 </script>
 
 <div class="space-y-8">
@@ -15,8 +21,8 @@
   <!-- Argentum Combine -->
   <section>
     <div class="flex items-center gap-3 mb-4">
-      <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-200 to-gold/50 flex items-center justify-center">
-        <Cog size={28} class="text-gray-800" />
+      <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-200 to-gold/50 flex items-center justify-center p-1">
+        <img src={factionEmblems.argentum} alt="Argentum" class="w-full h-full object-contain drop-shadow-md" />
       </div>
       <div>
         <h3 class="text-xl font-semibold text-ui-text">The Argentum Combine</h3>
@@ -59,8 +65,8 @@
   <!-- Symbiote Circles -->
   <section>
     <div class="flex items-center gap-3 mb-4">
-      <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-green-800 to-purple-600 flex items-center justify-center">
-        <PawPrint size={28} class="text-green-400" />
+      <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-green-800 to-purple-600 flex items-center justify-center p-1">
+        <img src={factionEmblems.symbiote} alt="Symbiote" class="w-full h-full object-contain drop-shadow-md" />
       </div>
       <div>
         <h3 class="text-xl font-semibold text-ui-text">The Symbiote Circles</h3>
@@ -102,8 +108,8 @@
   <!-- Obsidion Syndicate -->
   <section>
     <div class="flex items-center gap-3 mb-4">
-      <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-red-900 to-blue-900 flex items-center justify-center">
-        <Skull size={28} class="text-red-400" />
+      <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-red-900 to-blue-900 flex items-center justify-center p-1">
+        <img src={factionEmblems.obsidion} alt="Obsidion" class="w-full h-full object-contain drop-shadow-md" />
       </div>
       <div>
         <h3 class="text-xl font-semibold text-ui-text">The Obsidion Syndicate</h3>
@@ -145,8 +151,8 @@
   <!-- Free-Walkers -->
   <section>
     <div class="flex items-center gap-3 mb-4">
-      <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-amber-700 to-stone-600 flex items-center justify-center">
-        <Compass size={28} class="text-amber-400" />
+      <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-amber-700 to-stone-600 flex items-center justify-center p-1">
+        <img src={factionEmblems.neutral} alt="Free-Walkers" class="w-full h-full object-contain drop-shadow-md" />
       </div>
       <div>
         <h3 class="text-xl font-semibold text-ui-text">The Free-Walkers</h3>

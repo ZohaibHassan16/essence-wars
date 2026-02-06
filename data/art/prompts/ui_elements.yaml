@@ -1,0 +1,113 @@
+# Essence Wars - Decorative UI Element Prompts
+# Assets for enhancing the UI with fantasy flair
+#
+# STYLE GUIDE (matching card art):
+# - 90s Magic the Gathering painted fantasy illustration
+# - Visible brushstrokes, dramatic lighting
+# - Faction-specific color palettes from art-direction.md
+# - Clean silhouettes for easy background removal
+#
+# TECHNICAL NOTES:
+# - All on solid black backgrounds (for rembg removal)
+# - Generated at 512x512 for high quality, resize in app as needed
+# - LoRA tags match established card art patterns
+#
+# WHAT'S INCLUDED:
+# - Faction emblems (4) - iconic faction symbols at 512x512
+# - Essence icons (2) - resource indicators at 512x512
+#
+# WHAT'S EXCLUDED (use CSS instead):
+# - Dividers, frames, corners, buttons - CSS is more flexible
+
+# =============================================================================
+# FACTION EMBLEMS - Iconic symbols for each faction
+# Size: 512x512 (high quality source, resize in app)
+# These match the faction aesthetics from art-direction.md
+# =============================================================================
+faction_emblems:
+  - id: emblem_argentum
+    name: "Argentum Emblem"
+    description: "Gear/cog symbol - Order & Industry"
+    size: "512x512"
+    prompt: >
+      A single ornate brass gear cog floating centered, intricate Art Deco geometric
+      patterns etched into the metal, polished golden brass with white steel accents,
+      soft blue essence crystal embedded in the center emitting gentle glow, clockwork
+      precision, fantasy painted illustration with visible brushstrokes, dramatic
+      golden sunlight illuminating the metal, solid black background, 90s Magic the
+      Gathering card art style, heraldic emblem design
+    lora: "rutkowski:0.4, classical-painting:0.7"
+    negative: "text, words, letters, multiple objects, busy background, gradient, human, creature, landscape, frame, border, realistic, photo, organic, soft, natural, fire, flames, orange, red, dark"
+
+  - id: emblem_symbiote
+    name: "Symbiote Emblem"
+    description: "Leaf/nature symbol - Growth & Adaptation"
+    size: "512x512"
+    prompt: >
+      A single mystical leaf symbol floating centered, ancient oak leaf with twisted
+      vines forming a circular druidic emblem, deep forest green with purple and green
+      bioluminescent glow, small glowing spores orbiting, primal nature magic, fantasy
+      painted illustration with visible brushstrokes, dappled forest light illumination,
+      solid black background, 90s Magic the Gathering card art style, Urza's Saga nature
+      aesthetic, druidic emblem design
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "text, words, letters, multiple objects, busy background, gradient, human, creature, landscape, frame, border, realistic, photo, mechanical, industrial, metal, chitin, insect, alien, cannabis, marijuana"
+
+  - id: emblem_obsidion
+    name: "Obsidion Emblem"
+    description: "Flame/crest symbol - Knowledge & Ambition"
+    size: "512x512"
+    prompt: >
+      A single elegant dark flame crest floating centered, crimson and purple fire
+      forming a Gothic aristocratic heraldic symbol, wisps of dark energy and neon
+      blue essence particles, Victorian elegance, forbidden magic aesthetic, fantasy
+      painted illustration with visible brushstrokes, candlelit dramatic lighting,
+      solid black background, 90s Magic the Gathering card art style, vampiric noble
+      emblem design
+    lora: "classical-painting:0.5, frazetta:0.4"
+    negative: "text, words, letters, multiple objects, busy background, gradient, human, landscape, frame, border, realistic, photo, skull, skeleton, bright colors, nature, forests, mechanical"
+
+  - id: emblem_neutral
+    name: "Neutral Emblem"
+    description: "Balanced scales - Free-Walkers"
+    size: "512x512"
+    prompt: >
+      A single balanced merchant scales symbol floating centered, weathered copper
+      and brass metal, a glowing essence crystal at the balance point, practical
+      mercenary guild aesthetic, worn leather straps and rope details, mixed faction
+      elements visible in the metalwork, fantasy painted illustration with visible
+      brushstrokes, golden desert sunlight, solid black background, 90s Magic the
+      Gathering card art style, pragmatic guild emblem design
+    lora: "rutkowski:0.4, classical-painting:0.6"
+    negative: "text, words, letters, multiple objects, busy background, gradient, human, creature, landscape, frame, border, realistic, photo, pristine, clean, Gothic, industrial"
+
+# =============================================================================
+# ESSENCE ICONS - Resource indicators
+# Size: 512x512 (high quality source, resize in app)
+# =============================================================================
+essence_icons:
+  - id: essence_icon_crystal
+    name: "Essence Crystal Icon"
+    description: "Crystal icon for essence display"
+    size: "512x512"
+    prompt: >
+      A single glowing essence crystal floating centered, blue and purple prismatic
+      faceted gem, magical inner glow radiating outward, ethereal energy wisps,
+      fantasy painted illustration with visible brushstrokes, dramatic lighting
+      from within the crystal, solid black background, 90s Magic the Gathering
+      card art style, game UI resource icon, centered composition, jewel quality
+    lora: "classical-painting:0.7"
+    negative: "text, words, multiple objects, busy background, gradient, human, creature, realistic, photo, landscape, scene, hand"
+
+  - id: essence_icon_orb
+    name: "Essence Orb Icon"
+    description: "Orb icon for essence display"
+    size: "512x512"
+    prompt: >
+      A single glowing magical orb floating centered, swirling orange and gold
+      energy contained within a perfect sphere, magical inner glow, ethereal
+      particles orbiting, fantasy painted illustration with visible brushstrokes,
+      dramatic lighting, solid black background, 90s Magic the Gathering card art
+      style, game UI resource icon, centered composition
+    lora: "classical-painting:0.7"
+    negative: "text, words, multiple objects, busy background, gradient, human, creature, realistic, photo, crystal, faceted, landscape, scene, hand"

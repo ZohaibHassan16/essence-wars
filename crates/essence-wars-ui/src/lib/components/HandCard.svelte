@@ -154,10 +154,11 @@
         </div>
       {/if}
 
-      <!-- Cost badge -->
-      <div class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-mana flex items-center justify-center
+      <!-- Cost badge with essence crystal -->
+      <div class="absolute -top-2 -right-2 h-7 px-1.5 rounded-full bg-mana flex items-center gap-0.5
                   text-white text-sm font-bold shadow-md border-2 border-blue-400 z-10">
-        {card.cost}
+        <img src="/ui/decorations/icons/essence_icon_crystal.png" alt="" class="w-4 h-4 object-contain" />
+        <span>{card.cost}</span>
       </div>
 
       <!-- Keyboard hint badge -->

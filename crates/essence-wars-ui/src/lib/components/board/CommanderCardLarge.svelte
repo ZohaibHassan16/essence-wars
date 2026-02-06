@@ -175,6 +175,12 @@
       default: return commander.faction;
     }
   });
+
+  // Faction emblem path
+  const factionEmblem = $derived(() => {
+    if (!commander) return null;
+    return `/ui/decorations/emblems/emblem_${commander.faction}.png`;
+  });
 </script>
 
 <div
@@ -273,11 +279,20 @@
         {commander.abilityDescription}
       </div>
 
-      <!-- Faction Badge -->
+      <!-- Faction Badge with Emblem -->
       <div class="mt-auto pt-2">
         <div class="h-px w-full mb-2" style="background: linear-gradient(90deg, transparent, {factionColors().accent}40, transparent);"></div>
-        <div class="text-xs font-semibold {factionColors().text} text-center uppercase tracking-wider">
-          {factionDisplayName()}
+        <div class="flex items-center justify-center gap-2">
+          {#if factionEmblem()}
+            <img
+              src={factionEmblem()}
+              alt={factionDisplayName()}
+              class="w-5 h-5 object-contain drop-shadow-sm"
+            />
+          {/if}
+          <span class="text-xs font-semibold {factionColors().text} uppercase tracking-wider">
+            {factionDisplayName()}
+          </span>
         </div>
       </div>
 

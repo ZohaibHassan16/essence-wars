@@ -113,9 +113,10 @@
     <div class="px-4 py-3 border-b border-gray-700">
       <div class="flex items-center justify-between">
         <span class="font-bold text-ui-text text-lg">{card.name}</span>
-        <span class="w-8 h-8 rounded-full bg-mana flex items-center justify-center text-white text-base font-bold">
-          {card.cost}
-        </span>
+        <div class="h-8 px-2 rounded-full bg-mana flex items-center gap-1 text-white text-base font-bold">
+          <img src="/ui/decorations/icons/essence_icon_crystal.png" alt="" class="w-5 h-5 object-contain" />
+          <span>{card.cost}</span>
+        </div>
       </div>
       <div class="text-sm {getFactionAccent(card.faction)} capitalize mt-1">
         {card.faction} {card.cardType}

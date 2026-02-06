@@ -52,6 +52,12 @@
         };
     }
   });
+
+  // Faction emblem path
+  const factionEmblem = $derived(() => {
+    if (!deck) return null;
+    return `/ui/decorations/emblems/emblem_${deck.faction}.png`;
+  });
 </script>
 
 <div
@@ -138,9 +144,18 @@
           <span class="text-ui-text-dim">
             <span class="font-semibold text-ui-text">{deck.cardCount}</span> cards
           </span>
-          <span class="{factionStyles().text} font-medium uppercase tracking-wider">
-            {factionStyles().name}
-          </span>
+          <div class="flex items-center gap-1.5">
+            {#if factionEmblem()}
+              <img
+                src={factionEmblem()}
+                alt={factionStyles().name}
+                class="w-5 h-5 object-contain drop-shadow-sm"
+              />
+            {/if}
+            <span class="{factionStyles().text} font-medium uppercase tracking-wider">
+              {factionStyles().name}
+            </span>
+          </div>
         </div>
       </div>
     </div>

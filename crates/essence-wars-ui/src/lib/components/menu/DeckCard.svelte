@@ -69,6 +69,9 @@
       handleClick();
     }
   }
+
+  // Faction emblem path
+  const factionEmblem = $derived(() => `/ui/decorations/emblems/emblem_${deck.faction}.png`);
 </script>
 
 <button
@@ -96,6 +99,16 @@
         <span class="text-4xl text-gray-600">?</span>
       </div>
     {/if}
+
+    <!-- Faction emblem badge (top-right corner) -->
+    <div class="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 p-1 backdrop-blur-sm">
+      <img
+        src={factionEmblem()}
+        alt={deck.faction}
+        class="w-full h-full object-contain drop-shadow-lg"
+        loading="lazy"
+      />
+    </div>
 
     <!-- Gradient overlay at bottom -->
     <div class="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-black/80 to-transparent"></div>
