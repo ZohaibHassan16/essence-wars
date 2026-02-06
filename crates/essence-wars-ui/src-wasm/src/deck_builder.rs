@@ -138,7 +138,7 @@ impl WasmGameManager {
         let commanders: Vec<CommanderDto> = self
             .card_db
             .iter_commanders()
-            .map(|c| CommanderDto::from_commander(c))
+            .map(CommanderDto::from_commander)
             .collect();
 
         serde_json::to_string(&commanders).unwrap_or_else(|_| "[]".to_string())

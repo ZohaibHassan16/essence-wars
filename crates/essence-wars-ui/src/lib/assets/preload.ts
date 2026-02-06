@@ -17,21 +17,6 @@ import { getPlatform } from "$lib/api/backends";
 import { assetUrl, cardArtUrl } from "$lib/utils/paths";
 
 /**
- * Essential asset paths that must load before app is interactive.
- */
-const ESSENTIAL_ASSETS = {
-  // UI elements needed for loading screen and basic UI
-  ui: [
-    // Add essential UI assets here as needed
-  ],
-
-  // Commander portraits - needed for deck selection wizard
-  commanders: [
-    // Dynamically generated in preloadCommanders()
-  ],
-};
-
-/**
  * Get asset paths that can be deferred but should load early.
  * Function call needed to apply base path at runtime.
  */

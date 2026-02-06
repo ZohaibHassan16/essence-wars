@@ -96,7 +96,7 @@ impl WasmGameManager {
                 let commander = self
                     .card_db
                     .get_commander(deck.commander_id())
-                    .map(|c| CommanderDto::from_commander(c));
+                    .map(CommanderDto::from_commander);
 
                 DeckInfo {
                     id: deck.id.clone(),
@@ -562,12 +562,12 @@ impl WasmGameManager {
         let player_commander = state
             .get_commander(player_id)
             .and_then(|cmd_id| self.card_db.get_commander(cmd_id))
-            .map(|c| CommanderDto::from_commander(c));
+            .map(CommanderDto::from_commander);
 
         let opponent_commander = state
             .get_commander(player_id.opponent())
             .and_then(|cmd_id| self.card_db.get_commander(cmd_id))
-            .map(|c| CommanderDto::from_commander(c));
+            .map(CommanderDto::from_commander);
 
         // Convert player hand (visible)
         let player_hand: Vec<CardDto> = player_state
@@ -661,11 +661,9 @@ impl WasmGameManager {
                 // Token creature
                 let dto = CreatureDto::from_token(creature, current_turn);
                 slots[creature.slot.0 as usize] = Some(dto);
-            } else {
-                if let Some(card) = self.card_db.get(creature.card_id) {
-                    let dto = CreatureDto::from_creature(creature, card, current_turn);
-                    slots[creature.slot.0 as usize] = Some(dto);
-                }
+            } else if let Some(card) = self.card_db.get(creature.card_id) {
+                let dto = CreatureDto::from_creature(creature, card, current_turn);
+                slots[creature.slot.0 as usize] = Some(dto);
             }
         }
         slots
