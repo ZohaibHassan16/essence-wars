@@ -1,9 +1,7 @@
-//! Embedded game data for WASM/web builds.
+//! Embedded game data for builds without filesystem access.
 //!
-//! This module embeds card and deck data at compile time, eliminating
-//! the need for filesystem access in browser environments.
-//!
-//! Only compiled when the `web` feature is enabled.
+//! This module embeds card and deck data at compile time, useful for
+//! Python bindings or other scenarios where filesystem access is limited.
 
 use crate::cards::{CardDatabase, CardDefinition, CommanderDefinition};
 use crate::decks::{DeckDefinition, DeckRegistry};

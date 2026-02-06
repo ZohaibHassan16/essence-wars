@@ -1,10 +1,7 @@
 /**
  * Backend abstraction for Essence Wars game engine.
  *
- * This interface defines the contract between the Svelte UI and the game engine.
- * Two implementations exist:
- * - TauriBackend: Uses Tauri IPC to communicate with native Rust backend
- * - WasmBackend: Uses WebAssembly for browser-based gameplay
+ * This interface defines the contract between the Svelte UI and the Tauri backend.
  */
 
 import type {
@@ -29,7 +26,7 @@ import type {
   McpSyncedState,
 } from "../types";
 
-export type Platform = "tauri" | "web";
+export type Platform = "tauri";
 
 /**
  * Core game engine operations.
@@ -115,7 +112,6 @@ export interface GameBackend {
 
 /**
  * Storage operations for replays and custom decks.
- * Desktop uses filesystem, web uses IndexedDB.
  */
 export interface StorageBackend {
   /** Platform identifier */

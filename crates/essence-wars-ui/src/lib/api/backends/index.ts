@@ -1,36 +1,13 @@
 /**
- * Backend factory and detection.
+ * Backend factory for Essence Wars game engine.
  *
- * This module provides runtime detection of the platform (Tauri vs Web)
- * and lazy initialization of the appropriate backend implementations.
+ * This module provides lazy initialization of the Tauri backend implementations.
  */
 
 import type { GameBackend, StorageBackend, McpBackend, Platform } from "./interface";
 
 // Re-export types for convenience
 export type { GameBackend, StorageBackend, McpBackend, Platform } from "./interface";
-
-/**
- * Detect the current platform at runtime.
- * Tauri 2 injects `__TAURI_INTERNALS__` into the window object.
- */
-export function detectPlatform(): Platform {
-  if (typeof window === "undefined") {
-    return "web";
-  }
-
-  // Tauri 2.x uses __TAURI_INTERNALS__
-  // Tauri 1.x used __TAURI__
-  const isTauri = "__TAURI_INTERNALS__" in window || "__TAURI__" in window;
-
-  console.log("[Backend] Platform detection:", {
-    hasTauriInternals: "__TAURI_INTERNALS__" in window,
-    hasTauri: "__TAURI__" in window,
-    detected: isTauri ? "tauri" : "web",
-  });
-
-  return isTauri ? "tauri" : "web";
-}
 
 // Singleton instances (lazy initialized)
 let _gameBackend: GameBackend | null = null;
@@ -48,29 +25,16 @@ export async function initBackends(): Promise<void> {
     return;
   }
 
-  const platform = detectPlatform();
-  console.log(`[Backend] Initializing for platform: ${platform}`);
+  console.log("[Backend] Initializing Tauri backends...");
 
   try {
-    if (platform === "tauri") {
-      console.log("[Backend] Loading Tauri backend modules...");
-      const { TauriGameBackend, TauriStorageBackend, TauriMcpBackend } =
-        await import("./tauri");
+    const { TauriGameBackend, TauriStorageBackend, TauriMcpBackend } =
+      await import("./tauri");
 
-      _gameBackend = new TauriGameBackend();
-      _storageBackend = new TauriStorageBackend();
-      _mcpBackend = new TauriMcpBackend();
-      console.log("[Backend] Tauri backends created");
-    } else {
-      console.log("[Backend] Loading WASM backend modules...");
-      const { WasmGameBackend, WasmStorageBackend, WasmMcpBackend } =
-        await import("./wasm");
-
-      _gameBackend = new WasmGameBackend();
-      _storageBackend = new WasmStorageBackend();
-      _mcpBackend = new WasmMcpBackend();
-      console.log("[Backend] WASM backends created");
-    }
+    _gameBackend = new TauriGameBackend();
+    _storageBackend = new TauriStorageBackend();
+    _mcpBackend = new TauriMcpBackend();
+    console.log("[Backend] Tauri backends created");
 
     // Initialize all backends
     console.log("[Backend] Calling init() on backends...");
@@ -135,11 +99,7 @@ export function isInitialized(): boolean {
 
 /**
  * Get the current platform.
- * Returns the detected platform even before initialization.
  */
 export function getPlatform(): Platform {
-  if (_gameBackend) {
-    return _gameBackend.platform;
-  }
-  return detectPlatform();
+  return "tauri";
 }

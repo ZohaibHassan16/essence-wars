@@ -16,10 +16,10 @@
 
 | Question | Decision |
 |----------|----------|
-| Scripting vs Pure Rust | Pure Rust for performance |
-| Custom YAML cards | Yes, sandboxed for casual play |
+| Scripting vs Pure Rust for cards/keywords/effects | Pure Rust for performance |
+| Custom YAML cards | no |
 | Bot/Agent compatibility | Accept retuning; keep observation/action space stable |
-| Expansion structure | 1 commander + deck per faction per expansion |
+| Expansion structure | 1 commander + deck per faction per expansion + 20-50 new cards per faction |
 
 ## (J) Essential Audit Checklist
 

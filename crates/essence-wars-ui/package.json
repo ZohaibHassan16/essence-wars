@@ -14,10 +14,7 @@
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "tauri:build:windows": "../../scripts/build-windows.sh",
-    "tauri:build:windows:signed": "../../scripts/build-windows.sh --sign",
-    "build:wasm": "cd src-wasm && wasm-pack build --target web --release",
-    "build:web": "BASE_PATH=/essence-wars vite build",
-    "preview:web": "BASE_PATH=/essence-wars vite preview"
+    "tauri:build:windows:signed": "../../scripts/build-windows.sh --sign"
   },
   "license": "MIT",
   "dependencies": {

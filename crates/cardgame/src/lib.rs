@@ -51,16 +51,12 @@ pub mod client_api;
 // Replay system for game recording and playback
 pub mod replay;
 
-// Embedded data for WASM/web builds (no filesystem access)
+// Embedded data for builds without filesystem access (e.g., Python bindings)
 pub mod embedded_data;
 
 // Python bindings (only compiled with --features python)
 #[cfg(feature = "python")]
 pub mod python;
-
-// WASM bindings (only compiled with --features wasm)
-#[cfg(feature = "wasm")]
-pub mod wasm;
 
 // Re-export modules from core at crate root for backward compatibility
 pub use core::types;
@@ -91,9 +87,6 @@ pub use decks::{DeckDefinition, DeckRegistry, DeckError, Faction, FactionParseEr
 /// 1. CARDGAME_DATA_DIR environment variable
 /// 2. Relative to workspace root (crates/cardgame -> ../../data)
 /// 3. Fallback to "data" (for when running from workspace root)
-///
-/// Note: Not available in WASM builds - use embedded data instead.
-#[cfg(not(target_arch = "wasm32"))]
 pub fn data_dir() -> std::path::PathBuf {
     std::env::var("CARDGAME_DATA_DIR")
         .map(std::path::PathBuf::from)

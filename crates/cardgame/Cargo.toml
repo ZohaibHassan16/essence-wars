@@ -15,15 +15,11 @@ crate-type = ["cdylib", "rlib"]
 
 [features]
 default = ["parallel", "cli"]
-# Enable parallel execution via rayon (disable for WASM)
+# Enable parallel execution via rayon
 parallel = ["dep:rayon"]
 # Python bindings for ML/AI research
 python = ["dep:pyo3", "dep:numpy"]
-# WASM bindings for web deployment (mutually exclusive with parallel)
-wasm = ["dep:wasm-bindgen", "dep:js-sys", "dep:web-sys", "dep:console_error_panic_hook"]
-# Web feature combines WASM with embedded data
-web = ["wasm"]
-# CLI tools support (disable for WASM)
+# CLI tools support
 cli = ["dep:ctrlc", "dep:indicatif", "dep:clap", "dep:env_logger", "dep:num_cpus"]
 
 [dependencies]
@@ -51,12 +47,6 @@ num_cpus = { version = "1.16", optional = true }
 # Optional Python bindings
 pyo3 = { version = "0.22", features = ["extension-module"], optional = true }
 numpy = { version = "0.22", optional = true }
-
-# Optional WASM bindings
-wasm-bindgen = { version = "0.2", optional = true }
-js-sys = { version = "0.3", optional = true }
-web-sys = { version = "0.3", features = ["console"], optional = true }
-console_error_panic_hook = { version = "0.1", optional = true }
 
 [dev-dependencies]
 criterion.workspace = true

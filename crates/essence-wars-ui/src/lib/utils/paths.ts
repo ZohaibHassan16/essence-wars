@@ -1,25 +1,22 @@
 /**
- * Path utilities for handling base path in asset URLs.
+ * Path utilities for asset URLs.
  *
- * On GitHub Pages, the app is served from /essence-wars/
- * so all asset URLs need to be prefixed with the base path.
+ * For the Tauri desktop app, assets are served from the static directory
+ * with no base path prefix needed.
  */
-
-import { base } from "$app/paths";
 
 /**
  * Get the full URL for a static asset.
- * Prepends the base path for GitHub Pages compatibility.
  *
  * @param path - The asset path (e.g., "/sounds/battle/attack.ogg")
- * @returns The full path with base prefix (e.g., "/essence-wars/sounds/battle/attack.ogg")
+ * @returns The full path (same as input for Tauri)
  */
 export function assetUrl(path: string): string {
   // Ensure path starts with /
   if (!path.startsWith("/")) {
     path = "/" + path;
   }
-  return `${base}${path}`;
+  return path;
 }
 
 /**
@@ -27,7 +24,7 @@ export function assetUrl(path: string): string {
  * Cards are stored in /cards/core_set/{id}.webp
  */
 export function cardArtUrl(cardId: number): string {
-  return assetUrl(`/cards/core_set/${cardId}.webp`);
+  return `/cards/core_set/${cardId}.webp`;
 }
 
 /**
@@ -37,9 +34,9 @@ export function cardArtUrl(cardId: number): string {
 export function portraitUrl(portraitPath: string): string {
   // portraitPath might be "portrait/commander_name.webp" or "/portrait/commander_name.webp"
   if (portraitPath.startsWith("/")) {
-    return assetUrl(portraitPath);
+    return portraitPath;
   }
-  return assetUrl(`/${portraitPath}`);
+  return `/${portraitPath}`;
 }
 
 /**
@@ -47,7 +44,7 @@ export function portraitUrl(portraitPath: string): string {
  */
 export function tokenArtUrl(tokenPath: string): string {
   if (tokenPath.startsWith("/")) {
-    return assetUrl(tokenPath);
+    return tokenPath;
   }
-  return assetUrl(`/${tokenPath}`);
+  return `/${tokenPath}`;
 }

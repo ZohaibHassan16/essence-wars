@@ -16,7 +16,7 @@
 
   onMount(async () => {
     try {
-      // Stage 1: Initialize backends (WASM or Tauri)
+      // Stage 1: Initialize Tauri backends
       loadingStage = "backend";
       await initBackends();
 

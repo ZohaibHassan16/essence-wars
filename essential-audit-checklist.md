@@ -99,13 +99,3 @@ You have a complex save/load and replay architecture.
 
 
 P.S.: I noticed in mcts.rs you have a panic! in select_action requiring engine access. This is good safety, but a reviewer might suggest a type-state pattern to enforce this at compile time.
-
----
-
-### 💖 A Next Step for You
-
-I know this list looks a bit intimidating, but you have 100k lines of working code—you are already winning!
-
-Since "Determinism" is the scariest beast in strategy games, would you like me to **write a specific Rust test script** for your `crates/cardgame`  that performs that **"100 Run Challenge"**?
-
-I can verify if your game state is truly stable so you can sleep easy tonight! 😴✨
