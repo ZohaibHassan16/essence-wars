@@ -207,11 +207,14 @@ class AssetLoader {
 
     console.log("[AssetLoader] Preloading essential UI assets...");
 
+    // Only preload assets that actually exist
     const essentialPaths = [
-      // UI elements
-      assetUrl("/ui/card-back.webp"),
-      assetUrl("/ui/card-frame.webp"),
-      assetUrl("/ui/board-bg.webp"),
+      assetUrl("/ui/essence_wars_banner.webp"),
+      assetUrl("/ui/decorations/emblems/emblem_argentum.png"),
+      assetUrl("/ui/decorations/emblems/emblem_symbiote.png"),
+      assetUrl("/ui/decorations/emblems/emblem_obsidion.png"),
+      assetUrl("/ui/decorations/emblems/emblem_neutral.png"),
+      assetUrl("/ui/decorations/icons/essence_icon_crystal.png"),
     ];
 
     await this.preloadBatch(essentialPaths);
@@ -222,6 +225,7 @@ class AssetLoader {
 
   /**
    * Preload commander portraits.
+   * Portraits use name-based paths from the backend, not ID-based.
    */
   async preloadCommanders(): Promise<void> {
     if (this.isCategoryPreloaded("commander")) {
@@ -230,11 +234,22 @@ class AssetLoader {
 
     console.log("[AssetLoader] Preloading commander portraits...");
 
-    // Commander IDs: 5000-5011 (12 commanders)
-    const commanderPaths: string[] = [];
-    for (let i = 5000; i <= 5011; i++) {
-      commanderPaths.push(assetUrl(`/portrait/commander_${i}.webp`));
-    }
+    // Commander portraits use name-based paths (e.g., portrait/the_high_artificer.webp)
+    // These are loaded on-demand when commander data is received from backend
+    const commanderPaths = [
+      assetUrl("/portrait/the_high_artificer.webp"),
+      assetUrl("/portrait/the_grand_architect.webp"),
+      assetUrl("/portrait/the_sanctum_healer.webp"),
+      assetUrl("/portrait/siege_marshal_vex.webp"),
+      assetUrl("/portrait/the_eternal_grove.webp"),
+      assetUrl("/portrait/the_broodmother.webp"),
+      assetUrl("/portrait/alpha_of_the_hunt.webp"),
+      assetUrl("/portrait/plague_sovereign.webp"),
+      assetUrl("/portrait/the_blood_sovereign.webp"),
+      assetUrl("/portrait/the_shadow_weaver.webp"),
+      assetUrl("/portrait/void_archon.webp"),
+      assetUrl("/portrait/the_deathmaster.webp"),
+    ];
 
     await this.preloadBatch(commanderPaths);
     this.preloadedCategories.add("commander");

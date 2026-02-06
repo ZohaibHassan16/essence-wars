@@ -37,10 +37,11 @@ const ESSENTIAL_ASSETS = {
  */
 function getDeferredAssets() {
   return {
-    // Backgrounds for the menu and game board
+    // Actual background files that exist in /static/backgrounds/
     backgrounds: [
-      assetUrl("/backgrounds/menu_bg.webp"),
-      assetUrl("/backgrounds/game_board.webp"),
+      assetUrl("/backgrounds/the_gilded_truce.webp"),
+      assetUrl("/backgrounds/omyra_world_map.webp"),
+      assetUrl("/backgrounds/trade_road_crossroads.webp"),
     ],
   };
 }
