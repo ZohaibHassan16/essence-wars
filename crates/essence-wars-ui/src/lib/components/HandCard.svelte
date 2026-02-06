@@ -144,7 +144,7 @@
       {#if currentArtPath}
         <div class="absolute inset-0 overflow-hidden rounded-md">
           <img
-            src="/{currentArtPath}"
+            src={assetUrl(`/${currentArtPath}`)}
             alt=""
             class="w-full h-full object-cover object-top opacity-60"
             loading="lazy"

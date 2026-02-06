@@ -4,6 +4,7 @@
   import { animatable } from "$lib/animations/actions";
   import { playSound } from "$lib/audio";
   import { gameSettings } from "$lib/stores/gameSettings.svelte";
+  import { assetUrl } from "$lib/utils/paths";
 
   let {
     creature = null,
@@ -133,7 +134,7 @@
       {#if currentArtPath}
         <div class="absolute inset-0 overflow-hidden rounded-lg">
           <img
-            src="/{currentArtPath}"
+            src={assetUrl(`/${currentArtPath}`)}
             alt=""
             class="w-full h-full object-cover object-top opacity-70"
             loading="lazy"

@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { CommanderDto } from "$lib/api/types";
   import { playSound } from "$lib/audio";
-  import { assetUrl } from "$lib/utils/paths";
+  import { assetUrl, portraitUrl } from "$lib/utils/paths";
 
   // Essence crystal icon - use $derived to evaluate lazily
   const essenceCrystalIcon = $derived(assetUrl("/ui/decorations/icons/essence_icon_crystal.png"));
@@ -211,7 +211,7 @@
     <!-- Portrait Section -->
     <div class="relative overflow-hidden rounded-t-lg" style="height: var(--commander-portrait-height, 150px);">
       <img
-        src={`/${commander.portraitPath}`}
+        src={portraitUrl(commander.portraitPath)}
         alt={commander.name}
         class="w-full h-full object-cover object-top"
         style="object-position: center 20%;"
@@ -353,7 +353,7 @@
       <!-- Popup Header -->
       <div class="flex items-center gap-3 mb-3">
         <img
-          src={`/${commander.portraitPath}`}
+          src={portraitUrl(commander.portraitPath)}
           alt={commander.name}
           class="w-12 h-12 rounded-lg object-cover border {factionColors().border}"
         />

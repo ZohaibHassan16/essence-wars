@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { CommanderDto } from "$lib/api/types";
+  import { portraitUrl } from "$lib/utils/paths";
 
   let {
     commander,
@@ -74,7 +75,7 @@
     <!-- Commander Portrait -->
     <div class="relative w-12 h-12 rounded-lg overflow-hidden border-2 {factionBorder()} shrink-0">
       <img
-        src={`/${commander.portraitPath}`}
+        src={portraitUrl(commander.portraitPath)}
         alt={commander.name}
         class="w-full h-full object-cover object-top"
         style="object-position: center 15%;"

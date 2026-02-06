@@ -5,6 +5,7 @@
   import FactionTabs from "./FactionTabs.svelte";
   import DeckGrid from "./DeckGrid.svelte";
   import DeckPreview from "./DeckPreview.svelte";
+  import { portraitUrl } from "$lib/utils/paths";
 
   let {
     mode = "human-vs-ai",
@@ -374,7 +375,7 @@
               <div class="text-center">
                 {#if selectedPlayerDeck?.commander?.portraitPath}
                   <img
-                    src={`/${selectedPlayerDeck.commander.portraitPath}`}
+                    src={portraitUrl(selectedPlayerDeck.commander.portraitPath)}
                     alt={selectedPlayerDeck.commander.name}
                     class="w-20 h-20 rounded-lg object-cover mx-auto mb-2 border-2 {getFactionTextColor(selectedPlayerDeck.faction).replace('text-', 'border-')}"
                   />
@@ -394,7 +395,7 @@
               <div class="text-center">
                 {#if selectedOpponentDeck?.commander?.portraitPath}
                   <img
-                    src={`/${selectedOpponentDeck.commander.portraitPath}`}
+                    src={portraitUrl(selectedOpponentDeck.commander.portraitPath)}
                     alt={selectedOpponentDeck.commander.name}
                     class="w-20 h-20 rounded-lg object-cover mx-auto mb-2 border-2 {getFactionTextColor(selectedOpponentDeck.faction).replace('text-', 'border-')}"
                   />

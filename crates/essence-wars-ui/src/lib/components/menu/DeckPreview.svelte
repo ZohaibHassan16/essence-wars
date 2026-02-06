@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { DeckInfo } from "$lib/api/types";
-  import { assetUrl } from "$lib/utils/paths";
+  import { assetUrl, portraitUrl } from "$lib/utils/paths";
 
   let {
     deck,
@@ -71,7 +71,7 @@
     <div class="relative w-full aspect-[4/3] overflow-hidden bg-gray-900">
       {#if deck.commander?.portraitPath}
         <img
-          src={`/${deck.commander.portraitPath}`}
+          src={portraitUrl(deck.commander.portraitPath)}
           alt={deck.commander.name}
           class="w-full h-full object-cover object-top"
           style="object-position: center 20%;"
