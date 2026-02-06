@@ -1,5 +1,6 @@
 <script lang="ts">
   import { playSound } from "$lib/audio";
+  import { assetUrl } from "$lib/utils/paths";
   import LoreWorld from "./lore/LoreWorld.svelte";
   import LoreArgentum from "./lore/LoreArgentum.svelte";
   import LoreSymbiote from "./lore/LoreSymbiote.svelte";
@@ -15,10 +16,10 @@
 
   // Faction emblems
   const factionEmblems: Record<string, string> = {
-    argentum: "/ui/decorations/emblems/emblem_argentum.png",
-    symbiote: "/ui/decorations/emblems/emblem_symbiote.png",
-    obsidion: "/ui/decorations/emblems/emblem_obsidion.png",
-    freewalkers: "/ui/decorations/emblems/emblem_neutral.png",
+    argentum: assetUrl("/ui/decorations/emblems/emblem_argentum.png"),
+    symbiote: assetUrl("/ui/decorations/emblems/emblem_symbiote.png"),
+    obsidion: assetUrl("/ui/decorations/emblems/emblem_obsidion.png"),
+    freewalkers: assetUrl("/ui/decorations/emblems/emblem_neutral.png"),
   };
 
   const tabs: { id: Tab; label: string; icon?: typeof Globe; emblem?: string; color: string }[] = [

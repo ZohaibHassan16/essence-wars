@@ -120,12 +120,12 @@ export class WasmGameBackend implements GameBackend {
   // ===========================================================================
 
   async newGame(config: GameConfig): Promise<GameStateDto> {
-    // Convert our config to the format expected by WASM
+    // WASM expects camelCase (Rust struct has #[serde(rename_all = "camelCase")])
     const wasmConfig = {
-      player_deck_id: config.playerDeckId,
-      opponent_deck_id: config.opponentDeckId,
-      opponent_bot_type: config.opponentBotType,
-      player_goes_first: config.playerGoesFirst ?? true,
+      playerDeckId: config.playerDeckId,
+      opponentDeckId: config.opponentDeckId,
+      opponentBotType: config.opponentBotType,
+      playerGoesFirst: config.playerGoesFirst ?? true,
       seed: config.seed,
     };
 

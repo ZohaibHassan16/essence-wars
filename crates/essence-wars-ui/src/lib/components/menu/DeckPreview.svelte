@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { DeckInfo } from "$lib/api/types";
+  import { assetUrl } from "$lib/utils/paths";
 
   let {
     deck,
@@ -56,7 +57,7 @@
   // Faction emblem path
   const factionEmblem = $derived(() => {
     if (!deck) return null;
-    return `/ui/decorations/emblems/emblem_${deck.faction}.png`;
+    return assetUrl(`/ui/decorations/emblems/emblem_${deck.faction}.png`);
   });
 </script>
 

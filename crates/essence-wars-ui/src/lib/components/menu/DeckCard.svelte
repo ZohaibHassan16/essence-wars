@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { DeckInfo } from "$lib/api/types";
   import { playSound } from "$lib/audio";
+  import { assetUrl } from "$lib/utils/paths";
 
   let {
     deck,
@@ -71,7 +72,7 @@
   }
 
   // Faction emblem path
-  const factionEmblem = $derived(() => `/ui/decorations/emblems/emblem_${deck.faction}.png`);
+  const factionEmblem = $derived(() => assetUrl(`/ui/decorations/emblems/emblem_${deck.faction}.png`));
 </script>
 
 <button

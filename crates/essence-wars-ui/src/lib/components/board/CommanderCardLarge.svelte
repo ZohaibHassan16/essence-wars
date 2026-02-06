@@ -1,9 +1,10 @@
 <script lang="ts">
   import type { CommanderDto } from "$lib/api/types";
   import { playSound } from "$lib/audio";
+  import { assetUrl } from "$lib/utils/paths";
 
   // Essence crystal icon
-  const essenceCrystalIcon = "/ui/decorations/icons/essence_icon_crystal.png";
+  const essenceCrystalIcon = assetUrl("/ui/decorations/icons/essence_icon_crystal.png");
 
   const ESSENCE_EXTRACTION_THRESHOLD = 50;
 
@@ -181,7 +182,7 @@
   // Faction emblem path
   const factionEmblem = $derived(() => {
     if (!commander) return null;
-    return `/ui/decorations/emblems/emblem_${commander.faction}.png`;
+    return assetUrl(`/ui/decorations/emblems/emblem_${commander.faction}.png`);
   });
 </script>
 

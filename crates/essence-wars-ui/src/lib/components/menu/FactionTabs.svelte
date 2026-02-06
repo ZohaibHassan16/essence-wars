@@ -1,5 +1,6 @@
 <script lang="ts">
   import { playSound } from "$lib/audio";
+  import { assetUrl } from "$lib/utils/paths";
 
   let {
     selectedFaction = "argentum",
@@ -14,7 +15,7 @@
       id: "argentum",
       name: "Argentum Combine",
       shortName: "Argentum",
-      emblem: "/ui/decorations/emblems/emblem_argentum.png",
+      emblem: assetUrl("/ui/decorations/emblems/emblem_argentum.png"),
       color: "argentum-gold",
       bgColor: "bg-argentum-gold/20",
       borderColor: "border-argentum-gold",
@@ -25,7 +26,7 @@
       id: "symbiote",
       name: "Symbiote Circles",
       shortName: "Symbiote",
-      emblem: "/ui/decorations/emblems/emblem_symbiote.png",
+      emblem: assetUrl("/ui/decorations/emblems/emblem_symbiote.png"),
       color: "symbiote-glow",
       bgColor: "bg-symbiote-glow/20",
       borderColor: "border-symbiote-glow",
@@ -36,7 +37,7 @@
       id: "obsidion",
       name: "Obsidion Syndicate",
       shortName: "Obsidion",
-      emblem: "/ui/decorations/emblems/emblem_obsidion.png",
+      emblem: assetUrl("/ui/decorations/emblems/emblem_obsidion.png"),
       color: "obsidion-essence",
       bgColor: "bg-obsidion-essence/20",
       borderColor: "border-obsidion-essence",

@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { assetUrl } from "$lib/utils/paths";
+
   // Faction emblems - generated AI art assets
   const factionEmblems = {
-    argentum: "/ui/decorations/emblems/emblem_argentum.png",
-    symbiote: "/ui/decorations/emblems/emblem_symbiote.png",
-    obsidion: "/ui/decorations/emblems/emblem_obsidion.png",
-    neutral: "/ui/decorations/emblems/emblem_neutral.png",
+    argentum: assetUrl("/ui/decorations/emblems/emblem_argentum.png"),
+    symbiote: assetUrl("/ui/decorations/emblems/emblem_symbiote.png"),
+    obsidion: assetUrl("/ui/decorations/emblems/emblem_obsidion.png"),
+    neutral: assetUrl("/ui/decorations/emblems/emblem_neutral.png"),
   };
 </script>
 
