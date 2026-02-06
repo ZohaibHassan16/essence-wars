@@ -166,6 +166,10 @@ pub struct SearchStats {
     pub lmr_researches: u64,
     /// Number of aspiration window re-searches
     pub aspiration_researches: u64,
+    /// Best move evaluation score (higher = better for current player)
+    pub best_score: f32,
+    /// Second-best move score (for confidence calculation)
+    pub second_best_score: f32,
 }
 
 /// Alpha-Beta search bot using minimax with alpha-beta pruning.
@@ -887,6 +891,9 @@ impl<'a> AlphaBetaBot<'a> {
             }
         }
 
+        // Store best score in stats
+        self.last_stats.best_score = best_score;
+
         // If all moves lead to loss, pick randomly among them to avoid predictability
         if best_score <= self.weights.lose_penalty {
             let idx = self.rng.gen_range(0..legal_actions.len());
@@ -926,6 +933,9 @@ impl<'a> AlphaBetaBot<'a> {
             }
         }
 
+        // Store best score in stats
+        self.last_stats.best_score = best_score;
+
         // If all moves lead to loss, pick randomly
         if best_score <= self.weights.lose_penalty {
             let idx = self.rng.gen_range(0..legal_actions.len());
@@ -933,6 +943,63 @@ impl<'a> AlphaBetaBot<'a> {
         }
 
         best_action
+    }
+
+    /// Search and return all moves ranked by score.
+    ///
+    /// Returns a vector of (action, score) pairs sorted by score descending.
+    /// This is useful for AI hints that want to show alternative moves.
+    pub fn search_ranked(&mut self, engine: &GameEngine) -> Vec<(Action, f32)> {
+        // Reset stats and clear per-search state
+        self.last_stats = SearchStats::default();
+        self.clear_search_state();
+
+        let legal_actions = engine.get_legal_actions();
+
+        if legal_actions.is_empty() {
+            return vec![(Action::EndTurn, 0.0)];
+        }
+
+        if legal_actions.len() == 1 {
+            return vec![(legal_actions[0], 0.0)];
+        }
+
+        let root_player = engine.current_player();
+        let depth = self.config.max_depth;
+
+        let mut ranked: Vec<(Action, f32)> = Vec::with_capacity(legal_actions.len());
+
+        // Evaluate each action
+        for &action in &legal_actions {
+            let mut child_engine = engine.fork();
+            if child_engine.apply_action(action).is_err() {
+                continue;
+            }
+
+            let score = self.alphabeta(
+                &child_engine,
+                depth - 1,
+                f32::NEG_INFINITY,
+                f32::INFINITY,
+                root_player,
+            );
+
+            ranked.push((action, score));
+        }
+
+        // Sort by score descending (best moves first)
+        ranked.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+
+        // Update stats with best and second-best scores
+        if let Some((_, best)) = ranked.first() {
+            self.last_stats.best_score = *best;
+        }
+        if let Some((_, second)) = ranked.get(1) {
+            self.last_stats.second_best_score = *second;
+        }
+        self.last_stats.max_depth_reached = depth;
+
+        ranked
     }
 }
 

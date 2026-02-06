@@ -253,7 +253,7 @@ impl McpServer {
             },
             ToolDefinition {
                 name: "ai_hint".to_string(),
-                description: "Get AI analysis with recommended move using MCTS".to_string(),
+                description: "Get AI analysis with recommended move (Alpha-Beta depth 6 by default, or MCTS with use_mcts: true)".to_string(),
                 input_schema: json!({
                     "type": "object",
                     "properties": {

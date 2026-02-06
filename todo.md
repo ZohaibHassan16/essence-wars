@@ -1,12 +1,5 @@
 # To Do
 
-## (D) Review and Update MCP Server
-
-- Bring up to date if needed
-- Review `explain_rules()` , so that LLM Agents can play with confidence
-- Review and Audit complete Package
-- Discuss if AI Hint function needs to be Improved/Enhanced (Test it in a life game first) - does it use Alpha-Beta Depth 6 (it is the best bot we have)
-
 ## (F) Review and Update Python Gym
 
 - Look into the changes, update and integrate everything

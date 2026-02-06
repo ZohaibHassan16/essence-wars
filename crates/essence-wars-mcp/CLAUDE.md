@@ -1,6 +1,6 @@
 # essence-wars-mcp - MCP Server CLAUDE.md
 
-<!-- Last verified: 2026-02-05 -->
+<!-- Last verified: 2026-02-06 -->
 
 ## Overview
 
@@ -31,17 +31,44 @@ essence-wars-ui (Tauri App)
 | `show_hand` | Display cards in hand |
 | `legal_actions` | List all legal moves with indices |
 | `play_action` | Execute action by index |
-| `ai_hint` | Get MCTS analysis and recommended move |
+| `ai_hint` | Get AI analysis with ranked moves, scores, and confidence |
+| `explain_rules` | Explain game rules by topic |
+| `explain_keywords` | Explain game keywords |
+| `explain_card` | Get card details by ID |
 | `end_game` | End current game session |
 | `sync_ui_state` | Push game state to Tauri UI (if running) |
+
+## AI Hint Feature
+
+The `ai_hint` tool provides sophisticated move analysis:
+
+- **Alpha-Beta (default)**: Fast, deterministic analysis at depth 6
+  - Ranked moves with evaluation scores
+  - Confidence indicator based on score gap
+  - Score guide for position interpretation
+
+- **MCTS (optional)**: `use_mcts: true` for Monte Carlo analysis
+  - Configurable simulation count (default 500)
+  - Parallel tree search for faster response
+
+### Score Interpretation
+
+| Score | Meaning |
+|-------|---------|
+| > +200 | Winning position |
+| +50 to +200 | Significant advantage |
+| -50 to +50 | Roughly even |
+| < -50 | Disadvantage |
+| ±10000 | Forced win/loss |
 
 ## Typical Session
 
 1. `list_decks` → choose decks
 2. `start_game` → begins game
 3. `show_hand` / `legal_actions` → see options
-4. `play_action` → make moves
-5. `end_game` when done
+4. `ai_hint` → get move recommendations with analysis
+5. `play_action` → make moves
+6. `end_game` when done
 
 ## UI Sync (Optional)
 

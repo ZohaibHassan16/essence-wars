@@ -2,7 +2,7 @@
 
 use crate::session::SessionManager;
 use cardgame::bots::{AlphaBetaBot, AlphaBetaConfig, MctsBot, MctsConfig};
-use cardgame::{Action, Target};
+use cardgame::{Action, GameState, Target};
 use std::time::Instant;
 
 /// Get AI recommendation using Alpha-Beta (default) or MCTS analysis.
@@ -36,11 +36,11 @@ pub fn ai_hint(manager: &SessionManager, simulations: u32, use_mcts: bool, depth
     }
 }
 
-/// Perform Alpha-Beta analysis (fast, deterministic).
+/// Perform Alpha-Beta analysis (fast, deterministic) with ranked move scoring.
 fn alphabeta_analysis(
     manager: &SessionManager,
     session: &crate::session::GameSession,
-    state: &cardgame::GameState,
+    state: &GameState,
     depth: u32,
 ) -> String {
     let config = AlphaBetaConfig {
@@ -53,71 +53,144 @@ fn alphabeta_analysis(
     // Time the analysis
     let start = Instant::now();
 
-    // Get action using the bot API
-    let action = match session.client.select_bot_action(&mut ab_bot) {
-        Some(a) => a,
-        None => {
-            return "Error: Could not get AI recommendation.".to_string();
-        }
-    };
+    // Get ranked moves using the new search_ranked method
+    let engine = session.client.engine().expect("engine available");
+    let ranked_moves = ab_bot.search_ranked(engine);
 
     let elapsed = start.elapsed();
 
     // Get search statistics
     let stats = ab_bot.last_stats();
 
-    // Get all legal actions for comparison
-    let legal_actions = session.client.get_legal_actions();
+    if ranked_moves.is_empty() {
+        return "Error: Could not get AI recommendation.".to_string();
+    }
+
+    let (best_action, best_score) = ranked_moves[0];
+    let second_best_score = ranked_moves.get(1).map(|(_, s)| *s);
+
+    // Calculate confidence based on score gap
+    let confidence = calculate_confidence(best_score, second_best_score, ranked_moves.len());
 
     let mut output = String::new();
     output.push_str(&format!("# AI Analysis (Alpha-Beta, depth {})\n\n", depth));
 
-    // Show recommended action
+    // Show recommended action with score
+    output.push_str("## Recommended Move\n\n");
     output.push_str(&format!(
-        "## Recommended Move\n\n**Action**: {} (index: {})\n\n",
-        format_action_description(&action, state, manager.card_db()),
-        action.to_index()
+        "**Action**: {} (index: {})\n",
+        format_action_description(&best_action, state, manager.card_db()),
+        best_action.to_index()
     ));
+    output.push_str(&format!("**Evaluation**: {}\n", format_score(best_score)));
+    output.push_str(&format!("**Confidence**: {}\n\n", confidence));
 
     // Show analysis details
     output.push_str("## Analysis Details\n\n");
     output.push_str(&format!("- **Search Time**: {:.1}ms\n", elapsed.as_millis()));
     output.push_str(&format!("- **Depth Reached**: {}\n", stats.max_depth_reached));
     output.push_str(&format!("- **Nodes Visited**: {}\n", stats.nodes_visited));
-    output.push_str(&format!("- **Legal Actions**: {}\n", legal_actions.len()));
+    output.push_str(&format!("- **Legal Actions**: {}\n\n", ranked_moves.len()));
 
-    // Provide evaluation interpretation
-    output.push_str("\n**Note**: Alpha-Beta uses heuristic evaluation (board state, life, creatures).\n");
-    output.push_str("For win probability estimates, use `ai_hint` with `use_mcts: true`.\n\n");
+    // Show ranked moves table
+    output.push_str("## Ranked Moves\n\n");
+    output.push_str("| Rank | Score | Index | Action | Description |\n");
+    output.push_str("|------|-------|-------|--------|-------------|\n");
 
-    // Show all legal actions as alternatives
-    if legal_actions.len() > 1 {
-        output.push_str("## Other Options\n\n");
-        output.push_str("| Index | Action | Description |\n");
-        output.push_str("|-------|--------|-------------|\n");
-
-        for legal_action in &legal_actions {
-            if *legal_action == action {
-                continue; // Skip the recommended action
-            }
-            let desc = format_action_description(legal_action, state, manager.card_db());
-            output.push_str(&format!(
-                "| {} | {} | {} |\n",
-                legal_action.to_index(),
-                format_action_short(legal_action),
-                desc
-            ));
-        }
-        output.push('\n');
+    for (rank, (action, score)) in ranked_moves.iter().enumerate() {
+        let rank_marker = if rank == 0 { "→" } else { " " };
+        let desc = format_action_description(action, state, manager.card_db());
+        output.push_str(&format!(
+            "| {}{} | {} | {} | {} | {} |\n",
+            rank_marker,
+            rank + 1,
+            format_score_short(*score),
+            action.to_index(),
+            format_action_short(action),
+            desc
+        ));
     }
+    output.push('\n');
+
+    // Score interpretation guide
+    output.push_str("## Score Guide\n\n");
+    output.push_str("| Score | Meaning |\n");
+    output.push_str("|-------|--------|\n");
+    output.push_str("| > +200 | Winning position |\n");
+    output.push_str("| +50 to +200 | Significant advantage |\n");
+    output.push_str("| -50 to +50 | Roughly even |\n");
+    output.push_str("| < -50 | Disadvantage |\n");
+    output.push_str("| ±10000 | Forced win/loss |\n\n");
 
     output.push_str("---\n");
     output.push_str(&format!(
         "Use `play_action {}` to play the recommended move.\n",
-        action.to_index()
+        best_action.to_index()
     ));
 
     output
+}
+
+/// Format score for display (with interpretation).
+fn format_score(score: f32) -> String {
+    if score >= 10000.0 {
+        format!("{:+.0} (Forced win detected)", score)
+    } else if score <= -10000.0 {
+        format!("{:+.0} (Forced loss detected)", score)
+    } else if score > 200.0 {
+        format!("{:+.0} (Winning)", score)
+    } else if score > 50.0 {
+        format!("{:+.0} (Advantage)", score)
+    } else if score < -200.0 {
+        format!("{:+.0} (Losing)", score)
+    } else if score < -50.0 {
+        format!("{:+.0} (Disadvantage)", score)
+    } else {
+        format!("{:+.0} (Even)", score)
+    }
+}
+
+/// Format score for table display (compact).
+fn format_score_short(score: f32) -> String {
+    if score >= 10000.0 {
+        "+WIN".to_string()
+    } else if score <= -10000.0 {
+        "-LOSS".to_string()
+    } else {
+        format!("{:+.0}", score)
+    }
+}
+
+/// Calculate confidence level based on score gap and position.
+fn calculate_confidence(best_score: f32, second_best: Option<f32>, num_moves: usize) -> String {
+    // Forced win/loss = maximum confidence
+    if best_score.abs() >= 10000.0 {
+        return "Very High (forced outcome)".to_string();
+    }
+
+    // Only one legal move = no choice
+    if num_moves == 1 {
+        return "N/A (only one legal move)".to_string();
+    }
+
+    // Calculate gap between best and second-best
+    let gap = match second_best {
+        Some(second) => best_score - second,
+        None => 0.0,
+    };
+
+    // Confidence based on score gap
+    if gap >= 100.0 {
+        "Very High (clear best move)".to_string()
+    } else if gap >= 50.0 {
+        "High (strong preference)".to_string()
+    } else if gap >= 20.0 {
+        "Medium (moderate preference)".to_string()
+    } else if gap >= 5.0 {
+        "Low (close alternatives exist)".to_string()
+    } else {
+        "Very Low (multiple similar options)".to_string()
+    }
 }
 
 /// Perform MCTS analysis (slower, provides win rate estimates).
