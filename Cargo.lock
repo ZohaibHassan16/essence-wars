@@ -496,7 +496,7 @@ dependencies = [
 
 [[package]]
 name = "cardgame"
-version = "0.8.4"
+version = "0.8.5"
 dependencies = [
  "arrayvec",
  "chrono",
@@ -1288,7 +1288,7 @@ dependencies = [
 
 [[package]]
 name = "essence-wars-mcp"
-version = "0.8.4"
+version = "0.8.5"
 dependencies = [
  "anyhow",
  "arrayvec",
@@ -1305,7 +1305,7 @@ dependencies = [
 
 [[package]]
 name = "essence-wars-ui"
-version = "0.8.4"
+version = "0.8.5"
 dependencies = [
  "anyhow",
  "axum",
