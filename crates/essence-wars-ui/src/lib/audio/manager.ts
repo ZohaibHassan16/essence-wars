@@ -289,34 +289,14 @@ function playSoundFileWithVolume(path: string, volume: number): void {
   }
 }
 
-// Play a UI sound file (full volume)
+// Play a sound file using the SFX volume setting
 function playSoundFile(path: string): void {
   playSoundFileWithVolume(path, audioSettings.effectiveVolume);
 }
 
-// Play a battle sound file (reduced volume)
-function playBattleSoundFile(path: string): void {
-  playSoundFileWithVolume(path, audioSettings.effectiveBattleVolume);
-}
-
-// Battle sound effects (use reduced battle volume)
-const BATTLE_SOUND_EFFECTS: Set<SoundEffect> = new Set([
-  'attackLight',
-  'attackMedium',
-  'attackHeavy',
-  'damage',
-  'creatureDeath',
-  'heal',
-  'abilityActivate',
-  'cardPlayCreature',
-  'cardPlaySpell',
-  'cardPlaySupport',
-]);
-
 // Play a sound effect (random selection from available files)
 export function playSound(effect: SoundEffect): void {
-  const isBattle = BATTLE_SOUND_EFFECTS.has(effect);
-  const volume = isBattle ? audioSettings.effectiveBattleVolume : audioSettings.effectiveVolume;
+  const volume = audioSettings.effectiveVolume;
   if (volume <= 0) return;
 
   const files = SOUND_FILES[effect];
@@ -326,14 +306,10 @@ export function playSound(effect: SoundEffect): void {
   }
 
   const path = randomChoice(files);
-  if (isBattle) {
-    playBattleSoundFile(path);
-  } else {
-    playSoundFile(path);
-  }
+  playSoundFile(path);
 }
 
-// Play attack sound based on damage amount (generic, uses battle volume)
+// Play attack sound based on damage amount
 export function playAttackSound(damage: number): void {
   if (damage >= 5) {
     playSound('attackHeavy');
@@ -344,35 +320,35 @@ export function playAttackSound(damage: number): void {
   }
 }
 
-// Play faction-specific attack sound (uses battle volume)
+// Play faction-specific attack sound
 export function playFactionAttackSound(damage: number, faction: Faction): void {
-  const volume = audioSettings.effectiveBattleVolume;
+  const volume = audioSettings.effectiveVolume;
   if (volume <= 0) return;
 
   const intensity = damage >= 5 ? 'heavy' : damage >= 3 ? 'medium' : 'light';
   const files = FACTION_ATTACK_SOUNDS[faction][intensity];
   const path = randomChoice(files);
-  playBattleSoundFile(path);
+  playSoundFile(path);
 }
 
-// Play faction-specific summon sound (uses battle volume)
+// Play faction-specific summon sound
 export function playFactionSummonSound(faction: Faction): void {
-  const volume = audioSettings.effectiveBattleVolume;
+  const volume = audioSettings.effectiveVolume;
   if (volume <= 0) return;
 
   const files = FACTION_SUMMON_SOUNDS[faction];
   const path = randomChoice(files);
-  playBattleSoundFile(path);
+  playSoundFile(path);
 }
 
-// Play faction-specific death sound (uses battle volume)
+// Play faction-specific death sound
 export function playFactionDeathSound(faction: Faction): void {
-  const volume = audioSettings.effectiveBattleVolume;
+  const volume = audioSettings.effectiveVolume;
   if (volume <= 0) return;
 
   const files = FACTION_DEATH_SOUNDS[faction];
   const path = randomChoice(files);
-  playBattleSoundFile(path);
+  playSoundFile(path);
 }
 
 // Play card play sound based on card type (with optional faction for creatures)
