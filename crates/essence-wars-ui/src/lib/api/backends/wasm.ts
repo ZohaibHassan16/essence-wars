@@ -182,15 +182,15 @@ export class WasmGameBackend implements GameBackend {
   async computeSpectatorMatch(
     config: SpectatorConfig
   ): Promise<SpectatorMatch> {
-    // Convert to snake_case for Rust
+    // Rust SpectatorConfig has #[serde(rename_all = "camelCase")] so we send camelCase
     const wasmConfig = {
-      player1_deck_id: config.player1DeckId,
-      player1_bot_type: config.player1BotType,
-      player2_deck_id: config.player2DeckId,
-      player2_bot_type: config.player2BotType,
+      player1DeckId: config.player1DeckId,
+      player1BotType: config.player1BotType,
+      player2DeckId: config.player2DeckId,
+      player2BotType: config.player2BotType,
       seed: config.seed,
-      mcts_simulations: config.mctsSimulations,
-      alphabeta_depth: config.alphabetaDepth,
+      mctsSimulations: config.mctsSimulations,
+      alphabetaDepth: config.alphabetaDepth,
     };
 
     const json = compute_spectator_match(JSON.stringify(wasmConfig));
