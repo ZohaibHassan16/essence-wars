@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { Cog, Users, Building, Wrench } from "lucide-svelte";
+  import { Building, Wrench, Users } from "lucide-svelte";
+
+  const emblem = "/ui/decorations/emblems/emblem_argentum.png";
 
   // Featured card IDs for Argentum (1000-1074)
   const featuredCards = [
@@ -13,8 +15,8 @@
 <div class="space-y-8">
   <!-- Header -->
   <section class="text-center">
-    <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-gray-200 to-gold/50 flex items-center justify-center mb-4 shadow-lg">
-      <Cog size={48} class="text-gray-800" />
+    <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-gray-200 to-gold/50 flex items-center justify-center mb-4 shadow-lg p-2">
+      <img src={emblem} alt="Argentum" class="w-full h-full object-contain drop-shadow-md" />
     </div>
     <h2 class="text-3xl font-bold text-gold mb-2">The Argentum Combine</h2>
     <p class="text-xl text-ui-text-dim italic">"Precision. Protocol. Peace."</p>
@@ -23,7 +25,7 @@
   <!-- Card Art Gallery -->
   <section>
     <h3 class="text-xl font-semibold text-ui-text mb-4 flex items-center gap-2">
-      <Cog size={20} class="text-gold" />
+      <img src={emblem} alt="" class="w-6 h-6 object-contain" />
       Champions of Order
     </h3>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">

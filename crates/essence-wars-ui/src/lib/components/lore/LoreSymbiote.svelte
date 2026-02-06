@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { Leaf, TreePine, Heart, PawPrint } from "lucide-svelte";
+  import { Leaf, TreePine, Heart } from "lucide-svelte";
+
+  const emblem = "/ui/decorations/emblems/emblem_symbiote.png";
 
   // Featured card IDs for Symbiote (2000-2074)
   const featuredCards = [
@@ -13,8 +15,8 @@
 <div class="space-y-8">
   <!-- Header -->
   <section class="text-center">
-    <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-green-800 to-purple-600 flex items-center justify-center mb-4 shadow-lg">
-      <PawPrint size={48} class="text-green-400" />
+    <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-green-800 to-purple-600 flex items-center justify-center mb-4 shadow-lg p-2">
+      <img src={emblem} alt="Symbiote" class="w-full h-full object-contain drop-shadow-md" />
     </div>
     <h2 class="text-3xl font-bold text-green-400 mb-2">The Symbiote Circles</h2>
     <p class="text-xl text-ui-text-dim italic">"The Pack Endures. Hunt as One."</p>
@@ -23,7 +25,7 @@
   <!-- Card Art Gallery -->
   <section>
     <h3 class="text-xl font-semibold text-ui-text mb-4 flex items-center gap-2">
-      <PawPrint size={20} class="text-green-400" />
+      <img src={emblem} alt="" class="w-6 h-6 object-contain" />
       Children of the Pack
     </h3>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">

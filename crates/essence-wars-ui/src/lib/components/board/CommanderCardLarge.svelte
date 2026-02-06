@@ -1,7 +1,9 @@
 <script lang="ts">
   import type { CommanderDto } from "$lib/api/types";
   import { playSound } from "$lib/audio";
-  import { Flame } from "lucide-svelte";
+
+  // Essence crystal icon
+  const essenceCrystalIcon = "/ui/decorations/icons/essence_icon_crystal.png";
 
   const ESSENCE_EXTRACTION_THRESHOLD = 50;
 
@@ -253,23 +255,22 @@
           <div class="absolute inset-0 bg-orange-500/20 transition-all duration-500"
                style="width: {extractionProgress}%"></div>
           <!-- Content -->
-          <Flame size={14} class="text-orange-400 relative z-10 flex-shrink-0" />
+          <img src={essenceCrystalIcon} alt="" class="w-4 h-4 object-contain relative z-10 flex-shrink-0 drop-shadow-sm" />
           <span class="{extractionColor} font-bold text-base relative z-10">{essenceExtracted}</span>
           <span class="text-orange-400/60 text-xs font-medium relative z-10">/ {ESSENCE_EXTRACTION_THRESHOLD}</span>
         </div>
       </div>
 
-      <!-- Essence Display (compact) -->
+      <!-- Essence Display (crystal icons) -->
       {#if maxEssence > 0}
-        <div class="flex items-center justify-center gap-1 mb-2">
+        <div class="flex items-center justify-center gap-0.5 mb-2">
           {#each Array(maxEssence) as _, i (i)}
-            <div
-              class="w-3 h-3 rounded-full border transition-all duration-200"
-              class:bg-mana={i < essence}
-              class:border-mana={i < essence}
-              class:bg-transparent={i >= essence}
-              class:border-gray-600={i >= essence}
-            ></div>
+            <img
+              src={essenceCrystalIcon}
+              alt=""
+              class="w-5 h-5 object-contain transition-all duration-200 drop-shadow-sm
+                     {i < essence ? 'opacity-100' : 'opacity-25 grayscale'}"
+            />
           {/each}
         </div>
       {/if}
@@ -390,7 +391,7 @@
         </div>
         <div class="flex justify-between text-sm mt-1">
           <span class="text-ui-text-dim flex items-center gap-1">
-            <Flame size={12} class="text-orange-400" />
+            <img src={essenceCrystalIcon} alt="" class="w-3 h-3 object-contain" />
             Extracted:
           </span>
           <span class="{extractionColor} font-bold">{essenceExtracted} / {ESSENCE_EXTRACTION_THRESHOLD}</span>

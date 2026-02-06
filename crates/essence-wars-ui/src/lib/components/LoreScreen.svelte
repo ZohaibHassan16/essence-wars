@@ -5,7 +5,7 @@
   import LoreSymbiote from "./lore/LoreSymbiote.svelte";
   import LoreObsidion from "./lore/LoreObsidion.svelte";
   import LoreFreewalkers from "./lore/LoreFreewalkers.svelte";
-  import { Cog, Bug, Skull, Compass, Globe } from "lucide-svelte";
+  import { Globe } from "lucide-svelte";
 
   let { onBack }: { onBack: () => void } = $props();
 
@@ -13,12 +13,20 @@
 
   let activeTab = $state<Tab>("world");
 
-  const tabs: { id: Tab; label: string; icon: typeof Globe; color: string }[] = [
+  // Faction emblems
+  const factionEmblems: Record<string, string> = {
+    argentum: "/ui/decorations/emblems/emblem_argentum.png",
+    symbiote: "/ui/decorations/emblems/emblem_symbiote.png",
+    obsidion: "/ui/decorations/emblems/emblem_obsidion.png",
+    freewalkers: "/ui/decorations/emblems/emblem_neutral.png",
+  };
+
+  const tabs: { id: Tab; label: string; icon?: typeof Globe; emblem?: string; color: string }[] = [
     { id: "world", label: "Omyra", icon: Globe, color: "text-blue-400" },
-    { id: "argentum", label: "Argentum", icon: Cog, color: "text-gold" },
-    { id: "symbiote", label: "Symbiote", icon: Bug, color: "text-green-400" },
-    { id: "obsidion", label: "Obsidion", icon: Skull, color: "text-red-400" },
-    { id: "freewalkers", label: "Free-Walkers", icon: Compass, color: "text-amber-400" },
+    { id: "argentum", label: "Argentum", emblem: factionEmblems.argentum, color: "text-gold" },
+    { id: "symbiote", label: "Symbiote", emblem: factionEmblems.symbiote, color: "text-green-400" },
+    { id: "obsidion", label: "Obsidion", emblem: factionEmblems.obsidion, color: "text-red-400" },
+    { id: "freewalkers", label: "Free-Walkers", emblem: factionEmblems.freewalkers, color: "text-amber-400" },
   ];
 
   function handleButtonHover() {
@@ -52,10 +60,9 @@
     <h1 class="text-3xl font-bold text-ui-text">Lore & World</h1>
   </div>
 
-  <!-- Tab navigation with icons -->
+  <!-- Tab navigation with icons/emblems -->
   <div class="flex-shrink-0 flex flex-wrap gap-2 mb-6 border-b border-gray-700 pb-4">
     {#each tabs as tab (tab.id)}
-      {@const Icon = tab.icon}
       <button
         class="px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2
                {activeTab === tab.id
@@ -64,7 +71,12 @@
         onclick={() => selectTab(tab.id)}
         onmouseenter={handleButtonHover}
       >
-        <Icon size={18} class={activeTab === tab.id ? 'text-white' : tab.color} />
+        {#if tab.emblem}
+          <img src={tab.emblem} alt="" class="w-5 h-5 object-contain" />
+        {:else if tab.icon}
+          {@const Icon = tab.icon}
+          <Icon size={18} class={activeTab === tab.id ? 'text-white' : tab.color} />
+        {/if}
         {tab.label}
       </button>
     {/each}

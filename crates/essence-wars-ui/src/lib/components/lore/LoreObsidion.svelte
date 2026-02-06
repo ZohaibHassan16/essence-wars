@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { Skull, FlaskConical, Building2, Sparkles } from "lucide-svelte";
+  import { FlaskConical, Building2, Sparkles } from "lucide-svelte";
+
+  const emblem = "/ui/decorations/emblems/emblem_obsidion.png";
 
   // Featured card IDs for Obsidion (3000-3074)
   const featuredCards = [
@@ -13,8 +15,8 @@
 <div class="space-y-8">
   <!-- Header -->
   <section class="text-center">
-    <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-red-900 to-blue-900 flex items-center justify-center mb-4 shadow-lg">
-      <Skull size={48} class="text-red-400" />
+    <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-red-900 to-blue-900 flex items-center justify-center mb-4 shadow-lg p-2">
+      <img src={emblem} alt="Obsidion" class="w-full h-full object-contain drop-shadow-md" />
     </div>
     <h2 class="text-3xl font-bold text-red-400 mb-2">The Obsidion Syndicate</h2>
     <p class="text-xl text-ui-text-dim italic">"Ambition Unbound."</p>
@@ -23,7 +25,7 @@
   <!-- Card Art Gallery -->
   <section>
     <h3 class="text-xl font-semibold text-ui-text mb-4 flex items-center gap-2">
-      <Skull size={20} class="text-red-400" />
+      <img src={emblem} alt="" class="w-6 h-6 object-contain" />
       Masters of Dark Arts
     </h3>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">

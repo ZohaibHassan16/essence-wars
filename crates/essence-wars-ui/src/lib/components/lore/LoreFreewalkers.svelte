@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { Compass, Users, Mountain, Coins } from "lucide-svelte";
+  import { Users, Mountain, Coins } from "lucide-svelte";
+
+  const emblem = "/ui/decorations/emblems/emblem_neutral.png";
 
   // Featured card IDs for Free-Walkers/Neutral (4000-4074)
   const featuredCards = [
@@ -13,8 +15,8 @@
 <div class="space-y-8">
   <!-- Header -->
   <section class="text-center">
-    <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-amber-700 to-stone-600 flex items-center justify-center mb-4 shadow-lg">
-      <Compass size={48} class="text-amber-400" />
+    <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-amber-700 to-stone-600 flex items-center justify-center mb-4 shadow-lg p-2">
+      <img src={emblem} alt="Free-Walkers" class="w-full h-full object-contain drop-shadow-md" />
     </div>
     <h2 class="text-3xl font-bold text-amber-400 mb-2">The Free-Walkers</h2>
     <p class="text-xl text-ui-text-dim italic">"No Flag. Just Gold."</p>
@@ -23,7 +25,7 @@
   <!-- Card Art Gallery -->
   <section>
     <h3 class="text-xl font-semibold text-ui-text mb-4 flex items-center gap-2">
-      <Compass size={20} class="text-amber-400" />
+      <img src={emblem} alt="" class="w-6 h-6 object-contain" />
       Soldiers of Fortune
     </h3>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
