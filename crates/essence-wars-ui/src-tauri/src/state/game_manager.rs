@@ -2,7 +2,7 @@
 
 use cardgame::bots::{create_bot, AlphaBetaConfig, BotType, GreedyBot, MctsConfig};
 use cardgame::client_api::GameClient;
-use cardgame::execution::MAX_ACTIONS_PER_GAME;
+use cardgame::core::config::game::MAX_ACTIONS_PER_GAME;
 use cardgame::{CardDatabase, DeckDefinition, DeckRegistry, PlayerId};
 use std::time::Instant;
 use parking_lot::RwLock;
