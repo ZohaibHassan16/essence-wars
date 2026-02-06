@@ -1,0 +1,64 @@
+# Essence Wars - App Icon Prompts
+# Square icons for app/favicon use
+# Resolution: 512x512 (will resize down to various sizes)
+#
+# REQUIREMENTS:
+# - Centered subject with simple solid background (for easy removal)
+# - Bold, recognizable silhouette that works at 16x16
+# - Fantasy painted style but clean/iconic
+# - Represents "Essence" - the magical crystal resource
+#
+# BACKGROUND REMOVAL:
+# After generation, use rembg or similar to remove background:
+#   rembg i input.png output.png
+
+icons:
+  # Primary app icon - Essence Crystal
+  - id: essence_crystal
+    name: "Essence Crystal"
+    description: "Primary app icon - a glowing magical crystal"
+    prompt: >
+      A single magnificent magical crystal floating in the center, prismatic
+      faceted gem glowing with inner blue and purple light, ethereal energy
+      wisps emanating from the crystal, fantasy painted style with visible
+      brushstrokes, dramatic lighting from within the crystal, dark solid
+      black background, centered composition, 90s Magic the Gathering art
+      style, jewel-like quality, mystical and powerful, icon design
+    negative: "text, words, letters, multiple objects, busy background, gradient background, frame, border, human, creature, hand, landscape, scene"
+
+  # Alternative 1 - Essence Orb
+  - id: essence_orb
+    name: "Essence Orb"
+    description: "Alternative icon - a swirling essence orb"
+    prompt: >
+      A single glowing magical orb floating in the center, swirling energy
+      contained within a spherical form, blue and gold magical light radiating
+      outward, ethereal particles orbiting the sphere, fantasy painted style,
+      dramatic inner glow, dark solid black background, centered composition,
+      90s Magic the Gathering art style, mystical power, icon design
+    negative: "text, words, letters, multiple objects, busy background, gradient background, frame, border, human, creature, hand, landscape, scene"
+
+  # Alternative 2 - Essence Shard
+  - id: essence_shard
+    name: "Essence Shard"
+    description: "Alternative icon - a sharp crystalline shard"
+    prompt: >
+      A single sharp crystalline shard pointing upward in the center, angular
+      faceted magical crystal with blue purple and gold inner glow, energy
+      crackling along the edges, fantasy painted style with bold brushstrokes,
+      dramatic lighting, dark solid black background, centered composition,
+      90s Magic the Gathering art style, powerful and ancient, icon design
+    negative: "text, words, letters, multiple objects, busy background, gradient background, frame, border, human, creature, hand, landscape, scene"
+
+  # Alternative 3 - Triple Essence
+  - id: triple_essence
+    name: "Triple Essence"
+    description: "Alternative icon - three small crystals arranged as a symbol"
+    prompt: >
+      Three small magical crystals arranged in a triangular formation floating
+      in the center, each crystal glowing with different color - blue gold and
+      purple, energy connecting them in the center, fantasy painted style,
+      dramatic magical lighting, dark solid black background, centered
+      composition, 90s Magic the Gathering art style, balanced symmetrical
+      design, icon design
+    negative: "text, words, letters, busy background, gradient background, frame, border, human, creature, hand, landscape, scene, more than three crystals"

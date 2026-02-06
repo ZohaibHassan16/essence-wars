@@ -6,10 +6,10 @@ Reads prompts from backgrounds.yaml and generates background art using FLUX.
 Outputs at 1344x768 (16:9) for later upscaling with Real-ESRGAN to ~2688x1536.
 
 Usage:
-    python scripts/generate-background-art.py --all
-    python scripts/generate-background-art.py --id extraction_dispute
-    python scripts/generate-background-art.py --list
-    python scripts/generate-background-art.py --dry-run --all
+    uv run python scripts/generate-background-art.py --all
+    uv run python scripts/generate-background-art.py --id extraction_dispute
+    uv run python scripts/generate-background-art.py --list
+    uv run python scripts/generate-background-art.py --all --schnell
 """
 
 import argparse

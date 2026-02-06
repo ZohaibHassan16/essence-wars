@@ -343,8 +343,11 @@ impl CardDto {
         // Art path matches files in static/cards/core_set/{id}.webp
         let art_path = Some(format!("cards/core_set/{}.webp", card.id));
 
-        // Generate effect description for support cards
+        // Generate effect description for spell and support cards
         let effect_description = match &card.card_type {
+            CardType::Spell { targeting, effects, .. } => {
+                Some(describe_spell_effects(targeting, effects))
+            }
             CardType::Support { passive_effects, triggered_effects, .. } => {
                 Some(describe_support_effects(passive_effects, triggered_effects))
             }
@@ -526,6 +529,31 @@ fn describe_triggered_ability(ability: &AbilityDefinition) -> String {
     let trigger = trigger_to_string(&ability.trigger);
     let effects: Vec<String> = ability.effects.iter().map(describe_effect).collect();
     format!("{}: {}", trigger, effects.join(", "))
+}
+
+/// Generate a human-readable description of what a spell does
+fn describe_spell_effects(
+    targeting: &TargetingRule,
+    effects: &[EffectDefinition],
+) -> String {
+    if effects.is_empty() {
+        return "No effect".to_string();
+    }
+
+    let effect_descriptions: Vec<String> = effects.iter().map(describe_effect).collect();
+    let effects_text = effect_descriptions.join(". ");
+
+    // Add targeting context if relevant
+    match targeting {
+        TargetingRule::NoTarget => effects_text,
+        TargetingRule::TargetCreature(_) => effects_text,
+        TargetingRule::TargetAllyCreature => effects_text,
+        TargetingRule::TargetEnemyCreature => effects_text,
+        TargetingRule::TargetPlayer => effects_text,
+        TargetingRule::TargetEnemyPlayer => effects_text,
+        TargetingRule::TargetAny => effects_text,
+        TargetingRule::TargetSlot => effects_text,
+    }
 }
 
 /// Generate a human-readable description of what a support does

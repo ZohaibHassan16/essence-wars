@@ -37,7 +37,7 @@ export interface CardDto {
   keywords: string[];
   durability?: number;
   artPath?: string;
-  /** Effect description for support cards */
+  /** Effect description for spell and support cards */
   effectDescription?: string;
 }
 

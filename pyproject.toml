@@ -286,3 +286,12 @@ hub = [
 cloud = [
     "modal>=0.68.0",
 ]
+
+# Art generation tools: image processing, background removal
+art = [
+    "Pillow>=10.0.0",
+    "rembg[cpu]>=2.0.50",  # CPU-only version (lighter dependencies)
+    "PyYAML>=6.0.0",
+    "numba>=0.57.0",  # Force newer numba that supports Python 3.11+
+    "pymatting>=1.1.12",  # Ensure compatible version
+]

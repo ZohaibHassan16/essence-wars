@@ -6,11 +6,11 @@ Reads prompts from tokens.yaml and generates token art using FLUX via stable-dif
 Converts output to WebP and places in the correct location.
 
 Usage:
-    python scripts/generate-token-art.py --faction symbiote
-    python scripts/generate-token-art.py --faction all
-    python scripts/generate-token-art.py --token brass_cog
-    python scripts/generate-token-art.py --list
-    python scripts/generate-token-art.py --dry-run --faction argentum
+    uv run python scripts/generate-token-art.py --faction symbiote
+    uv run python scripts/generate-token-art.py --faction all
+    uv run python scripts/generate-token-art.py --token brass_cog
+    uv run python scripts/generate-token-art.py --list
+    uv run python scripts/generate-token-art.py --dry-run --faction argentum
 """
 
 import argparse

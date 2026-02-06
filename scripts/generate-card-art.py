@@ -6,10 +6,10 @@ Reads prompts from YAML files and generates card art using FLUX via stable-diffu
 Converts output to WebP and places in the correct location.
 
 Usage:
-    python scripts/generate-card-art.py --faction symbiote
-    python scripts/generate-card-art.py --faction symbiote --start 2000 --end 2010
-    python scripts/generate-card-art.py --faction argentum --card 1050
-    python scripts/generate-card-art.py --faction all
+    uv run python scripts/generate-card-art.py --faction symbiote
+    uv run python scripts/generate-card-art.py --faction symbiote --start 2000 --end 2010
+    uv run python scripts/generate-card-art.py --faction argentum --card 1050
+    uv run python scripts/generate-card-art.py --faction all
 """
 
 import argparse

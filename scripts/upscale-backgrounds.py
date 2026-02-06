@@ -6,9 +6,9 @@ Upscales generated background PNGs using Real-ESRGAN and converts to WebP.
 Run this after generate-background-art.py to get final high-resolution backgrounds.
 
 Usage:
-    python scripts/upscale-backgrounds.py --all
-    python scripts/upscale-backgrounds.py --id extraction_dispute
-    python scripts/upscale-backgrounds.py --list
+    uv run python scripts/upscale-backgrounds.py --all
+    uv run python scripts/upscale-backgrounds.py --id extraction_dispute
+    uv run python scripts/upscale-backgrounds.py --list
 """
 
 import argparse
