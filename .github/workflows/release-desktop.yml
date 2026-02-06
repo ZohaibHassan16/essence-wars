@@ -103,8 +103,8 @@ jobs:
         with:
           name: linux-artifacts
           path: |
-            crates/essence-wars-ui/src-tauri/target/release/bundle/deb/*.deb
-            crates/essence-wars-ui/src-tauri/target/release/bundle/appimage/*.AppImage
+            target/release/bundle/deb/*.deb
+            target/release/bundle/appimage/*.AppImage
           if-no-files-found: error
 
   build-windows:
@@ -170,8 +170,8 @@ jobs:
         with:
           name: windows-artifacts
           path: |
-            crates/essence-wars-ui/src-tauri/target/release/bundle/nsis/*.exe
-            crates/essence-wars-ui/src-tauri/target/release/bundle/msi/*.msi
+            target/release/bundle/nsis/*.exe
+            target/release/bundle/msi/*.msi
           if-no-files-found: error
 
   release:
