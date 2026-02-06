@@ -1,6 +1,15 @@
-// Game API - Tauri command wrappers
+/**
+ * Game API - Backend-agnostic wrappers.
+ *
+ * This module provides the public API for game operations.
+ * It delegates to the appropriate backend (Tauri or WASM) based on the platform.
+ */
 
-import { invoke } from "@tauri-apps/api/core";
+import {
+  getGameBackend,
+  getStorageBackend,
+  getMcpBackend,
+} from "./backends";
 import type {
   DeckInfo,
   BotInfo,
@@ -17,90 +26,19 @@ import type {
   CardDto,
 } from "./types";
 
-/** Error thrown when an IPC call times out */
-export class IpcTimeoutError extends Error {
-  constructor(operation: string, timeoutMs: number) {
-    super(`Operation "${operation}" timed out after ${timeoutMs}ms`);
-    this.name = "IpcTimeoutError";
-  }
-}
+// Re-export the IpcTimeoutError for backwards compatibility
+export { IpcTimeoutError } from "./backends/tauri";
 
-/** Wrap a promise with a timeout */
-async function withTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-  operation: string
-): Promise<T> {
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => {
-      reject(new IpcTimeoutError(operation, timeoutMs));
-    }, timeoutMs);
-  });
-
-  try {
-    return await Promise.race([promise, timeoutPromise]);
-  } finally {
-    if (timeoutId !== undefined) {
-      clearTimeout(timeoutId);
-    }
-  }
-}
+// ===========================================================================
+// Game Setup
+// ===========================================================================
 
 export async function listDecks(): Promise<DeckInfo[]> {
-  return await invoke<DeckInfo[]>("list_decks");
+  return await getGameBackend().listDecks();
 }
 
 export async function listBots(): Promise<BotInfo[]> {
-  return await invoke<BotInfo[]>("list_bots");
-}
-
-export async function newGame(config: GameConfig): Promise<GameStateDto> {
-  return await invoke<GameStateDto>("new_game", { config });
-}
-
-export async function getGameState(gameId: string): Promise<GameStateDto> {
-  return await invoke<GameStateDto>("get_game_state", { gameId });
-}
-
-export async function getLegalActions(gameId: string): Promise<ActionInfo[]> {
-  return await invoke<ActionInfo[]>("get_legal_actions", { gameId });
-}
-
-export async function applyAction(
-  gameId: string,
-  actionIndex: number
-): Promise<GameStateUpdate> {
-  return await invoke<GameStateUpdate>("apply_action", { gameId, actionIndex });
-}
-
-export async function getAiMove(gameId: string): Promise<ActionInfo> {
-  return await withTimeout(
-    invoke<ActionInfo>("get_ai_move", { gameId }),
-    30000,
-    "getAiMove"
-  );
-}
-
-export async function endGame(gameId: string): Promise<GameResultDto> {
-  return await invoke<GameResultDto>("end_game", { gameId });
-}
-
-export async function getAiHint(gameId: string): Promise<AiHintResponse> {
-  return await withTimeout(
-    invoke<AiHintResponse>("get_ai_hint", { gameId }),
-    30000,
-    "getAiHint"
-  );
-}
-
-export async function undoAction(gameId: string): Promise<GameStateDto> {
-  return await invoke<GameStateDto>("undo_action", { gameId });
-}
-
-export async function canUndo(gameId: string): Promise<boolean> {
-  return await invoke<boolean>("can_undo", { gameId });
+  return await getGameBackend().listBots();
 }
 
 /**
@@ -110,34 +48,73 @@ export async function canUndo(gameId: string): Promise<boolean> {
  * Returns the cards in deck order (index 0 = first card to draw).
  */
 export async function getDeckCards(deckId: string): Promise<CardDto[]> {
-  return await invoke<CardDto[]>("get_deck_cards", { deckId });
+  return await getGameBackend().getDeckCards(deckId);
 }
 
-// ============================================================================
+// ===========================================================================
+// Game Session
+// ===========================================================================
+
+export async function newGame(config: GameConfig): Promise<GameStateDto> {
+  return await getGameBackend().newGame(config);
+}
+
+export async function getGameState(gameId: string): Promise<GameStateDto> {
+  return await getGameBackend().getGameState(gameId);
+}
+
+export async function getLegalActions(gameId: string): Promise<ActionInfo[]> {
+  return await getGameBackend().getLegalActions(gameId);
+}
+
+export async function applyAction(
+  gameId: string,
+  actionIndex: number
+): Promise<GameStateUpdate> {
+  return await getGameBackend().applyAction(gameId, actionIndex);
+}
+
+export async function getAiMove(gameId: string): Promise<ActionInfo> {
+  return await getGameBackend().getAiMove(gameId);
+}
+
+export async function endGame(gameId: string): Promise<GameResultDto> {
+  return await getGameBackend().endGame(gameId);
+}
+
+export async function getAiHint(gameId: string): Promise<AiHintResponse> {
+  return await getGameBackend().getAiHint(gameId);
+}
+
+export async function undoAction(gameId: string): Promise<GameStateDto> {
+  return await getGameBackend().undoAction(gameId);
+}
+
+export async function canUndo(gameId: string): Promise<boolean> {
+  return await getGameBackend().canUndo(gameId);
+}
+
+// ===========================================================================
 // Spectator Mode API
-// ============================================================================
+// ===========================================================================
 
 /** Compute a complete AI vs AI match for spectator playback */
 export async function computeSpectatorMatch(
   config: SpectatorConfig
 ): Promise<SpectatorMatch> {
-  return await withTimeout(
-    invoke<SpectatorMatch>("compute_spectator_match", { config }),
-    300000, // 5 minutes
-    "computeSpectatorMatch"
-  );
+  return await getGameBackend().computeSpectatorMatch(config);
 }
 
-// ============================================================================
+// ===========================================================================
 // Replay Mode API
-// ============================================================================
+// ===========================================================================
 
 /** Save a replay from a completed game session */
 export async function saveReplay(
   gameId: string,
   name?: string
 ): Promise<string> {
-  return await invoke<string>("save_replay", { gameId, name });
+  return await getStorageBackend().saveReplay(gameId, name);
 }
 
 /** Save a spectator match (AI vs AI) as a replay */
@@ -145,39 +122,51 @@ export async function saveSpectatorReplay(
   spectatorMatch: SpectatorMatch,
   name?: string
 ): Promise<string> {
-  return await invoke<string>("save_spectator_replay", { spectatorMatch, name });
+  return await getStorageBackend().saveSpectatorReplay(spectatorMatch, name);
 }
 
 /** List all saved replays */
 export async function listReplays(): Promise<ReplayInfo[]> {
-  return await invoke<ReplayInfo[]>("list_replays");
+  return await getStorageBackend().listReplays();
 }
 
 /** Load a replay file for playback */
 export async function loadReplay(path: string): Promise<SpectatorMatch> {
-  return await invoke<SpectatorMatch>("load_replay", { path });
+  return await getStorageBackend().loadReplay(path);
 }
 
 /** Delete a replay file */
 export async function deleteReplay(path: string): Promise<void> {
-  return await invoke<void>("delete_replay", { path });
+  return await getStorageBackend().deleteReplay(path);
 }
 
-// ============================================================================
+// ===========================================================================
 // MCP Sync Mode API
-// ============================================================================
+// ===========================================================================
 
 /** Get the current MCP-synced game state, if any */
 export async function getMcpSyncedState(): Promise<McpSyncedState | null> {
-  return await invoke<McpSyncedState | null>("get_mcp_synced_state");
+  const mcpBackend = getMcpBackend();
+  if (!mcpBackend.supported) {
+    return null;
+  }
+  return await mcpBackend.getMcpSyncedState();
 }
 
 /** Check if there is an MCP-synced game state available */
 export async function hasMcpSyncedState(): Promise<boolean> {
-  return await invoke<boolean>("has_mcp_synced_state");
+  const mcpBackend = getMcpBackend();
+  if (!mcpBackend.supported) {
+    return false;
+  }
+  return await mcpBackend.hasMcpSyncedState();
 }
 
 /** Clear the MCP-synced game state */
 export async function clearMcpSyncedState(): Promise<void> {
-  return await invoke<void>("clear_mcp_synced_state");
+  const mcpBackend = getMcpBackend();
+  if (!mcpBackend.supported) {
+    return;
+  }
+  return await mcpBackend.clearMcpSyncedState();
 }

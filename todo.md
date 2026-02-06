@@ -85,7 +85,7 @@ Add Player 1 and Player 2 Libraries to Spectator Mode. THe Spectator should be a
 
 For Human vs AI Mode, let's discuss if we should keep it hidden as it is currently, or make it the same (More of a Game Design Discussion).
 
-## (N) Web-playable demo - WASM build where people can try it instantly
+## (N) ✅ Web-playable demo - WASM build where people can try it instantly [DONE]
 
 Playing the Game online should be easy and quick, not require an .exe or Linux Binary / .deb download. Discuss hosting Options (huggingface or github pages, or other solutions?) and Infrastructure Concerns/Specs.
 
