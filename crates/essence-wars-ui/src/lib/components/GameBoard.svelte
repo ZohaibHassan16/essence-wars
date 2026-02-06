@@ -338,6 +338,7 @@
           current={gameState?.player.essence ?? 0}
           max={gameState?.player.maxEssence ?? 0}
           isPlayer={true}
+          tutorialId="player-essence"
         />
         <CommanderCardLarge
           commander={gameState?.player.commander ?? null}

@@ -3,10 +3,12 @@
     current = 0,
     max = 0,
     isPlayer = true,
+    tutorialId = undefined,
   }: {
     current: number;
     max: number;
     isPlayer?: boolean;
+    tutorialId?: string;
   } = $props();
 
   // Total slots to show (always 10 for consistency)
@@ -24,6 +26,7 @@
   class="flex flex-col gap-1 py-2"
   class:flex-col-reverse={!isPlayer}
   title="{current} / {max} Essence"
+  data-tutorial-id={tutorialId}
 >
   {#each Array(totalSlots) as _, i (i)}
     {@const state = getGemState(isPlayer ? i : totalSlots - 1 - i)}
