@@ -118,4 +118,5 @@ test_shots/
 # Code signing certificates
 .certs/
 
-screenshots/
+# Screenshots - dev/original shots (optimized ones live in docs/screenshots/)
+.screenshots/
