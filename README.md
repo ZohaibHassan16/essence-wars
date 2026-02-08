@@ -203,6 +203,19 @@ pnpm install
 pnpm tauri:dev
 ```
 
+## Citation
+
+If you use Essence Wars in your research, please cite:
+
+```bibtex
+@software{essence_wars,
+  title = {Essence Wars: A High-Performance Card Game Environment for RL Research},
+  author = {Wissmann, Christian},
+  year = {2025},
+  url = {https://github.com/christianwissmann85/essence-wars}
+}
+```
+
 ## License
 
 MIT License — see [LICENSE](LICENSE) for details.
