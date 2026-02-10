@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "last_updated": "2026-02-08T15:01:57.078176",
+  "k_factor": 32.0,
+  "initial_rating": 1500.0,
+  "ratings": {
+    "ppo_trained": {
+      "rating": 1510.5405094517353,
+      "games_played": 800,
+      "wins": 585,
+      "losses": 215,
+      "draws": 0,
+      "agent_type": "ppo",
+      "model_path": null,
+      "metadata": {}
+    },
+    "greedy": {
+      "rating": 1489.4594905482643,
+      "games_played": 800,
+      "wins": 215,
+      "losses": 585,
+      "draws": 0,
+      "agent_type": "greedy",
+      "model_path": null,
+      "metadata": {}
+    }
+  }
+}
