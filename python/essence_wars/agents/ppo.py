@@ -91,6 +91,15 @@ FACTION_DECKS: dict[str, list[str]] = {
 
 ALL_DECKS: list[str] = [deck for decks in FACTION_DECKS.values() for deck in decks]
 
+# Playstyle to deck mapping (aligned with Rust bot tuning system)
+PLAYSTYLE_DECKS: dict[str, list[str]] = {
+    "aggro": ["vex_piercing", "archon_burst", "shadow_weaver", "alpha_frenzy", "broodmother_pack"],
+    "control": ["architect_fortify", "sanctum_healer", "plague_volatile"],
+    "tempo": ["artificer_tokens", "deathmaster_assassin", "sovereign_lifesteal"],
+    "midrange": ["grove_regenerate"],
+}
+ALL_PLAYSTYLES: list[str] = list(PLAYSTYLE_DECKS.keys())
+
 
 @dataclass
 class PPOConfig:
@@ -101,14 +110,18 @@ class PPOConfig:
     max_episode_steps: int = 500
 
     # Deck selection
+    # Priority order: playstyle > faction > deck > default
+    # If player_playstyle is set, cycles through that playstyle's decks
     # If player_faction is set, cycles through faction's decks during training
     # If player_deck is set, uses that specific deck
-    # If neither is set, uses default decks
+    # If none set, uses default decks
+    player_playstyle: str | None = None  # "aggro", "control", "tempo", or "midrange"
     player_faction: str | None = None  # "argentum", "obsidion", or "symbiote"
     player_deck: str | None = None     # Specific deck name
+    opponent_playstyle: str | None = None  # If set, opponent uses this playstyle's decks
     opponent_faction: str | None = None  # If set, opponent uses random faction deck
     opponent_deck: str | None = None   # Specific opponent deck (default: random from all)
-    deck_cycle_interval: int = 25_000  # Steps between deck changes (if using faction)
+    deck_cycle_interval: int = 25_000  # Steps between deck changes (if using playstyle/faction)
 
     # Training
     total_timesteps: int = 1_000_000
@@ -377,11 +390,22 @@ class PPOTrainer:
         self.evals_without_improvement = 0
 
     def _setup_deck_cycling(self) -> None:
-        """Setup deck lists for faction specialist training."""
+        """Setup deck lists for playstyle/faction specialist training.
+
+        Priority order: playstyle > faction > deck > default
+        """
         import random as py_random
 
-        # Determine player decks
-        if self.config.player_faction:
+        # Determine player decks (priority: playstyle > faction > deck > default)
+        if self.config.player_playstyle:
+            if self.config.player_playstyle not in PLAYSTYLE_DECKS:
+                raise ValueError(f"Unknown playstyle: {self.config.player_playstyle}. "
+                                f"Choose from: {ALL_PLAYSTYLES}")
+            self._player_decks = PLAYSTYLE_DECKS[self.config.player_playstyle].copy()
+            if len(self._player_decks) == 1:
+                print(f"  [Info] Playstyle '{self.config.player_playstyle}' has only 1 deck "
+                      f"({self._player_decks[0]}), no player deck cycling will occur")
+        elif self.config.player_faction:
             if self.config.player_faction not in FACTION_DECKS:
                 raise ValueError(f"Unknown faction: {self.config.player_faction}. "
                                 f"Choose from: {list(FACTION_DECKS.keys())}")
@@ -391,13 +415,25 @@ class PPOTrainer:
         else:
             self._player_decks = ["artificer_tokens"]  # Default
 
-        # Determine opponent decks
-        if self.config.opponent_faction:
+        # Determine opponent decks (priority: opponent_playstyle > opponent_faction > opponent_deck > inferred)
+        if self.config.opponent_playstyle:
+            if self.config.opponent_playstyle not in PLAYSTYLE_DECKS:
+                raise ValueError(f"Unknown playstyle: {self.config.opponent_playstyle}. "
+                                f"Choose from: {ALL_PLAYSTYLES}")
+            self._opponent_decks = PLAYSTYLE_DECKS[self.config.opponent_playstyle].copy()
+        elif self.config.opponent_faction:
             if self.config.opponent_faction not in FACTION_DECKS:
                 raise ValueError(f"Unknown faction: {self.config.opponent_faction}")
             self._opponent_decks = FACTION_DECKS[self.config.opponent_faction].copy()
         elif self.config.opponent_deck:
             self._opponent_decks = [self.config.opponent_deck]
+        elif self.config.player_playstyle:
+            # Playstyle specialist: opponent uses OTHER playstyles' decks
+            self._opponent_decks = [
+                deck for playstyle, decks in PLAYSTYLE_DECKS.items()
+                if playstyle != self.config.player_playstyle
+                for deck in decks
+            ]
         elif self.config.player_faction:
             # Faction specialist: opponent uses OTHER factions only (no mirror matches)
             self._opponent_decks = [
@@ -444,9 +480,9 @@ class PPOTrainer:
             )
 
     def _maybe_cycle_decks(self) -> None:
-        """Cycle to next deck pair if interval has elapsed (faction training only)."""
-        if not self.config.player_faction:
-            return  # Only cycle when training faction specialist
+        """Cycle to next deck pair if interval has elapsed (playstyle/faction training only)."""
+        if not self.config.player_playstyle and not self.config.player_faction:
+            return  # Only cycle when training playstyle or faction specialist
 
         steps_since_cycle = self.global_step - self._last_deck_cycle_step
         if steps_since_cycle >= self.config.deck_cycle_interval:
@@ -673,12 +709,14 @@ class PPOTrainer:
 
         # Print initial deck configuration
         deck1, deck2 = self._get_current_decks()
-        if self.config.player_faction:
+        if self.config.player_playstyle:
+            print(f"  Playstyle: {self.config.player_playstyle} (cycling through {len(self._player_decks)} decks)")
+        elif self.config.player_faction:
             print(f"  Faction: {self.config.player_faction} (cycling through {len(self._player_decks)} decks)")
         print(f"  Initial decks: {deck1} vs {deck2}")
 
         for update in range(1, num_updates + 1):
-            # Check if we should cycle to different decks (faction training)
+            # Check if we should cycle to different decks (playstyle/faction training)
             self._maybe_cycle_decks()
 
             # Collect rollout

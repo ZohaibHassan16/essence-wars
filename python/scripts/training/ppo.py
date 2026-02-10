@@ -6,11 +6,12 @@ This script trains a PPO agent using vectorized environments and
 evaluates it against the built-in GreedyBot.
 
 Usage:
-    python train_ppo.py                           # Default generalist training
-    python train_ppo.py --timesteps 300000        # Recommended timesteps
-    python train_ppo.py --player-faction argentum # Train Argentum specialist
-    python train_ppo.py --observation-mode embedded  # Use card embeddings
-    python train_ppo.py --no-tensorboard          # Disable TensorBoard (enabled by default)
+    python train_ppo.py                             # Default generalist training
+    python train_ppo.py --timesteps 300000          # Recommended timesteps
+    python train_ppo.py --player-playstyle aggro    # Train Aggro playstyle specialist
+    python train_ppo.py --player-faction argentum   # Train Argentum faction specialist
+    python train_ppo.py --observation-mode embedded # Use card embeddings
+    python train_ppo.py --no-tensorboard            # Disable TensorBoard
 
 Examples:
     # Generalist (flat architecture) - baseline
@@ -22,6 +23,18 @@ Examples:
     # Generalist with pretrained Card2Vec embeddings
     python train_ppo.py --timesteps 300000 --observation-mode embedded_pretrained \\
         --pretrained-embeds models/card2vec_*.pt
+
+    # Playstyle specialist (Aggro - 5 decks)
+    python train_ppo.py --timesteps 300000 --player-playstyle aggro
+
+    # Playstyle specialist (Control - 3 decks)
+    python train_ppo.py --timesteps 300000 --player-playstyle control
+
+    # Playstyle specialist (Tempo - 3 decks)
+    python train_ppo.py --timesteps 300000 --player-playstyle tempo
+
+    # Playstyle specialist (Midrange - 1 deck)
+    python train_ppo.py --timesteps 300000 --player-playstyle midrange
 
     # Faction specialist (Argentum)
     python train_ppo.py --timesteps 300000 --player-faction argentum
@@ -126,7 +139,15 @@ def parse_args():
         help="Freeze card embeddings during training",
     )
 
-    # Faction/Deck selection (for specialist training)
+    # Playstyle/Faction/Deck selection (for specialist training)
+    # Priority: playstyle > faction > deck
+    parser.add_argument(
+        "--player-playstyle",
+        type=str,
+        default=None,
+        choices=["aggro", "control", "tempo", "midrange"],
+        help="Train as playstyle specialist (cycles through playstyle's decks)",
+    )
     parser.add_argument(
         "--player-faction",
         type=str,
@@ -138,7 +159,14 @@ def parse_args():
         "--player-deck",
         type=str,
         default=None,
-        help="Train with specific deck (overrides --player-faction)",
+        help="Train with specific deck (overrides --player-faction and --player-playstyle)",
+    )
+    parser.add_argument(
+        "--opponent-playstyle",
+        type=str,
+        default=None,
+        choices=["aggro", "control", "tempo", "midrange"],
+        help="Opponent uses decks from this playstyle only",
     )
     parser.add_argument(
         "--opponent-faction",
@@ -151,7 +179,7 @@ def parse_args():
         "--deck-cycle-interval",
         type=int,
         default=25_000,
-        help="Steps between deck changes for faction training (default: 25000)",
+        help="Steps between deck changes for playstyle/faction training (default: 25000)",
     )
 
     # Evaluation
@@ -290,7 +318,9 @@ def main():
         if args.pretrained_embeds:
             print(f"  Pretrained:    {args.pretrained_embeds}")
         print(f"  Freeze embeds: {args.freeze_embeds}")
-    if args.player_faction:
+    if args.player_playstyle:
+        print(f"  Playstyle:     {args.player_playstyle} (specialist)")
+    elif args.player_faction:
         print(f"  Player faction: {args.player_faction} (specialist)")
     elif args.player_deck:
         print(f"  Player deck:   {args.player_deck}")
@@ -303,12 +333,14 @@ def main():
         print(f"    Board weight:{args.board_weight}")
     print("=" * 60)
 
-    # Setup save path with faction/mode info
+    # Setup save path with playstyle/faction/mode info
     if args.save_path is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         # Include mode info in path for easy identification
         mode_suffix = ""
-        if args.player_faction:
+        if args.player_playstyle:
+            mode_suffix = f"_{args.player_playstyle}"
+        elif args.player_faction:
             mode_suffix = f"_{args.player_faction}"
         mode_suffix += f"_{args.observation_mode}"
         if args.reward_shaping:
@@ -345,8 +377,10 @@ def main():
         embed_dim=args.embed_dim,
         pretrained_embeds_path=args.pretrained_embeds,
         freeze_embeds=args.freeze_embeds,
+        player_playstyle=args.player_playstyle,
         player_faction=args.player_faction,
         player_deck=args.player_deck,
+        opponent_playstyle=args.opponent_playstyle,
         opponent_faction=args.opponent_faction,
         deck_cycle_interval=args.deck_cycle_interval,
         eval_interval=args.eval_interval,

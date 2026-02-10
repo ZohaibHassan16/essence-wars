@@ -362,3 +362,111 @@ def test_normalizer_state_save_load(tmp_path):
     assert np.allclose(trainer2.obs_normalizer.mean, original_mean)
     assert np.allclose(trainer2.obs_normalizer.var, original_var)
     assert trainer2.obs_normalizer.count == original_count
+
+
+def test_playstyle_decks_complete():
+    """Test that all 12 decks are covered exactly once by playstyles."""
+    from essence_wars.agents.ppo import PLAYSTYLE_DECKS, ALL_DECKS
+
+    # Collect all playstyle decks
+    playstyle_decks = [deck for decks in PLAYSTYLE_DECKS.values() for deck in decks]
+
+    # Check all 12 decks are covered exactly once
+    assert sorted(playstyle_decks) == sorted(ALL_DECKS), (
+        f"Playstyle decks don't match ALL_DECKS.\n"
+        f"Playstyle: {sorted(playstyle_decks)}\n"
+        f"ALL_DECKS: {sorted(ALL_DECKS)}"
+    )
+
+
+def test_ppo_config_playstyle_fields():
+    """Test PPOConfig accepts playstyle fields."""
+    from essence_wars.agents.ppo import PPOConfig
+
+    config = PPOConfig(
+        num_envs=4,
+        player_playstyle="aggro",
+        opponent_playstyle="control",
+    )
+
+    assert config.player_playstyle == "aggro"
+    assert config.opponent_playstyle == "control"
+
+
+def test_ppo_playstyle_deck_cycling():
+    """Test correct decks are selected for playstyle specialist."""
+    from essence_wars.agents.ppo import PPOConfig, PPOTrainer, PLAYSTYLE_DECKS
+
+    config = PPOConfig(num_envs=4, player_playstyle="aggro")
+    trainer = PPOTrainer(config=config)
+
+    # Check player decks match aggro playstyle
+    assert set(trainer._player_decks) == set(PLAYSTYLE_DECKS["aggro"])
+
+    # Check opponent decks are from OTHER playstyles (no aggro decks)
+    aggro_decks = set(PLAYSTYLE_DECKS["aggro"])
+    opponent_deck_set = set(trainer._opponent_decks)
+    assert not (opponent_deck_set & aggro_decks), (
+        f"Opponent should not have aggro decks: {opponent_deck_set & aggro_decks}"
+    )
+
+
+def test_ppo_playstyle_midrange_single_deck():
+    """Test midrange playstyle with single deck still works."""
+    from essence_wars.agents.ppo import PPOConfig, PPOTrainer
+
+    config = PPOConfig(num_envs=4, player_playstyle="midrange")
+    trainer = PPOTrainer(config=config)
+
+    # Midrange has only grove_regenerate
+    assert trainer._player_decks == ["grove_regenerate"]
+
+    # Opponent should have 11 other decks
+    assert len(trainer._opponent_decks) == 11
+
+
+def test_playstyle_priority_over_faction():
+    """Test that playstyle takes precedence over faction when both set."""
+    from essence_wars.agents.ppo import PPOConfig, PPOTrainer, PLAYSTYLE_DECKS
+
+    # Set both playstyle and faction - playstyle should win
+    config = PPOConfig(
+        num_envs=4,
+        player_playstyle="control",
+        player_faction="argentum",
+    )
+    trainer = PPOTrainer(config=config)
+
+    # Should use control playstyle decks, not argentum faction decks
+    assert set(trainer._player_decks) == set(PLAYSTYLE_DECKS["control"])
+
+
+def test_faction_backward_compatibility():
+    """Test that faction args still work after adding playstyle support."""
+    from essence_wars.agents.ppo import PPOConfig, PPOTrainer, FACTION_DECKS
+
+    config = PPOConfig(num_envs=4, player_faction="argentum")
+    trainer = PPOTrainer(config=config)
+
+    # Should use argentum faction decks
+    assert set(trainer._player_decks) == set(FACTION_DECKS["argentum"])
+
+    # Opponent should not have argentum decks
+    argentum_decks = set(FACTION_DECKS["argentum"])
+    opponent_deck_set = set(trainer._opponent_decks)
+    assert not (opponent_deck_set & argentum_decks)
+
+
+def test_opponent_playstyle():
+    """Test opponent_playstyle restricts opponent deck selection."""
+    from essence_wars.agents.ppo import PPOConfig, PPOTrainer, PLAYSTYLE_DECKS
+
+    config = PPOConfig(
+        num_envs=4,
+        player_deck="grove_regenerate",
+        opponent_playstyle="tempo",
+    )
+    trainer = PPOTrainer(config=config)
+
+    # Opponent should only have tempo decks
+    assert set(trainer._opponent_decks) == set(PLAYSTYLE_DECKS["tempo"])
