@@ -8,7 +8,7 @@ and neural network agents.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 import numpy as np
 import torch
@@ -286,18 +286,52 @@ class NeuralAgent(BaseAgent):
 
         Returns:
             NeuralAgent instance
+
+        Raises:
+            FileNotFoundError: If checkpoint file doesn't exist
+            ValueError: If checkpoint format is not recognized
         """
         from pathlib import Path
 
-        checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+        # Check file exists with helpful error
+        path = Path(checkpoint_path)
+        if not path.exists():
+            raise FileNotFoundError(
+                f"Checkpoint file not found: {checkpoint_path}\n"
+                "Make sure you've trained a model first. Example:\n"
+                "  uv run python scripts/training/ppo.py --timesteps 10000"
+            )
+
+        if not path.suffix == ".pt":
+            raise ValueError(
+                f"Expected .pt checkpoint file, got: {path.suffix}\n"
+                "Essence Wars uses PyTorch .pt checkpoint files."
+            )
+
+        try:
+            checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
+        except Exception as e:
+            raise ValueError(
+                f"Failed to load checkpoint: {checkpoint_path}\n"
+                f"Error: {e}\n"
+                "This may indicate a corrupted or incompatible checkpoint file."
+            ) from e
+
+        if not isinstance(checkpoint, dict):
+            raise ValueError(
+                f"Invalid checkpoint format in: {checkpoint_path}\n"
+                f"Expected a dict, got {type(checkpoint).__name__}.\n"
+                "Essence Wars checkpoints should contain 'network_state_dict' or 'model_state_dict'."
+            )
 
         # Extract config - handle both dict and dataclass configs
         config = checkpoint.get("config", {})
+        config_dict: dict[str, Any]
         if hasattr(config, "__dict__"):
-            # Dataclass config (e.g., PPOConfig)
-            config_dict = vars(config)
+            # Dataclass config (e.g., PPOConfig) - vars() may return MappingProxyType
+            config_dict = dict(vars(config))
         elif isinstance(config, dict):
-            config_dict = config
+            config_dict = dict(config)
         else:
             config_dict = {}
 
@@ -307,13 +341,19 @@ class NeuralAgent(BaseAgent):
             state_dict = checkpoint["model_state_dict"]
             args = checkpoint.get("args", {})
             if hasattr(args, "__dict__"):
-                args = vars(args)
+                args = dict(vars(args))
             config_dict.update(args)
         elif "network_state_dict" in checkpoint:
             # AlphaZero or PPO checkpoint
             state_dict = checkpoint["network_state_dict"]
         else:
-            raise ValueError(f"Unknown checkpoint format: {checkpoint_path}")
+            available_keys = list(checkpoint.keys())
+            raise ValueError(
+                f"Unknown checkpoint format: {checkpoint_path}\n"
+                f"Expected 'network_state_dict' (PPO/AlphaZero) or 'model_state_dict' (BC).\n"
+                f"Found keys: {available_keys}\n"
+                "Make sure you're using a checkpoint from essence-wars training scripts."
+            )
 
         # Get network parameters
         hidden_dim = config_dict.get("hidden_dim", 256)
@@ -353,7 +393,28 @@ class NeuralAgent(BaseAgent):
                 hidden_dim=hidden_dim,
             )
 
-        network.load_state_dict(state_dict)
+        try:
+            network.load_state_dict(state_dict)
+        except RuntimeError as e:
+            error_msg = str(e)
+            if "size mismatch" in error_msg:
+                raise ValueError(
+                    f"Network architecture mismatch loading: {checkpoint_path}\n"
+                    f"Error: {error_msg}\n"
+                    "The checkpoint was trained with different network settings (hidden_dim, etc.).\n"
+                    "Check that the checkpoint matches your expected configuration."
+                ) from e
+            elif "Missing key" in error_msg or "Unexpected key" in error_msg:
+                raise ValueError(
+                    f"State dict key mismatch loading: {checkpoint_path}\n"
+                    f"Error: {error_msg}\n"
+                    "The checkpoint may be from an incompatible model version."
+                ) from e
+            else:
+                raise ValueError(
+                    f"Failed to load state dict from: {checkpoint_path}\n"
+                    f"Error: {error_msg}"
+                ) from e
 
         # Generate name from filename if not provided
         if name is None:

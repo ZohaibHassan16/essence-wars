@@ -40,6 +40,74 @@ from numpy.typing import NDArray
 from essence_wars._core import ACTION_SPACE_SIZE, STATE_TENSOR_SIZE, PyGame, PyParallelGames
 
 
+def _get_available_decks() -> list[str]:
+    """Get list of available deck names."""
+    decks: list[str] = PyGame.list_decks()
+    return decks
+
+
+def _validate_deck_name(deck_name: str, param_name: str = "deck") -> None:
+    """
+    Validate a deck name and raise a helpful error if invalid.
+
+    Args:
+        deck_name: The deck name to validate
+        param_name: Name of the parameter for error message (e.g., "deck1", "deck2")
+
+    Raises:
+        ValueError: If deck name is invalid, with suggestion of valid decks
+    """
+    available = _get_available_decks()
+    if deck_name not in available:
+        # Find similar deck names for suggestions
+        suggestions = [d for d in available if deck_name.lower() in d.lower()]
+        if not suggestions:
+            # No substring match, show all decks
+            suggestions = available
+
+        raise ValueError(
+            f"Unknown deck '{deck_name}' for {param_name}.\n"
+            f"Available decks: {', '.join(sorted(available))}\n"
+            f"Did you mean: {', '.join(suggestions[:3])}?"
+        )
+
+
+def _validate_opponent_type(opponent: str | None) -> None:
+    """
+    Validate opponent type parameter.
+
+    Args:
+        opponent: Opponent type to validate
+
+    Raises:
+        ValueError: If opponent type is invalid
+    """
+    valid_opponents = ("greedy", "random", None)
+    if opponent not in valid_opponents:
+        raise ValueError(
+            f"Unknown opponent type: '{opponent}'.\n"
+            f"Valid options: 'greedy', 'random', or None (for external control / self-play)"
+        )
+
+
+def _validate_game_mode(game_mode: str) -> None:
+    """
+    Validate game mode parameter.
+
+    Args:
+        game_mode: Game mode to validate
+
+    Raises:
+        ValueError: If game mode is invalid
+    """
+    valid_modes = ("attrition", "essence_duel")
+    if game_mode not in valid_modes:
+        raise ValueError(
+            f"Unknown game mode: '{game_mode}'.\n"
+            f"Valid options: {', '.join(repr(m) for m in valid_modes)}"
+        )
+
+
 class EssenceWarsEnv(gym.Env[NDArray[np.float32], int]):
     """
     Gymnasium environment for the Essence Wars card game.
@@ -88,6 +156,12 @@ class EssenceWarsEnv(gym.Env[NDArray[np.float32], int]):
         render_mode: str | None = None,
     ) -> None:
         super().__init__()
+
+        # Validate parameters with helpful error messages
+        _validate_deck_name(deck1, "deck1")
+        _validate_deck_name(deck2, "deck2")
+        _validate_opponent_type(opponent)
+        _validate_game_mode(game_mode)
 
         self.deck1 = deck1
         self.deck2 = deck2
@@ -375,6 +449,14 @@ class VectorizedEssenceWars:
         deck2: str = "broodmother_pack",
         game_mode: str = "attrition",
     ) -> None:
+        # Validate parameters with helpful error messages
+        _validate_deck_name(deck1, "deck1")
+        _validate_deck_name(deck2, "deck2")
+        _validate_game_mode(game_mode)
+
+        if num_envs < 1:
+            raise ValueError(f"num_envs must be at least 1, got {num_envs}")
+
         self.num_envs = num_envs
         self.deck1 = deck1
         self.deck2 = deck2
