@@ -51,12 +51,22 @@ obs = game.observe()         # numpy array (328,)
 mask = game.action_mask()    # numpy array (256,)
 reward, done = game.step(action)
 
-# Vectorized (for training)
+# Vectorized (for training) - RECOMMENDED
+from essence_wars import VectorizedEssenceWars
+vec_env = VectorizedEssenceWars(num_envs=64)
+obs, masks = vec_env.reset(seed=42)
+obs, rewards, dones, masks = vec_env.step(actions)  # Accepts any int array
+
+# Raw parallel API (advanced) - requires uint8 actions
 games = PyParallelGames(num_envs=64)
-games.reset(seeds=[...])
-obs = games.observe_batch()      # (64, 328)
+games.reset_all(base_seed=42)
+obs = games.observe_batch()           # (64, 328)
+actions = np.array([...], dtype=np.uint8)  # MUST be uint8
 rewards, dones = games.step_batch(actions)
 ```
+
+**Note**: Use `VectorizedEssenceWars` for training - it handles type casting and auto-reset.
+The raw `PyParallelGames.step_batch()` requires `np.uint8` actions.
 
 ## Directory Structure
 

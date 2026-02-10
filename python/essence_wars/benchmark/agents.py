@@ -345,8 +345,10 @@ class NeuralAgent(BaseAgent):
             # Simple PPO network (flat observation)
             from essence_wars.agents.networks import EssenceWarsNetwork
 
+            from essence_wars._core import STATE_TENSOR_SIZE
+
             network = EssenceWarsNetwork(
-                obs_dim=326,
+                obs_dim=STATE_TENSOR_SIZE,
                 action_dim=256,
                 hidden_dim=hidden_dim,
             )

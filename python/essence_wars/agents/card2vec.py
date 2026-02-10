@@ -36,7 +36,7 @@ import json
 import random
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import torch
 import torch.nn as nn
@@ -99,7 +99,12 @@ class CardDatabase:
         self._load_cards()
 
     def _load_cards(self) -> None:
-        """Load all card definitions from YAML files."""
+        """Load all card definitions from YAML files.
+
+        Supports two directory structures:
+        1. Flat: cards_dir/argentum.yaml, symbiote.yaml, etc.
+        2. Nested: cards_dir/argentum/{creatures,spells,supports}.yaml
+        """
         try:
             import yaml  # type: ignore[import-untyped]
         except ImportError:
@@ -107,34 +112,44 @@ class CardDatabase:
             self._load_cards_fallback()
             return
 
-        faction_files = {
-            "argentum": "argentum.yaml",
-            "symbiote": "symbiote.yaml",
-            "obsidion": "obsidion.yaml",
-            "neutral": "neutral.yaml",
-        }
+        factions = ["argentum", "symbiote", "obsidion", "neutral"]
 
-        for faction, filename in faction_files.items():
-            filepath = self.cards_dir / filename
-            if not filepath.exists():
+        for faction in factions:
+            # Try flat structure first: faction.yaml
+            flat_path = self.cards_dir / f"{faction}.yaml"
+            if flat_path.exists():
+                self._load_yaml_file(flat_path, faction, yaml)
                 continue
 
-            with filepath.open() as f:
-                data = yaml.safe_load(f)
+            # Try nested structure: faction/{creatures,spells,supports}.yaml
+            faction_dir = self.cards_dir / faction
+            if faction_dir.is_dir():
+                for card_type_file in ["creatures.yaml", "spells.yaml", "supports.yaml"]:
+                    filepath = faction_dir / card_type_file
+                    if filepath.exists():
+                        self._load_yaml_file(filepath, faction, yaml)
 
-            for card_data in data.get("cards", []):
-                card = CardInfo(
-                    card_id=card_data["id"],
-                    name=card_data["name"],
-                    cost=card_data.get("cost", 0),
-                    card_type=card_data.get("card_type", "creature"),
-                    attack=card_data.get("attack", 0),
-                    health=card_data.get("health", 0),
-                    keywords=card_data.get("keywords", []),
-                    faction=faction,
-                    rarity=card_data.get("rarity", "Common"),
-                )
-                self.cards[card.card_id] = card
+    def _load_yaml_file(self, filepath: Path, faction: str, yaml: Any) -> None:
+        """Load cards from a single YAML file."""
+        with filepath.open() as f:
+            data = yaml.safe_load(f)
+
+        if data is None:
+            return
+
+        for card_data in data.get("cards", []):
+            card = CardInfo(
+                card_id=card_data["id"],
+                name=card_data["name"],
+                cost=card_data.get("cost", 0),
+                card_type=card_data.get("card_type", "creature"),
+                attack=card_data.get("attack", 0),
+                health=card_data.get("health", 0),
+                keywords=card_data.get("keywords", []),
+                faction=faction,
+                rarity=card_data.get("rarity", "Common"),
+            )
+            self.cards[card.card_id] = card
 
     def _load_cards_fallback(self) -> None:
         """Fallback: create dummy cards for all ID ranges."""
@@ -646,19 +661,38 @@ def train_card2vec(
         weight_decay=config.weight_decay,
     )
 
-    # Data loaders
-    cooccur_loader = DataLoader(
-        cooccur_dataset,
-        batch_size=config.batch_size,
-        shuffle=True,
-        num_workers=0,
-    )
-    attr_loader = DataLoader(
-        attr_dataset,
-        batch_size=config.batch_size,
-        shuffle=True,
-        num_workers=0,
-    )
+    # Data loaders (only create if dataset is non-empty)
+    cooccur_loader = None
+    attr_loader = None
+
+    if len(cooccur_dataset) > 0:
+        cooccur_loader = DataLoader(
+            cooccur_dataset,
+            batch_size=config.batch_size,
+            shuffle=True,
+            num_workers=0,
+        )
+    else:
+        print("Warning: No co-occurrence data, skipping co-occurrence training")
+
+    if len(attr_dataset) > 0:
+        attr_loader = DataLoader(
+            attr_dataset,
+            batch_size=config.batch_size,
+            shuffle=True,
+            num_workers=0,
+        )
+    else:
+        print("Warning: No attribute data, skipping attribute prediction training")
+
+    # Check if we have any data to train on
+    if cooccur_loader is None and attr_loader is None:
+        raise ValueError(
+            "No training data available. Ensure either:\n"
+            "  - Deck files exist in the decks directory for co-occurrence learning\n"
+            "  - Card YAML files exist for attribute prediction\n"
+            "  - An MCTS dataset is provided via --dataset"
+        )
 
     # Training loop
     output_path = Path(config.output_path)
@@ -672,59 +706,61 @@ def train_card2vec(
         num_attr_batches = 0
 
         # Co-occurrence training
-        for center, context, label in cooccur_loader:
-            center = center.to(device)
-            context = context.to(device)
-            label = label.float().to(device)
+        if cooccur_loader is not None:
+            for center, context, label in cooccur_loader:
+                center = center.to(device)
+                context = context.to(device)
+                label = label.float().to(device)
 
-            optimizer.zero_grad()
+                optimizer.zero_grad()
 
-            scores = model.cooccurrence_score(center, context)
-            loss = F.binary_cross_entropy_with_logits(scores, label)
-            loss = loss * config.cooccurrence_weight
+                scores = model.cooccurrence_score(center, context)
+                loss = F.binary_cross_entropy_with_logits(scores, label)
+                loss = loss * config.cooccurrence_weight
 
-            loss.backward()
-            optimizer.step()
+                loss.backward()
+                optimizer.step()
 
-            total_cooccur_loss += loss.item()
-            num_cooccur_batches += 1
+                total_cooccur_loss += loss.item()
+                num_cooccur_batches += 1
 
         # Attribute training
-        for batch in attr_loader:
-            card_ids = batch["card_id"].to(device)
-            cost_target = batch["cost"].to(device)
-            attack_target = batch["attack"].to(device)
-            health_target = batch["health"].to(device)
-            card_type_target = batch["card_type"].to(device)
-            faction_target = batch["faction"].to(device)
-            keywords_target = batch["keywords"].to(device)
+        if attr_loader is not None:
+            for batch in attr_loader:
+                card_ids = batch["card_id"].to(device)
+                cost_target = batch["cost"].to(device)
+                attack_target = batch["attack"].to(device)
+                health_target = batch["health"].to(device)
+                card_type_target = batch["card_type"].to(device)
+                faction_target = batch["faction"].to(device)
+                keywords_target = batch["keywords"].to(device)
 
-            optimizer.zero_grad()
+                optimizer.zero_grad()
 
-            preds = model.predict_attributes(card_ids)
+                preds = model.predict_attributes(card_ids)
 
-            # Compute attribute losses
-            attr_loss: torch.Tensor = torch.tensor(0.0, device=device)
+                # Compute attribute losses
+                attr_loss: torch.Tensor = torch.tensor(0.0, device=device)
 
-            # Continuous attributes (MSE)
-            attr_loss = attr_loss + F.mse_loss(preds["cost"], cost_target)
-            attr_loss = attr_loss + F.mse_loss(preds["attack"], attack_target)
-            attr_loss = attr_loss + F.mse_loss(preds["health"], health_target)
+                # Continuous attributes (MSE)
+                attr_loss = attr_loss + F.mse_loss(preds["cost"], cost_target)
+                attr_loss = attr_loss + F.mse_loss(preds["attack"], attack_target)
+                attr_loss = attr_loss + F.mse_loss(preds["health"], health_target)
 
-            # Categorical attributes (CE)
-            attr_loss = attr_loss + F.cross_entropy(preds["card_type"], card_type_target)
-            attr_loss = attr_loss + F.cross_entropy(preds["faction"], faction_target)
+                # Categorical attributes (CE)
+                attr_loss = attr_loss + F.cross_entropy(preds["card_type"], card_type_target)
+                attr_loss = attr_loss + F.cross_entropy(preds["faction"], faction_target)
 
-            # Keywords (BCE)
-            attr_loss = attr_loss + F.binary_cross_entropy(preds["keywords"], keywords_target)
+                # Keywords (BCE)
+                attr_loss = attr_loss + F.binary_cross_entropy(preds["keywords"], keywords_target)
 
-            attr_loss = attr_loss * config.attribute_weight
+                attr_loss = attr_loss * config.attribute_weight
 
-            attr_loss.backward()
-            optimizer.step()
+                attr_loss.backward()
+                optimizer.step()
 
-            total_attr_loss += attr_loss.item()
-            num_attr_batches += 1
+                total_attr_loss += attr_loss.item()
+                num_attr_batches += 1
 
         # Logging
         avg_cooccur = total_cooccur_loss / max(num_cooccur_batches, 1)
@@ -768,7 +804,7 @@ def load_card2vec_embeddings(path: str | Path) -> torch.Tensor:
     Returns:
         Embedding weight tensor of shape (num_cards, embed_dim)
     """
-    checkpoint = torch.load(path, map_location="cpu")
+    checkpoint = torch.load(path, map_location="cpu", weights_only=False)
 
     if isinstance(checkpoint, dict):
         if "embeddings" in checkpoint:

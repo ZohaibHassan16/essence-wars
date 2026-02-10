@@ -656,7 +656,7 @@ def create_network(
     # Load pre-trained embeddings if specified
     pretrained_embeds = None
     if observation_mode == "embedded_pretrained" and pretrained_path:
-        pretrained_embeds = torch.load(pretrained_path)
+        pretrained_embeds = torch.load(pretrained_path, weights_only=False)
         if isinstance(pretrained_embeds, dict):
             pretrained_embeds = pretrained_embeds.get("weight", pretrained_embeds.get("embeddings"))
 

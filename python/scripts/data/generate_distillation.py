@@ -100,14 +100,23 @@ def main() -> None:
 
     # Load model
     print(f"Loading model from {args.model}...")
+    from essence_wars._core import STATE_TENSOR_SIZE
+
     model = AlphaZeroNetwork(
-        obs_dim=326,
+        obs_dim=STATE_TENSOR_SIZE,
         action_dim=256,
         hidden_dim=args.hidden_dim,
         num_blocks=args.num_blocks,
     )
-    checkpoint = torch.load(args.model, map_location=device)
-    model.load_state_dict(checkpoint["model_state_dict"])
+    checkpoint = torch.load(args.model, map_location=device, weights_only=False)
+    # Handle different checkpoint formats
+    if "model_state_dict" in checkpoint:
+        model.load_state_dict(checkpoint["model_state_dict"])
+    elif "network_state_dict" in checkpoint:
+        model.load_state_dict(checkpoint["network_state_dict"])
+    else:
+        # Assume it's just the state dict
+        model.load_state_dict(checkpoint)
     model.eval()
 
     # Create output directory

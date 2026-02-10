@@ -1,0 +1,8 @@
+{
+  "checkpoint": "experiments/ppo/20260210_161735_flat/best_model.pt",
+  "games_per_opponent": 10,
+  "games_played": 20,
+  "win_rate_vs_random": 0.7,
+  "win_rate_vs_greedy": 0.4,
+  "elo_rating": 1341
+}
