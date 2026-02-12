@@ -218,8 +218,27 @@ def main():
         help="Ratio of BC samples in training batches (0.7 = 70%% BC, 30%% self-play). "
              "Higher values anchor more strongly to BC policy.",
     )
+    parser.add_argument(
+        "--wandb",
+        action="store_true",
+        help="Enable Weights and Biases logging"
+    )
+    parser.add_argument(
+        "--wandb-project",
+        type=str,
+        default="essence-wars",
+        help="Weights and Biases project name",
+    )
+    parser.add_argument(
+        "--wandb-name",
+        type=str,
+        default=None,
+        help="Weights and Biases run name",
+    )
 
     args = parser.parse_args()
+
+
 
     # Import here to avoid slow startup for --help
     from essence_wars.agents.alphazero import AlphaZeroConfig, AlphaZeroTrainer
@@ -252,6 +271,26 @@ def main():
         save_dir = Path(args.save_dir)
 
     save_dir.mkdir(parents=True, exist_ok=True)
+    if args.wandb:
+        try:
+            import wandb
+
+            if args.wandb_name is None:
+                run_name = f"az_{args.observation_mode}_{datetime.now().strftime('%Y%m%d_%H%M')}"
+            else:
+                run_name = args.wandb_name
+
+            wandb.init(
+                project=args.wandb_project,
+                name=run_name,
+                config=vars(args),
+                sync_tensorboard=True,
+                save_code=True,
+            )
+            print(f"W&B initialized: {wandb.run.name}")
+        except ImportError:
+            print("Error: --wandb requested but 'wandb' package not found.")
+            sys.exit(1)
 
     # Setup TensorBoard (enabled by default)
     writer = None
@@ -373,6 +412,8 @@ def main():
     # Save final model
     model_path = save_dir / "final_model.pt"
     trainer.save(str(model_path))
+    if args.wandb:
+        wandb.save(str(model_path))
 
     # Save summary
     summary_path = save_dir / "summary.txt"

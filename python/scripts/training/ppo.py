@@ -61,6 +61,25 @@ def parse_args():
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
+    # wandb
+    parser.add_argument(
+        "--wandb",
+        action="store_true",
+        help="Enable Weights and Biases logging."
+    )
+    parser.add_argument(
+        "--wandb-project",
+        type=str,
+        default="essence-wars",
+        help="Weights and Biases project name"
+    )
+    parser.add_argument(
+        "--wandb-name",
+        type=str,
+        default=None,
+        help="Weights and Biases run name"
+    )
+
     # Training
     parser.add_argument(
         "--timesteps",
@@ -352,6 +371,32 @@ def main():
     save_path.mkdir(parents=True, exist_ok=True)
     print(f"Saving to: {save_path}")
 
+    if args.wandb:
+        try:
+            import wandb
+            if args.wandb_name is None:
+                run_name = f"ppo_{args.observation_mode}"
+                if args.player_playstyle:
+                    run_name += f"_{args.player_playstyle}"
+                elif args.player_faction:
+                    run_name += f"_{args.player_faction}"
+                run_name += f"_{datetime.now().strftime('%Y%m%d_%H%M')}"
+            else:
+                run_name = args.wandb_name
+            wandb.init(
+                project=args.wandb_project,
+                name=run_name,
+                config=vars(args),
+                sync_tensorboard=True,
+                monitor_gym=True,
+                save_code=True,
+            )
+            print(f"W&B initialized: {wandb.run.name}")
+        except ImportError:
+            print("Error: --wandb requested but 'wandb' package not found.")
+            sys.exit(1)
+
+
     # Setup TensorBoard (enabled by default)
     writer = None
     if not args.no_tensorboard:
@@ -526,6 +571,15 @@ def main():
     elif win_rate_greedy > 0:
         print(f"\n[PROGRESS] Current: {win_rate_greedy:.1%} vs Greedy (target: 60%)")
         print("  Consider: more timesteps, tuning hyperparameters, or longer training")
+
+    if args.wandb:
+        if final_path.exists():
+            wandb.save(str(final_path))
+
+        best_model_path = save_path / "best_model.pt"
+        if best_model_path.exists():
+            wandb.save(str(best_model_path))
+        wandb.finish()
 
     if writer is not None:
         writer.close()

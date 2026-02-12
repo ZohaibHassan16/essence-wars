@@ -163,6 +163,24 @@ def parse_args() -> argparse.Namespace:
              "This gives nuanced position evaluations (better for MCTS search) "
              "rather than binary win/loss predictions.",
     )
+    parser.add_argument(
+        "--wandb",
+        action="store_true",
+        help="Enable Weights & Biases logging",
+    )
+    parser.add_argument(
+        "--wandb-project",
+        type=str,
+        default="essence-wars",
+        help="Weights & Biases project name",
+    )
+    parser.add_argument(
+        "--wandb-name",
+        type=str,
+        default=None,
+        help="Weights & Biases run name",
+    )
+
     return parser.parse_args()
 
 
@@ -338,6 +356,27 @@ def main() -> None:
     # Setup output directory
     output_path = Path(args.output)
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    if args.wandb:
+        try:
+            import wandb
+
+            if args.wandb_name is None:
+                dataset_name = Path(args.dataset).stem
+                run_name = f"bc_{dataset_name}_{datetime.now().strftime('%Y%m%d_%H%M')}"
+            else:
+                run_name = args.wandb_name
+
+            wandb.init(
+                project=args.wandb_project,
+                name=run_name,
+                config=vars(args),
+                sync_tensorboard=True,
+                save_code=True,
+            )
+            print(f"W&B initialized: {wandb.run.name}")
+        except ImportError:
+            print("Error: --wandb requested but 'wandb' package not found.")
+            sys.exit(1)
 
     # Setup TensorBoard (enabled by default)
     writer = None
@@ -545,6 +584,8 @@ def main() -> None:
                 "args": vars(args),
             }, output_path)
             print(f"  New best model saved: {output_path}")
+        if args.wandb:
+            wandb.log({"best_val_loss": best_val_loss}, step=epoch)
 
     # Training complete
     total_time = time.time() - start_time
@@ -552,6 +593,9 @@ def main() -> None:
     print(f"  Total time:     {total_time / 60:.1f} minutes")
     print(f"  Best val loss:  {best_val_loss:.4f}")
     print(f"  Model saved to: {output_path}")
+    if args.wandb:
+        wandb.save(str(output_path))
+        wandb.finish()
 
     if writer:
         writer.close()
