@@ -414,6 +414,7 @@ def main():
     trainer.save(str(model_path))
     if args.wandb:
         wandb.save(str(model_path))
+        wandb.finish()
 
     # Save summary
     summary_path = save_dir / "summary.txt"
